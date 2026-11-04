@@ -176,6 +176,14 @@ export class MpesaController {
         const normalizedPhone = phone && /^254[17]\d{8}$/.test(phone) ? phone : null;
         if (!receipt || !Number.isSafeInteger(amount) || amount !== Number(p.amount_kes) || normalizedPhone !== p.phone) return;
         await c.query(`UPDATE payments SET status='success', mpesa_receipt_no=$1 WHERE id=$2`, [receipt, p.id]);
+        if (p.purpose === 'subscription') {
+          // Subscription payments are SWASS revenue; wallet top-ups remain customer wallet liabilities.
+          await c.query(
+            `INSERT INTO platform_financial_ledger (tenant_id, payment_id, entry_type, amount_kes, external_reference)
+             VALUES ($1, $2, 'subscription_revenue', $3, $4)`,
+            [p.tenant_id, p.id, p.amount_kes, receipt],
+          );
+        }
         if (p.purpose === 'wallet_topup') {
           const wallet = await c.query(`UPDATE wallets SET balance_kes=balance_kes+$1 WHERE tenant_id=$2`, [p.amount_kes, p.tenant_id]);
           if (!wallet.rowCount) throw new Error('Wallet not found for successful top-up');
