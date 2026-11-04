@@ -58,6 +58,23 @@
     }catch(e){$('checkout-error').textContent=e.message;}
     finally{btn.disabled=false;btn.textContent='Issue receipt';}
   }
+  $('show-register').addEventListener('click',()=>{ $('login-form').classList.add('hidden'); $('register-form').classList.remove('hidden'); $('register-error').textContent=''; });
+  $('show-login').addEventListener('click',()=>{ $('register-form').classList.add('hidden'); $('login-form').classList.remove('hidden'); $('login-error').textContent=''; });
+  $('register-form').addEventListener('submit',async e=>{
+    e.preventDefault(); $('register-error').textContent='';
+    const btn=$('register-form').querySelector('button[type="submit"]'); btn.disabled=true; btn.textContent='Creating account…';
+    try {
+      const data=await request('/api/v1/auth/register',{method:'POST',body:JSON.stringify({
+        businessName:$('reg-business').value.trim(),storeName:$('reg-store').value.trim(),
+        fullName:$('reg-name').value.trim(),phone:$('reg-phone').value.trim(),
+        email:$('reg-email').value.trim(),password:$('reg-password').value
+      })});
+      state.token=data.accessToken; const parts=state.token.split('.')[1];
+      const claims=JSON.parse(atob(parts.replace(/-/g,'+').replace(/_/g,'/'))); state.role=claims.role;
+      $('register-form').reset(); showPOS(); showNotice('Your business account is ready. Your 7-day free trial has started. Add your products to begin.',false); await loadProducts();
+    } catch(err) { $('register-error').textContent=err.message||'Registration failed. Please try again.'; }
+    finally { btn.disabled=false; btn.textContent='Create business account'; }
+  });
   $('login-form').addEventListener('submit',async e=>{e.preventDefault();$('login-error').textContent='';try{const data=await request('/api/v1/auth/login',{method:'POST',body:JSON.stringify({phone:$('login-phone').value.trim(),password:$('login-password').value})});state.token=data.accessToken;const parts=state.token.split('.')[1];const claims=JSON.parse(atob(parts.replace(/-/g,'+').replace(/_/g,'/')));state.role=claims.role;showPOS();hideNotice();await loadProducts();}catch(err){$('login-error').textContent=err.message||'Sign-in failed.';}});
   $('logout-btn').addEventListener('click',()=>{state.token=null;state.role=null;state.cart.clear();renderCart();showLogin();});
   $('product-list').addEventListener('click',e=>{const b=e.target.closest('[data-add]');if(b)addToCart(b.dataset.add);});
