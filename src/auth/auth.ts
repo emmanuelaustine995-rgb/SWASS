@@ -5,6 +5,7 @@ import {
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
+import { createHash, timingSafeEqual } from 'node:crypto';
 import { DbService } from '../db/db.service';
 
 export type Role = 'super_admin' | 'owner' | 'manager' | 'cashier';
@@ -107,6 +108,35 @@ export class AuthController {
       if (err?.code === '23505') throw new UnauthorizedException('This phone number is already registered. Sign in or use another number.');
       throw err;
     }
+  }
+
+  @Post('bootstrap-admin')
+  async bootstrapAdmin(@Req() req: any, @Body() body: { fullName?: string; phone?: string; email?: string; password?: string }) {
+    const configured = process.env.SWASS_ADMIN_BOOTSTRAP_TOKEN ?? '';
+    const supplied = String(req.headers['x-swass-bootstrap-token'] ?? '');
+    if (!configured || !supplied || supplied.length > 256 ||
+        !timingSafeEqual(createHash('sha256').update(configured).digest(), createHash('sha256').update(supplied).digest())) {
+      throw new UnauthorizedException('Admin bootstrap is not authorized');
+    }
+    const fullName = body?.fullName?.trim();
+    const phone = this.normalizePhone(body?.phone || '');
+    const email = body?.email?.trim().toLowerCase() || null;
+    const password = body?.password || '';
+    if (!fullName || fullName.length > 120) throw new UnauthorizedException('Enter a valid administrator name');
+    if (email && (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) || email.length > 254)) throw new UnauthorizedException('Enter a valid email address');
+    if (password.length < 12 || password.length > 128) throw new UnauthorizedException('Administrator password must be at least 12 characters');
+    const passwordHash = await argon2.hash(password);
+    const admin = await this.db.tx(async client => {
+      await client.query('SELECT pg_advisory_xact_lock(731904221)');
+      const existing = await client.query("SELECT id FROM users WHERE role='super_admin' LIMIT 1");
+      if (existing.rowCount) throw new UnauthorizedException('A company administrator is already configured');
+      const inserted = await client.query(
+        "INSERT INTO users (tenant_id,store_id,full_name,phone,email,password_hash,role) VALUES (NULL,NULL,$1,$2,$3,$4,'super_admin') RETURNING id,role",
+        [fullName, phone, email, passwordHash],
+      );
+      return inserted.rows[0];
+    });
+    return { created: true, role: admin.role, message: 'Company administrator created. Sign in using the normal login endpoint.' };
   }
 
   @Post('login')
