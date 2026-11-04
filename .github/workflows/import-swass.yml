@@ -30,12 +30,21 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git fetch origin main
-          git rebase origin/main
           git add -A
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else
             git commit -m "chore: import complete SWASS project structure"
-            git push
+            for attempt in 1 2 3; do
+              git fetch origin main
+              git rebase origin/main
+              if git push origin HEAD:main; then
+                echo "SWASS project files pushed successfully."
+                exit 0
+              fi
+              git rebase --abort || true
+              sleep 2
+            done
+            echo "Push failed after three synchronization attempts."
+            exit 1
           fi
