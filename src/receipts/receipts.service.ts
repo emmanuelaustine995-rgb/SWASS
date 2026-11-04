@@ -28,6 +28,42 @@ if (!Number.isInteger(CASHIER_MAX_DISCOUNT_PCT) || CASHIER_MAX_DISCOUNT_PCT < 0 
 export class ReceiptsService {
   constructor(private db: DbService) {}
 
+  async list(user: AuthUser, filters: { q?: string; from?: string; to?: string; limit?: string }) {
+    if (!user.tenantId || !user.storeId) throw new ForbiddenException('User is not tied to a store');
+    const limit = Math.min(100, Math.max(1, Number.parseInt(filters.limit ?? '30', 10) || 30));
+    const from = filters.from && /^\\d{4}-\\d{2}-\\d{2}$/.test(filters.from) ? filters.from : null;
+    const to = filters.to && /^\\d{4}-\\d{2}-\\d{2}$/.test(filters.to) ? filters.to : null;
+    const q = (filters.q ?? '').trim().slice(0, 100);
+    const { rows } = await this.db.query(
+      `SELECT r.id, r.receipt_no, r.issued_at, r.total_kes, r.subtotal_kes, r.discount_kes,
+              r.payment_method, r.status, c.full_name AS customer_name, c.phone AS customer_phone,
+              c.email AS customer_email,
+              COALESCE(json_agg(json_build_object('name', ri.name, 'qty', ri.qty,
+                'unitPriceKes', ri.unit_price_kes, 'lineTotalKes', ri.line_total_kes))
+                FILTER (WHERE ri.id IS NOT NULL), '[]'::json) AS items
+         FROM receipts r
+         LEFT JOIN customers c ON c.id = r.customer_id AND c.tenant_id = r.tenant_id
+         LEFT JOIN receipt_items ri ON ri.receipt_id = r.id
+        WHERE r.tenant_id = $1 AND r.store_id = $2
+          AND ($3::date IS NULL OR r.issued_at >= $3::date)
+          AND ($4::date IS NULL OR r.issued_at < ($4::date + interval '1 day'))
+          AND ($5 = '' OR r.receipt_no ILIKE '%' || $5 || '%'
+               OR COALESCE(c.full_name, '') ILIKE '%' || $5 || '%'
+               OR COALESCE(c.phone, '') ILIKE '%' || $5 || '%')
+        GROUP BY r.id, c.full_name, c.phone, c.email
+        ORDER BY r.issued_at DESC, r.id DESC LIMIT $6`,
+      [user.tenantId, user.storeId, from, to, q, limit],
+    );
+    return { receipts: rows.map((r: any) => ({
+      id: r.id, receiptNo: r.receipt_no, issuedAt: r.issued_at,
+      totalKes: Number(r.total_kes), subtotalKes: Number(r.subtotal_kes),
+      discountKes: Number(r.discount_kes), paymentMethod: r.payment_method,
+      status: r.status, customer: r.customer_name ? {
+        fullName: r.customer_name, phone: r.customer_phone, email: r.customer_email,
+      } : null, items: r.items,
+    })) };
+  }
+
   async create(user: AuthUser, dto: CreateReceiptDto) {
     this.validate(dto);
     if (!user.tenantId || !user.storeId) throw new ForbiddenException('User is not tied to a store');
