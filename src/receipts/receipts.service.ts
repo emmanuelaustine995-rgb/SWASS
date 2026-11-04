@@ -34,7 +34,7 @@ export class ReceiptsService {
     const from = filters.from && /^\\d{4}-\\d{2}-\\d{2}$/.test(filters.from) ? filters.from : null;
     const to = filters.to && /^\\d{4}-\\d{2}-\\d{2}$/.test(filters.to) ? filters.to : null;
     const q = (filters.q ?? '').trim().slice(0, 100);
-    const { rows } = await this.db.query(
+    const { rows } = await this.db.pool.query(
       `SELECT r.id, r.receipt_no, r.issued_at, r.total_kes, r.subtotal_kes, r.discount_kes,
               r.payment_method, r.status, c.full_name AS customer_name, c.phone AS customer_phone,
               c.email AS customer_email,
