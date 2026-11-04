@@ -1,0 +1,49 @@
+services:
+  - type: web
+    name: swass-api
+    runtime: node
+    plan: free
+    region: singapore
+    buildCommand: npm install && npm run build
+    startCommand: npm run migrate:node && npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: SWASS_ID_SECRET
+        generateValue: true
+      - key: CORS_ORIGINS
+        value: https://swass-web.onrender.com
+      - key: CASHIER_MAX_DISCOUNT_PCT
+        value: "5"
+      - key: MPESA_ENV
+        value: sandbox
+      - key: MPESA_CONSUMER_KEY
+        sync: false
+      - key: MPESA_CONSUMER_SECRET
+        sync: false
+      - key: MPESA_SHORTCODE
+        sync: false
+      - key: MPESA_PASSKEY
+        sync: false
+      - key: MPESA_CALLBACK_URL
+        sync: false
+      - key: MPESA_CALLBACK_TOKEN
+        generateValue: true
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_FROM
+        sync: false
+
+  - type: web
+    name: swass-web
+    runtime: static
+    rootDir: frontend
+    buildCommand: echo "Publishing SWASS frontend"
+    staticPublishPath: .

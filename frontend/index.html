@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#10251d"><title>SWASS | Point of Sale</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="topbar"><a class="brand" href="#"><span class="brand-mark">S</span><span>SWASS<small>BUSINESS & RECEIPT MANAGEMENT</small></span></a><div class="top-actions"><span id="user-label" class="user-label"></span><button id="logout-btn" class="btn btn-quiet hidden">Log out</button></div></header>
+  <main class="shell">
+    <section id="login-view" class="login-wrap">
+      <div class="login-card"><p class="eyebrow">WELCOME BACK</p><h1>Sign in to your till</h1><p class="muted">Use your SWASS staff phone number and password.</p>
+        <form id="login-form"><label>Phone number<input id="login-phone" name="phone" autocomplete="username" inputmode="tel" placeholder="07XX XXX XXX" required></label><label>Password<input id="login-password" name="password" type="password" autocomplete="current-password" required></label><button class="btn btn-primary full" type="submit">Sign in</button><p id="login-error" class="error" role="alert"></p></form>
+      </div>
+    </section>
+    <section id="pos-view" class="hidden">
+      <div class="page-heading"><div><p class="eyebrow">POINT OF SALE</p><h1>New sale</h1><p class="muted">Find products, add them to the cart and issue a receipt.</p></div><button id="refresh-btn" class="btn btn-light">↻ Refresh products</button></div>
+      <div id="notice" class="notice hidden" role="status"></div>
+      <div class="pos-grid">
+        <section class="panel products-panel"><div class="section-head"><div><h2>Products</h2><p class="muted small">Tap a product to add it</p></div><span id="product-count" class="count-pill">0 items</span></div>
+          <div class="search-row"><input id="product-search" type="search" placeholder="Search name, SKU or barcode…" aria-label="Search products"><label class="check-label"><input id="low-stock" type="checkbox"> Low stock</label></div>
+          <div id="product-list" class="product-list"><div class="empty">Sign in to load your products.</div></div>
+        </section>
+        <section class="panel cart-panel"><div class="section-head"><div><h2>Current sale</h2><p class="muted small">Receipt is created at checkout</p></div><button id="clear-cart" class="text-btn">Clear</button></div>
+          <div id="cart-list" class="cart-list"><div class="empty">Your cart is empty.</div></div>
+          <div class="totals"><div><span>Subtotal</span><strong id="subtotal">KSh 0</strong></div><label class="discount-line"><span>Discount (KSh)</span><input id="discount" type="number" min="0" step="1" value="0" inputmode="numeric"></label><div class="grand-total"><span>Total due</span><strong id="total">KSh 0</strong></div></div>
+          <button id="checkout-open" class="btn btn-primary full" disabled>Continue to payment</button><p class="tiny muted">A KSh 2 receipt processing fee is charged to the shop wallet by the API.</p>
+        </section>
+      </div>
+    </section>
+  </main>
+  <div id="checkout-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="checkout-title"><div class="modal-card"><div class="modal-head"><div><p class="eyebrow">COMPLETE SALE</p><h2 id="checkout-title">Payment details</h2></div><button class="icon-btn" id="checkout-close" aria-label="Close">×</button></div>
+    <form id="checkout-form"><label>Payment method<select id="payment-method"><option value="cash">Cash</option><option value="mpesa">M-Pesa</option><option value="card">Card</option></select></label>
+      <div id="buyer-fields" class="buyer-fields hidden"><p class="buyer-note">This sale includes an item requiring buyer identification. All three details are required.</p><label>Buyer full name<input id="buyer-name" autocomplete="name"></label><label>Buyer phone<input id="buyer-phone" inputmode="tel" placeholder="07XX XXX XXX"></label><label>National ID<input id="buyer-id" inputmode="numeric" autocomplete="off"></label></div>
+      <div class="checkout-total"><span>Amount to collect</span><strong id="checkout-total">KSh 0</strong></div><p id="checkout-error" class="error" role="alert"></p><button id="complete-sale" class="btn btn-primary full" type="submit">Issue receipt</button>
+    </form>
+  </div></div>
+  <div id="receipt-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="receipt-title"><div class="modal-card receipt-card"><div class="modal-head no-print"><div><p class="eyebrow">SALE COMPLETE</p><h2 id="receipt-title">Receipt issued</h2></div><button class="icon-btn" id="receipt-close" aria-label="Close">×</button></div><div id="receipt-paper" class="receipt-paper"></div><div class="receipt-actions no-print"><button id="share-receipt" type="button">Share receipt</button><button id="print-receipt" class="btn btn-light">Print receipt</button><button id="new-sale" class="btn btn-primary">New sale</button></div></div></div>
+  <footer class="footer">SWASS · Simple tools for better business · <a href="recover.html">Recover a lost receipt</a></footer>
+  <script src="./config.js"></script>
+  <script src="./app.js"></script>
+</body></html>

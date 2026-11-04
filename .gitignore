@@ -1,7 +1,23 @@
+# Dependencies and build output
 node_modules/
 dist/
+coverage/
+
+# Local environment and secrets
 .env
 .env.*
 !.env.example
-coverage/
+*.pem
+*.key
+
+# Logs and temporary files
+*.log
+npm-debug.log*
 .DS_Store
+Thumbs.db
+
+# Local database / backup files
+*.sqlite
+*.sqlite3
+*.dump
+*.backup
