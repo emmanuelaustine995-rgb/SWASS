@@ -5,7 +5,7 @@
   "description": "SWASS business and receipt management API",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "start": "node dist/main.js",
+    "start": "node dist/src/main.js",
     "start:dev": "ts-node src/main.ts",
     "migrate": "bash scripts/migrate.sh",
     "test:db": "psql \"$DATABASE_URL\" -v ON_ERROR_STOP=1 -f test/db_rules.sql",
