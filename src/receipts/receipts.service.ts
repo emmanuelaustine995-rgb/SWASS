@@ -13,7 +13,7 @@ export interface CreateReceiptDto {
   paymentMethod: 'cash' | 'mpesa' | 'card';
   discountKes?: number;
   items: { productId: string; qty: number; serialNo?: string }[];
-  customer?: { fullName: string; phone: string; nationalId?: string };
+  customer?: { fullName: string; phone: string; email?: string; nationalId?: string };
 }
 
 const RECEIPT_FEE_KES = 2;
@@ -190,17 +190,18 @@ export class ReceiptsService {
     const idHash = cust.nationalId ? hashNationalId(cust.nationalId) : null;
     const last4 = cust.nationalId ? cust.nationalId.replace(/[^0-9A-Za-z]/g, '').slice(-4) : null;
     const { rows } = await c.query(
-      `INSERT INTO customers (tenant_id, full_name, phone, national_id_hash, national_id_last4)
-       VALUES ($1,$2,$3,$4,$5)
+      `INSERT INTO customers (tenant_id, full_name, phone, email, national_id_hash, national_id_last4)
+       VALUES ($1,$2,$3,$4,$5,$6)
        ON CONFLICT (tenant_id, phone) DO UPDATE
          SET full_name = EXCLUDED.full_name,
+             email = COALESCE(EXCLUDED.email, customers.email),
              national_id_hash = COALESCE(customers.national_id_hash, EXCLUDED.national_id_hash),
              national_id_last4 = COALESCE(customers.national_id_last4, EXCLUDED.national_id_last4)
        WHERE customers.national_id_hash IS NULL
           OR EXCLUDED.national_id_hash IS NULL
           OR customers.national_id_hash = EXCLUDED.national_id_hash
        RETURNING id`,
-      [tenantId, cust.fullName.trim(), phone, idHash, last4],
+      [tenantId, cust.fullName.trim(), phone, cust.email?.trim().toLowerCase() || null, idHash, last4],
     );
     if (!rows[0]) {
       throw new ConflictException('The supplied National ID does not match this customer phone number');
@@ -215,7 +216,7 @@ export class ReceiptsService {
       discountKes: dto.discountKes ?? 0,
       items: dto.items.map((i) => ({ productId: i.productId, qty: i.qty, serialNo: i.serialNo ?? null })),
       customer: dto.customer ? {
-        fullName: dto.customer.fullName.trim(), phone: normalisePhone(dto.customer.phone),
+        fullName: dto.customer.fullName.trim(), phone: normalisePhone(dto.customer.phone), email: dto.customer.email?.trim().toLowerCase() || null,
         nationalId: dto.customer.nationalId ? hashNationalId(dto.customer.nationalId) : null,
       } : null,
     };
@@ -246,6 +247,7 @@ export class ReceiptsService {
       throw new BadRequestException('Customer fullName is required and must be at most 160 characters');
     }
     if (dto.customer && typeof dto.customer.phone !== 'string') throw new BadRequestException('Customer phone is required');
+    if (dto.customer?.email && (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(dto.customer.email.trim()) || dto.customer.email.length > 254)) throw new BadRequestException('Enter a valid customer email address');
     if (dto.customer?.nationalId && !/^[0-9A-Za-z-]{5,30}$/.test(dto.customer.nationalId.trim())) {
       throw new BadRequestException('Invalid National ID format');
     }
