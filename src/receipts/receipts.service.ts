@@ -247,7 +247,7 @@ export class ReceiptsService {
       throw new BadRequestException('Customer fullName is required and must be at most 160 characters');
     }
     if (dto.customer && typeof dto.customer.phone !== 'string') throw new BadRequestException('Customer phone is required');
-    if (dto.customer?.email && (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(dto.customer.email.trim()) || dto.customer.email.length > 254)) throw new BadRequestException('Enter a valid customer email address');
+    if (dto.customer?.email && (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(dto.customer.email.trim()) || dto.customer.email.length > 254)) throw new BadRequestException('Enter a valid customer email address');
     if (dto.customer?.nationalId && !/^[0-9A-Za-z-]{5,30}$/.test(dto.customer.nationalId.trim())) {
       throw new BadRequestException('Invalid National ID format');
     }
