@@ -185,6 +185,13 @@ export class ReceiptsService {
       [tenantId, -RECEIPT_FEE_KES, receipt.id],
     );
 
+    // Record SWASS's earned processing fee separately from the shop's sales proceeds.
+    await c.query(
+      `INSERT INTO platform_financial_ledger (tenant_id, receipt_id, entry_type, amount_kes)
+       VALUES ($1, $2, 'receipt_fee_revenue', $3)`,
+      [tenantId, receipt.id, RECEIPT_FEE_KES],
+    );
+
     // 9. Loyalty points for identified buyers.
     let pointsEarned = 0;
     if (customerId) {
