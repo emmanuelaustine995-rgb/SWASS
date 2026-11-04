@@ -56,7 +56,7 @@ export class AuthController {
   constructor(private db: DbService, private jwt: JwtService) {}
 
   private normalizePhone(value: string): string {
-    const digits = value.replace(/\\D/g, '');
+    const digits = value.replace(/\D/g, '');
     if (digits.startsWith('254') && digits.length === 12) return digits;
     if (digits.startsWith('0') && digits.length === 10) return '254' + digits.slice(1);
     if (digits.length === 9) return '254' + digits;
@@ -73,7 +73,7 @@ export class AuthController {
     if (!businessName || businessName.length > 120 || !storeName || storeName.length > 120 || !fullName || fullName.length > 120) {
       throw new UnauthorizedException('Enter your business name, store name and full name (maximum 120 characters each)');
     }
-    if (email && (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) || email.length > 254)) throw new UnauthorizedException('Enter a valid email address');
+    if (email && (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254)) throw new UnauthorizedException('Enter a valid email address');
     if (password.length < 10 || password.length > 128) throw new UnauthorizedException('Password must be at least 10 characters');
     const phone = this.normalizePhone(body.phone || '');
     const passwordHash = await argon2.hash(password);
