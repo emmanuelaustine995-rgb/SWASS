@@ -22,6 +22,8 @@ jobs:
           unzip -q SWASS-Render-Ready.zip -d /tmp/swass-import
           test -d /tmp/swass-import/swass-pos-work
           cp -a /tmp/swass-import/swass-pos-work/. .
+          # GitHub App token cannot push workflow-file changes.
+          rm -f .github/workflows/ci.yml
           rm -f SWASS-Render-Ready.zip swass-api-updated.zip
 
       - name: Commit extracted project
