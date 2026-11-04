@@ -15,7 +15,7 @@
   function showNotice(message, error = false) { const el=$('notice'); el.textContent=message; el.classList.remove('hidden'); el.style.background=error?'#fff0ef':'#fff5e8'; el.style.color=error?'#a12b22':'#8a4b08'; }
   function hideNotice(){ $('notice').classList.add('hidden'); }
   function showLogin(){ $('login-view').classList.remove('hidden'); $('pos-view').classList.add('hidden'); $('logout-btn').classList.add('hidden'); $('user-label').textContent=''; }
-  function showPOS(){ $('login-view').classList.add('hidden'); $('pos-view').classList.remove('hidden'); $('logout-btn').classList.remove('hidden'); $('user-label').textContent=state.role ? state.role.replace('_',' ') : 'Staff'; }
+  function showPOS(){ $('login-view').classList.add('hidden'); $('pos-view').classList.remove('hidden'); $('logout-btn').classList.remove('hidden'); $('user-label').textContent=state.role ? state.role.replace('_',' ') : 'Staff'; $('add-product-btn').classList.toggle('hidden', !['owner','manager'].includes(state.role)); }
   async function loadProducts(){
     const q=$('product-search').value.trim(); const low=$('low-stock').checked;
     const params=new URLSearchParams(); if(q) params.set('q',q); if(low) params.set('lowStock','true');
@@ -38,15 +38,16 @@
     const rows=[...state.cart.entries()]; $('cart-list').innerHTML=rows.length?rows.map(([id,r])=>`<div class="cart-row"><div><div class="cart-row-name">${escapeHtml(r.product.name)}</div><div class="cart-row-sub">${money(r.product.priceKes)} each · ${money(Number(r.product.priceKes)*r.qty)}</div></div><div class="qty-control"><button type="button" data-qty="${id}" data-delta="-1" aria-label="Decrease">−</button><span>${r.qty}</span><button type="button" data-qty="${id}" data-delta="1" aria-label="Increase">+</button></div></div>`).join(''):'<div class="empty">Your cart is empty.</div>';
     const t=totals(); $('subtotal').textContent=money(t.subtotal);$('total').textContent=money(t.total);$('checkout-open').disabled=!rows.length||t.total<0;
   }
-  function openCheckout(){const items=[...state.cart.values()];const needsBuyer=items.some(r=>r.product.requiresBuyerId);$('buyer-fields').classList.toggle('hidden',!needsBuyer);$('checkout-total').textContent=money(totals().total);$('checkout-error').textContent='';$('checkout-modal').classList.remove('hidden');}
+  function openCheckout(){const items=[...state.cart.values()];const needsBuyer=items.some(r=>r.product.requiresBuyerId);$('buyer-id-wrap').classList.toggle('hidden',!needsBuyer);$('buyer-id-note').classList.toggle('hidden',!needsBuyer);$('checkout-total').textContent=money(totals().total);$('checkout-error').textContent='';$('checkout-modal').classList.remove('hidden');}
   function makeReceiptMarkup(receipt, sale, customer){
     const lines=sale.items.map(i=>`<div class="receipt-line"><span>${escapeHtml(i.name)} × ${i.qty}</span><span>${money(i.price*i.qty)}</span></div>`).join('');
-    return `<div class="receipt-center"><h3>SWASS BUSINESS</h3><div class="muted">Sales receipt</div></div><div class="receipt-divider"></div><div>Receipt: ${escapeHtml(receipt.receiptNo)}</div><div>Date: ${new Date().toLocaleString('en-KE')}</div><div>Payment: ${escapeHtml(sale.paymentMethod.toUpperCase())}</div>${customer?`<div>Buyer: ${escapeHtml(customer.fullName)}</div>`:''}<div class="receipt-divider"></div>${lines}<div class="receipt-divider"></div><div class="receipt-line"><span>Subtotal</span><span>${money(sale.subtotal)}</span></div><div class="receipt-line"><span>Discount</span><span>${money(sale.discount)}</span></div><div class="receipt-line"><strong>TOTAL</strong><strong>${money(receipt.totalKes)}</strong></div><div class="receipt-divider"></div><div class="receipt-center">Thank you for shopping with us!<br><small>Receipt reference: ${escapeHtml(receipt.id)}</small><br><small>Verify online: ${escapeHtml((new URL('verify.html', window.location.href).href + '?token=' + encodeURIComponent(receipt.qrToken)))}</small></div>`;
+    return `<div class="receipt-center"><h3>SWASS BUSINESS</h3><div class="muted">Sales receipt</div></div><div class="receipt-divider"></div><div>Receipt: ${escapeHtml(receipt.receiptNo)}</div><div>Date: ${new Date().toLocaleString('en-KE')}</div><div>Payment: ${escapeHtml(sale.paymentMethod.toUpperCase())}</div>${customer?`<div>Customer: ${escapeHtml(customer.fullName)}</div>${customer.email?`<div>Email: ${escapeHtml(customer.email)}</div>`:''}`:''}<div class="receipt-divider"></div>${lines}<div class="receipt-divider"></div><div class="receipt-line"><span>Subtotal</span><span>${money(sale.subtotal)}</span></div><div class="receipt-line"><span>Discount</span><span>${money(sale.discount)}</span></div><div class="receipt-line"><strong>TOTAL</strong><strong>${money(receipt.totalKes)}</strong></div><div class="receipt-divider"></div><div class="receipt-center">Thank you for shopping with us!<br><small>Receipt reference: ${escapeHtml(receipt.id)}</small><br><small>Verify online: ${escapeHtml((new URL('verify.html', window.location.href).href + '?token=' + encodeURIComponent(receipt.qrToken)))}</small></div>`;
   }
   async function completeSale(ev){
     ev.preventDefault(); const items=[...state.cart.values()]; if(!items.length)return;
     const t=totals(); const needsBuyer=items.some(r=>r.product.requiresBuyerId);
-    const customer={fullName:$('buyer-name').value.trim(),phone:$('buyer-phone').value.trim(),nationalId:$('buyer-id').value.trim()};
+    const customer={fullName:$('buyer-name').value.trim(),phone:$('buyer-phone').value.trim(),email:$('buyer-email').value.trim(),nationalId:$('buyer-id').value.trim()};
+    if((customer.fullName&&!customer.phone)||(!customer.fullName&&customer.phone)){ $('checkout-error').textContent='Enter both the customer full name and phone number, or leave both blank.';return; }
     if(needsBuyer&&(!customer.fullName||!customer.phone||!customer.nationalId)){ $('checkout-error').textContent='Enter the buyer full name, phone number and National ID for this item.';return; }
     const payload={clientUuid:uuid(),receiptNo:`SW-${new Date().toISOString().slice(0,10).replace(/-/g,'')}-${String(state.receiptNo++).padStart(5,'0')}`,paymentMethod:$('payment-method').value,discountKes:t.discount,items:items.map(r=>({productId:r.product.id,qty:r.qty}))};
     if(customer.fullName&&customer.phone)payload.customer=customer;
@@ -58,6 +59,16 @@
     }catch(e){$('checkout-error').textContent=e.message;}
     finally{btn.disabled=false;btn.textContent='Issue receipt';}
   }
+  $('add-product-btn').addEventListener('click',()=>{ $('product-form').reset(); $('product-error').textContent=''; $('product-modal').classList.remove('hidden'); });
+  $('product-close').addEventListener('click',()=> $('product-modal').classList.add('hidden'));
+  $('product-form').addEventListener('submit',async e=>{
+    e.preventDefault(); $('product-error').textContent='';
+    const btn=$('product-form').querySelector('button[type="submit"]'); btn.disabled=true; btn.textContent='Saving goods…';
+    const payload={name:$('product-name').value.trim(),sku:$('product-sku').value.trim()||null,barcode:$('product-barcode').value.trim()||null,priceKes:Number($('product-price').value),costKes:$('product-cost').value===''?null:Number($('product-cost').value),stockQty:Number($('product-stock').value),reorderLevel:Number($('product-reorder').value),requiresBuyerId:$('product-buyer-id').checked};
+    try{ await request('/api/v1/products',{method:'POST',body:JSON.stringify(payload)}); $('product-modal').classList.add('hidden'); showNotice('Goods saved to your shop inventory.'); await loadProducts(); }
+    catch(err){$('product-error').textContent=err.message||'Could not save goods.';}
+    finally{btn.disabled=false;btn.textContent='Save goods to inventory';}
+  });
   $('show-register').addEventListener('click',()=>{ $('login-form').classList.add('hidden'); $('register-form').classList.remove('hidden'); $('register-error').textContent=''; });
   $('show-login').addEventListener('click',()=>{ $('register-form').classList.add('hidden'); $('login-form').classList.remove('hidden'); $('login-error').textContent=''; });
   $('register-form').addEventListener('submit',async e=>{
