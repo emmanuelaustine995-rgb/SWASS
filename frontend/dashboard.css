@@ -165,3 +165,12 @@ body.dashboard-dark .sidebar-help small{color:#b2c9bf}
 #pos-view.workspace-logistics .cart-panel{display:none}
 #pos-view.workspace-logistics #products-panel{width:100%}
 @media(max-width:640px){#workspace-nav{margin:0 -8px;padding:9px 8px}#workspace-nav button{padding:9px 12px;font-size:13px}}
+
+/* Dashboard period-to-period comparison */
+.period-comparison{margin:0 0 20px;padding:18px}
+.comparison-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.comparison-grid article{display:grid;gap:6px;padding:16px;border:1px solid var(--line,#e5e7eb);border-radius:12px;background:var(--surface,#fff)}
+.comparison-grid article>span{font-size:12px;color:var(--muted,#66736b);font-weight:600}
+.comparison-grid article>strong{font-size:25px;line-height:1.2;color:var(--ink,#183126)}
+.comparison-grid article>small{font-size:11px;color:var(--muted,#66736b)}
+@media(max-width:520px){.comparison-grid{grid-template-columns:1fr}.comparison-grid article>strong{font-size:22px}}
