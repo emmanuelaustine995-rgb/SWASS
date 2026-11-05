@@ -114,20 +114,21 @@ export class AuthController {
     const phone = this.normalizePhone(body.phone || '');
     const ip = String(req.ip ?? '').replace(/^::ffff:/, '') || null;
 
-    const existing = await this.db.pool.query('SELECT 1 FROM users WHERE phone=$1 LIMIT 1', [phone]);
+    // Run independent database checks and password hashing together to shorten signup time.
+    const [existing, limits, passwordHash] = await Promise.all([
+      this.db.pool.query('SELECT 1 FROM users WHERE phone=$1 OR phone=$2 LIMIT 1', [phone, '0' + phone.slice(3)]),
+      this.db.pool.query(
+        `SELECT
+          (SELECT count(*)::int FROM signup_otp_requests WHERE phone=$1 AND created_at>now()-interval '15 minutes') AS phone_count,
+          (SELECT count(*)::int FROM signup_otp_requests WHERE ip_address=$2::inet AND created_at>now()-interval '15 minutes') AS ip_count`,
+        [phone, ip],
+      ),
+      argon2.hash(password),
+    ]);
     if (existing.rowCount) throw new UnauthorizedException('This phone number is already registered. Sign in or use another number.');
-
-    const limits = await this.db.pool.query(
-      `SELECT
-        (SELECT count(*)::int FROM signup_otp_requests WHERE phone=$1 AND created_at>now()-interval '15 minutes') AS phone_count,
-        (SELECT count(*)::int FROM signup_otp_requests WHERE ip_address=$2::inet AND created_at>now()-interval '15 minutes') AS ip_count`,
-      [phone, ip],
-    );
     if (limits.rows[0].phone_count >= 3 || limits.rows[0].ip_count >= 10) {
       throw new BadRequestException('Too many OTP requests. Please wait 15 minutes before trying again.');
     }
-
-    const passwordHash = await argon2.hash(password);
     const code = String(randomBytes(4).readUInt32BE(0) % 1000000).padStart(6, '0');
     await this.db.pool.query(
       `UPDATE signup_otp_requests SET expires_at=now()
