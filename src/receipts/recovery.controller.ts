@@ -155,4 +155,3 @@ export class ReceiptRecoveryController {
     if (!response.ok) throw new Error('Twilio SMS delivery failed');
   }
 }
-}
