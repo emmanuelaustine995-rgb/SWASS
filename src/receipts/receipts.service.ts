@@ -113,7 +113,7 @@ export class ReceiptsService {
 
     // 1. Already stored (offline retry)? Return it without charging again.
     const existing = await this.findByClientUuid(c, tenantId, dto.clientUuid, dto);
-    if (existing) return existing;
+    if (existing) return { ...existing, business };
 
     // 2. Subscription must be active, or inside the grace period.
     const sub = await c.query(
