@@ -108,6 +108,9 @@
     finally { btn.disabled=false; btn.textContent='Create business account'; }
   });
   $('login-form').addEventListener('submit',async e=>{e.preventDefault();$('login-error').textContent='';try{const data=await request('/api/v1/auth/login',{method:'POST',body:JSON.stringify({phone:$('login-phone').value.trim(),password:$('login-password').value})});state.token=data.accessToken;const parts=state.token.split('.')[1];const claims=JSON.parse(atob(parts.replace(/-/g,'+').replace(/_/g,'/')));state.role=claims.role;showPOS();hideNotice();if(['owner','manager'].includes(state.role))await loadBusinessProfile();await loadProducts();}catch(err){$('login-error').textContent=err.message||'Sign-in failed.';}});
+  $('history-toggle').addEventListener('click',async()=>{const box=$('history-content');const opening=box.classList.contains('hidden');box.classList.toggle('hidden');$('history-toggle').textContent=opening?'Close history':'Open history';if(opening)await loadReceiptHistory();});
+  $('history-search-btn').addEventListener('click',loadReceiptHistory);
+  $('history-search').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();loadReceiptHistory();}});
   $('profile-toggle').addEventListener('click',async()=>{try{$('profile-error').textContent='';await loadBusinessProfile();$('profile-panel').classList.remove('hidden');$('profile-panel').scrollIntoView({behavior:'smooth',block:'start'});}catch(e){showNotice(e.message||'Could not load business profile.',true);}});
   $('profile-close').addEventListener('click',()=>$('profile-panel').classList.add('hidden'));
   $('business-logo').addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file)return;try{state.profileLogoData=await compressLogo(file);$('logo-preview').src=state.profileLogoData;$('logo-preview').classList.remove('hidden');$('profile-error').textContent='';}catch(err){e.target.value='';$('profile-error').textContent=err.message;}});
