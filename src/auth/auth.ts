@@ -116,7 +116,7 @@ export class AuthController {
 
     // Run independent database checks and password hashing together to shorten signup time.
     const [existing, limits, passwordHash] = await Promise.all([
-      this.db.pool.query('SELECT 1 FROM users WHERE phone=$1 OR phone=$2 LIMIT 1', [phone, '0' + phone.slice(3)]),
+      this.db.pool.query(\`SELECT 1 FROM users WHERE phone = ANY($1::text[]) OR regexp_replace(phone, '[^0-9]', '', 'g') = ANY($1::text[]) LIMIT 1\`, [[phone, '0' + phone.slice(3)]]),
       this.db.pool.query(
         `SELECT
           (SELECT count(*)::int FROM signup_otp_requests WHERE phone=$1 AND created_at>now()-interval '15 minutes') AS phone_count,
