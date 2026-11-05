@@ -36,6 +36,13 @@ services:
         generateValue: true
       - key: PUBLIC_APP_URL
         value: https://swass-web.onrender.com
+      # TalkSasa is the active provider for signup and receipt-recovery OTPs.
+      - key: TALKSASA_API_TOKEN
+        sync: false
+      - key: TALKSASA_SENDER_ID
+        value: TALK-SASA
+      - key: TALKSASA_API_URL
+        value: https://bulksms.talksasa.com/api/v3/sms/send
       - key: AT_USERNAME
         sync: false
       - key: AT_API_KEY
