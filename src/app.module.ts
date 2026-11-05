@@ -10,10 +10,11 @@ import { DashboardController } from './dashboard/dashboard.controller';
 import { MpesaController, MpesaService } from './mpesa/mpesa.controller';
 import { ReceiptRecoveryController } from './receipts/recovery.controller';
 import { PlatformFinanceController } from './platform-finance/platform-finance.controller';
+import { BusinessProfileController } from './business/business-profile.controller';
 
 @Module({
   imports: [JwtModule.register({ global: true, secret: process.env.JWT_SECRET })],
-  controllers: [HealthController, AuthController, ReceiptsController, InventoryController, DashboardController, MpesaController, ReceiptRecoveryController, PlatformFinanceController],
+  controllers: [HealthController, AuthController, ReceiptsController, InventoryController, DashboardController, MpesaController, ReceiptRecoveryController, PlatformFinanceController, BusinessProfileController],
   providers: [DbService, ReceiptsService, AuthGuard, RolesGuard, { provide: MpesaService, useClass: MpesaService }],
 })
 export class AppModule {}
