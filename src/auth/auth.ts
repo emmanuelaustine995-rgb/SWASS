@@ -109,7 +109,7 @@ export class AuthController {
       throw new BadRequestException('Enter your business name, store name and full name (maximum 120 characters each)');
     }
     if (storeLocation && storeLocation.length > 200) throw new BadRequestException('Store location must be at most 200 characters');
-    if (email && (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) || email.length > 254)) throw new BadRequestException('Enter a valid email address');
+    if (email && (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254)) throw new BadRequestException('Enter a valid email address');
     if (password.length < 10 || password.length > 128) throw new BadRequestException('Password must be at least 10 characters');
     const phone = this.normalizePhone(body.phone || '');
     const ip = String(req.ip ?? '').replace(/^::ffff:/, '') || null;
@@ -156,7 +156,7 @@ export class AuthController {
 
   @Post('register/verify-otp')
   async verifySignupOtp(@Body() body: { phone?: string; code?: string }) {
-    if (!body?.phone || !/^\\d{6}$/.test(String(body?.code ?? '').trim())) {
+    if (!body?.phone || !/^\d{6}$/.test(String(body?.code ?? '').trim())) {
       throw new BadRequestException('Enter your phone number and the 6-digit code sent by SMS.');
     }
     const phone = this.normalizePhone(body.phone);
@@ -243,7 +243,7 @@ export class AuthController {
     const email = body?.email?.trim().toLowerCase() || null;
     const password = body?.password || '';
     if (!fullName || fullName.length > 120) throw new UnauthorizedException('Enter a valid administrator name');
-    if (email && (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) || email.length > 254)) throw new UnauthorizedException('Enter a valid email address');
+    if (email && (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254)) throw new UnauthorizedException('Enter a valid email address');
     if (password.length < 12 || password.length > 128) throw new UnauthorizedException('Administrator password must be at least 12 characters');
     const passwordHash = await argon2.hash(password);
     const admin = await this.db.tx(async client => {
