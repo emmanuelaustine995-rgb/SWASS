@@ -122,17 +122,37 @@ export class ReceiptRecoveryController {
   }
 
   private async sendSms(to: string, message: string) {
+    // Africa's Talking is the preferred Kenya SMS route. Twilio remains supported as fallback.
+    const atUsername = process.env.AT_USERNAME;
+    const atApiKey = process.env.AT_API_KEY;
+    if (atUsername && atApiKey) {
+      const form = new URLSearchParams({ username: atUsername, to: `+${to}`, message });
+      if (process.env.AT_SENDER_ID) form.set('from', process.env.AT_SENDER_ID);
+      const response = await fetch('https://api.africastalking.com/version1/messaging', {
+        method: 'POST',
+        headers: { apiKey: atApiKey, Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: form,
+      });
+      if (!response.ok) throw new Error('Africa\'s Talking SMS delivery failed');
+      const result: any = await response.json().catch(() => ({}));
+      const recipients = result?.SMSMessageData?.Recipients;
+      if (Array.isArray(recipients) && recipients.length && recipients.every((r:any) => Number(r.statusCode) !== 101)) {
+        throw new Error('Africa\'s Talking did not accept the OTP message');
+      }
+      return;
+    }
     const sid = process.env.TWILIO_ACCOUNT_SID;
     const auth = process.env.TWILIO_AUTH_TOKEN;
     const from = process.env.TWILIO_FROM || process.env.TWILIO_FROM_NUMBER;
     if (!sid || !auth || !from) {
-      if (process.env.NODE_ENV === 'production') throw new Error('SMS provider is not configured');
-      return; // local development code is returned only outside production
+      if (process.env.NODE_ENV === 'production') throw new Error('Configure Africa\'s Talking or Twilio SMS credentials');
+      return;
     }
     const form = new URLSearchParams({ To: `+${to}`, From: from, Body: message });
     const response = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`, {
       method: 'POST', headers: { Authorization: `Basic ${Buffer.from(`${sid}:${auth}`).toString('base64')}`, 'Content-Type': 'application/x-www-form-urlencoded' }, body: form,
     });
-    if (!response.ok) throw new Error('SMS delivery failed');
+    if (!response.ok) throw new Error('Twilio SMS delivery failed');
   }
+}
 }
