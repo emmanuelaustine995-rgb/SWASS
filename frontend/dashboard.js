@@ -40,10 +40,12 @@
   function activateOwnerWorkspace(session){
     state.token=session?.token||null;state.role=session?.role||null;
     if(!state.token||!['owner','manager'].includes(state.role))return;
-    $('owner-dashboard-view').classList.add('hidden');
-    document.getElementById('pos-view').classList.remove('hidden');
+    $('owner-dashboard-view').classList.remove('hidden');
+    $('owner-dashboard-view').classList.remove('workspace-accounting','workspace-console');
+    $('owner-dashboard-view').classList.add('workspace-dashboard');
+    document.getElementById('pos-view').classList.add('hidden');
     document.getElementById('workspace-nav').classList.remove('hidden');
-    document.querySelectorAll('#workspace-nav button').forEach(b=>b.classList.toggle('active',b.dataset.workspace==='sales'));
+    document.querySelectorAll('#workspace-nav button').forEach(b=>b.classList.toggle('active',b.dataset.workspace==='dashboard'));
     initializePeriod();loadDashboard();loadCustomers();
   }
   window.addEventListener('swass:login',ev=>activateOwnerWorkspace(ev.detail||{}));
