@@ -135,7 +135,34 @@ export class ReceiptRecoveryController {
   }
 
   private async sendSms(to: string, message: string) {
-    // Africa's Talking is the preferred Kenya SMS route. Twilio remains supported as fallback.
+    // TalkSasa is the preferred OTP provider when its credentials are configured.
+    const talksasaToken = process.env.TALKSASA_API_TOKEN;
+    if (talksasaToken) {
+      const endpoint = process.env.TALKSASA_API_URL || 'https://bulksms.talksasa.com/api/v3/sms/send';
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${talksasaToken}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          recipient: `+${to}`,
+          sender_id: process.env.TALKSASA_SENDER_ID || 'TALK-SASA',
+          type: 'plain',
+          message,
+        }),
+      });
+      const rawBody = await response.text();
+      let result: any = {};
+      try { result = rawBody ? JSON.parse(rawBody) : {}; } catch { result = {}; }
+      if (!response.ok || result?.success === false || result?.status === false || result?.error) {
+        const providerMessage = String(result?.message ?? result?.error ?? rawBody ?? '').slice(0, 240);
+        throw new Error(`TalkSasa rejected OTP SMS (HTTP ${response.status})${providerMessage ? `: ${providerMessage}` : ''}`);
+      }
+      return;
+    }
+    // Legacy Africa's Talking route remains available until TalkSasa is configured.
     const atUsername = process.env.AT_USERNAME;
     const atApiKey = process.env.AT_API_KEY;
     if (atUsername && atApiKey) {
