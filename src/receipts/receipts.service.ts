@@ -49,7 +49,8 @@ export class ReceiptsService {
           AND ($4::date IS NULL OR r.issued_at < ($4::date + interval '1 day'))
           AND ($5 = '' OR r.receipt_no ILIKE '%' || $5 || '%'
                OR COALESCE(c.full_name, '') ILIKE '%' || $5 || '%'
-               OR COALESCE(c.phone, '') ILIKE '%' || $5 || '%')
+               OR COALESCE(c.phone, '') ILIKE '%' || $5 || '%'
+               OR r.total_kes::text ILIKE '%' || $5 || '%')
         GROUP BY r.id, c.full_name, c.phone, c.email
         ORDER BY r.issued_at DESC, r.id DESC LIMIT $6`,
       [user.tenantId, user.storeId, from, to, q, limit],
