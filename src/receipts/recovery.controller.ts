@@ -38,6 +38,8 @@ export class ReceiptRecoveryController {
 
     const customers = await this.db.pool.query(`SELECT id FROM customers WHERE phone=$1`, [phone]);
     const ids = customers.rows.map((r: any) => r.id);
+    // Safe diagnostic: log only whether a matching customer exists, never the phone or customer data.
+    console.log('[SWASS] Receipt recovery customer match:', ids.length > 0 ? 'found' : 'not found');
     const code = String(randomBytes(4).readUInt32BE(0) % 1000000).padStart(6, '0');
     const saved = await this.db.pool.query(
       `INSERT INTO otp_requests(phone,customer_ids,code_hash,expires_at,ip_address)
