@@ -36,7 +36,7 @@ services:
         generateValue: true
       # Tuma collects SWASS subscription and wallet payments.
       - key: TUMA_BUSINESS_EMAIL
-        sync: false
+        value: Kenyavat93@gmail.com
       - key: TUMA_API_KEY
         sync: false
       - key: PUBLIC_APP_URL
