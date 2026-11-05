@@ -111,10 +111,50 @@
     if (!button) return;
     const r = recoveredReceipts[Number(button.dataset.index)];
     if (!r) return;
-    const items = (r.items || []).map(item => `<tr><td>${escapeHtml(item.name)}</td><td>${Number(item.qty)}</td><td>KSh ${Number(item.lineTotalKes).toLocaleString('en-KE',{minimumFractionDigits:2})}</td></tr>`).join('');
+    const items = (r.items || []).map(item => `<tr><td><strong>${escapeHtml(item.name)}</strong>${item.serialNo ? `<div class="serial">IMEI / Serial: ${escapeHtml(item.serialNo)}</div>` : ''}</td><td>${Number(item.qty)}</td><td>KSh ${Number(item.unitPriceKes).toLocaleString('en-KE',{minimumFractionDigits:2})}</td><td>KSh ${Number(item.lineTotalKes).toLocaleString('en-KE',{minimumFractionDigits:2})}</td></tr>`).join('');
     const logo = r.logo_data ? `<img class="logo" src="${escapeHtml(r.logo_data)}" alt="Business logo">` : '';
-    const html = `<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(r.receipt_no)}</title><style>body{font:14px Arial,sans-serif;max-width:360px;margin:20px auto;color:#111}.logo{display:block;max-width:110px;max-height:75px;object-fit:contain;margin:0 auto 10px}h2,p{text-align:center;margin:5px}#receipt-barcode{display:block;width:90%;height:65px;margin:10px auto}table{width:100%;border-collapse:collapse;margin:18px 0}td,th{padding:7px 2px;border-bottom:1px solid #ddd;text-align:left}td:last-child,th:last-child{text-align:right}.total{font-size:18px;font-weight:bold;text-align:right;margin-top:12px}.muted{font-size:11px;color:#555;text-align:center}@media print{button{display:none}}</style><script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script></head><body>${logo}<h2>${escapeHtml(r.business_name || r.store_name)}</h2><p>${escapeHtml(r.store_name || '')}</p><p>${escapeHtml(r.store_location || '')}</p><p>${escapeHtml(r.business_phone || '')}</p><p>${escapeHtml(r.business_email || '')}</p><hr><p><b>RECEIPT</b></p><p>${escapeHtml(r.receipt_no)}</p><svg id="receipt-barcode"></svg><p>${new Date(r.issued_at).toLocaleString('en-KE')}</p><p>${escapeHtml(r.customer_name || 'Walk-in customer')} · ${escapeHtml(r.customer_phone || '')}</p><table><thead><tr><th>Item</th><th>Qty</th><th>Amount</th></tr></thead><tbody>${items}</tbody></table><p>Subtotal: KSh ${Number(r.subtotalKes).toLocaleString('en-KE',{minimumFractionDigits:2})}</p><p>Discount: KSh ${Number(r.discountKes).toLocaleString('en-KE',{minimumFractionDigits:2})}</p><p class="total">Total: KSh ${Number(r.totalKes).toLocaleString('en-KE',{minimumFractionDigits:2})}</p><p>Payment: ${escapeHtml(String(r.payment_method || '').toUpperCase())}</p><p class="muted">Thank you for shopping with us.</p><button onclick="window.print()">Print</button><script>if(window.JsBarcode){JsBarcode("#receipt-barcode",${JSON.stringify(String(r.receipt_no))},{format:"CODE128",displayValue:true,fontSize:12,margin:2});}</script></body></html>`;
-    const win = window.open('', '_blank', 'width=480,height=720');
+    const verifyUrl = new URL(`verify.html?token=${encodeURIComponent(r.qr_token || '')}`, window.location.href).href;
+    const issued = r.issued_at ? new Date(r.issued_at) : new Date();
+    const cashier = r.cashier || {};
+    const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Receipt ${escapeHtml(r.receipt_no)}</title>
+<style>
+*{box-sizing:border-box}body{font:13px/1.45 Arial,sans-serif;max-width:390px;margin:16px auto;padding:12px;color:#171717;background:#fff}
+header{text-align:center;border-bottom:1px dashed #777;padding-bottom:12px}.logo{display:block;max-width:125px;max-height:85px;object-fit:contain;margin:0 auto 8px}
+h1{font-size:20px;margin:5px 0;text-transform:uppercase}header p{margin:2px 0;color:#333}.tag{font-size:10px;letter-spacing:2px;font-weight:bold}
+.meta{display:grid;grid-template-columns:1fr 1fr;gap:7px 12px;padding:12px 0;border-bottom:1px dashed #777}.field{overflow-wrap:anywhere}.field b{display:block;font-size:10px;color:#555;text-transform:uppercase}
+h2{font-size:13px;margin:13px 0 7px;text-transform:uppercase}
+table{width:100%;border-collapse:collapse;font-size:11px}th,td{padding:7px 3px;border-bottom:1px solid #ddd;text-align:left;vertical-align:top}th{font-size:10px;text-transform:uppercase}td:nth-child(2),th:nth-child(2){text-align:center}td:nth-child(n+3),th:nth-child(n+3){text-align:right}.serial{font-size:10px;margin-top:4px;overflow-wrap:anywhere;color:#444}
+.totals{margin:12px 0 0 auto;width:75%}.totalrow{display:flex;justify-content:space-between;padding:4px 0}.grand{font-size:17px;font-weight:bold;border-top:1px solid #222;margin-top:5px;padding-top:8px}
+.stamp{border:3px double #a32626;border-radius:50%;color:#a32626;width:126px;height:126px;margin:18px auto;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;transform:rotate(-7deg);font-weight:bold}.stamp strong{font-size:24px;border-top:2px solid #a32626;border-bottom:2px solid #a32626;padding:3px 8px;margin:5px}
+.verify{text-align:center;border-top:1px dashed #777;padding-top:12px;margin-top:12px}.qr{width:124px;height:124px;margin:8px auto}.verify a{font-size:9px;overflow-wrap:anywhere;color:#222}.thanks{text-align:center;font-weight:bold;margin-top:12px}.muted{font-size:10px;color:#555;text-align:center}
+.actions{display:flex;gap:8px;margin:14px 0}.actions button{flex:1;padding:11px;border:0;border-radius:7px;background:#176b4a;color:white;font-weight:bold}
+@media print{body{margin:0 auto;padding:4mm;max-width:none}.actions{display:none}a{color:#000}}
+</style></head><body>
+<header>${logo}<h1>${escapeHtml(r.business_name || r.store_name || 'Business')}</h1><p>${escapeHtml(r.store_name || '')}</p><p>${escapeHtml(r.store_location || '')}</p><p>${r.business_phone ? 'Tel: '+escapeHtml(r.business_phone) : ''}</p><p>${r.business_email ? escapeHtml(r.business_email) : ''}</p><p class="tag">OFFICIAL SALES RECEIPT</p></header>
+<div class="meta">
+<div class="field"><b>Receipt number</b>${escapeHtml(r.receipt_no)}</div>
+<div class="field"><b>Date & time purchased</b>${issued.toLocaleString('en-KE')}</div>
+<div class="field"><b>Customer</b>${escapeHtml(r.customer_name || 'Walk-in customer')}</div>
+<div class="field"><b>Customer phone</b>${escapeHtml(r.customer_phone || 'Not provided')}</div>
+<div class="field"><b>Sales agent / Sold by</b>${escapeHtml(cashier.name || 'Staff')}</div>
+<div class="field"><b>Agent phone</b>${escapeHtml(cashier.phone || 'Not available')}</div>
+<div class="field"><b>Payment method</b>${escapeHtml(String(r.payment_method || '').toUpperCase())}</div>
+<div class="field"><b>Receipt status</b>${escapeHtml(String(r.status || 'issued').toUpperCase())}</div>
+</div>
+<h2>Items purchased</h2><table><thead><tr><th>Product / IMEI</th><th>Qty</th><th>Unit price</th><th>Amount</th></tr></thead><tbody>${items || '<tr><td colspan="4">No item details available</td></tr>'}</tbody></table>
+<div class="totals">
+<div class="totalrow"><span>Subtotal</span><span>KSh ${Number(r.subtotalKes).toLocaleString('en-KE',{minimumFractionDigits:2})}</span></div>
+<div class="totalrow"><span>Discount</span><span>KSh ${Number(r.discountKes).toLocaleString('en-KE',{minimumFractionDigits:2})}</span></div>
+<div class="totalrow grand"><span>TOTAL</span><span>KSh ${Number(r.totalKes).toLocaleString('en-KE',{minimumFractionDigits:2})}</span></div>
+</div>
+<div class="stamp"><span>${escapeHtml(r.business_name || r.store_name || 'SWASS')}</span><strong>ISSUED</strong><small>${issued.toLocaleDateString('en-KE')}</small></div>
+<div class="verify"><b>SCAN TO VERIFY THIS RECEIPT</b><div id="receipt-qr" class="qr"></div><a href="${escapeHtml(verifyUrl)}">${escapeHtml(verifyUrl)}</a></div>
+<p class="thanks">Thank you for shopping with us!</p><p class="muted">Keep this receipt for your records. Receipt recovery is available through SWASS using your phone number and OTP.</p>
+<div class="actions"><button onclick="window.print()">Print receipt</button><button onclick="window.close()">Close</button></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>if(window.QRCode){new QRCode(document.getElementById('receipt-qr'),{text:${JSON.stringify(verifyUrl)},width:124,height:124,correctLevel:QRCode.CorrectLevel.M});}</script>
+</body></html>`;
+    const win = window.open('', '_blank', 'width=480,height=820');
     if (!win) { message('Allow pop-ups to print this receipt.'); return; }
     win.document.open(); win.document.write(html); win.document.close(); win.focus();
   });
