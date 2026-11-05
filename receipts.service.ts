@@ -163,15 +163,45 @@ export class ReceiptsService {
       }
     }
 
+    const details = await c.query(
+      `SELECT r.issued_at, u.full_name AS cashier_name, u.phone AS cashier_phone,
+              t.name AS business_name, t.phone AS business_phone, t.email AS business_email,
+              s.name AS store_name, s.location AS store_location, s.receipt_header,
+              s.receipt_footer, s.logo_data
+         FROM receipts r
+         JOIN users u ON u.id = r.cashier_id
+         JOIN tenants t ON t.id = r.tenant_id
+         JOIN stores s ON s.id = r.store_id
+        WHERE r.id = $1`,
+      [receipt.id],
+    );
+    const detail = details.rows[0];
     return {
       id: receipt.id, receiptNo: receipt.receipt_no, totalKes: Number(receipt.total_kes),
       qrToken: receipt.qr_token, status: receipt.status, pointsEarned, duplicate: false,
+      issuedAt: detail.issued_at,
+      cashier: { name: detail.cashier_name, phone: detail.cashier_phone },
+      business: {
+        name: detail.business_name, phone: detail.business_phone, email: detail.business_email,
+        storeName: detail.store_name, location: detail.store_location,
+        receiptHeader: detail.receipt_header, receiptFooter: detail.receipt_footer,
+        logoData: detail.logo_data,
+      },
     };
   }
 
   private async findByClientUuid(c: PoolClient, tenantId: string, clientUuid: string, dto: CreateReceiptDto) {
     const { rows } = await c.query(
-      `SELECT id, receipt_no, total_kes, qr_token, status, request_hash FROM receipts WHERE client_uuid = $1 AND tenant_id = $2`,
+      `SELECT r.id, r.receipt_no, r.total_kes, r.qr_token, r.status, r.request_hash,
+              r.issued_at, u.full_name AS cashier_name, u.phone AS cashier_phone,
+              t.name AS business_name, t.phone AS business_phone, t.email AS business_email,
+              s.name AS store_name, s.location AS store_location, s.receipt_header,
+              s.receipt_footer, s.logo_data
+         FROM receipts r
+         JOIN users u ON u.id = r.cashier_id
+         JOIN tenants t ON t.id = r.tenant_id
+         JOIN stores s ON s.id = r.store_id
+        WHERE r.client_uuid = $1 AND r.tenant_id = $2`,
       [clientUuid, tenantId],
     );
     if (!rows[0]) return null;
@@ -179,9 +209,18 @@ export class ReceiptsService {
     if (rows[0].request_hash && rows[0].request_hash !== this.requestFingerprint(dto)) {
       throw new ConflictException('This offline sale ID was already used for different sale details');
     }
+    const row = rows[0];
     return {
-      id: rows[0].id, receiptNo: rows[0].receipt_no, totalKes: Number(rows[0].total_kes),
-      qrToken: rows[0].qr_token, status: rows[0].status, pointsEarned: 0, duplicate: true,
+      id: row.id, receiptNo: row.receipt_no, totalKes: Number(row.total_kes),
+      qrToken: row.qr_token, status: row.status, pointsEarned: 0, duplicate: true,
+      issuedAt: row.issued_at,
+      cashier: { name: row.cashier_name, phone: row.cashier_phone },
+      business: {
+        name: row.business_name, phone: row.business_phone, email: row.business_email,
+        storeName: row.store_name, location: row.store_location,
+        receiptHeader: row.receipt_header, receiptFooter: row.receipt_footer,
+        logoData: row.logo_data,
+      },
     };
   }
 
