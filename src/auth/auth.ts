@@ -7,6 +7,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
 import { createHash, timingSafeEqual } from 'node:crypto';
 import { DbService } from '../db/db.service';
+import { EmailVerificationService } from '../notifications/email-verification.service';
 
 export type Role = 'super_admin' | 'owner' | 'manager' | 'cashier';
 
@@ -54,7 +55,7 @@ export class RolesGuard implements CanActivate {
 
 @Controller('api/v1/auth')
 export class AuthController {
-  constructor(private db: DbService, private jwt: JwtService) {}
+  constructor(private db: DbService, private jwt: JwtService, private emailVerification: EmailVerificationService) {}
 
   private normalizePhone(value: string): string {
     const digits = value.replace(/\D/g, '');
@@ -105,11 +106,16 @@ export class AuthController {
         return user.rows[0];
       });
       const payload: AuthUser = { sub: result.id, tenantId: result.tenant_id, storeId: result.store_id, role: result.role };
-      return { accessToken: await this.jwt.signAsync(payload, { expiresIn: '12h' }), trialDays: 7 };
+      let emailVerificationSent = false;\n      if (email) { try { emailVerificationSent = (await this.emailVerification.send(result.id, email, fullName)).sent; } catch { emailVerificationSent = false; } }\n      return { accessToken: await this.jwt.signAsync(payload, { expiresIn: '12h' }), trialDays: 7, emailVerificationSent, emailVerificationRequired: !!email };
     } catch (err: any) {
       if (err?.code === '23505') throw new UnauthorizedException('This phone number is already registered. Sign in or use another number.');
       throw err;
     }
+  }
+
+  @Post('email-verification/verify')
+  async verifyEmail(@Body() body: { token?: string }) {
+    return this.emailVerification.verify(String(body?.token ?? ''));
   }
 
   @Post('bootstrap-admin')
