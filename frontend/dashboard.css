@@ -132,3 +132,14 @@ body.dashboard-dark .module-state.ready{background:#173f32;color:#9de0ba}
 body.dashboard-dark .module-state.planned-state{background:#463a24;color:#f2ce88}
 @media(max-width:850px){.owner-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.module-grid{grid-template-columns:1fr}}
 @media(max-width:520px){.command-bar{align-items:stretch;flex-direction:column}.command-actions{justify-content:space-between}.global-search kbd{display:none}.owner-stat{padding:11px}.owner-stat strong{font-size:18px}.module-hub{padding:13px}.module-tile{padding:10px}.module-state{font-size:8px}}
+
+/* Unified dashboard navigation refinements */
+.dashboard-sidebar .sidebar-link.hidden{display:none!important}
+.dashboard-main [id$="-section"]{scroll-margin-top:22px}
+.dashboard-sidebar .sidebar-link:focus-visible{outline:3px solid #7bc2ef;outline-offset:2px}
+body.dashboard-dark .sidebar-link{color:#c4d4e0}
+body.dashboard-dark .sidebar-link span{background:#20394b;color:#a9d9f7}
+body.dashboard-dark .sidebar-link:hover,body.dashboard-dark .sidebar-link.active{background:#1d493d;color:#a9e6c3}
+body.dashboard-dark .sidebar-help{background:#1b3a32;border-color:#2c5748}
+body.dashboard-dark .sidebar-help strong,body.dashboard-dark .sidebar-help a{color:#a9e6c3}
+body.dashboard-dark .sidebar-help small{color:#b2c9bf}
