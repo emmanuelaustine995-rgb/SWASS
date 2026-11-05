@@ -62,15 +62,19 @@
   window.addEventListener('online',updateNetworkStatus);
   window.addEventListener('offline',updateNetworkStatus);
   updateNetworkStatus();
+  // Menu search visibly filters the single dashboard's navigation links.
   $('workspace-search').addEventListener('input',()=>{
     const q=$('workspace-search').value.trim().toLowerCase();
-    let visible=0;
-    document.querySelectorAll('#module-grid .module-tile').forEach(tile=>{
-      const match=!q||tile.textContent.toLowerCase().includes(q)||(tile.dataset.search||'').includes(q);
-      tile.classList.toggle('hidden',!match);
-      if(match)visible++;
+    document.querySelectorAll('.dashboard-sidebar .sidebar-link').forEach(link=>{
+      const haystack=(link.textContent+' '+(link.dataset.search||'')).toLowerCase();
+      link.classList.toggle('hidden',!!q&&!haystack.includes(q));
     });
-    $('module-search-empty').classList.toggle('hidden',visible>0);
+  });
+  document.querySelectorAll('.dashboard-sidebar .sidebar-link').forEach(link=>{
+    link.addEventListener('click',()=>{
+      document.querySelectorAll('.dashboard-sidebar .sidebar-link').forEach(item=>item.classList.remove('active'));
+      link.classList.add('active');
+    });
   });
   if(!API)$('login-error').textContent='Set SWASS_API_URL in frontend/config.js before signing in.';
   initializePeriod();
