@@ -44,7 +44,7 @@ export class BusinessProfileController {
     const footer=clean(b.receiptFooter,300,'Receipt footer',true);
     const logo=b.logoData;
     if(email && (!email.includes('@') || !email.includes('.'))) throw new BadRequestException('Enter a valid business email');
-    if(logo!==undefined && logo!==null && (typeof logo!=='string'||logo.length>180000||!logo.startsWith('data:image/')||!logo.includes(';base64,'))) throw new BadRequestException('Upload a PNG, JPG or WebP logo smaller than 60 KB');
+    if(logo!==undefined && logo!==null && (typeof logo!=='string'||logo.length>90000||!/^data:image\\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$/.test(logo))) throw new BadRequestException('Upload a PNG, JPG or WebP logo smaller than 60 KB');
     await this.db.tx(async c=>{
       await c.query('UPDATE tenants SET name=COALESCE($1,name),phone=COALESCE($2,phone),email=CASE WHEN $3 THEN $4 ELSE email END WHERE id=$5',[name??null,phone??null,b.businessEmail!==undefined,email??null,u.tenantId]);
       await c.query('UPDATE stores SET name=COALESCE($1,name),location=CASE WHEN $2 THEN $3 ELSE location END,receipt_header=CASE WHEN $4 THEN $5 ELSE receipt_header END,receipt_footer=CASE WHEN $6 THEN $7 ELSE receipt_footer END,logo_data=CASE WHEN $8 THEN $9 ELSE logo_data END WHERE tenant_id=$10 AND id=$11',[store??null,b.storeLocation!==undefined,location??null,b.receiptHeader!==undefined,header??null,b.receiptFooter!==undefined,footer??null,b.logoData!==undefined,logo??null,u.tenantId,u.storeId]);
