@@ -92,7 +92,7 @@ export class ReceiptsService {
     const businessResult = await c.query(
       `SELECT t.name AS business_name, t.phone AS business_phone, t.email AS business_email,
               s.name AS store_name, s.location AS store_location,
-              s.receipt_header, s.receipt_footer
+              s.receipt_header, s.receipt_footer, s.logo_data
          FROM tenants t JOIN stores s ON s.tenant_id=t.id
         WHERE t.id=$1 AND s.id=$2 LIMIT 1`,
       [tenantId, user.storeId],
@@ -107,6 +107,7 @@ export class ReceiptsService {
       location: businessRow.store_location,
       receiptHeader: businessRow.receipt_header,
       receiptFooter: businessRow.receipt_footer,
+      logoData: businessRow.logo_data,
     };
 
     // 1. Already stored (offline retry)? Return it without charging again.
