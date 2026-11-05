@@ -98,7 +98,7 @@
   function openCheckout(){const items=[...state.cart.values()];const needsBuyer=items.some(r=>r.product.requiresBuyerId);$('buyer-id-wrap').classList.toggle('hidden',!needsBuyer);$('buyer-id-note').classList.toggle('hidden',!needsBuyer);$('checkout-total').textContent=money(totals().total);$('checkout-error').textContent='';$('checkout-modal').classList.remove('hidden');}
   function makeReceiptMarkup(receipt, sale, customer){
     const business=receipt.business||{};
-    const lines=sale.items.map(i=>`<div class="receipt-line"><span>${escapeHtml(i.name)} × ${i.qty}${i.serialNo?`<br><small>IMEI / Serial: ${escapeHtml(i.serialNo)}</small>`:''}</span><span>${money(i.price*i.qty)}</span></div>`).join('');
+    const lines=sale.items.map(i=>`<div class="receipt-line"><span><strong>${escapeHtml(i.name)}</strong> × ${i.qty}<br><small>Unit price: ${money(i.price)}${i.serialNo?`<br>IMEI / Serial: ${escapeHtml(i.serialNo)}`:''}</small></span><strong>${money(i.price*i.qty)}</strong></div>`).join('');
     const verifyUrl=new URL('verify.html',window.location.href).href+'?token='+encodeURIComponent(receipt.qrToken); const recoveryUrl=new URL('recover.html',window.location.href).href;
     return `<div class="receipt-center">${business.logoData?'<img class="receipt-logo" src="'+escapeHtml(business.logoData)+'" alt="Business logo">':''}<h2>${escapeHtml(business.name||'BUSINESS NAME')}</h2>
       ${business.storeName?`<div>${escapeHtml(business.storeName)}</div>`:''}
@@ -108,14 +108,14 @@
       ${business.receiptHeader?`<div>${escapeHtml(business.receiptHeader)}</div>`:''}
       <div class="muted">OFFICIAL SALES RECEIPT</div></div>
       <div class="receipt-divider"></div><div>Receipt: <strong>${escapeHtml(receipt.receiptNo)}</strong></div>
-      <div class="receipt-center"><svg id="receipt-barcode" aria-label="Receipt barcode"></svg></div>
+      <div class="receipt-center"><strong>SCAN TO VERIFY RECEIPT</strong><div id="receipt-qr" class="receipt-qr"></div><small>Receipt verification QR code</small></div>
       <div>Date sold: ${new Date(receipt.issuedAt||Date.now()).toLocaleString('en-KE')}</div><div>Sales agent: ${escapeHtml(receipt.cashier?.name||'Staff')}</div><div>Agent phone: ${escapeHtml(receipt.cashier?.phone||'Not available')}</div><div>Payment: ${escapeHtml(sale.paymentMethod.toUpperCase())}</div>
       ${customer?`<div>Customer: ${escapeHtml(customer.fullName)}</div><div>Phone: ${escapeHtml(customer.phone)}</div>${customer.email?`<div>Email: ${escapeHtml(customer.email)}</div>`:''}`:''}
       <div class="receipt-divider"></div>${lines}<div class="receipt-divider"></div>
       <div class="receipt-line"><span>Subtotal</span><span>${money(sale.subtotal)}</span></div>
       <div class="receipt-line"><span>Discount</span><span>${money(sale.discount)}</span></div>
       <div class="receipt-line"><strong>TOTAL</strong><strong>${money(receipt.totalKes)}</strong></div>
-      <div class="receipt-center" style="margin:20px auto 14px"><div class="official-paid-stamp"><div class="stamp-business">${escapeHtml(business.name||"BUSINESS NAME")}</div><div class="stamp-paid">PAID</div><div class="stamp-date">DATE: ${escapeHtml(new Date(receipt.issuedAt||Date.now()).toLocaleDateString('en-KE'))}</div><div class="stamp-branch">${escapeHtml(business.storeName||business.location||"OFFICIAL RECEIPT")}</div></div></div>\n      <div class="receipt-divider"></div><div class="receipt-center">Thank you for shopping with us!
+      <div class="receipt-center" style="margin:20px auto 14px"><div class="official-paid-stamp"><div class="stamp-business">${escapeHtml(business.name||"BUSINESS NAME")}</div><div class="stamp-paid">ISSUED</div><div class="stamp-date">DATE: ${escapeHtml(new Date(receipt.issuedAt||Date.now()).toLocaleDateString('en-KE'))}</div><div class="stamp-branch">${escapeHtml(business.storeName||business.location||"OFFICIAL RECEIPT")}</div></div></div>\n      <div class="receipt-divider"></div><div class="receipt-center">Thank you for shopping with us!
       ${business.receiptFooter?`<br>${escapeHtml(business.receiptFooter)}`:''}
       <br><small>Scan/check online: ${escapeHtml(verifyUrl)}</small><br><small>Lost this receipt? Recover it using your phone and OTP: ${escapeHtml(recoveryUrl)}</small></div>`;
   }
@@ -131,7 +131,7 @@
     try{
       const receipt=await request('/api/v1/receipts',{method:'POST',body:JSON.stringify(payload)});
       state.lastReceipt=receipt; const sale={items:items.map(r=>({name:r.product.name,qty:r.qty,price:Number(r.product.priceKes),serialNo:r.imei&&r.imei.trim()?r.imei.trim():null})),subtotal:t.subtotal,discount:t.discount,paymentMethod:payload.paymentMethod};
-      $('receipt-paper').innerHTML=makeReceiptMarkup(receipt,sale,payload.customer);if(window.JsBarcode){try{window.JsBarcode('#receipt-barcode',receipt.receiptNo,{format:'CODE128',displayValue:true,height:48,margin:4});}catch{}}$('checkout-modal').classList.add('hidden');$('receipt-modal').classList.remove('hidden');state.cart.clear();$('discount').value='0';$('checkout-form').reset();renderCart();await loadProducts();hideNotice();
+      $('receipt-paper').innerHTML=makeReceiptMarkup(receipt,sale,payload.customer);if(window.QRCode&&receipt.qrToken){try{const verifyUrl=new URL('verify.html',window.location.href).href+'?token='+encodeURIComponent(receipt.qrToken);new QRCode($('receipt-qr'),{text:verifyUrl,width:116,height:116,correctLevel:QRCode.CorrectLevel.M});}catch{}}$('checkout-modal').classList.add('hidden');$('receipt-modal').classList.remove('hidden');state.cart.clear();$('discount').value='0';$('checkout-form').reset();renderCart();await loadProducts();hideNotice();
     }catch(e){$('checkout-error').textContent=e.message;}
     finally{btn.disabled=false;btn.textContent='Issue receipt';}
   }
