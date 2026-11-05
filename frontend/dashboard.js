@@ -15,6 +15,22 @@
   function localDate(d){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');return `${y}-${m}-${day}`;}
   function initializePeriod(){const now=new Date();$('date-from').value=localDate(new Date(now.getFullYear(),now.getMonth(),1));$('date-to').value=localDate(now);}
   function periodQuery(){const p=new URLSearchParams();if($('date-from').value)p.set('from',$('date-from').value);if($('date-to').value)p.set('to',$('date-to').value);return p.toString()? `?${p}`:'';}
+  function previousPeriodQuery(){
+    const from=$('date-from').value,to=$('date-to').value;
+    if(!from||!to)return '';
+    const start=new Date(`${from}T00:00:00Z`),end=new Date(`${to}T00:00:00Z`);
+    if(Number.isNaN(start.getTime())||Number.isNaN(end.getTime())||end<start)return '';
+    const days=Math.round((end-start)/86400000)+1;
+    const previousEnd=new Date(start.getTime()-86400000);
+    const previousStart=new Date(previousEnd.getTime()-(days-1)*86400000);
+    const fmt=d=>d.toISOString().slice(0,10);
+    return `?from=${fmt(previousStart)}&to=${fmt(previousEnd)}`;
+  }
+  function comparisonLabel(current,previous){
+    if(previous===0)return current===0?'No change':'New activity';
+    const change=((current-previous)/previous)*100;
+    return `${change>0?'+':''}${change.toFixed(1)}%`;
+  }
   async function loadDashboard(){
     try {
       const data=await request(`/api/v1/dashboard/summary${periodQuery()}`); const s=data.sales,i=data.inventory,e=data.expenses;
@@ -22,6 +38,17 @@
       $('m-profit').textContent=money(s.grossProfitKes);$('m-expenses').textContent=money(s.expensesKes);$('m-expense-count').textContent=`${e.count} entries`;$('m-net').textContent=money(s.estimatedNetOperatingKes);
       $('m-products').textContent=i.productCount;$('m-products-top').textContent=Number(i.productCount||0).toLocaleString('en-KE');$('m-locations').textContent='0';$('m-month-transactions').textContent=Number(s.transactions||0).toLocaleString('en-KE');$('channel-pos').textContent=money(s.salesKes);$('channel-api').textContent=money(0);$('channel-invoices').textContent=money(0);$('channel-offline').textContent=money(0);$('m-low').textContent=`${i.lowStockCount} need restocking`;$('m-stock-cost').textContent=money(i.stockCostKes);$('m-stock-retail').textContent=`Retail value: ${money(i.stockRetailKes)}`;$('m-discounts').textContent=money(s.discountsKes);
       $('m-wallet').textContent=money(data.subscription?.balanceKes||0);$('m-subscription').textContent=data.subscription?`${data.subscription.plan} plan · ${data.subscription.status}`:'No subscription details';
+      try{
+        const previous=await request(`/api/v1/dashboard/summary${previousPeriodQuery()}`);
+        const priorSales=Number(previous.sales?.salesKes||0),priorTransactions=Number(previous.sales?.transactions||0);
+        $('compare-sales').textContent=comparisonLabel(Number(s.salesKes||0),priorSales);
+        $('compare-sales-detail').textContent=`${money(s.salesKes)} now · ${money(priorSales)} previous`;
+        $('compare-transactions').textContent=comparisonLabel(Number(s.transactions||0),priorTransactions);
+        $('compare-transactions-detail').textContent=`${Number(s.transactions||0)} now · ${priorTransactions} previous`;
+      }catch(compareError){
+        $('compare-sales').textContent='Unavailable';$('compare-transactions').textContent='Unavailable';
+        $('compare-sales-detail').textContent='Previous-period data could not be loaded';$('compare-transactions-detail').textContent='Previous-period data could not be loaded';
+      }
       renderDaily(data.daily||[]);renderCashiers(data.cashiers||[]);await loadExpenses();$('notice').classList.add('hidden');
     } catch(err){notice(err.message,true);}
   }
