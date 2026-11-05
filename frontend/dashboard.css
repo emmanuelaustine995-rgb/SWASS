@@ -231,3 +231,47 @@ body.dashboard-dark .sidebar-help small{color:#b2c9bf}
 #owner-dashboard-view.workspace-accounting #owner-payments-section>section:last-child{display:block!important}
 #owner-dashboard-view.workspace-accounting #owner-expenses-section{display:grid!important}
 #owner-dashboard-view.workspace-accounting #owner-expenses-section>section:first-child{display:none!important}
+
+
+/* Focused mobile-first sales performance dashboard */
+#pos-view:has(#owner-dashboard-view.workspace-dashboard)>.page-heading,
+#pos-view:has(#owner-dashboard-view.workspace-dashboard)>#notice{display:none!important}
+#owner-dashboard-view.workspace-dashboard .page-heading{align-items:flex-start;gap:18px;margin:8px 0 22px;padding:24px;border-radius:22px;background:linear-gradient(125deg,#103d2d 0%,#17684d 58%,#2b8a67 100%);color:#fff;box-shadow:0 14px 34px rgba(16,61,45,.16)}
+#owner-dashboard-view.workspace-dashboard .page-heading h1{font-size:clamp(25px,4vw,36px);letter-spacing:-.8px;color:#fff;margin:4px 0 7px}
+#owner-dashboard-view.workspace-dashboard .page-heading .muted{color:rgba(255,255,255,.78)}
+#owner-dashboard-view.workspace-dashboard .date-filter{display:flex;flex-wrap:wrap;align-items:end;gap:10px}
+#owner-dashboard-view.workspace-dashboard .date-filter label{color:#fff;font-size:12px}
+#owner-dashboard-view.workspace-dashboard .date-filter input{min-height:44px;border:1px solid rgba(255,255,255,.35);border-radius:11px;background:#fff;color:#183126;padding:8px 10px}
+#owner-dashboard-view.workspace-dashboard .date-filter .btn{min-height:44px;background:#d8f3e5;color:#104b35;border:0}
+#owner-dashboard-view.workspace-dashboard .dashboard-layout{display:block}
+#owner-dashboard-view.workspace-dashboard .dashboard-main{width:100%;max-width:none}
+#owner-dashboard-view.workspace-dashboard .command-bar,
+#owner-dashboard-view.workspace-dashboard .quick-actions,
+#owner-dashboard-view.workspace-dashboard .owner-stats,
+#owner-dashboard-view.workspace-dashboard .analytics-intro,
+#owner-dashboard-view.workspace-dashboard .headline-metrics,
+#owner-dashboard-view.workspace-dashboard #owner-reports-section,
+#owner-dashboard-view.workspace-dashboard .setup-panel,
+#owner-dashboard-view.workspace-dashboard .secondary-metrics,
+#owner-dashboard-view.workspace-dashboard #owner-expenses-section,
+#owner-dashboard-view.workspace-dashboard .footnote{display:none!important}
+#owner-dashboard-view.workspace-dashboard #owner-overview-section{display:grid!important;grid-template-columns:1fr!important;gap:0;margin:0 0 16px}
+#owner-dashboard-view.workspace-dashboard #owner-overview-section .metric{padding:22px 24px;border:0;border-radius:20px;background:linear-gradient(135deg,#e4f6ec,#f7fcf9);box-shadow:0 8px 24px rgba(18,65,47,.07)}
+#owner-dashboard-view.workspace-dashboard #owner-overview-section .metric span{font-size:13px;color:#557064}
+#owner-dashboard-view.workspace-dashboard #owner-overview-section .metric strong{font-size:clamp(28px,6vw,40px);color:#104b35;letter-spacing:-1px}
+#owner-dashboard-view.workspace-dashboard #owner-period-comparison{border:1px solid #e1ebe5;border-radius:20px;padding:20px;background:#fff;box-shadow:0 8px 24px rgba(18,65,47,.05);margin:0 0 16px}
+#owner-dashboard-view.workspace-dashboard #owner-period-comparison h2{font-size:18px}
+#owner-dashboard-view.workspace-dashboard .comparison-grid article{border:1px solid #e6eee9;border-radius:15px;padding:16px;background:#f9fcfa}
+#owner-dashboard-view.workspace-dashboard .comparison-grid article>strong{font-size:26px;color:#146044}
+#owner-dashboard-view.workspace-dashboard #owner-payments-section{display:block!important;margin:0}
+#owner-dashboard-view.workspace-dashboard #owner-payments-section>section:nth-child(2){display:block!important;border:1px solid #e1ebe5;border-radius:20px;padding:20px;background:#fff;box-shadow:0 8px 24px rgba(18,65,47,.05)}
+#owner-dashboard-view.workspace-dashboard #owner-payments-section>section:nth-child(2) h2{font-size:18px}
+#owner-dashboard-view.workspace-dashboard .daily-chart{min-height:190px;overflow-x:auto}
+@media(max-width:640px){
+ #owner-dashboard-view.workspace-dashboard .page-heading{display:block;padding:20px 16px}
+ #owner-dashboard-view.workspace-dashboard .date-filter{display:grid;grid-template-columns:1fr 1fr;align-items:end;margin-top:16px}
+ #owner-dashboard-view.workspace-dashboard .date-filter .btn{grid-column:1/-1;width:100%}
+ #owner-dashboard-view.workspace-dashboard #owner-period-comparison{padding:15px}
+ #owner-dashboard-view.workspace-dashboard .comparison-grid{grid-template-columns:1fr 1fr}
+ #owner-dashboard-view.workspace-dashboard .comparison-grid article{padding:12px}
+}
