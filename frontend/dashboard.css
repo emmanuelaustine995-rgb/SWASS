@@ -157,8 +157,11 @@ body.dashboard-dark .sidebar-help small{color:#b2c9bf}
 /* Dashboard is an analytics-only view; financial entry and wallet tools belong to Accounting. */
 #owner-dashboard-view.workspace-dashboard #owner-overview-section,
 #owner-dashboard-view.workspace-dashboard .secondary-metrics,
-#owner-dashboard-view.workspace-dashboard #owner-payments-section,
 #owner-dashboard-view.workspace-dashboard #owner-expenses-section{display:none}
+#owner-dashboard-view.workspace-dashboard #owner-payments-section{display:block}
+#owner-dashboard-view.workspace-dashboard #owner-payments-section>section:first-child,
+#owner-dashboard-view.workspace-dashboard #owner-payments-section>section:last-child{display:none}
+#owner-dashboard-view.workspace-dashboard #owner-payments-section>section:nth-child(2){display:block}
 
 /* Accounting contains financial totals, wallet/subscription, sales ledger chart and expense records. */
 #owner-dashboard-view.workspace-accounting .owner-stats,
