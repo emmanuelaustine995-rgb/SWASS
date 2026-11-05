@@ -63,26 +63,51 @@ export class ReceiptRecoveryController {
 
   @Post('receipt-recovery/verify')
   async verifyOtp(@Body() body: { phone?: string; code?: string }) {
-    if (!body?.phone || !/^\d{6}$/.test(String(body.code ?? ''))) throw new BadRequestException('Enter your phone number and six-digit code');
+    const submittedCode = String(body?.code ?? '').replace(/\s/g, '');
+    if (!body?.phone || !/^\d{6}$/.test(submittedCode)) {
+      throw new BadRequestException('Enter your phone number and six-digit code');
+    }
     const phone = phoneKey(body.phone);
+    // A customer may receive more than one SMS if a previous request appeared to fail.
+    // Accept any still-valid code issued in the last five minutes, not only the newest SMS.
     const result = await this.db.pool.query(
       `SELECT id,customer_ids,code_hash,attempts FROM otp_requests
-       WHERE phone=$1 AND verified_at IS NULL AND expires_at>now() ORDER BY created_at DESC LIMIT 1`, [phone],
+       WHERE phone=$1 AND verified_at IS NULL AND expires_at>now()
+       ORDER BY created_at DESC LIMIT 3`, [phone],
     );
-    const row = result.rows[0];
-    const supplied = Buffer.from(codeHash(String(body.code)), 'hex');
-    const expected = Buffer.from(row?.code_hash ?? '0'.repeat(64), 'hex');
-    const match = !!row && row.attempts < 5 && supplied.length === expected.length && timingSafeEqual(supplied, expected);
-    if (!row || row.attempts >= 5) throw new BadRequestException('Code is invalid or expired. Request a new code.');
-    if (!match) {
-      await this.db.pool.query(`UPDATE otp_requests SET attempts=attempts+1 WHERE id=$1`, [row.id]);
-      throw new BadRequestException('Code is invalid or expired. Request a new code.');
+    const supplied = Buffer.from(codeHash(submittedCode), 'hex');
+    const matchedRow = result.rows.find((candidate: any) => {
+      if (Number(candidate.attempts ?? 0) >= 5) return false;
+      const expected = Buffer.from(candidate.code_hash ?? '0'.repeat(64), 'hex');
+      return supplied.length === expected.length && timingSafeEqual(supplied, expected);
+    });
+    if (!matchedRow) {
+      if (result.rows.length) {
+        await this.db.pool.query(
+          `UPDATE otp_requests SET attempts=attempts+1
+           WHERE id = ANY($1::uuid[]) AND attempts < 5`,
+          [result.rows.map((row: any) => row.id)],
+        );
+      }
+      throw new BadRequestException('Code is invalid or expired. Enter a recent code from the SMS, or request a new one.');
     }
-    if (!row.customer_ids?.length) throw new BadRequestException('No receipts were found for this phone number.');
+    if (!matchedRow.customer_ids?.length) {
+      throw new BadRequestException('No receipts were found for this phone number.');
+    }
     const token = randomBytes(32).toString('base64url');
     await this.db.tx(async (c) => {
-      await c.query(`UPDATE otp_requests SET verified_at=now() WHERE id=$1`, [row.id]);
-      await c.query(`INSERT INTO recovery_sessions(otp_request_id,token_hash,expires_at) VALUES($1,$2,now()+interval '10 minutes')`, [row.id, hash(token)]);
+      await c.query(`UPDATE otp_requests SET verified_at=now() WHERE id=$1`, [matchedRow.id]);
+      // Invalidate other outstanding codes for this phone after one code is verified.
+      await c.query(
+        `UPDATE otp_requests SET expires_at=now()
+         WHERE phone=$1 AND id<>$2 AND verified_at IS NULL AND expires_at>now()`,
+        [phone, matchedRow.id],
+      );
+      await c.query(
+        `INSERT INTO recovery_sessions(otp_request_id,token_hash,expires_at)
+         VALUES($1,$2,now()+interval '10 minutes')`,
+        [matchedRow.id, hash(token)],
+      );
     });
     return { recoveryToken: token, expiresInSeconds: 600 };
   }
