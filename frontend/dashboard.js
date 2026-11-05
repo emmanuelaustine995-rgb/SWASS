@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const $ = id => document.getElementById(id);
+  const $ = id => document.getElementById(`owner-${id}`);
   const API = (window.SWASS_API_URL || '').replace(/\/$/, '');
   const state = { token: null, role: null };
   const money = n => `KSh ${Number(n || 0).toLocaleString('en-KE')}`;
@@ -36,8 +36,18 @@
     }catch(e){$('crm-rows').innerHTML='<tr><td colspan="6">Could not load customers.</td></tr>';$('crm-message').textContent=e.message;}
   }
   async function loadExpenses(){const data=await request('/api/v1/dashboard/expenses?limit=8');$('expense-list').innerHTML=data.expenses?.length?data.expenses.map(x=>`<div class="expense-row"><div><strong>${esc(x.category)}</strong><small>${new Date(x.spentAt).toLocaleDateString('en-KE')}${x.note?` · ${esc(x.note)}`:''}</small></div><b>${money(x.amountKes)}</b></div>`).join(''):'<p class="muted">No expenses recorded.</p>';}
-  $('login-form').addEventListener('submit',async ev=>{ev.preventDefault();$('login-error').textContent='';try{const d=await request('/api/v1/auth/login',{method:'POST',body:JSON.stringify({phone:$('login-phone').value.trim(),password:$('login-password').value})});state.token=d.accessToken;const c=JSON.parse(atob(state.token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));state.role=c.role;if(!['owner','manager'].includes(state.role)){state.token=null;throw new Error('This dashboard is available to business owners and managers only.');}showDashboard();await loadDashboard();await loadCustomers();}catch(e){$('login-error').textContent=e.message;}});
-  $('logout-btn').addEventListener('click',()=>{state.token=null;state.role=null;showLogin();});$('refresh-btn').addEventListener('click',loadDashboard);
+
+  function activateOwnerWorkspace(session){
+    state.token=session?.token||null;state.role=session?.role||null;
+    if(!state.token||!['owner','manager'].includes(state.role))return;
+    $('owner-dashboard-view').classList.remove('hidden');
+    $('pos-view').classList.add('hidden');
+    $('workspace-nav').classList.remove('hidden');
+    initializePeriod();loadDashboard();loadCustomers();
+  }
+  window.addEventListener('swass:login',ev=>activateOwnerWorkspace(ev.detail||{}));
+  window.addEventListener('swass:logout',()=>{state.token=null;state.role=null;$('owner-dashboard-view').classList.add('hidden');});
+  $('refresh-btn').addEventListener('click',loadDashboard);
   $('mpesa-purpose').addEventListener('change',()=>{const subscription=$('mpesa-purpose').value==='subscription';$('topup-amount-wrap').classList.toggle('hidden',subscription);$('plan-wrap').classList.toggle('hidden',!subscription);});
   $('mpesa-form').addEventListener('submit',async ev=>{ev.preventDefault();const message=$('mpesa-message');message.textContent='Requesting payment prompt…';try{const purpose=$('mpesa-purpose').value;const payload={purpose,phone:$('mpesa-phone').value.trim()};if(purpose==='wallet_topup')payload.amountKes=Number($('topup-amount').value);else payload.plan=$('subscription-plan').value;const result=await request('/api/v1/mpesa/stk-push',{method:'POST',body:JSON.stringify(payload)});message.textContent=`STK prompt requested for ${money(result.amountKes)}. Enter your M-Pesa PIN on your phone. Checking payment status…`;let attempts=0;const check=async()=>{try{const status=await request(`/api/v1/mpesa/payments/${result.paymentId}`);if(status.status==='success'){message.textContent=`Payment confirmed. M-Pesa receipt: ${status.receiptNumber||'recorded'}.`;await loadDashboard();return;}if(status.status==='failed'){message.textContent='Payment was not completed. You can try again.';return;}attempts++;if(attempts<12){setTimeout(check,5000);}else{message.textContent=`Payment is still pending. Use Refresh status later. Payment reference: ${result.paymentId}`;}}catch(e){message.textContent=e.message;}};await check();}catch(e){message.textContent=e.message;}});
   $('crm-refresh').addEventListener('click',loadCustomers);$('crm-search-btn').addEventListener('click',loadCustomers);$('crm-search').addEventListener('keydown',ev=>{if(ev.key==='Enter'){ev.preventDefault();loadCustomers();}});
@@ -76,7 +86,6 @@
       link.classList.add('active');
     });
   });
-  if(!API)$('login-error').textContent='Set SWASS_API_URL in frontend/config.js before signing in.';
-  initializePeriod();
-  showLogin();
+  if(!API) notice('API address is not configured in frontend/config.js.',true);
+  // Authentication is provided by the single till login.
 })();
