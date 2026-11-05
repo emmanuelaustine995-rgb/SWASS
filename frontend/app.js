@@ -30,7 +30,7 @@
     [history,crm,lookup,profile].forEach(el=>el?.classList.add('hidden'));
     posGrid?.classList.add('hidden');
     if(screen==='dashboard'){
-      pos.classList.add('hidden');owner.classList.remove('hidden');
+      pos.classList.remove('hidden');owner.classList.remove('hidden');
       owner.classList.remove('workspace-accounting','workspace-console');
       owner.classList.add('workspace-dashboard');
       owner.querySelector('#owner-overview-section')?.scrollIntoView({block:'start'});
@@ -56,12 +56,12 @@
       crm?.classList.remove('hidden');crm?.scrollIntoView({block:'start'});
       window.dispatchEvent(new CustomEvent('swass:crm-open'));
     }else if(screen==='accounting'){
-      pos.classList.add('hidden');owner.classList.remove('hidden');
+      pos.classList.remove('hidden');owner.classList.remove('hidden');
       owner.classList.remove('workspace-dashboard','workspace-console');
       owner.classList.add('workspace-accounting');
       document.getElementById('owner-payments-section')?.scrollIntoView({block:'start'});
     }else if(screen==='console'){
-      pos.classList.add('hidden');owner.classList.remove('hidden');
+      pos.classList.remove('hidden');owner.classList.remove('hidden');
       owner.classList.remove('workspace-dashboard','workspace-accounting');
       owner.classList.add('workspace-console');
       document.getElementById('owner-expenses-section')?.scrollIntoView({block:'start'});
