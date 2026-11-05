@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const $ = id => document.getElementById(`owner-${id}`);
+  const $ = id => document.getElementById(id.startsWith('owner-') ? id : `owner-${id}`);
   const API = (window.SWASS_API_URL || '').replace(/\/$/, '');
   const state = { token: null, role: null };
   const money = n => `KSh ${Number(n || 0).toLocaleString('en-KE')}`;
@@ -41,8 +41,8 @@
     state.token=session?.token||null;state.role=session?.role||null;
     if(!state.token||!['owner','manager'].includes(state.role))return;
     $('owner-dashboard-view').classList.remove('hidden');
-    $('pos-view').classList.add('hidden');
-    $('workspace-nav').classList.remove('hidden');
+    document.getElementById('pos-view').classList.add('hidden');
+    document.getElementById('workspace-nav').classList.remove('hidden');
     initializePeriod();loadDashboard();loadCustomers();
   }
   window.addEventListener('swass:login',ev=>activateOwnerWorkspace(ev.detail||{}));
