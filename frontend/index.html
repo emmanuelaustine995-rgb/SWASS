@@ -14,6 +14,7 @@
         <p class="muted small" style="text-align:center">New to SWASS? <button id="show-register" type="button" class="text-btn">Create a business account</button></p>
         <form id="register-form" class="hidden">
           <p class="eyebrow">START YOUR 7-DAY FREE TRIAL</p>
+          <div id="register-fields">
           <label>Business name<input id="reg-business" required maxlength="120" placeholder="e.g. Emmanuel Technologies"></label>
           <label>Store / till name<input id="reg-store" required maxlength="120" placeholder="e.g. Main Branch"></label>
           <label>Business location (optional)<input id="reg-location" maxlength="200" placeholder="Building, street, town"></label>
@@ -21,7 +22,15 @@
           <label>Phone number<input id="reg-phone" required inputmode="tel" autocomplete="tel" placeholder="07XX XXX XXX"></label>
           <label>Email (optional)<input id="reg-email" type="email" autocomplete="email"></label>
           <label>Create password<input id="reg-password" type="password" required minlength="10" autocomplete="new-password" placeholder="At least 10 characters"></label>
-          <button class="btn btn-primary full" type="submit">Create business account</button>
+          </div>
+          <div id="signup-otp-panel" class="hidden">
+            <p class="muted small">We sent a 6-digit verification code by SMS to your phone. Enter it below to activate your business account.</p>
+            <label>SMS verification code<input id="signup-otp-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="Enter 6-digit code"></label>
+            <button id="verify-signup-otp" class="btn btn-primary full" type="button">Verify phone and create account</button>
+            <button id="resend-signup-otp" class="btn btn-light full" type="button" disabled>Resend code in 30 seconds</button>
+            <p id="signup-otp-message" class="muted small" role="status"></p>
+          </div>
+          <button id="register-submit" class="btn btn-primary full" type="submit">Send verification code</button>
           <p id="register-error" class="error" role="alert"></p>
           <p class="muted small" style="text-align:center">Already registered? <button id="show-login" type="button" class="text-btn">Sign in</button></p>
         </form>
