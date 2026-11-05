@@ -296,7 +296,8 @@
       $('register-submit').classList.remove('hidden');
       showPOS();
       showNotice('Phone number verified. Your SWASS business account is ready and your 7-day free trial has started. Add your products to begin.');
-      await loadProducts();
+      try { await loadProducts(); }
+      catch (loadError) { showNotice('Your account is ready, but the product list could not load. Refresh the page to try again.', true); }
     }catch(err){
       $('signup-otp-message').textContent=err.message||'Verification failed. Check the code and try again.';
     }finally{btn.disabled=false;btn.textContent='Verify phone and create account';}
@@ -334,7 +335,8 @@
       try{await loadBusinessProfile();}
       catch(err){showNotice('You are signed in, but the business profile could not be loaded. '+(err.message||''),true);}
     }
-    await loadProducts();
+    try { await loadProducts(); }
+    catch (loadError) { showNotice('You are signed in, but the product list could not load. Refresh the page to try again.', true); }
   });
   $('workspace-nav').addEventListener('click',e=>{const b=e.target.closest('[data-workspace]');if(b)showWorkspaceScreen(b.dataset.workspace);});
   document.querySelector('.dashboard-sidebar')?.addEventListener('click',e=>{const link=e.target.closest('.sidebar-link');if(!link)return;const screen=link.dataset.screen||(link.getAttribute('href')==='#owner-customers-section'?'customers':link.getAttribute('href')==='#owner-reports-section'?'reports':link.getAttribute('href')==='#owner-payments-section'?'payments':'overview');e.preventDefault();showWorkspaceScreen(screen);});
