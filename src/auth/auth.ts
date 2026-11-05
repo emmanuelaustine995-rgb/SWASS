@@ -206,12 +206,16 @@ export class AuthController {
         return inserted.rows[0];
       });
       const payload: AuthUser = { sub: user.id, tenantId: user.tenant_id, storeId: user.store_id, role: user.role };
-      let emailVerificationSent = false;
-      if (row.email) { try { emailVerificationSent = (await this.emailVerification.send(user.id, row.email, row.full_name)).sent; } catch { emailVerificationSent = false; } }
+      // Complete account creation without waiting for the external email provider.
+      // Email verification continues independently after the account is ready.
+      if (row.email) {
+        void this.emailVerification.send(user.id, row.email, row.full_name)
+          .catch(error => console.error('[SWASS] Welcome email delivery failed:', error instanceof Error ? error.message : error));
+      }
       return {
         accessToken: await this.jwt.signAsync(payload, { expiresIn: '12h' }),
         trialDays: 7, phoneVerified: true,
-        emailVerificationSent, emailVerificationRequired: !!row.email,
+        emailVerificationSent: false, emailVerificationRequired: !!row.email,
       };
     } catch (err: any) {
       if (err?.code === '23505') throw new UnauthorizedException('This phone number is already registered. Sign in or use another number.');
