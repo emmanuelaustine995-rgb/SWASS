@@ -43,7 +43,10 @@
     $('owner-dashboard-view').classList.remove('hidden');
     $('owner-dashboard-view').classList.remove('workspace-accounting','workspace-console');
     $('owner-dashboard-view').classList.add('workspace-dashboard');
-    document.getElementById('pos-view').classList.add('hidden');
+    document.getElementById('pos-view').classList.remove('hidden');
+    document.querySelector('.pos-grid')?.classList.add('hidden');
+    ['history-panel','owner-customers-section','profile-panel'].forEach(id=>document.getElementById(id)?.classList.add('hidden'));
+    document.querySelector('.customer-lookup-panel')?.classList.add('hidden');
     document.getElementById('workspace-nav').classList.remove('hidden');
     document.querySelectorAll('#workspace-nav button').forEach(b=>b.classList.toggle('active',b.dataset.workspace==='dashboard'));
     initializePeriod();loadDashboard();loadCustomers();
