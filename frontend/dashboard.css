@@ -198,3 +198,36 @@ body.dashboard-dark .sidebar-help small{color:#b2c9bf}
 .comparison-grid article>strong{font-size:25px;line-height:1.2;color:var(--ink,#183126)}
 .comparison-grid article>small{font-size:11px;color:var(--muted,#66736b)}
 @media(max-width:520px){.comparison-grid{grid-template-columns:1fr}.comparison-grid article>strong{font-size:22px}}
+
+
+/* Final separation: Dashboard is sales analytics only; Accounting owns finance tools. */
+#owner-dashboard-view.workspace-dashboard>.dashboard-layout .command-bar,
+#owner-dashboard-view.workspace-dashboard>.dashboard-layout .quick-actions,
+#owner-dashboard-view.workspace-dashboard .owner-stats,
+#owner-dashboard-view.workspace-dashboard .analytics-intro,
+#owner-dashboard-view.workspace-dashboard .headline-metrics,
+#owner-dashboard-view.workspace-dashboard #owner-reports-section,
+#owner-dashboard-view.workspace-dashboard .setup-panel,
+#owner-dashboard-view.workspace-dashboard .secondary-metrics,
+#owner-dashboard-view.workspace-dashboard #owner-expenses-section,
+#owner-dashboard-view.workspace-dashboard #owner-payments-section>section:first-child,
+#owner-dashboard-view.workspace-dashboard #owner-payments-section>section:last-child,
+#owner-dashboard-view.workspace-dashboard #owner-overview-section>article:not(:first-child){display:none!important}
+#owner-dashboard-view.workspace-dashboard #owner-overview-section{display:grid!important;grid-template-columns:minmax(0,1fr)!important}
+#owner-dashboard-view.workspace-dashboard #owner-period-comparison{display:block!important}
+#owner-dashboard-view.workspace-dashboard #owner-payments-section{display:block!important}
+#owner-dashboard-view.workspace-dashboard #owner-payments-section>section:nth-child(2){display:block!important}
+#owner-dashboard-view.workspace-accounting .owner-stats,
+#owner-dashboard-view.workspace-accounting .period-comparison,
+#owner-dashboard-view.workspace-accounting .analytics-intro,
+#owner-dashboard-view.workspace-accounting .headline-metrics,
+#owner-dashboard-view.workspace-accounting #owner-reports-section,
+#owner-dashboard-view.workspace-accounting .setup-panel,
+#owner-dashboard-view.workspace-accounting #owner-payments-section>section:nth-child(2){display:none!important}
+#owner-dashboard-view.workspace-accounting #owner-overview-section,
+#owner-dashboard-view.workspace-accounting .secondary-metrics{display:grid!important}
+#owner-dashboard-view.workspace-accounting #owner-payments-section{display:grid!important}
+#owner-dashboard-view.workspace-accounting #owner-payments-section>section:first-child,
+#owner-dashboard-view.workspace-accounting #owner-payments-section>section:last-child{display:block!important}
+#owner-dashboard-view.workspace-accounting #owner-expenses-section{display:grid!important}
+#owner-dashboard-view.workspace-accounting #owner-expenses-section>section:first-child{display:none!important}
