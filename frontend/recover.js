@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const api = (window.SWASS_API_URL || 'http://localhost:3000').replace(/\\/$/, '');
+  const api = (window.SWASS_API_URL || 'http://localhost:3000').replace(/\/$/, '');
   const $ = (id) => document.getElementById(id);
   let phone = '';
   let requestStarted = false;
@@ -61,8 +61,8 @@
   });
   $('verify-form').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const code = $('code').value.replace(/\\s/g, '');
-    if (!/^\\d{6}$/.test(code)) { message('Enter all six digits from the latest SMS.'); return; }
+    const code = $('code').value.replace(/\s/g, '');
+    if (!/^\d{6}$/.test(code)) { message('Enter all six digits from the latest SMS.'); return; }
     const button = $('verify-form').querySelector('button[type="submit"]');
     button.disabled = true;
     button.textContent = 'Verifying…';
