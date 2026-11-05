@@ -169,6 +169,7 @@ export class ReceiptRecoveryController {
       const endpoint = process.env.TALKSASA_API_URL || 'https://bulksms.talksasa.com/api/v3/sms/send';
       const response = await fetch(endpoint, {
         method: 'POST',
+        signal: AbortSignal.timeout(12000),
         headers: {
           Authorization: `Bearer ${talksasaToken}`,
           Accept: 'application/json',
