@@ -13,6 +13,38 @@
   <div class="sidebar-help"><strong>Need help?</strong><small>Manage your shop and track performance from one place.</small><a href="./index.html">Open point of sale →</a></div>
 </aside>
 <div class="dashboard-main">
+<div class="command-bar">
+ <div class="global-search"><span aria-hidden="true">⌕</span><input id="workspace-search" type="search" placeholder="Search products, customers, receipts or modules…" aria-label="Search dashboard modules"><kbd>Search</kbd></div>
+ <div class="command-actions"><span id="network-status" class="network-status"><i></i> Online</span><button id="theme-toggle" class="btn btn-secondary" type="button" aria-pressed="false">☾ Dark mode</button></div>
+</div>
+<nav class="quick-actions" aria-label="Quick actions">
+ <a class="quick-action primary-action" href="./index.html">＋ New sale</a>
+ <a class="quick-action" href="./index.html#products-panel">＋ Add product</a>
+ <a class="quick-action" href="./recover.html">↗ Find receipt</a>
+ <button class="quick-action disabled-action" type="button" disabled title="Receipt scanning will be added in a later release">▧ Snap supplier receipt · Coming soon</button>
+</nav>
+<section class="owner-stats" aria-label="Business performance">
+ <article class="owner-stat"><span>Sales · selected period</span><strong id="owner-today-sales">KSh 0</strong><small>Recorded sales</small></article>
+ <article class="owner-stat"><span>Estimated net profit</span><strong id="owner-net-profit">KSh 0</strong><small>After recorded expenses</small></article>
+ <article class="owner-stat"><span>Pending customer debt</span><strong id="owner-pending-debt">Not tracked yet</strong><small>Credit ledger not yet enabled</small></article>
+ <article class="owner-stat"><span>Low-stock alerts</span><strong id="owner-low-stock">0</strong><small>Products needing restock</small></article>
+</section>
+<section class="module-hub" aria-label="Business operations">
+ <div class="module-hub-heading"><div><span class="eyebrow">WORKSPACE MODULES</span><h2>Manage your business</h2><p class="muted">Open a tool below. Items marked Coming soon are planned, not active yet.</p></div></div>
+ <div class="module-grid" id="module-grid">
+  <a class="module-tile" data-search="point of sale pos checkout billing new sale" href="./index.html"><span>▣</span><div><strong>Point of sale & billing</strong><small>Quick checkout, barcode field, payment and receipt printing</small></div><b class="module-state ready">Available</b></a>
+  <a class="module-tile" data-search="receipts recovery print whatsapp sms email warranty" href="./recover.html"><span>▤</span><div><strong>Receipts & recovery</strong><small>Find and print previously issued customer receipts</small></div><b class="module-state ready">Available</b></a>
+  <a class="module-tile" data-search="inventory stock products low stock" href="./index.html#products-panel"><span>▦</span><div><strong>Inventory & stock</strong><small>Products, quantities, buying cost and restock thresholds</small></div><b class="module-state ready">Available</b></a>
+  <a class="module-tile" data-search="customers crm purchase history loyalty" href="#customers-section"><span>♙</span><div><strong>Customer management</strong><small>Customer contacts, purchase history and loyalty records</small></div><b class="module-state ready">Available</b></a>
+  <a class="module-tile" data-search="expenses profit costs rent utilities" href="#expenses-section"><span>▧</span><div><strong>Expenses & profit</strong><small>Record expenses and review estimated operating results</small></div><b class="module-state ready">Available</b></a>
+  <a class="module-tile" data-search="reports analytics sales cashier reports" href="#overview-section"><span>▥</span><div><strong>Business reports</strong><small>Sales trends, cashiers, inventory value and expenses</small></div><b class="module-state ready">Available</b></a>
+  <article class="module-tile planned" data-search="supplier receipt scan ocr invoice upload snap photo"><span>▧</span><div><strong>Supplier bills · OCR</strong><small>Scan photos or PDFs and capture supplier and item details</small></div><b class="module-state planned-state">Coming soon</b></article>
+  <article class="module-tile planned" data-search="bank mpesa automatic reconciliation sync account"><span>⇄</span><div><strong>Bank & M-Pesa reconciliation</strong><small>Connect accounts and match incoming and outgoing transactions</small></div><b class="module-state planned-state">Integration needed</b></article>
+  <article class="module-tile planned" data-search="staff shifts cashier manager admin z report drawer reconciliation"><span>♧</span><div><strong>Staff & shift management</strong><small>Team permissions, shifts and end-of-day cash reconciliation</small></div><b class="module-state planned-state">Coming soon</b></article>
+  <article class="module-tile planned" data-search="credit layaway debt partial payments refunds returns"><span>↔</span><div><strong>Credit, refunds & layaway</strong><small>Customer balances, deposits, returns and refund history</small></div><b class="module-state planned-state">Coming soon</b></article>
+ </div>
+ <p id="module-search-empty" class="muted hidden">No matching dashboard tools. Try another search.</p>
+</section>
 <section class="analytics-intro">
   <div><span class="eyebrow">BUSINESS ANALYTICS</span><h2>Your business at a glance</h2><p>Monitor your products, locations and completed transactions.</p></div>
   <span class="account-state"><i></i> Workspace overview</span>
