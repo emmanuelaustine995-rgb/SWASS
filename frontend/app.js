@@ -95,7 +95,7 @@
     const btn=$('register-form').querySelector('button[type="submit"]'); btn.disabled=true; btn.textContent='Creating account…';
     try {
       const data=await request('/api/v1/auth/register',{method:'POST',body:JSON.stringify({
-        businessName:$('reg-business').value.trim(),storeName:$('reg-store').value.trim(),
+        businessName:$('reg-business').value.trim(),storeName:$('reg-store').value.trim(),storeLocation:$('reg-location').value.trim(),
         fullName:$('reg-name').value.trim(),phone:$('reg-phone').value.trim(),
         email:$('reg-email').value.trim(),password:$('reg-password').value
       })});
