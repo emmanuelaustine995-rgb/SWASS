@@ -16,6 +16,29 @@
   function hideNotice(){ $('notice').classList.add('hidden'); }
   function showLogin(){ $('login-view').classList.remove('hidden'); $('pos-view').classList.add('hidden'); $('logout-btn').classList.add('hidden'); $('dashboard-link').classList.add('hidden'); $('user-label').textContent=''; }
   function showPOS(){ $('login-view').classList.add('hidden'); $('pos-view').classList.remove('hidden'); $('logout-btn').classList.remove('hidden'); $('user-label').textContent=state.role ? state.role.replace('_',' ') : 'Staff'; $('add-product-btn').classList.toggle('hidden', !['owner','manager'].includes(state.role)); $('dashboard-link').classList.toggle('hidden', !['owner','manager'].includes(state.role)); $('profile-toggle').classList.toggle('hidden', state.role !== 'owner'); }
+  async function lookupCustomer(ev){
+    ev.preventDefault();
+    const phone=$('lookup-phone').value.trim();
+    const nationalId=$('lookup-national-id').value.trim();
+    const message=$('customer-lookup-message');
+    const result=$('customer-lookup-result');
+    message.textContent='Searching customer records…';result.innerHTML='';
+    try{
+      const data=await request('/api/v1/customers/lookup',{method:'POST',body:JSON.stringify({phone,nationalId})});
+      if(!data.found){
+        message.textContent='No matching customer was found. Register the customer to continue.';
+        result.innerHTML='<div class="customer-result"><p><strong>New customer</strong></p><p class="muted small">Enter the customer details at checkout, then issue the first receipt to save their customer record.</p><button type="button" id="register-lookup-customer" class="btn btn-light">Register new customer</button></div>';
+        return;
+      }
+      const c=data.customer;
+      $('buyer-name').value=c.fullName||'';$('buyer-phone').value=c.phone||'';
+      $('buyer-email').value=c.email||'';
+      $('buyer-id').value=nationalId;
+      message.textContent='Customer found. Their details have been added to the next sale.';
+      const history=(data.recentReceipts||[]).map(r=>'<li>'+escapeHtml(r.receiptNo)+' · '+money(r.totalKes)+' · '+escapeHtml(new Date(r.issuedAt).toLocaleDateString('en-KE'))+'</li>').join('');
+      result.innerHTML='<div class="customer-result"><div class="customer-result-head"><strong>'+escapeHtml(c.fullName)+'</strong><span class="customer-match">Verified match</span></div><p>Phone: '+escapeHtml(c.phone)+'</p><p>National ID: •••• '+escapeHtml(c.nationalIdLast4||'')+'</p><p>Previous purchases: '+Number(c.purchaseCount||0)+' · Loyalty points: '+Number(c.loyaltyPoints||0)+'</p><p>Lifetime spend: '+money(c.lifetimeSpendKes)+'</p>'+(history?'<strong>Recent receipts</strong><ul>'+history+'</ul>':'<p class="muted small">No previous receipts in this branch.</p>')+'<button type="button" id="add-customer-package" class="btn btn-primary">Add New Package</button></div>';
+    }catch(e){message.textContent=e.message||'Could not find customer.';}
+  }
   async function loadReceiptHistory(){
     $('history-error').textContent='';$('history-list').innerHTML='<div class="empty">Loading receipts…</div>';
     const p=new URLSearchParams();const q=$('history-search').value.trim();const from=$('history-from').value;const to=$('history-to').value;
@@ -112,6 +135,20 @@
     }catch(e){$('checkout-error').textContent=e.message;}
     finally{btn.disabled=false;btn.textContent='Issue receipt';}
   }
+  $('customer-lookup-form').addEventListener('submit',lookupCustomer);
+  $('customer-lookup-result').addEventListener('click',e=>{
+    if(e.target.id==='add-customer-package'){
+      $('products-panel')?.scrollIntoView({behavior:'smooth',block:'start'});
+      $('product-search').focus();
+      showNotice('Select the registered goods the customer is buying. They will be added to a new receipt.');
+    }
+    if(e.target.id==='register-lookup-customer'){
+      $('buyer-name').value='';$('buyer-phone').value=$('lookup-phone').value.trim();$('buyer-email').value='';$('buyer-id').value=$('lookup-national-id').value.trim();
+      $('checkout-modal').classList.remove('hidden');
+      $('buyer-name').focus();
+      $('checkout-error').textContent='Enter the new customer name and confirm their phone number before issuing the first receipt.';
+    }
+  });
   $('add-product-btn').addEventListener('click',()=>{ $('product-form').reset(); $('product-error').textContent=''; $('product-modal').classList.remove('hidden'); });
   $('product-close').addEventListener('click',()=> $('product-modal').classList.add('hidden'));
   $('product-form').addEventListener('submit',async e=>{
