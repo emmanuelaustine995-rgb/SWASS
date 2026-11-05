@@ -40,8 +40,27 @@
   }
   function openCheckout(){const items=[...state.cart.values()];const needsBuyer=items.some(r=>r.product.requiresBuyerId);$('buyer-id-wrap').classList.toggle('hidden',!needsBuyer);$('buyer-id-note').classList.toggle('hidden',!needsBuyer);$('checkout-total').textContent=money(totals().total);$('checkout-error').textContent='';$('checkout-modal').classList.remove('hidden');}
   function makeReceiptMarkup(receipt, sale, customer){
+    const business=receipt.business||{};
     const lines=sale.items.map(i=>`<div class="receipt-line"><span>${escapeHtml(i.name)} × ${i.qty}</span><span>${money(i.price*i.qty)}</span></div>`).join('');
-    return `<div class="receipt-center"><h3>SWASS BUSINESS</h3><div class="muted">Sales receipt</div></div><div class="receipt-divider"></div><div>Receipt: ${escapeHtml(receipt.receiptNo)}</div><div>Date: ${new Date().toLocaleString('en-KE')}</div><div>Payment: ${escapeHtml(sale.paymentMethod.toUpperCase())}</div>${customer?`<div>Customer: ${escapeHtml(customer.fullName)}</div>${customer.email?`<div>Email: ${escapeHtml(customer.email)}</div>`:''}`:''}<div class="receipt-divider"></div>${lines}<div class="receipt-divider"></div><div class="receipt-line"><span>Subtotal</span><span>${money(sale.subtotal)}</span></div><div class="receipt-line"><span>Discount</span><span>${money(sale.discount)}</span></div><div class="receipt-line"><strong>TOTAL</strong><strong>${money(receipt.totalKes)}</strong></div><div class="receipt-divider"></div><div class="receipt-center">Thank you for shopping with us!<br><small>Receipt reference: ${escapeHtml(receipt.id)}</small><br><small>Verify online: ${escapeHtml((new URL('verify.html', window.location.href).href + '?token=' + encodeURIComponent(receipt.qrToken)))}</small></div>`;
+    const verifyUrl=new URL('verify.html',window.location.href).href+'?token='+encodeURIComponent(receipt.qrToken);
+    return `<div class="receipt-center"><h2>${escapeHtml(business.name||'BUSINESS NAME')}</h2>
+      ${business.storeName?`<div>${escapeHtml(business.storeName)}</div>`:''}
+      ${business.location?`<div>${escapeHtml(business.location)}</div>`:''}
+      ${business.phone?`<div>Tel: ${escapeHtml(business.phone)}</div>`:''}
+      ${business.email?`<div>Email: ${escapeHtml(business.email)}</div>`:''}
+      ${business.receiptHeader?`<div>${escapeHtml(business.receiptHeader)}</div>`:''}
+      <div class="muted">OFFICIAL SALES RECEIPT</div></div>
+      <div class="receipt-divider"></div><div>Receipt: <strong>${escapeHtml(receipt.receiptNo)}</strong></div>
+      <div class="receipt-center"><svg id="receipt-barcode" aria-label="Receipt barcode"></svg></div>
+      <div>Date: ${new Date().toLocaleString('en-KE')}</div><div>Payment: ${escapeHtml(sale.paymentMethod.toUpperCase())}</div>
+      ${customer?`<div>Customer: ${escapeHtml(customer.fullName)}</div><div>Phone: ${escapeHtml(customer.phone)}</div>${customer.email?`<div>Email: ${escapeHtml(customer.email)}</div>`:''}`:''}
+      <div class="receipt-divider"></div>${lines}<div class="receipt-divider"></div>
+      <div class="receipt-line"><span>Subtotal</span><span>${money(sale.subtotal)}</span></div>
+      <div class="receipt-line"><span>Discount</span><span>${money(sale.discount)}</span></div>
+      <div class="receipt-line"><strong>TOTAL PAID</strong><strong>${money(receipt.totalKes)}</strong></div>
+      <div class="receipt-divider"></div><div class="receipt-center">Thank you for shopping with us!
+      ${business.receiptFooter?`<br>${escapeHtml(business.receiptFooter)}`:''}
+      <br><small>Scan/check online: ${escapeHtml(verifyUrl)}</small></div>`;
   }
   async function completeSale(ev){
     ev.preventDefault(); const items=[...state.cart.values()]; if(!items.length)return;
@@ -55,7 +74,7 @@
     try{
       const receipt=await request('/api/v1/receipts',{method:'POST',body:JSON.stringify(payload)});
       state.lastReceipt=receipt; const sale={items:items.map(r=>({name:r.product.name,qty:r.qty,price:Number(r.product.priceKes)})),subtotal:t.subtotal,discount:t.discount,paymentMethod:payload.paymentMethod};
-      $('receipt-paper').innerHTML=makeReceiptMarkup(receipt,sale,payload.customer);$('checkout-modal').classList.add('hidden');$('receipt-modal').classList.remove('hidden');state.cart.clear();$('discount').value='0';$('checkout-form').reset();renderCart();await loadProducts();hideNotice();
+      $('receipt-paper').innerHTML=makeReceiptMarkup(receipt,sale,payload.customer);if(window.JsBarcode){try{window.JsBarcode('#receipt-barcode',receipt.receiptNo,{format:'CODE128',displayValue:true,height:48,margin:4});}catch{}}$('checkout-modal').classList.add('hidden');$('receipt-modal').classList.remove('hidden');state.cart.clear();$('discount').value='0';$('checkout-form').reset();renderCart();await loadProducts();hideNotice();
     }catch(e){$('checkout-error').textContent=e.message;}
     finally{btn.disabled=false;btn.textContent='Issue receipt';}
   }
