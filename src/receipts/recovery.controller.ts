@@ -47,7 +47,10 @@ export class ReceiptRecoveryController {
     if (ids.length) {
       try {
         await this.sendSms(phone, `Your SWASS receipt recovery code is ${code}. It expires in 5 minutes. Do not share it.`);
-      } catch {
+      } catch (error) {
+        // Provider diagnostics only; sendSms never includes API keys, phone numbers, or OTP text in its errors.
+        const reason = error instanceof Error ? error.message : 'Unknown SMS provider error';
+        console.error('[SWASS] Receipt recovery SMS delivery failed:', reason);
         await this.db.pool.query(`UPDATE otp_requests SET expires_at=now() WHERE id=$1`, [saved.rows[0].id]);
         throw new ServiceUnavailableException('SMS delivery failed. Please try again later or contact the business.');
       }
