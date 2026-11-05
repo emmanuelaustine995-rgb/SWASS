@@ -143,3 +143,9 @@ body.dashboard-dark .sidebar-link:hover,body.dashboard-dark .sidebar-link.active
 body.dashboard-dark .sidebar-help{background:#1b3a32;border-color:#2c5748}
 body.dashboard-dark .sidebar-help strong,body.dashboard-dark .sidebar-help a{color:#a9e6c3}
 body.dashboard-dark .sidebar-help small{color:#b2c9bf}
+
+.workspace-nav{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px;padding:10px;background:var(--panel,#fff);border:1px solid var(--line,#e5e7eb);border-radius:14px}
+.workspace-nav button{border:0;background:transparent;padding:10px 14px;border-radius:9px;font:inherit;font-weight:600;color:inherit;cursor:pointer}
+.workspace-nav button.active{background:var(--primary,#155e45);color:#fff}
+#owner-dashboard-view{width:100%}
+@media(max-width:760px){.workspace-nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}.workspace-nav button{padding:9px 5px;font-size:13px}}
