@@ -1,11 +1,11 @@
 import {
-  CanActivate, Controller, ExecutionContext, ForbiddenException, Injectable,
-  Post, Body, Req, SetMetadata, UnauthorizedException, UseGuards,
+  BadRequestException, CanActivate, Controller, ExecutionContext, ForbiddenException, Injectable,
+  Post, Body, Req, SetMetadata, UnauthorizedException, UseGuards, ServiceUnavailableException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
-import { createHash, timingSafeEqual } from 'node:crypto';
+import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import { DbService } from '../db/db.service';
 import { EmailVerificationService } from '../notifications/email-verification.service';
 
@@ -65,37 +65,136 @@ export class AuthController {
     throw new UnauthorizedException('Enter a valid Kenyan phone number');
   }
 
+  private signupCodeHash(code: string): string {
+    const secret = process.env.SWASS_ID_SECRET;
+    if (!secret) throw new Error('SWASS_ID_SECRET is required');
+    return createHmac('sha256', secret).update(`signup-otp:${code}`).digest('hex');
+  }
+
+  private async sendSignupSms(to: string, message: string): Promise<void> {
+    const token = process.env.TALKSASA_API_TOKEN;
+    if (!token) {
+      if (process.env.NODE_ENV !== 'production') return;
+      throw new Error('TalkSasa SMS is not configured');
+    }
+    const response = await fetch(process.env.TALKSASA_API_URL || 'https://bulksms.talksasa.com/api/v3/sms/send', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        recipient: `+${to}`,
+        sender_id: process.env.TALKSASA_SENDER_ID || 'TALK-SASA',
+        type: 'plain',
+        message,
+      }),
+    });
+    const raw = await response.text();
+    let result: any = {};
+    try { result = raw ? JSON.parse(raw) : {}; } catch { result = {}; }
+    if (!response.ok || result?.success === false || result?.status === false || result?.error) {
+      const reason = String(result?.message ?? result?.error ?? raw ?? '').slice(0, 160);
+      throw new Error(`TalkSasa SMS delivery failed (HTTP ${response.status})${reason ? `: ${reason}` : ''}`);
+    }
+  }
+
   @Post('register')
-  async register(@Body() body: { businessName?: string; storeName?: string; storeLocation?: string; fullName?: string; phone?: string; email?: string; password?: string }) {
+  async register(@Body() body: { businessName?: string; storeName?: string; storeLocation?: string; fullName?: string; phone?: string; email?: string; password?: string }, @Req() req: any) {
     const businessName = body?.businessName?.trim();
     const storeName = (body?.storeName || body?.businessName)?.trim();
     const storeLocation = body?.storeLocation?.trim() || null;
-    if (storeLocation && storeLocation.length > 200) throw new UnauthorizedException('Store location must be at most 200 characters');
     const fullName = body?.fullName?.trim();
     const email = body?.email?.trim().toLowerCase() || null;
     const password = body?.password || '';
     if (!businessName || businessName.length > 120 || !storeName || storeName.length > 120 || !fullName || fullName.length > 120) {
-      throw new UnauthorizedException('Enter your business name, store name and full name (maximum 120 characters each)');
+      throw new BadRequestException('Enter your business name, store name and full name (maximum 120 characters each)');
     }
-    if (email && (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254)) throw new UnauthorizedException('Enter a valid email address');
-    if (password.length < 10 || password.length > 128) throw new UnauthorizedException('Password must be at least 10 characters');
+    if (storeLocation && storeLocation.length > 200) throw new BadRequestException('Store location must be at most 200 characters');
+    if (email && (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) || email.length > 254)) throw new BadRequestException('Enter a valid email address');
+    if (password.length < 10 || password.length > 128) throw new BadRequestException('Password must be at least 10 characters');
     const phone = this.normalizePhone(body.phone || '');
+    const ip = String(req.ip ?? '').replace(/^::ffff:/, '') || null;
+
+    const existing = await this.db.pool.query('SELECT 1 FROM users WHERE phone=$1 LIMIT 1', [phone]);
+    if (existing.rowCount) throw new UnauthorizedException('This phone number is already registered. Sign in or use another number.');
+
+    const limits = await this.db.pool.query(
+      `SELECT
+        (SELECT count(*)::int FROM signup_otp_requests WHERE phone=$1 AND created_at>now()-interval '15 minutes') AS phone_count,
+        (SELECT count(*)::int FROM signup_otp_requests WHERE ip_address=$2::inet AND created_at>now()-interval '15 minutes') AS ip_count`,
+      [phone, ip],
+    );
+    if (limits.rows[0].phone_count >= 3 || limits.rows[0].ip_count >= 10) {
+      throw new BadRequestException('Too many OTP requests. Please wait 15 minutes before trying again.');
+    }
+
     const passwordHash = await argon2.hash(password);
+    const code = String(randomBytes(4).readUInt32BE(0) % 1000000).padStart(6, '0');
+    await this.db.pool.query(
+      `UPDATE signup_otp_requests SET expires_at=now()
+       WHERE phone=$1 AND verified_at IS NULL AND consumed_at IS NULL AND expires_at>now()`,
+      [phone],
+    );
+    const saved = await this.db.pool.query(
+      `INSERT INTO signup_otp_requests
+       (phone,business_name,store_name,store_location,full_name,email,password_hash,code_hash,ip_address,expires_at)
+       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9::inet,now()+interval '5 minutes') RETURNING id`,
+      [phone,businessName,storeName,storeLocation,fullName,email,passwordHash,this.signupCodeHash(code),ip],
+    );
     try {
-      const result = await this.db.tx(async c => {
+      await this.sendSignupSms(phone, `Your SWASS signup verification code is ${code}. It expires in 5 minutes. Do not share this code.`);
+    } catch (error) {
+      await this.db.pool.query('UPDATE signup_otp_requests SET expires_at=now() WHERE id=$1', [saved.rows[0].id]);
+      const reason = error instanceof Error ? error.message : 'SMS provider error';
+      console.error('[SWASS] Signup OTP delivery failed:', reason);
+      throw new ServiceUnavailableException('We could not send your verification code. Please check the phone number and try again.');
+    }
+    return process.env.NODE_ENV === 'production'
+      ? { otpRequired: true, expiresInSeconds: 300, message: 'A 6-digit verification code has been sent to your phone.' }
+      : { otpRequired: true, expiresInSeconds: 300, message: 'A 6-digit verification code has been sent to your phone.', developmentCode: code };
+  }
+
+  @Post('register/verify-otp')
+  async verifySignupOtp(@Body() body: { phone?: string; code?: string }) {
+    if (!body?.phone || !/^\\d{6}$/.test(String(body?.code ?? '').trim())) {
+      throw new BadRequestException('Enter your phone number and the 6-digit code sent by SMS.');
+    }
+    const phone = this.normalizePhone(body.phone);
+    const code = String(body.code).trim();
+    const pending = await this.db.pool.query(
+      `SELECT * FROM signup_otp_requests
+       WHERE phone=$1 AND verified_at IS NULL AND consumed_at IS NULL AND expires_at>now()
+       ORDER BY created_at DESC LIMIT 1`,
+      [phone],
+    );
+    const row = pending.rows[0];
+    if (!row || Number(row.attempts) >= 5) throw new BadRequestException('Code is invalid or expired. Request a new code.');
+    const supplied = Buffer.from(this.signupCodeHash(code), 'hex');
+    const expected = Buffer.from(row.code_hash, 'hex');
+    if (supplied.length !== expected.length || !timingSafeEqual(supplied, expected)) {
+      await this.db.pool.query('UPDATE signup_otp_requests SET attempts=attempts+1 WHERE id=$1 AND attempts<5', [row.id]);
+      throw new BadRequestException('That code is incorrect. Check the SMS and try again.');
+    }
+
+    try {
+      const user = await this.db.tx(async c => {
+        const locked = await c.query(
+          `SELECT * FROM signup_otp_requests
+           WHERE id=$1 AND verified_at IS NULL AND consumed_at IS NULL AND expires_at>now()
+           FOR UPDATE`, [row.id],
+        );
+        if (!locked.rowCount || Number(locked.rows[0].attempts) >= 5) throw new BadRequestException('Code is invalid or expired. Request a new code.');
         const tenant = await c.query(
           'INSERT INTO tenants (name, phone, email) VALUES ($1,$2,$3) RETURNING id',
-          [businessName, phone, email],
+          [row.business_name, phone, row.email],
         );
         const tenantId = tenant.rows[0].id;
         const store = await c.query(
           'INSERT INTO stores (tenant_id,name,location) VALUES ($1,$2,$3) RETURNING id',
-          [tenantId, storeName, storeLocation],
+          [tenantId, row.store_name, row.store_location],
         );
-        const user = await c.query(
+        const inserted = await c.query(
           `INSERT INTO users (tenant_id,store_id,full_name,phone,email,password_hash,role)
            VALUES ($1,$2,$3,$4,$5,$6,'owner') RETURNING id,tenant_id,store_id,role`,
-          [tenantId, store.rows[0].id, fullName, phone, email, passwordHash],
+          [tenantId,store.rows[0].id,row.full_name,phone,row.email,row.password_hash],
         );
         await c.query('INSERT INTO wallets (tenant_id) VALUES ($1)', [tenantId]);
         await c.query(
@@ -103,12 +202,17 @@ export class AuthController {
            VALUES ($1,'monthly',100,now(),now()+interval '7 days','active',false)`,
           [tenantId],
         );
-        return user.rows[0];
+        await c.query('UPDATE signup_otp_requests SET verified_at=now(),consumed_at=now() WHERE id=$1', [row.id]);
+        return inserted.rows[0];
       });
-      const payload: AuthUser = { sub: result.id, tenantId: result.tenant_id, storeId: result.store_id, role: result.role };
+      const payload: AuthUser = { sub: user.id, tenantId: user.tenant_id, storeId: user.store_id, role: user.role };
       let emailVerificationSent = false;
-      if (email) { try { emailVerificationSent = (await this.emailVerification.send(result.id, email, fullName)).sent; } catch { emailVerificationSent = false; } }
-      return { accessToken: await this.jwt.signAsync(payload, { expiresIn: '12h' }), trialDays: 7, emailVerificationSent, emailVerificationRequired: !!email };
+      if (row.email) { try { emailVerificationSent = (await this.emailVerification.send(user.id, row.email, row.full_name)).sent; } catch { emailVerificationSent = false; } }
+      return {
+        accessToken: await this.jwt.signAsync(payload, { expiresIn: '12h' }),
+        trialDays: 7, phoneVerified: true,
+        emailVerificationSent, emailVerificationRequired: !!row.email,
+      };
     } catch (err: any) {
       if (err?.code === '23505') throw new UnauthorizedException('This phone number is already registered. Sign in or use another number.');
       throw err;
