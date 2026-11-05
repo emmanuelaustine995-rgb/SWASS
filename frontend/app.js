@@ -1,7 +1,7 @@
 (() => {
   'use strict';
   const $ = (id) => document.getElementById(id);
-  const state = { token: null, role: null, products: [], cart: new Map(), receiptNo: 1, lastReceipt: null };
+  const state = { token: null, role: null, products: [], cart: new Map(), receiptNo: 1, lastReceipt: null, profileLogoData: undefined };
   const API = (window.SWASS_API_URL || '').replace(/\/$/, '');
   const money = (n) => `KSh ${Number(n || 0).toLocaleString('en-KE')}`;
   const escapeHtml = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -16,6 +16,8 @@
   function hideNotice(){ $('notice').classList.add('hidden'); }
   function showLogin(){ $('login-view').classList.remove('hidden'); $('pos-view').classList.add('hidden'); $('logout-btn').classList.add('hidden'); $('dashboard-link').classList.add('hidden'); $('user-label').textContent=''; }
   function showPOS(){ $('login-view').classList.add('hidden'); $('pos-view').classList.remove('hidden'); $('logout-btn').classList.remove('hidden'); $('user-label').textContent=state.role ? state.role.replace('_',' ') : 'Staff'; $('add-product-btn').classList.toggle('hidden', !['owner','manager'].includes(state.role)); $('dashboard-link').classList.toggle('hidden', !['owner','manager'].includes(state.role)); $('profile-toggle').classList.toggle('hidden', !['owner','manager'].includes(state.role)); }
+  async function loadBusinessProfile(){const d=await request('/api/v1/business/profile');const p=d.profile||{};$('profile-business-name').value=p.businessName||'';$('profile-business-phone').value=p.businessPhone||'';$('profile-business-email').value=p.businessEmail||'';$('profile-store-name').value=p.storeName||'';$('profile-store-location').value=p.storeLocation||'';$('profile-receipt-header').value=p.receiptHeader||'';$('profile-receipt-footer').value=p.receiptFooter||'';state.profileLogoData=p.logoData||undefined;const img=$('logo-preview');if(state.profileLogoData){img.src=state.profileLogoData;img.classList.remove('hidden');}else{img.removeAttribute('src');img.classList.add('hidden');}}
+  async function compressLogo(file){if(!file||!['image/png','image/jpeg','image/webp'].includes(file.type))throw new Error('Choose PNG, JPG or WebP.');if(file.size>100000)throw new Error('Choose a logo smaller than 100 KB.');return await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=()=>reject(new Error('Could not read logo.'));r.readAsDataURL(file);});}
   async function loadProducts(){
     const q=$('product-search').value.trim(); const low=$('low-stock').checked;
     const params=new URLSearchParams(); if(q) params.set('q',q); if(low) params.set('lowStock','true');
