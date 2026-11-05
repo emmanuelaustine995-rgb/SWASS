@@ -89,6 +89,25 @@ export class ReceiptsService {
 
   private async createInTx(c: PoolClient, user: AuthUser, dto: CreateReceiptDto) {
     const tenantId = user.tenantId!;
+    const businessResult = await c.query(
+      `SELECT t.name AS business_name, t.phone AS business_phone, t.email AS business_email,
+              s.name AS store_name, s.location AS store_location,
+              s.receipt_header, s.receipt_footer
+         FROM tenants t JOIN stores s ON s.tenant_id=t.id
+        WHERE t.id=$1 AND s.id=$2 LIMIT 1`,
+      [tenantId, user.storeId],
+    );
+    if (!businessResult.rows[0]) throw new ForbiddenException('Business details could not be loaded');
+    const businessRow = businessResult.rows[0];
+    const business = {
+      name: businessRow.business_name,
+      phone: businessRow.business_phone,
+      email: businessRow.business_email,
+      storeName: businessRow.store_name,
+      location: businessRow.store_location,
+      receiptHeader: businessRow.receipt_header,
+      receiptFooter: businessRow.receipt_footer,
+    };
 
     // 1. Already stored (offline retry)? Return it without charging again.
     const existing = await this.findByClientUuid(c, tenantId, dto.clientUuid, dto);
@@ -208,7 +227,7 @@ export class ReceiptsService {
 
     return {
       id: receipt.id, receiptNo: receipt.receipt_no, totalKes: Number(receipt.total_kes),
-      qrToken: receipt.qr_token, status: receipt.status, pointsEarned, duplicate: false,
+      qrToken: receipt.qr_token, status: receipt.status, pointsEarned, duplicate: false, business,
     };
   }
 
