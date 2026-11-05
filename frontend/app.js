@@ -23,6 +23,9 @@
       owner.classList.add('hidden');pos.classList.remove('hidden');
       const map={sales:'products-panel',products:'products-panel',receipts:'history-panel',customers:'owner-customers-section'};
       document.getElementById(map[screen])?.scrollIntoView({behavior:'smooth',block:'start'});
+      if(screen==='receipts'&&$('history-content').classList.contains('hidden')){
+        $('history-content').classList.remove('hidden');$('history-toggle').textContent='Close history';loadReceiptHistory();
+      }
     }else{
       pos.classList.add('hidden');owner.classList.remove('hidden');
       const map={reports:'owner-reports-section',payments:'owner-payments-section'};
