@@ -3,3 +3,5 @@
 
 .inventory-actions{display:flex;align-items:center;gap:10px}.inventory-actions .btn{padding:9px 12px;min-height:38px;font-size:12px}.form-two{display:grid;grid-template-columns:1fr 1fr;gap:12px}.inline-check{display:flex;align-items:center;gap:9px;font-weight:600!important}.inline-check input{width:18px;min-height:18px}.buyer-fields{display:grid;gap:12px}.buyer-fields label{display:grid}.buyer-fields .hidden{display:none!important}
 @media(max-width:430px){.inventory-actions{gap:6px}.inventory-actions .btn{padding:8px;font-size:11px}.form-two{grid-template-columns:1fr}}
+
+.profile-panel{padding:20px;margin:0 0 20px}.profile-panel form{display:grid;gap:13px}.profile-logo-row{display:flex;align-items:center;gap:16px}.logo-preview{width:90px;height:90px;object-fit:contain;border:1px solid var(--line);border-radius:12px;background:#fff;padding:6px}.receipt-logo{display:block;max-width:130px;max-height:90px;object-fit:contain;margin:0 auto 8px}.receipt-paper h2{font-size:17px;margin:0 0 4px}@media(max-width:430px){.profile-logo-row{align-items:flex-start;flex-direction:column}}
