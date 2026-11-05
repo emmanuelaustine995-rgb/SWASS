@@ -18,7 +18,7 @@
   async function loadDashboard(){
     try {
       const data=await request(`/api/v1/dashboard/summary${periodQuery()}`); const s=data.sales,i=data.inventory,e=data.expenses;
-      $('m-sales').textContent=money(s.salesKes);$('m-transactions').textContent=`${s.transactions} transactions`;
+      $('owner-today-sales').textContent=money(s.salesKes);$('owner-net-profit').textContent=money(s.estimatedNetOperatingKes);$('owner-low-stock').textContent=Number(i.lowStockCount||0).toLocaleString('en-KE');$('m-sales').textContent=money(s.salesKes);$('m-transactions').textContent=`${s.transactions} transactions`;
       $('m-profit').textContent=money(s.grossProfitKes);$('m-expenses').textContent=money(s.expensesKes);$('m-expense-count').textContent=`${e.count} entries`;$('m-net').textContent=money(s.estimatedNetOperatingKes);
       $('m-products').textContent=i.productCount;$('m-products-top').textContent=Number(i.productCount||0).toLocaleString('en-KE');$('m-locations').textContent='0';$('m-month-transactions').textContent=Number(s.transactions||0).toLocaleString('en-KE');$('channel-pos').textContent=money(s.salesKes);$('channel-api').textContent=money(0);$('channel-invoices').textContent=money(0);$('channel-offline').textContent=money(0);$('m-low').textContent=`${i.lowStockCount} need restocking`;$('m-stock-cost').textContent=money(i.stockCostKes);$('m-stock-retail').textContent=`Retail value: ${money(i.stockRetailKes)}`;$('m-discounts').textContent=money(s.discountsKes);
       $('m-wallet').textContent=money(data.subscription?.balanceKes||0);$('m-subscription').textContent=data.subscription?`${data.subscription.plan} plan · ${data.subscription.status}`:'No subscription details';
@@ -42,6 +42,36 @@
   $('mpesa-form').addEventListener('submit',async ev=>{ev.preventDefault();const message=$('mpesa-message');message.textContent='Requesting payment prompt…';try{const purpose=$('mpesa-purpose').value;const payload={purpose,phone:$('mpesa-phone').value.trim()};if(purpose==='wallet_topup')payload.amountKes=Number($('topup-amount').value);else payload.plan=$('subscription-plan').value;const result=await request('/api/v1/mpesa/stk-push',{method:'POST',body:JSON.stringify(payload)});message.textContent=`STK prompt requested for ${money(result.amountKes)}. Enter your M-Pesa PIN on your phone. Checking payment status…`;let attempts=0;const check=async()=>{try{const status=await request(`/api/v1/mpesa/payments/${result.paymentId}`);if(status.status==='success'){message.textContent=`Payment confirmed. M-Pesa receipt: ${status.receiptNumber||'recorded'}.`;await loadDashboard();return;}if(status.status==='failed'){message.textContent='Payment was not completed. You can try again.';return;}attempts++;if(attempts<12){setTimeout(check,5000);}else{message.textContent=`Payment is still pending. Use Refresh status later. Payment reference: ${result.paymentId}`;}}catch(e){message.textContent=e.message;}};await check();}catch(e){message.textContent=e.message;}});
   $('crm-refresh').addEventListener('click',loadCustomers);$('crm-search-btn').addEventListener('click',loadCustomers);$('crm-search').addEventListener('keydown',ev=>{if(ev.key==='Enter'){ev.preventDefault();loadCustomers();}});
   $('expense-form').addEventListener('submit',async ev=>{ev.preventDefault();$('expense-message').textContent='Saving…';try{await request('/api/v1/dashboard/expenses',{method:'POST',body:JSON.stringify({amountKes:Number($('expense-amount').value),category:$('expense-category').value.trim(),note:$('expense-note').value.trim()||undefined})});$('expense-form').reset();$('expense-message').textContent='Expense saved.';await loadDashboard();}catch(e){$('expense-message').textContent=e.message;}});
+  const themeKey='swass-dashboard-theme';
+  function applyDashboardTheme(dark){
+    document.body.classList.toggle('dashboard-dark',dark);
+    $('theme-toggle').textContent=dark?'☀ Light mode':'☾ Dark mode';
+    $('theme-toggle').setAttribute('aria-pressed',String(dark));
+  }
+  applyDashboardTheme(localStorage.getItem(themeKey)==='dark');
+  $('theme-toggle').addEventListener('click',()=>{
+    const dark=!document.body.classList.contains('dashboard-dark');
+    applyDashboardTheme(dark);
+    localStorage.setItem(themeKey,dark?'dark':'light');
+  });
+  function updateNetworkStatus(){
+    const online=navigator.onLine;
+    $('network-status').classList.toggle('offline',!online);
+    $('network-status').innerHTML=online?'<i></i> Online':'<i></i> Offline · Sync unavailable';
+  }
+  window.addEventListener('online',updateNetworkStatus);
+  window.addEventListener('offline',updateNetworkStatus);
+  updateNetworkStatus();
+  $('workspace-search').addEventListener('input',()=>{
+    const q=$('workspace-search').value.trim().toLowerCase();
+    let visible=0;
+    document.querySelectorAll('#module-grid .module-tile').forEach(tile=>{
+      const match=!q||tile.textContent.toLowerCase().includes(q)||(tile.dataset.search||'').includes(q);
+      tile.classList.toggle('hidden',!match);
+      if(match)visible++;
+    });
+    $('module-search-empty').classList.toggle('hidden',visible>0);
+  });
   if(!API)$('login-error').textContent='Set SWASS_API_URL in frontend/config.js before signing in.';
   initializePeriod();
   showLogin();
