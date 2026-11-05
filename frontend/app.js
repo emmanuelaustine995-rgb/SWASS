@@ -19,14 +19,14 @@
 
   function showWorkspaceScreen(screen){
     const owner=document.getElementById('owner-dashboard-view'),pos=$('pos-view');
-    if(screen==='sales'||screen==='products'||screen==='receipts'){
+    if(['sales','products','receipts','customers'].includes(screen)){
       owner.classList.add('hidden');pos.classList.remove('hidden');
-      const target=screen==='products'?$ ('products-panel'):screen==='receipts'?$ ('history-panel'):$('customer-lookup-form');
-      target.scrollIntoView({behavior:'smooth',block:'start'});
+      const map={sales:'products-panel',products:'products-panel',receipts:'history-panel',customers:'owner-customers-section'};
+      document.getElementById(map[screen])?.scrollIntoView({behavior:'smooth',block:'start'});
     }else{
       pos.classList.add('hidden');owner.classList.remove('hidden');
-      const map={overview:'owner-overview-section',customers:'owner-customers-section',reports:'owner-reports-section',payments:'owner-payments-section'};
-      document.getElementById(map[screen]||map.overview)?.scrollIntoView({behavior:'smooth',block:'start'});
+      const map={reports:'owner-reports-section',payments:'owner-payments-section'};
+      document.getElementById(map[screen]||map.reports)?.scrollIntoView({behavior:'smooth',block:'start'});
     }
     document.querySelectorAll('#workspace-nav button').forEach(b=>b.classList.toggle('active',b.dataset.workspace===screen));
   }
