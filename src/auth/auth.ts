@@ -79,6 +79,7 @@ export class AuthController {
     }
     const response = await fetch(process.env.TALKSASA_API_URL || 'https://bulksms.talksasa.com/api/v3/sms/send', {
       method: 'POST',
+      signal: AbortSignal.timeout(12000),
       headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', 'Content-Type': 'application/json' },
       body: JSON.stringify({
         recipient: `+${to}`,
@@ -263,11 +264,16 @@ export class AuthController {
     if (!body?.phone || !password) throw new UnauthorizedException();
     const phone = this.normalizePhone(body.phone);
 
+    const localPhone = '0' + phone.slice(3);
+    const phoneVariants = [phone, localPhone];
     const { rows } = await this.db.pool.query(
       `SELECT u.id, u.tenant_id, u.store_id, u.role, u.password_hash, u.is_active, t.status AS tenant_status
          FROM users u LEFT JOIN tenants t ON t.id = u.tenant_id
-        WHERE u.phone = $1`,
-      [phone],
+        WHERE u.phone = ANY($1::text[])
+           OR regexp_replace(u.phone, '[^0-9]', '', 'g') = ANY($1::text[])
+        ORDER BY CASE WHEN u.phone = $2 THEN 0 ELSE 1 END
+        LIMIT 1`,
+      [phoneVariants, phone],
     );
     const u = rows[0];
     // Same error for unknown phone, wrong password or disabled account.
