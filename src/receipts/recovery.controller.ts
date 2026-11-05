@@ -128,7 +128,11 @@ export class ReceiptRecoveryController {
     if (atUsername && atApiKey) {
       const form = new URLSearchParams({ username: atUsername, to: `+${to}`, message });
       if (process.env.AT_SENDER_ID) form.set('from', process.env.AT_SENDER_ID);
-      const response = await fetch('https://api.africastalking.com/version1/messaging', {
+      // Sandbox credentials must use the Sandbox API host; live credentials use the live host.
+      const atBaseUrl = atUsername === 'sandbox'
+        ? 'https://api.sandbox.africastalking.com/version1/messaging'
+        : 'https://api.africastalking.com/version1/messaging';
+      const response = await fetch(atBaseUrl, {
         method: 'POST',
         headers: { apiKey: atApiKey, Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
         body: form,
