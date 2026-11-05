@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#10251d"><title>SWASS | Point of Sale</title>
-  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./styles.css">\n  <link rel="stylesheet" href="./dashboard.css">
 </head>
 <body>
-  <header class="topbar"><a class="brand" href="#"><span class="brand-mark">S</span><span>SWASS<small>BUSINESS & RECEIPT MANAGEMENT</small></span></a><div class="top-actions"><span id="user-label" class="user-label"></span><a id="dashboard-link" class="btn btn-quiet hidden" href="./dashboard.html">Business dashboard</a><button id="logout-btn" class="btn btn-quiet hidden">Log out</button></div></header>
+  <header class="topbar"><a class="brand" href="#"><span class="brand-mark">S</span><span>SWASS<small>BUSINESS & RECEIPT MANAGEMENT</small></span></a><div class="top-actions"><span id="user-label" class="user-label"></span><span id="dashboard-link" class="btn btn-quiet hidden">Business workspace</span><button id="logout-btn" class="btn btn-quiet hidden">Log out</button></div></header>
   <main class="shell">
     <section id="login-view" class="login-wrap">
       <div class="login-card"><p class="eyebrow">WELCOME BACK</p><h1>Sign in to your till</h1><p class="muted">Use your SWASS staff phone number and password.</p>
@@ -36,7 +36,7 @@
         </form>
       </div>
     </section>
-    <section id="pos-view" class="hidden">
+    <section id="pos-view" class="hidden">\n      <nav id="workspace-nav" class="workspace-nav hidden" aria-label="Main navigation"><button type="button" data-workspace="overview">Overview</button><button type="button" data-workspace="sales">Sales & Till</button><button type="button" data-workspace="products">Products</button><button type="button" data-workspace="customers">Customers</button><button type="button" data-workspace="reports">Reports</button><button type="button" data-workspace="payments">Payments</button></nav>
       <div class="page-heading"><div><p class="eyebrow">POINT OF SALE</p><h1>New sale</h1><p class="muted">Find products, add them to the cart and issue a receipt.</p></div><div class="inventory-actions"><button id="profile-toggle" class="btn btn-light" type="button">Business profile</button><button id="refresh-btn" class="btn btn-light">↻ Refresh products</button></div></div>
       <div id="notice" class="notice hidden" role="status"></div>
       <section id="profile-panel" class="panel profile-panel hidden"><div class="section-head"><div><h2>Business details & receipt branding</h2><p class="muted small">Changes will automatically appear on new receipts.</p></div><button id="profile-close" class="btn btn-light" type="button">Close</button></div><form id="profile-form"><div class="profile-logo-row"><img id="logo-preview" alt="Business logo preview" class="logo-preview hidden"><label>Business logo (PNG, JPG or WebP, max 60 KB)<input id="business-logo" type="file" accept="image/png,image/jpeg,image/webp"></label></div><div class="form-two"><label>Business name<input id="profile-business-name" maxlength="120" required></label><label>Business phone<input id="profile-business-phone" maxlength="30" required></label></div><label>Business email<input id="profile-business-email" type="email" maxlength="254"></label><div class="form-two"><label>Store / branch name<input id="profile-store-name" maxlength="120" required></label><label>Store location<input id="profile-store-location" maxlength="200"></label></div><label>Receipt heading (optional)<input id="profile-receipt-header" maxlength="300" placeholder="Welcome / Thank you"></label><label>Receipt footer (optional)<input id="profile-receipt-footer" maxlength="300" placeholder="Returns policy or contact details"></label><p id="profile-error" class="error" role="alert"></p><button class="btn btn-primary full" type="submit">Save business profile</button></form></section>
@@ -54,7 +54,69 @@
         </section>
       </div>
     </section>
-  </main>
+<section id="owner-owner-dashboard-view" class="hidden"><div class="page-heading"><div><h1>Business overview</h1><p class="muted">Track sales, stock, expenses and team performance.</p></div><div class="date-filter"><label>From<input id="owner-date-from" type="date"></label><label>To<input id="owner-date-to" type="date"></label><button id="owner-refresh-btn" class="btn btn-primary">Refresh</button></div></div><p id="owner-notice" class="notice hidden"></p>
+<div class="dashboard-layout">
+<aside class="dashboard-sidebar" aria-label="Main menu">
+  <p class="sidebar-label">MAIN MENU</p>
+  <a class="sidebar-link active" href="#owner-overview-section" data-search="overview home dashboard"><span>⌂</span> Overview</a>
+  <a class="sidebar-link" href="#pos-view" data-search="sales pos point of sale checkout"><span>▣</span> Sales & POS</a>
+  <a class="sidebar-link" href="#pos-view" data-search="products inventory stock"><span>▦</span> Products & stock</a>
+  <a class="sidebar-link" href="#receipt-history" data-search="receipts recovery print"><span>▤</span> Receipts</a>
+  <a class="sidebar-link" href="#owner-customers-section" data-search="customers crm loyalty"><span>♙</span> Customers</a>
+  <a class="sidebar-link" href="#expenses-section" data-search="expenses costs team cashier"><span>▧</span> Expenses & team</a>
+  <a class="sidebar-link" href="#owner-reports-section" data-search="reports analytics sales performance"><span>▥</span> Reports</a>
+  <a class="sidebar-link" href="#owner-payments-section" data-search="subscription swass pro wallet payments"><span>↗</span> SWASS Pro & payments</a>
+  <div class="sidebar-help"><strong>Your business, in one place</strong><small>Use this menu to move around your SWASS dashboard.</small><a href="#pos-view">Open point of sale →</a></div>
+</aside>
+<div class="dashboard-main">
+<div class="command-bar">
+ <div class="global-search"><span aria-hidden="true">⌕</span><input id="owner-workspace-search" type="search" placeholder="Search the menu…" aria-label="Search dashboard menu"><kbd>Search</kbd></div>
+ <div class="command-actions"><span id="owner-network-status" class="network-status"><i></i> Online</span><button id="owner-theme-toggle" class="btn btn-secondary" type="button" aria-pressed="false">☾ Dark mode</button></div>
+</div>
+<nav class="quick-actions" aria-label="Quick actions">
+ <a class="quick-action primary-action" href="#pos-view">＋ New sale</a>
+ <a class="quick-action" href="#pos-view">＋ Add product</a>
+ <a class="quick-action" href="#receipt-history">↗ Find receipt</a>
+ <button class="quick-action disabled-action" type="button" disabled title="Receipt scanning will be added in a later release">▧ Snap supplier receipt · Coming soon</button>
+</nav>
+<section class="owner-stats" aria-label="Business performance">
+ <article class="owner-stat"><span>Sales · selected period</span><strong id="owner-owner-today-sales">KSh 0</strong><small>Recorded sales</small></article>
+ <article class="owner-stat"><span>Estimated net profit</span><strong id="owner-owner-net-profit">KSh 0</strong><small>After recorded expenses</small></article>
+ <article class="owner-stat"><span>Pending customer debt</span><strong id="owner-owner-pending-debt">Not tracked yet</strong><small>Credit ledger not yet enabled</small></article>
+ <article class="owner-stat"><span>Low-stock alerts</span><strong id="owner-owner-low-stock">0</strong><small>Products needing restock</small></article>
+</section>
+<section class="analytics-intro">
+  <div><span class="eyebrow">BUSINESS ANALYTICS</span><h2>Your business at a glance</h2><p>Monitor your products, locations and completed transactions.</p></div>
+  <span class="account-state"><i></i> Workspace overview</span>
+</section>
+<div class="metric-grid headline-metrics" aria-label="Key business metrics">
+  <article class="metric highlight-metric"><span>Total products</span><strong id="owner-m-products-top">0</strong><small>Products registered in inventory</small></article>
+  <article class="metric highlight-metric"><span>Active locations</span><strong id="owner-m-locations">0</strong><small>Business locations configured</small></article>
+  <article class="metric highlight-metric"><span>Completed transactions · selected period</span><strong id="owner-m-month-transactions">0</strong><small>Based on selected reporting dates</small></article>
+</div>
+<section id="owner-reports-section" class="panel channel-panel">
+ <div class="panel-heading"><div><h2>Transaction channels</h2><p class="muted">See where your business payments are coming from.</p></div><span class="channel-period">Selected period</span></div>
+ <div class="channel-grid">
+  <article class="channel-card"><span class="channel-icon">▣</span><div><small>POS sales</small><strong id="owner-channel-pos">KSh 0</strong><em>Sales recorded at the point of sale</em></div></article>
+  <article class="channel-card"><span class="channel-icon">⇄</span><div><small>API payments</small><strong id="owner-channel-api">KSh 0</strong><em>Awaiting channel tracking setup</em></div></article>
+  <article class="channel-card"><span class="channel-icon">▤</span><div><small>Invoices</small><strong id="owner-channel-invoices">KSh 0</strong><em>Awaiting invoice payment tracking</em></div></article>
+  <article class="channel-card"><span class="channel-icon">◷</span><div><small>Offline payments</small><strong id="owner-channel-offline">KSh 0</strong><em>Awaiting offline payment tracking</em></div></article>
+ </div>
+</section>
+<section class="panel setup-panel">
+ <div class="panel-heading"><div><h2>Set up your workspace</h2><p class="muted">Follow these steps to start seeing meaningful business activity.</p></div><span class="setup-count">Getting started</span></div>
+ <ol class="setup-steps">
+  <li><span class="step-number">1</span><div><strong>Register your products</strong><small>Add product names, prices and opening stock.</small></div><a href="#pos-view">Open POS →</a></li>
+  <li><span class="step-number">2</span><div><strong>Set up your business location</strong><small>Complete your shop details and location settings.</small></div><a href="#pos-view">Business settings →</a></li>
+  <li><span class="step-number">3</span><div><strong>Record your first sale</strong><small>Create a sale to begin tracking transactions.</small></div><a href="#pos-view">Start selling →</a></li>
+ </ol>
+</section>
+<div id="owner-overview-section" class="metric-grid"><article class="metric"><span>Sales collected</span><strong id="owner-m-sales">KSh 0</strong><small id="owner-m-transactions">0 transactions</small></article><article class="metric"><span>Estimated gross profit</span><strong id="owner-m-profit">KSh 0</strong><small>Sales less recorded product cost</small></article><article class="metric"><span>Business expenses</span><strong id="owner-m-expenses">KSh 0</strong><small id="owner-m-expense-count">0 entries</small></article><article class="metric"><span>Estimated net operating</span><strong id="owner-m-net">KSh 0</strong><small>Gross profit less expenses</small></article></div>
+<div class="metric-grid secondary-metrics"><article class="metric"><span>Products in inventory</span><strong id="owner-m-products">0</strong><small id="owner-m-low">0 need restocking</small></article><article class="metric"><span>Stock value at cost</span><strong id="owner-m-stock-cost">KSh 0</strong><small id="owner-m-stock-retail">Retail value: KSh 0</small></article><article class="metric"><span>Receipt discounts</span><strong id="owner-m-discounts">KSh 0</strong><small>For selected period</small></article><article class="metric"><span>Subscription wallet</span><strong id="owner-m-wallet">KSh 0</strong><small id="owner-m-subscription">No subscription details</small></article></div>
+<div id="owner-payments-section" class="content-grid"><section class="panel"><div class="panel-heading"><div><h2>SWASS Pro membership</h2><p class="muted">Upgrade or renew your business tools, or top up the KSh 2-per-receipt wallet.</p></div></div><form id="owner-mpesa-form" class="stack"><label>Payment type<select id="owner-mpesa-purpose"><option value="wallet_topup">Top up receipt wallet</option><option value="subscription">Upgrade / renew SWASS Pro</option></select></label><label id="owner-topup-amount-wrap">Top-up amount (KSh)<input id="owner-topup-amount" type="number" min="10" max="150000" step="1" value="500"></label><label id="owner-plan-wrap" class="hidden">Subscription plan<select id="owner-subscription-plan"><option value="monthly">SWASS Pro Monthly · KSh 100</option><option value="yearly">SWASS Pro Yearly · KSh 900 (save KSh 300)</option></select></label><label>M-Pesa phone number<input id="owner-mpesa-phone" type="tel" placeholder="0712345678" required></label><button class="btn btn-primary" type="submit">Send STK Push</button><p id="owner-mpesa-message" class="muted" aria-live="polite"></p></form></section><section class="panel"><div class="panel-heading"><div><h2>Daily sales</h2><p class="muted">Sales totals for the selected dates</p></div></div><div id="owner-daily-chart" class="daily-chart"><p class="muted">No sales data yet.</p></div></section><section class="panel"><div class="panel-heading"><div><h2>Record an expense</h2><p class="muted">Add rent, transport, utilities and other costs.</p></div></div><form id="owner-expense-form" class="stack"><label>Amount (KSh)<input id="owner-expense-amount" type="number" min="1" step="1" required></label><label>Category<input id="owner-expense-category" maxlength="80" placeholder="e.g. Rent, Transport" required></label><label>Note (optional)<input id="owner-expense-note" maxlength="240" placeholder="Short description"></label><button class="btn btn-primary" type="submit">Save expense</button><p id="owner-expense-message" class="muted"></p></form></section></div>
+<div id="owner-expenses-section" class="content-grid lower-grid"><section class="panel"><div class="panel-heading"><div><h2>Cashier performance</h2><p class="muted">Sales recorded in the selected period</p></div></div><div class="table-scroll"><table><thead><tr><th>Cashier</th><th>Transactions</th><th>Sales</th></tr></thead><tbody id="owner-cashier-rows"><tr><td colspan="3">No data yet.</td></tr></tbody></table></div></section><section class="panel"><div class="panel-heading"><div><h2>Recent expenses</h2><p class="muted">Latest entries for this store</p></div></div><div id="owner-expense-list" class="expense-list"><p class="muted">No expenses recorded.</p></div></section></div>
+<section id="owner-customers-section" class="panel crm-panel"><div class="panel-heading"><div><h2>Customer CRM</h2><p class="muted">Search customers, understand repeat visits and track loyalty.</p></div><button id="owner-crm-refresh" class="btn btn-secondary" type="button">Refresh customers</button></div><div class="crm-search"><label>Find a customer<input id="owner-crm-search" type="search" placeholder="Name, phone or email"></label><button id="owner-crm-search-btn" class="btn btn-primary" type="button">Search</button></div><p id="owner-crm-message" class="muted" aria-live="polite"></p><div class="table-scroll"><table><thead><tr><th>Customer</th><th>Contact</th><th>Purchases</th><th>Lifetime spend</th><th>Loyalty points</th><th>Last visit</th></tr></thead><tbody id="owner-crm-rows"><tr><td colspan="6">Sign in to view customers.</td></tr></tbody></table></div></section>
+<p class="footnote">Profit figures are estimates based on the cost saved on each sale. Older sales made before this dashboard update may show zero recorded cost. Operating result excludes tax, loan repayments and other unrecorded costs.</p></div></div></section>\n  </main>
   <div id="product-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="product-modal-title"><div class="modal-card"><div class="modal-head"><div><p class="eyebrow">SHOP INVENTORY</p><h2 id="product-modal-title">Add goods to your shop</h2></div><button class="icon-btn" id="product-close" aria-label="Close">×</button></div><form id="product-form"><label>Product / goods name<input id="product-name" required maxlength="160" placeholder="e.g. Samsung A15"></label><label>SKU (optional)<input id="product-sku" maxlength="80"></label><label>Barcode (optional)<input id="product-barcode" maxlength="80"></label><div class="form-two"><label>Selling price (KSh)<input id="product-price" type="number" min="1" step="1" required inputmode="numeric"><span class="muted small">Enter the amount customers pay for one item. Must be at least KSh 1.</span></label><label>Buying cost (KSh)<input id="product-cost" type="number" min="0" step="1" inputmode="numeric"></label></div><div class="form-two"><label>Quantity available<input id="product-stock" type="number" min="0" max="1000000" step="1" value="0" required inputmode="numeric"></label><label>Low-stock alert at<input id="product-reorder" type="number" min="0" max="1000000" step="1" value="5" required inputmode="numeric"></label></div><label class="inline-check"><input id="product-buyer-id" type="checkbox"> Require buyer name, phone and National ID for this item</label><p id="product-error" class="error" role="alert"></p><button class="btn btn-primary full" type="submit">Save goods to inventory</button></form></div></div>
   <div id="checkout-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="checkout-title"><div class="modal-card"><div class="modal-head"><div><p class="eyebrow">COMPLETE SALE</p><h2 id="checkout-title">Payment details</h2></div><button class="icon-btn" id="checkout-close" aria-label="Close">×</button></div>
     <form id="checkout-form"><label>Payment method<select id="payment-method"><option value="cash">Cash</option><option value="mpesa">M-Pesa</option><option value="card">Card</option></select></label>
@@ -66,5 +128,5 @@
   <footer class="footer">SWASS · Simple tools for better business · <a href="recover.html">Recover a lost receipt</a></footer>
   <script src="./config.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script src="./app.js"></script>
+  <script src="./app.js"></script>\n  <script src="./dashboard.js"></script>
 </body></html>
