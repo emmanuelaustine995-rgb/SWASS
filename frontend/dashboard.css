@@ -275,3 +275,40 @@ body.dashboard-dark .sidebar-help small{color:#b2c9bf}
  #owner-dashboard-view.workspace-dashboard .comparison-grid{grid-template-columns:1fr 1fr}
  #owner-dashboard-view.workspace-dashboard .comparison-grid article{padding:12px}
 }
+
+
+/* Navigation must never cover or pin itself over the active workspace content. */
+#workspace-nav,.workspace-nav{
+  position:relative!important;
+  top:auto!important;
+  z-index:1!important;
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  overflow:visible;
+  width:100%;
+  box-sizing:border-box;
+  margin:0 0 18px;
+  padding:10px 0;
+  background:transparent;
+}
+#workspace-nav button,.workspace-nav button{
+  flex:0 0 auto;
+  max-width:100%;
+}
+@media(max-width:700px){
+  #workspace-nav,.workspace-nav{
+    position:relative!important;
+    display:flex;
+    flex-wrap:nowrap;
+    overflow-x:auto;
+    overflow-y:hidden;
+    -webkit-overflow-scrolling:touch;
+    padding:8px 0;
+    margin-bottom:14px;
+  }
+  #workspace-nav button,.workspace-nav button{
+    flex:0 0 auto;
+    white-space:nowrap;
+  }
+}
