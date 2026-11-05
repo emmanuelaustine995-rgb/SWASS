@@ -301,7 +301,41 @@
       $('signup-otp-message').textContent=err.message||'Verification failed. Check the code and try again.';
     }finally{btn.disabled=false;btn.textContent='Verify phone and create account';}
   });
-  $('login-form').addEventListener('submit',async e=>{e.preventDefault();$('login-error').textContent='';try{const data=await request('/api/v1/auth/login',{method:'POST',body:JSON.stringify({phone:$('login-phone').value.trim(),password:$('login-password').value})});state.token=data.accessToken;const parts=state.token.split('.')[1];const claims=JSON.parse(atob(parts.replace(/-/g,'+').replace(/_/g,'/')));state.role=claims.role;showPOS();publishWorkspaceSession();hideNotice();if(['owner','manager'].includes(state.role))await loadBusinessProfile();await loadProducts();}catch(err){$('login-error').textContent=err.message||'Sign-in failed.';}});
+  $('login-form').addEventListener('submit',async e=>{
+    e.preventDefault();
+    const button=$('login-form').querySelector('button[type="submit"]');
+    $('login-error').textContent='';
+    if(button){button.disabled=true;button.textContent='Signing in…';}
+    let signedIn=false;
+    try{
+      const data=await request('/api/v1/auth/login',{
+        method:'POST',
+        body:JSON.stringify({phone:$('login-phone').value.trim(),password:$('login-password').value})
+      });
+      if(!data.accessToken)throw new Error('The server did not return a sign-in token. Please try again.');
+      const parts=data.accessToken.split('.')[1];
+      const claims=JSON.parse(atob(parts.replace(/-/g,'+').replace(/_/g,'/')));
+      state.token=data.accessToken;
+      state.role=claims.role;
+      signedIn=true;
+      showPOS();
+      publishWorkspaceSession();
+      hideNotice();
+      $('login-error').textContent='';
+    }catch(err){
+      state.token=null;
+      state.role=null;
+      $('login-error').textContent=err.message||'Sign-in failed. Check your phone number and password.';
+    }finally{
+      if(button){button.disabled=false;button.textContent='Sign in';}
+    }
+    if(!signedIn)return;
+    if(['owner','manager'].includes(state.role)){
+      try{await loadBusinessProfile();}
+      catch(err){showNotice('You are signed in, but the business profile could not be loaded. '+(err.message||''),true);}
+    }
+    await loadProducts();
+  });
   $('workspace-nav').addEventListener('click',e=>{const b=e.target.closest('[data-workspace]');if(b)showWorkspaceScreen(b.dataset.workspace);});
   document.querySelector('.dashboard-sidebar')?.addEventListener('click',e=>{const link=e.target.closest('.sidebar-link');if(!link)return;const screen=link.dataset.screen||(link.getAttribute('href')==='#owner-customers-section'?'customers':link.getAttribute('href')==='#owner-reports-section'?'reports':link.getAttribute('href')==='#owner-payments-section'?'payments':'overview');e.preventDefault();showWorkspaceScreen(screen);});
   $('history-toggle').addEventListener('click',async()=>{const box=$('history-content');const opening=box.classList.contains('hidden');box.classList.toggle('hidden');$('history-toggle').textContent=opening?'Close history':'Open history';if(opening)await loadReceiptHistory();});
