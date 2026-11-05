@@ -197,6 +197,57 @@
     }catch(e){$('checkout-error').textContent=e.message;}
     finally{btn.disabled=false;btn.textContent='Issue receipt';}
   }
+  // Tuma subscription and wallet payments
+  const tumaForm = $('owner-mpesa-form');
+  const tumaPurpose = $('owner-mpesa-purpose');
+  const syncTumaFields = () => {
+    const isSubscription = tumaPurpose?.value === 'subscription';
+    $('owner-topup-amount-wrap')?.classList.toggle('hidden', isSubscription);
+    $('owner-plan-wrap')?.classList.toggle('hidden', !isSubscription);
+  };
+  if (tumaPurpose) {
+    tumaPurpose.addEventListener('change', syncTumaFields);
+    syncTumaFields();
+  }
+  if (tumaForm) tumaForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const message = $('owner-mpesa-message');
+    const button = tumaForm.querySelector('button[type="submit"]');
+    const purpose = tumaPurpose?.value || 'wallet_topup';
+    const payload = { purpose, phone: $('owner-mpesa-phone').value.trim() };
+    if (purpose === 'subscription') payload.plan = $('owner-subscription-plan').value;
+    else payload.amountKes = Number($('owner-topup-amount').value);
+    button.disabled = true;
+    message.textContent = 'Connecting securely to Tuma Payments…';
+    try {
+      const started = await request('/api/v1/mpesa/stk-push', {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
+      message.textContent = started.message || 'STK prompt requested. Check your phone and enter your M-Pesa PIN.';
+      if (!started.paymentId) throw new Error('Tuma did not return a payment reference. Contact support before trying again.');
+      const deadline = Date.now() + 90000;
+      while (Date.now() < deadline) {
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        const current = await request('/api/v1/mpesa/payments/' + encodeURIComponent(started.paymentId));
+        if (current.status === 'success') {
+          message.textContent = 'Payment confirmed successfully' + (current.receiptNumber ? ' · M-Pesa receipt: ' + current.receiptNumber : '') + '. Your SWASS subscription or wallet has been updated.';
+          showNotice('Tuma payment confirmed successfully.');
+          return;
+        }
+        if (current.status === 'failed') {
+          message.textContent = 'Tuma reports that this payment was not completed. You can try again.';
+          return;
+        }
+        message.textContent = 'Waiting for M-Pesa confirmation… Please complete the prompt on your phone.';
+      }
+      message.textContent = 'Payment is still pending. Do not pay again yet; refresh the payment page or contact support to check its status.';
+    } catch (error) {
+      message.textContent = error.message || 'Could not start or verify the Tuma payment. Please try again later.';
+    } finally {
+      button.disabled = false;
+    }
+  });
   $('customer-lookup-form').addEventListener('submit',lookupCustomer);
   $('customer-lookup-result').addEventListener('click',e=>{
     if(e.target.id==='add-customer-package'){
