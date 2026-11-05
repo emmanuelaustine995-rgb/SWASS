@@ -19,17 +19,52 @@
 
   function showWorkspaceScreen(screen){
     const owner=document.getElementById('owner-dashboard-view'),pos=$('pos-view');
-    if(['sales','products','receipts','customers'].includes(screen)){
-      owner.classList.add('hidden');pos.classList.remove('hidden');
-      const map={sales:'products-panel',products:'products-panel',receipts:'history-panel',customers:'owner-customers-section'};
-      document.getElementById(map[screen])?.scrollIntoView({behavior:'smooth',block:'start'});
-      if(screen==='receipts'&&$('history-content').classList.contains('hidden')){
-        $('history-content').classList.remove('hidden');$('history-toggle').textContent='Close history';loadReceiptHistory();
-      }
-    }else{
+    const products=document.getElementById('products-panel');
+    const cart=document.querySelector('.cart-panel');
+    const posGrid=document.querySelector('.pos-grid');
+    const history=document.getElementById('history-panel');
+    const crm=document.getElementById('owner-customers-section');
+    const lookup=document.querySelector('.customer-lookup-panel');
+    const profile=document.getElementById('profile-panel');
+    const dashboardSections=['owner-stats','.analytics-intro','.headline-metrics','#owner-reports-section','.setup-panel','#owner-overview-section','.secondary-metrics','#owner-payments-section','#owner-expenses-section','.footnote'];
+    [history,crm,lookup,profile].forEach(el=>el?.classList.add('hidden'));
+    posGrid?.classList.add('hidden');
+    if(screen==='dashboard'){
       pos.classList.add('hidden');owner.classList.remove('hidden');
-      const map={reports:'owner-reports-section',payments:'owner-payments-section'};
-      document.getElementById(map[screen]||map.reports)?.scrollIntoView({behavior:'smooth',block:'start'});
+      owner.classList.remove('workspace-accounting','workspace-console');
+      owner.classList.add('workspace-dashboard');
+      owner.querySelector('#owner-overview-section')?.scrollIntoView({block:'start'});
+    }else if(screen==='sales'){
+      owner.classList.add('hidden');pos.classList.remove('hidden');
+      pos.classList.remove('workspace-logistics');
+      posGrid?.classList.remove('hidden');products?.classList.remove('hidden');cart?.classList.remove('hidden');
+      lookup?.classList.remove('hidden');
+      pos.scrollIntoView({block:'start'});
+    }else if(screen==='logistics'){
+      owner.classList.add('hidden');pos.classList.remove('hidden');
+      posGrid?.classList.remove('hidden');products?.classList.remove('hidden');cart?.classList.add('hidden');
+      pos.classList.add('workspace-logistics');
+      products?.scrollIntoView({block:'start'});
+    }else if(screen==='receipts'){
+      owner.classList.add('hidden');pos.classList.remove('hidden');
+      history?.classList.remove('hidden');
+      const content=$('history-content');
+      if(content.classList.contains('hidden')){$('history-toggle').textContent='Close history';content.classList.remove('hidden');loadReceiptHistory();}
+      history?.scrollIntoView({block:'start'});
+    }else if(screen==='crm'){
+      owner.classList.add('hidden');pos.classList.remove('hidden');
+      crm?.classList.remove('hidden');crm?.scrollIntoView({block:'start'});
+      window.dispatchEvent(new CustomEvent('swass:crm-open'));
+    }else if(screen==='accounting'){
+      pos.classList.add('hidden');owner.classList.remove('hidden');
+      owner.classList.remove('workspace-dashboard','workspace-console');
+      owner.classList.add('workspace-accounting');
+      document.getElementById('owner-payments-section')?.scrollIntoView({block:'start'});
+    }else if(screen==='console'){
+      pos.classList.add('hidden');owner.classList.remove('hidden');
+      owner.classList.remove('workspace-dashboard','workspace-accounting');
+      owner.classList.add('workspace-console');
+      document.getElementById('owner-expenses-section')?.scrollIntoView({block:'start'});
     }
     document.querySelectorAll('#workspace-nav button').forEach(b=>b.classList.toggle('active',b.dataset.workspace===screen));
   }
