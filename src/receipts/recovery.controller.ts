@@ -1,13 +1,14 @@
 import {
-  BadRequestException, Body, Controller, Get, Param, Post, Req,
+  BadRequestException, Body, Controller, Get, Param, Post, Req, ServiceUnavailableException,
 } from '@nestjs/common';
 import { createHash, createHmac, randomBytes, timingSafeEqual } from 'crypto';
 import { DbService } from '../db/db.service';
 
 function phoneKey(value: string): string {
   const digits = String(value ?? '').replace(/\D/g, '');
-  if (digits.length < 9 || digits.length > 15) throw new BadRequestException('Enter a valid phone number');
-  return digits.startsWith('0') ? `254${digits.slice(1)}` : digits;
+  const local = digits.startsWith('254') ? digits.slice(3) : digits.startsWith('0') ? digits.slice(1) : digits;
+  if (!/^[17]\d{8}$/.test(local)) throw new BadRequestException('Enter a valid Kenyan mobile number, such as 0712345678');
+  return `254${local}`;
 }
 function hash(value: string): string { return createHash('sha256').update(value).digest('hex'); }
 function codeHash(code: string): string {
@@ -38,12 +39,19 @@ export class ReceiptRecoveryController {
     const customers = await this.db.pool.query(`SELECT id FROM customers WHERE phone=$1`, [phone]);
     const ids = customers.rows.map((r: any) => r.id);
     const code = String(randomBytes(4).readUInt32BE(0) % 1000000).padStart(6, '0');
-    await this.db.pool.query(
+    const saved = await this.db.pool.query(
       `INSERT INTO otp_requests(phone,customer_ids,code_hash,expires_at,ip_address)
-       VALUES($1,$2::uuid[],$3,now()+interval '5 minutes',$4::inet)`,
+       VALUES($1,$2::uuid[],$3,now()+interval '5 minutes',$4::inet) RETURNING id`,
       [phone, ids, codeHash(code), ip],
     );
-    if (ids.length) await this.sendSms(phone, `Your SWASS receipt recovery code is ${code}. It expires in 5 minutes. Do not share it.`);
+    if (ids.length) {
+      try {
+        await this.sendSms(phone, `Your SWASS receipt recovery code is ${code}. It expires in 5 minutes. Do not share it.`);
+      } catch {
+        await this.db.pool.query(`UPDATE otp_requests SET expires_at=now() WHERE id=$1`, [saved.rows[0].id]);
+        throw new ServiceUnavailableException('SMS delivery failed. Please try again later or contact the business.');
+      }
+    }
     // Development-only convenience. Never return OTPs in production.
     return process.env.NODE_ENV === 'production' ? generic : { ...generic, developmentCode: code };
   }
