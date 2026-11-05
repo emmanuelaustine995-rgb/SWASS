@@ -163,83 +163,94 @@ export class ReceiptRecoveryController {
   }
 
   private async sendSms(to: string, message: string) {
-    // TalkSasa is the preferred OTP provider when its credentials are configured.
+    const failures: string[] = [];
+
+    // TalkSasa is primary. Only an explicit provider acceptance counts as success.
     const talksasaToken = process.env.TALKSASA_API_TOKEN;
     if (talksasaToken) {
-      const endpoint = process.env.TALKSASA_API_URL || 'https://bulksms.talksasa.com/api/v3/sms/send';
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        signal: AbortSignal.timeout(12000),
-        headers: {
-          Authorization: `Bearer ${talksasaToken}`,
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          recipient: `+${to}`,
-          sender_id: process.env.TALKSASA_SENDER_ID || 'TALK-SASA',
-          type: 'plain',
-          message,
-        }),
-      });
-      const rawBody = await response.text();
-      let result: any = {};
-      try { result = rawBody ? JSON.parse(rawBody) : {}; } catch { result = {}; }
-      if (!response.ok || result?.success === false || result?.status === false || result?.error) {
-        const providerMessage = String(result?.message ?? result?.error ?? rawBody ?? '').slice(0, 240);
-        throw new Error(`TalkSasa rejected OTP SMS (HTTP ${response.status})${providerMessage ? `: ${providerMessage}` : ''}`);
+      try {
+        const response = await fetch(process.env.TALKSASA_API_URL || 'https://bulksms.talksasa.com/api/v3/sms/send', {
+          method: 'POST',
+          signal: AbortSignal.timeout(12000),
+          headers: {
+            Authorization: `Bearer ${talksasaToken}`,
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            recipient: to,
+            sender_id: process.env.TALKSASA_SENDER_ID || 'TALK-SASA',
+            type: 'plain',
+            message,
+          }),
+        });
+        const raw = await response.text();
+        let result: any = {};
+        try { result = raw ? JSON.parse(raw) : {}; } catch { result = {}; }
+        if (response.ok && (result?.status === 'success' || result?.success === true)) return;
+        const detail = String(result?.message ?? result?.error ?? raw ?? '').slice(0, 180);
+        failures.push(`TalkSasa HTTP ${response.status}${detail ? `: ${detail}` : ''}`);
+      } catch (error) {
+        failures.push(`TalkSasa: ${error instanceof Error ? error.message : 'request failed'}`);
       }
-      return;
     }
-    // Legacy Africa's Talking route remains available until TalkSasa is configured.
+
+    // Try Africa's Talking if TalkSasa is unavailable or rejects the request.
     const atUsername = process.env.AT_USERNAME;
     const atApiKey = process.env.AT_API_KEY;
     if (atUsername && atApiKey) {
-      const form = new URLSearchParams({ username: atUsername, to: `+${to}`, message });
-      if (process.env.AT_SENDER_ID) form.set('from', process.env.AT_SENDER_ID);
-      // Sandbox credentials must use the Sandbox API host; live credentials use the live host.
-      const atBaseUrl = atUsername === 'sandbox'
-        ? 'https://api.sandbox.africastalking.com/version1/messaging'
-        : 'https://api.africastalking.com/version1/messaging';
-      const response = await fetch(atBaseUrl, {
-        method: 'POST',
-        headers: { apiKey: atApiKey, Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: form,
-      });
-      const rawBody = await response.text();
-      let result: any = {};
-      try { result = rawBody ? JSON.parse(rawBody) : {}; } catch { result = {}; }
-      const smsData = result?.SMSMessageData;
-      const recipients = smsData?.Recipients;
-      // Log only provider status information. Never log API keys, phone numbers, or OTP text.
-      const providerMessage = String(smsData?.Message ?? result?.message ?? '').slice(0, 240);
-      if (!response.ok) {
-        throw new Error(`Africa's Talking rejected SMS (HTTP ${response.status})${providerMessage ? `: ${providerMessage}` : ''}`);
+      try {
+        const form = new URLSearchParams({ username: atUsername, to: to, message });
+        if (process.env.AT_SENDER_ID) form.set('from', process.env.AT_SENDER_ID);
+        const endpoint = atUsername === 'sandbox'
+          ? 'https://api.sandbox.africastalking.com/version1/messaging'
+          : 'https://api.africastalking.com/version1/messaging';
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          signal: AbortSignal.timeout(12000),
+          headers: { apiKey: atApiKey, Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: form,
+        });
+        const raw = await response.text();
+        let result: any = {};
+        try { result = raw ? JSON.parse(raw) : {}; } catch { result = {}; }
+        const recipients = result?.SMSMessageData?.Recipients;
+        if (response.ok && Array.isArray(recipients) && recipients.length &&
+            recipients.every((item: any) => Number(item.statusCode) === 101)) return;
+        const detail = String(result?.SMSMessageData?.Message ?? result?.message ?? raw ?? '').slice(0, 180);
+        failures.push(`Africa's Talking HTTP ${response.status}${detail ? `: ${detail}` : ''}`);
+      } catch (error) {
+        failures.push(`Africa's Talking: ${error instanceof Error ? error.message : 'request failed'}`);
       }
-      if (Array.isArray(recipients) && recipients.length) {
-        const rejected = recipients.filter((r: any) => Number(r.statusCode) !== 101);
-        if (rejected.length) {
-          const reasons = rejected.map((r: any) =>
-            `code ${String(r.statusCode ?? 'unknown')}: ${String(r.status ?? r.statusMessage ?? 'rejected').slice(0, 160)}`,
-          ).join('; ');
-          throw new Error(`Africa's Talking rejected OTP recipient: ${reasons}`);
-        }
-      } else {
-        throw new Error(`Africa's Talking returned no recipient status${providerMessage ? `: ${providerMessage}` : ''}`);
-      }
-      return;
     }
+
+    // Final configured fallback: Twilio.
     const sid = process.env.TWILIO_ACCOUNT_SID;
     const auth = process.env.TWILIO_AUTH_TOKEN;
     const from = process.env.TWILIO_FROM || process.env.TWILIO_FROM_NUMBER;
-    if (!sid || !auth || !from) {
-      if (process.env.NODE_ENV === 'production') throw new Error('Configure Africa\'s Talking or Twilio SMS credentials');
-      return;
+    if (sid && auth && from) {
+      try {
+        const form = new URLSearchParams({ To: `+${to}`, From: from, Body: message });
+        const response = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`, {
+          method: 'POST',
+          signal: AbortSignal.timeout(12000),
+          headers: {
+            Authorization: `Basic ${Buffer.from(`${sid}:${auth}`).toString('base64')}`,
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: form,
+        });
+        if (response.ok) return;
+        const detail = (await response.text()).slice(0, 180);
+        failures.push(`Twilio HTTP ${response.status}${detail ? `: ${detail}` : ''}`);
+      } catch (error) {
+        failures.push(`Twilio: ${error instanceof Error ? error.message : 'request failed'}`);
+      }
     }
-    const form = new URLSearchParams({ To: `+${to}`, From: from, Body: message });
-    const response = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`, {
-      method: 'POST', headers: { Authorization: `Basic ${Buffer.from(`${sid}:${auth}`).toString('base64')}`, 'Content-Type': 'application/x-www-form-urlencoded' }, body: form,
-    });
-    if (!response.ok) throw new Error('Twilio SMS delivery failed');
+
+    if (!talksasaToken && !atUsername && !sid) {
+      throw new Error('No SMS provider credentials are configured');
+    }
+    throw new Error(failures.join(' | ') || 'All configured SMS providers failed');
   }
 }
