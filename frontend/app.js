@@ -275,7 +275,7 @@
     const btn=$('verify-signup-otp');
     const code=$('signup-otp-code').value.trim();
     $('signup-otp-message').textContent='';
-    if(!/^\\d{6}$/.test(code)){
+    if(!/^\d{6}$/.test(code)){
       $('signup-otp-message').textContent='Enter the complete 6-digit code sent to your phone.';
       return;
     }
