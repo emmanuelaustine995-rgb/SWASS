@@ -133,11 +133,26 @@ export class ReceiptRecoveryController {
         headers: { apiKey: atApiKey, Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
         body: form,
       });
-      if (!response.ok) throw new Error('Africa\'s Talking SMS delivery failed');
-      const result: any = await response.json().catch(() => ({}));
-      const recipients = result?.SMSMessageData?.Recipients;
-      if (Array.isArray(recipients) && recipients.length && recipients.every((r:any) => Number(r.statusCode) !== 101)) {
-        throw new Error('Africa\'s Talking did not accept the OTP message');
+      const rawBody = await response.text();
+      let result: any = {};
+      try { result = rawBody ? JSON.parse(rawBody) : {}; } catch { result = {}; }
+      const smsData = result?.SMSMessageData;
+      const recipients = smsData?.Recipients;
+      // Log only provider status information. Never log API keys, phone numbers, or OTP text.
+      const providerMessage = String(smsData?.Message ?? result?.message ?? '').slice(0, 240);
+      if (!response.ok) {
+        throw new Error(`Africa's Talking rejected SMS (HTTP ${response.status})${providerMessage ? `: ${providerMessage}` : ''}`);
+      }
+      if (Array.isArray(recipients) && recipients.length) {
+        const rejected = recipients.filter((r: any) => Number(r.statusCode) !== 101);
+        if (rejected.length) {
+          const reasons = rejected.map((r: any) =>
+            `code ${String(r.statusCode ?? 'unknown')}: ${String(r.status ?? r.statusMessage ?? 'rejected').slice(0, 160)}`,
+          ).join('; ');
+          throw new Error(`Africa's Talking rejected OTP recipient: ${reasons}`);
+        }
+      } else {
+        throw new Error(`Africa's Talking returned no recipient status${providerMessage ? `: ${providerMessage}` : ''}`);
       }
       return;
     }
