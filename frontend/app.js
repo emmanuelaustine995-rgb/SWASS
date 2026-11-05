@@ -12,7 +12,8 @@
     if (!res.ok) throw new Error(data.message || `Request failed (${res.status})`);
     return data;
   }
-  function publishWorkspaceSession(){window.dispatchEvent(new CustomEvent('swass:login',{detail:{token:state.token,role:state.role}}));}\n  function showNotice(message, error = false) { const el=$('notice'); el.textContent=message; el.classList.remove('hidden'); el.style.background=error?'#fff0ef':'#fff5e8'; el.style.color=error?'#a12b22':'#8a4b08'; }
+  function publishWorkspaceSession(){window.dispatchEvent(new CustomEvent('swass:login',{detail:{token:state.token,role:state.role}}));}
+  function showNotice(message, error = false) { const el=$('notice'); el.textContent=message; el.classList.remove('hidden'); el.style.background=error?'#fff0ef':'#fff5e8'; el.style.color=error?'#a12b22':'#8a4b08'; }
   function hideNotice(){ $('notice').classList.add('hidden'); }
   function showLogin(){ $('login-view').classList.remove('hidden'); $('pos-view').classList.add('hidden'); $('logout-btn').classList.add('hidden'); $('dashboard-link').classList.add('hidden'); $('workspace-nav').classList.add('hidden'); $('user-label').textContent=''; }
 
@@ -29,7 +30,8 @@
     }
     document.querySelectorAll('#workspace-nav button').forEach(b=>b.classList.toggle('active',b.dataset.workspace===screen));
   }
-\n  function showPOS(){ $('login-view').classList.add('hidden'); $('pos-view').classList.remove('hidden'); $('logout-btn').classList.remove('hidden'); $('user-label').textContent=state.role ? state.role.replace('_',' ') : 'Staff'; $('add-product-btn').classList.toggle('hidden', !['owner','manager'].includes(state.role)); $('dashboard-link').classList.toggle('hidden', !['owner','manager'].includes(state.role));$('workspace-nav').classList.toggle('hidden', !['owner','manager'].includes(state.role)); $('profile-toggle').classList.toggle('hidden', state.role !== 'owner'); }
+
+  function showPOS(){ $('login-view').classList.add('hidden'); $('pos-view').classList.remove('hidden'); $('logout-btn').classList.remove('hidden'); $('user-label').textContent=state.role ? state.role.replace('_',' ') : 'Staff'; $('add-product-btn').classList.toggle('hidden', !['owner','manager'].includes(state.role)); $('dashboard-link').classList.toggle('hidden', !['owner','manager'].includes(state.role));$('workspace-nav').classList.toggle('hidden', !['owner','manager'].includes(state.role)); $('profile-toggle').classList.toggle('hidden', state.role !== 'owner'); }
   async function lookupCustomer(ev){
     ev.preventDefault();
     const phone=$('lookup-phone').value.trim();
@@ -129,7 +131,8 @@
       <div class="receipt-line"><span>Subtotal</span><span>${money(sale.subtotal)}</span></div>
       <div class="receipt-line"><span>Discount</span><span>${money(sale.discount)}</span></div>
       <div class="receipt-line"><strong>TOTAL</strong><strong>${money(receipt.totalKes)}</strong></div>
-      <div class="receipt-center" style="margin:20px auto 14px"><div class="official-paid-stamp"><div class="stamp-business">${escapeHtml(business.name||"BUSINESS NAME")}</div><div class="stamp-paid">ISSUED</div><div class="stamp-date">DATE: ${escapeHtml(new Date(receipt.issuedAt||Date.now()).toLocaleDateString('en-KE'))}</div><div class="stamp-branch">${escapeHtml(business.storeName||business.location||"OFFICIAL RECEIPT")}</div></div></div>\n      <div class="receipt-divider"></div><div class="receipt-center">Thank you for shopping with us!
+      <div class="receipt-center" style="margin:20px auto 14px"><div class="official-paid-stamp"><div class="stamp-business">${escapeHtml(business.name||"BUSINESS NAME")}</div><div class="stamp-paid">ISSUED</div><div class="stamp-date">DATE: ${escapeHtml(new Date(receipt.issuedAt||Date.now()).toLocaleDateString('en-KE'))}</div><div class="stamp-branch">${escapeHtml(business.storeName||business.location||"OFFICIAL RECEIPT")}</div></div></div>
+      <div class="receipt-divider"></div><div class="receipt-center">Thank you for shopping with us!
       ${business.receiptFooter?`<br>${escapeHtml(business.receiptFooter)}`:''}
       <br><small>Scan/check online: ${escapeHtml(verifyUrl)}</small><br><small>Lost this receipt? Recover it using your phone and OTP: ${escapeHtml(recoveryUrl)}</small></div>`;
   }
@@ -261,7 +264,9 @@
     }finally{btn.disabled=false;btn.textContent='Verify phone and create account';}
   });
   $('login-form').addEventListener('submit',async e=>{e.preventDefault();$('login-error').textContent='';try{const data=await request('/api/v1/auth/login',{method:'POST',body:JSON.stringify({phone:$('login-phone').value.trim(),password:$('login-password').value})});state.token=data.accessToken;const parts=state.token.split('.')[1];const claims=JSON.parse(atob(parts.replace(/-/g,'+').replace(/_/g,'/')));state.role=claims.role;showPOS();publishWorkspaceSession();hideNotice();if(['owner','manager'].includes(state.role))await loadBusinessProfile();await loadProducts();}catch(err){$('login-error').textContent=err.message||'Sign-in failed.';}});
-  $('workspace-nav').addEventListener('click',e=>{const b=e.target.closest('[data-workspace]');if(b)showWorkspaceScreen(b.dataset.workspace);});\n  document.querySelector('.dashboard-sidebar')?.addEventListener('click',e=>{const link=e.target.closest('.sidebar-link');if(!link)return;const screen=link.dataset.screen||(link.getAttribute('href')==='#owner-customers-section'?'customers':link.getAttribute('href')==='#owner-reports-section'?'reports':link.getAttribute('href')==='#owner-payments-section'?'payments':'overview');e.preventDefault();showWorkspaceScreen(screen);});\n  $('history-toggle').addEventListener('click',async()=>{const box=$('history-content');const opening=box.classList.contains('hidden');box.classList.toggle('hidden');$('history-toggle').textContent=opening?'Close history':'Open history';if(opening)await loadReceiptHistory();});
+  $('workspace-nav').addEventListener('click',e=>{const b=e.target.closest('[data-workspace]');if(b)showWorkspaceScreen(b.dataset.workspace);});
+  document.querySelector('.dashboard-sidebar')?.addEventListener('click',e=>{const link=e.target.closest('.sidebar-link');if(!link)return;const screen=link.dataset.screen||(link.getAttribute('href')==='#owner-customers-section'?'customers':link.getAttribute('href')==='#owner-reports-section'?'reports':link.getAttribute('href')==='#owner-payments-section'?'payments':'overview');e.preventDefault();showWorkspaceScreen(screen);});
+  $('history-toggle').addEventListener('click',async()=>{const box=$('history-content');const opening=box.classList.contains('hidden');box.classList.toggle('hidden');$('history-toggle').textContent=opening?'Close history':'Open history';if(opening)await loadReceiptHistory();});
   $('history-search-btn').addEventListener('click',loadReceiptHistory);
   $('history-search').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();loadReceiptHistory();}});
   $('profile-toggle').addEventListener('click',async()=>{try{$('profile-error').textContent='';await loadBusinessProfile();$('profile-panel').classList.remove('hidden');$('profile-panel').scrollIntoView({behavior:'smooth',block:'start'});}catch(e){showNotice(e.message||'Could not load business profile.',true);}});
