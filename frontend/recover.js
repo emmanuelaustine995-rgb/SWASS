@@ -13,18 +13,41 @@
     if (!response.ok) throw new Error(data.message || `Request failed (${response.status})`);
     return data;
   }
-  $('request-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    if (requestStarted) return;
-    phone = $('phone').value.trim();
+  let countdownTimer = null;
+  let secondsLeft = 0;
+  function startResendCountdown() {
+    if (countdownTimer) clearInterval(countdownTimer);
+    secondsLeft = 30;
+    $('resend-area').innerHTML = 'You can resend a new code in <strong id="countdown">30</strong> seconds.';
+    $('resend-button').disabled = true;
+    countdownTimer = setInterval(() => {
+      secondsLeft -= 1;
+      const counter = $('countdown');
+      if (counter) counter.textContent = String(secondsLeft);
+      if (secondsLeft <= 0) {
+        clearInterval(countdownTimer);
+        countdownTimer = null;
+        $('resend-area').textContent = 'Did not receive the code?';
+        $('resend-button').disabled = false;
+      }
+    }, 1000);
+  }
+  async function sendCode(isResend) {
+    if (!phone) phone = $('phone').value.trim();
     if (!phone) { message('Enter the phone number used on the receipt.'); return; }
     requestStarted = true;
-    const button = $('request-form').querySelector('button[type="submit"]');
-    button.disabled = true;
-    button.textContent = 'Requesting…';
+    $('verify-form').classList.remove('hidden');
+    $('phone').readOnly = true;
     $('code').value = '';
     $('receipt-list').innerHTML = '';
-    message('Requesting verification code…');
+    $('verify-submit').disabled = false;
+    $('verify-submit').textContent = 'Verify and find receipts';
+    $('resend-button').disabled = true;
+    startResendCountdown();
+    message(isResend ? 'Requesting another OTP. Check your SMS messages.' : 'OTP request sent. Enter the six-digit code when it arrives.');
+    const sendButton = $('request-form').querySelector('button[type="submit"]');
+    sendButton.disabled = true;
+    sendButton.textContent = 'OTP requested';
     try {
       const r = await fetch(`${api}/api/v1/receipt-recovery/request`, {
         method: 'POST',
@@ -32,38 +55,28 @@
         body: JSON.stringify({ phone })
       });
       const data = await readResponse(r);
-      $('verify-form').classList.remove('hidden');
-      $('phone').readOnly = true;
       message(data.developmentCode
         ? `Development test code: ${data.developmentCode}`
-        : 'If matching receipts exist, a code has been sent. Enter the newest six-digit code within 5 minutes.');
+        : 'OTP request processed. Enter the newest six-digit code sent to your phone.');
       $('code').focus();
     } catch (err) {
-      // A browser/network response can fail after the API has already sent the SMS.
-      // Allow verification if the customer actually received a code.
-      const networkFailure = err instanceof TypeError;
-      if (networkFailure) {
-        $('verify-form').classList.remove('hidden');
-        $('phone').readOnly = true;
-        message('The request response could not be read. If the SMS arrived, enter its newest six-digit code. Do not request another code yet.');
-        $('code').focus();
-      } else {
-        requestStarted = false;
-        button.disabled = false;
-        button.textContent = 'Send verification code';
-        message(err.message || 'Could not request a code. Please try again.');
-      }
-    } finally {
-      if (requestStarted) {
-        button.textContent = 'Code requested';
-      }
+      message(err.message || 'Could not confirm the OTP request. If a code arrived, enter it here.');
     }
+  }
+  $('request-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (requestStarted) return;
+    await sendCode(false);
+  });
+  $('resend-button').addEventListener('click', async () => {
+    if (secondsLeft > 0) return;
+    await sendCode(true);
   });
   $('verify-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const code = $('code').value.replace(/\s/g, '');
     if (!/^\d{6}$/.test(code)) { message('Enter all six digits from the latest SMS.'); return; }
-    const button = $('verify-form').querySelector('button[type="submit"]');
+    const button = $('verify-submit');
     button.disabled = true;
     button.textContent = 'Verifying…';
     message('Verifying code…');
@@ -82,6 +95,9 @@
       $('receipt-list').innerHTML = recoveredReceipts.length
         ? recoveredReceipts.map((r, i) => `<article class="panel recovered-receipt"><div class="history-row-top"><strong>${escapeHtml(r.receipt_no)}</strong><strong>KSh ${Number(r.totalKes).toLocaleString('en-KE',{minimumFractionDigits:2})}</strong></div><p>${escapeHtml(r.business_name || r.store_name)} · ${escapeHtml(r.store_name || '')}</p><p>${escapeHtml(r.customer_name || 'Customer')} · ${escapeHtml(r.customer_phone || '')}</p><p>${new Date(r.issued_at).toLocaleString('en-KE')} · ${escapeHtml(r.status)} · ${escapeHtml(String(r.payment_method || '').toUpperCase())}</p><div>${(r.items || []).map(item => `<div class="history-row-meta">${escapeHtml(item.name)} × ${Number(item.qty)} — KSh ${Number(item.lineTotalKes).toLocaleString('en-KE',{minimumFractionDigits:2})}</div>`).join('')}</div><button type="button" class="print-recovered" data-index="${i}">Print receipt</button></article>`).join('')
         : '<p>No receipts were found.</p>';
+      if (countdownTimer) clearInterval(countdownTimer);
+      $('resend-area').textContent = '';
+      $('resend-button').classList.add('hidden');
       message('Phone verified. Your receipts are shown below. This recovery session expires in 10 minutes.');
     } catch (err) {
       message(err.message || 'Verification failed. Check the latest SMS code and try again.');
