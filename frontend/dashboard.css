@@ -154,13 +154,34 @@ body.dashboard-dark .sidebar-help small{color:#b2c9bf}
 #workspace-nav{display:flex;gap:8px;overflow-x:auto;padding:10px 0;position:sticky;top:0;z-index:20;background:var(--surface,#fff)}
 #workspace-nav button{white-space:nowrap;border:1px solid var(--line,#dce5df);border-radius:10px;padding:10px 14px;background:transparent;color:inherit;font:inherit;font-weight:600}
 #workspace-nav button.active{background:var(--primary,#123b2b);color:#fff;border-color:var(--primary,#123b2b)}
-#owner-dashboard-view.workspace-dashboard #owner-payments-section>section:first-child,#owner-dashboard-view.workspace-dashboard #owner-payments-section>section:last-child,#owner-dashboard-view.workspace-dashboard #owner-expenses-section{display:none}
-#owner-dashboard-view.workspace-dashboard #owner-payments-section{display:block}
-#owner-dashboard-view.workspace-dashboard #owner-payments-section>section:nth-child(2){display:block}
-#owner-dashboard-view.workspace-dashboard .secondary-metrics,#owner-dashboard-view.workspace-dashboard .setup-panel{display:none}
-#owner-dashboard-view.workspace-accounting .analytics-intro,#owner-dashboard-view.workspace-accounting .headline-metrics,#owner-dashboard-view.workspace-accounting #owner-reports-section,#owner-dashboard-view.workspace-accounting .setup-panel,#owner-dashboard-view.workspace-accounting #owner-expenses-section{display:none}
-#owner-dashboard-view.workspace-accounting .owner-stats{display:none}
-#owner-dashboard-view.workspace-console .analytics-intro,#owner-dashboard-view.workspace-console .headline-metrics,#owner-dashboard-view.workspace-console #owner-reports-section,#owner-dashboard-view.workspace-console .setup-panel,#owner-dashboard-view.workspace-console #owner-payments-section,#owner-dashboard-view.workspace-console #owner-overview-section,.workspace-console .secondary-metrics{display:none}
+/* Dashboard is an analytics-only view; financial entry and wallet tools belong to Accounting. */
+#owner-dashboard-view.workspace-dashboard #owner-overview-section,
+#owner-dashboard-view.workspace-dashboard .secondary-metrics,
+#owner-dashboard-view.workspace-dashboard #owner-payments-section,
+#owner-dashboard-view.workspace-dashboard #owner-expenses-section{display:none}
+
+/* Accounting contains financial totals, wallet/subscription, sales ledger chart and expense records. */
+#owner-dashboard-view.workspace-accounting .owner-stats,
+#owner-dashboard-view.workspace-accounting .period-comparison,
+#owner-dashboard-view.workspace-accounting .analytics-intro,
+#owner-dashboard-view.workspace-accounting .headline-metrics,
+#owner-dashboard-view.workspace-accounting #owner-reports-section,
+#owner-dashboard-view.workspace-accounting .setup-panel{display:none}
+#owner-dashboard-view.workspace-accounting #owner-overview-section,
+#owner-dashboard-view.workspace-accounting .secondary-metrics,
+#owner-dashboard-view.workspace-accounting #owner-payments-section,
+#owner-dashboard-view.workspace-accounting #owner-expenses-section{display:grid}
+#owner-dashboard-view.workspace-accounting #owner-expenses-section>section:first-child{display:none}
+
+/* Console keeps staff activity and audit-oriented tools separate from finance. */
+#owner-dashboard-view.workspace-console .analytics-intro,
+#owner-dashboard-view.workspace-console .headline-metrics,
+#owner-dashboard-view.workspace-console #owner-reports-section,
+#owner-dashboard-view.workspace-console .setup-panel,
+#owner-dashboard-view.workspace-console #owner-payments-section,
+#owner-dashboard-view.workspace-console #owner-overview-section,
+#owner-dashboard-view.workspace-console .period-comparison,
+#owner-dashboard-view.workspace-console .secondary-metrics{display:none}
 #owner-dashboard-view.workspace-console .owner-stats{display:none}
 #pos-view.workspace-logistics .cart-panel{display:none}
 #pos-view.workspace-logistics #products-panel{width:100%}
