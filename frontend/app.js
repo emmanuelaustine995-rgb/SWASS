@@ -43,7 +43,7 @@
     const business=receipt.business||{};
     const lines=sale.items.map(i=>`<div class="receipt-line"><span>${escapeHtml(i.name)} × ${i.qty}</span><span>${money(i.price*i.qty)}</span></div>`).join('');
     const verifyUrl=new URL('verify.html',window.location.href).href+'?token='+encodeURIComponent(receipt.qrToken);
-    return `<div class="receipt-center"><h2>${escapeHtml(business.name||'BUSINESS NAME')}</h2>
+    return `<div class="receipt-center">${business.logoData?'<img class="receipt-logo" src="'+escapeHtml(business.logoData)+'" alt="Business logo">':''}<h2>${escapeHtml(business.name||'BUSINESS NAME')}</h2>
       ${business.storeName?`<div>${escapeHtml(business.storeName)}</div>`:''}
       ${business.location?`<div>${escapeHtml(business.location)}</div>`:''}
       ${business.phone?`<div>Tel: ${escapeHtml(business.phone)}</div>`:''}
