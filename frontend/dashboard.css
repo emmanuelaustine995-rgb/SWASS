@@ -3,3 +3,46 @@
 .crm-panel{margin-top:16px}.crm-search{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:end;margin:10px 0 14px}.crm-search label{display:grid;gap:6px;font-size:13px;font-weight:600;color:#34475b}.crm-search input{min-height:42px;border:1px solid #d7e0e9;border-radius:9px;padding:9px 11px;font:inherit;background:#fff}#crm-rows td{vertical-align:middle}#crm-rows td strong{color:#102b46}#crm-rows td small{color:#718096}@media(max-width:520px){.crm-search{grid-template-columns:1fr}.crm-search button{width:100%}.crm-panel .panel-heading{align-items:flex-start;gap:10px;flex-direction:column}}
 
 .quick-nav{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px;padding:8px;background:#eaf0f5;border-radius:12px}.quick-nav a{display:inline-flex;align-items:center;min-height:38px;padding:8px 13px;border-radius:8px;background:#fff;color:#24415c;text-decoration:none;font-size:12px;font-weight:700;border:1px solid #dce5ed}.quick-nav a:focus,.quick-nav a:hover{background:#e8f4ec;border-color:#9cc9ad;color:#176b4a}#overview-section,#payments-section,#customers-section,#expenses-section{scroll-margin-top:18px}
+
+
+/* SWASS fintech dashboard refresh — Tuma-inspired navigation and workspace */
+.dashboard-wrap{max-width:1440px;margin:0 auto;padding:24px 28px 48px}
+.dashboard-wrap>.page-heading{padding:8px 2px 18px;border-bottom:1px solid #e8edf1;margin-bottom:18px}
+.dashboard-wrap>.page-heading h1{font-size:30px;letter-spacing:-.045em;color:#122b40}
+.dashboard-wrap>.page-heading .muted{margin:5px 0 0}
+.dashboard-layout{display:grid;grid-template-columns:224px minmax(0,1fr);gap:22px;align-items:start}
+.dashboard-sidebar{position:sticky;top:18px;min-height:calc(100vh - 150px);background:#fff;border:1px solid #e6ebef;border-radius:16px;padding:18px 12px;display:flex;flex-direction:column;gap:6px;box-shadow:0 5px 20px #132d4010}
+.sidebar-label{font-size:10px;letter-spacing:.14em;font-weight:800;color:#95a3ae;margin:3px 10px 10px}
+.sidebar-link{display:flex;align-items:center;gap:11px;padding:12px 11px;border-radius:10px;text-decoration:none;color:#536678;font-size:13px;font-weight:700;transition:background .15s,color .15s}
+.sidebar-link span{width:22px;height:22px;display:grid;place-items:center;border-radius:7px;background:#f0f4f6;color:#557083;font-size:15px}
+.sidebar-link:hover,.sidebar-link.active{background:#eaf5ee;color:#176b4a}
+.sidebar-link.active span{background:#d6eddf;color:#176b4a}
+.sidebar-help{margin-top:auto;padding:14px 12px;border-radius:12px;background:#f3f8f5;border:1px solid #e3efe7}
+.sidebar-help strong{display:block;color:#1b4934;font-size:12px}
+.sidebar-help small{display:block;color:#718078;font-size:11px;line-height:1.5;margin:6px 0 11px}
+.sidebar-help a{font-size:11px;font-weight:800;color:#176b4a;text-decoration:none}
+.dashboard-main{min-width:0}
+.dashboard-main .metric-grid{gap:13px}
+.dashboard-main .metric{border-radius:13px;padding:17px 18px;box-shadow:0 3px 14px #18334a08}
+.dashboard-main .metric span{font-size:12px;font-weight:600;color:#708090}
+.dashboard-main .metric strong{font-size:clamp(20px,2vw,27px);margin:12px 0 4px}
+.dashboard-main .content-grid{gap:14px}
+.dashboard-main .panel,.dashboard-main>.panel{border-radius:14px;box-shadow:0 3px 16px #18334a08}
+.dashboard-main .panel-heading{align-items:flex-start}
+.dashboard-main .panel h2{color:#17344b}
+.dashboard-main .quick-nav{display:none}
+.dashboard-main .footnote{background:#f5f8fa;padding:12px 14px;border-radius:10px}
+.dashboard-wrap .topbar{box-shadow:0 2px 12px #0b26380c}
+@media(max-width:900px){.dashboard-layout{grid-template-columns:190px minmax(0,1fr);gap:14px}.dashboard-wrap{padding-left:18px;padding-right:18px}}
+@media(max-width:700px){
+ .dashboard-wrap{padding:15px 12px 32px}
+ .dashboard-layout{display:block}
+ .dashboard-sidebar{position:sticky;top:0;z-index:4;min-height:0;flex-direction:row;overflow-x:auto;gap:5px;padding:8px;margin:0 0 14px;border-radius:12px;box-shadow:0 4px 12px #132d4010}
+ .sidebar-label,.sidebar-help{display:none}
+ .sidebar-link{flex:0 0 auto;white-space:nowrap;padding:9px 11px;font-size:11px;gap:7px}
+ .sidebar-link span{width:19px;height:19px;font-size:13px}
+ .dashboard-wrap>.page-heading{gap:12px;padding:4px 2px 14px}
+ .dashboard-wrap>.page-heading h1{font-size:25px}
+ .dashboard-main .metric{padding:13px}
+ .dashboard-main .metric strong{font-size:20px}
+}
