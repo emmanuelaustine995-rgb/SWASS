@@ -77,3 +77,58 @@
 .setup-steps li a{font-size:10px;font-weight:800;color:#2486bd;text-decoration:none;white-space:nowrap}
 @media(max-width:900px){.channel-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.setup-steps{grid-template-columns:1fr}}
 @media(max-width:520px){.analytics-intro{align-items:flex-start;flex-direction:column}.analytics-intro h2{font-size:19px}.headline-metrics{grid-template-columns:1fr;gap:9px}.headline-metrics .highlight-metric{min-height:0;padding:13px 15px}.headline-metrics .metric strong{font-size:25px;margin:6px 0}.channel-grid{grid-template-columns:1fr 1fr;gap:7px}.channel-card{padding:10px 8px;gap:7px}.channel-card strong{font-size:14px}.channel-card em{font-size:9px}.channel-icon{width:26px;height:26px;flex-basis:26px}.setup-steps{gap:7px}}
+
+
+/* Operations-first workspace: quick actions, owner KPIs and module directory */
+.command-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 12px}
+.global-search{display:flex;align-items:center;gap:9px;min-width:0;flex:1;background:#fff;border:1px solid #dceaf4;border-radius:11px;padding:0 12px;min-height:44px;color:#5793b7}
+.global-search>span{font-size:23px;line-height:1}
+.global-search input{border:0;outline:0;box-shadow:none!important;min-width:0;min-height:40px;padding:8px 0;background:transparent;font:inherit;font-size:13px}
+.global-search kbd{font-size:10px;color:#8298a8;background:#f1f7fb;border:1px solid #e1edf5;border-radius:5px;padding:3px 6px;white-space:nowrap}
+.command-actions{display:flex;align-items:center;gap:8px}
+.network-status{font-size:11px;color:#23764e;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.network-status i{width:8px;height:8px;border-radius:50%;background:#25a36a;display:inline-block}
+.network-status.offline{color:#b45309}.network-status.offline i{background:#e49a28}
+.command-actions .btn{min-height:40px;padding:8px 11px;font-size:11px;white-space:nowrap}
+.quick-actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:15px}
+.quick-action{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:39px;padding:8px 12px;border-radius:9px;border:1px solid #dbe9f3;background:#fff;color:#315a75;text-decoration:none;font-size:11px;font-weight:800;cursor:pointer}
+.quick-action.primary-action{background:#187bb8;border-color:#187bb8;color:#fff}
+.quick-action.disabled-action{color:#91a0aa;background:#f6f9fb;cursor:not-allowed}
+.owner-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:16px}
+.owner-stat{padding:14px 15px;border:1px solid #dcecf6;border-radius:12px;background:linear-gradient(145deg,#fff,#f2f9ff);min-width:0}
+.owner-stat span{display:block;color:#638198;font-size:11px;font-weight:700}
+.owner-stat strong{display:block;color:#174f73;font-size:clamp(18px,2vw,25px);margin:7px 0 3px;overflow-wrap:anywhere}
+.owner-stat small{display:block;color:#8a9eac;font-size:10px}
+.module-hub{padding:17px;margin:0 0 16px;background:#fff;border:1px solid #dcecf6;border-radius:14px}
+.module-hub-heading{display:flex;justify-content:space-between;align-items:start;margin-bottom:13px}
+.module-hub-heading h2{font-size:19px;color:#173d59;margin:3px 0}
+.module-hub-heading p{margin:0}
+.module-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.module-tile{display:flex;align-items:center;gap:11px;min-width:0;padding:12px;border:1px solid #e3edf4;border-radius:11px;background:#f9fcff;text-decoration:none;color:inherit}
+.module-tile>span{flex:0 0 34px;width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:#e8f5ff;color:#2385bc;font-size:17px}
+.module-tile>div{flex:1;min-width:0}
+.module-tile strong{display:block;color:#254d68;font-size:12px}
+.module-tile small{display:block;color:#8296a5;font-size:10px;line-height:1.4;margin-top:3px}
+.module-state{font-size:9px;white-space:nowrap;border-radius:20px;padding:5px 7px}
+.module-state.ready{background:#e7f6ed;color:#27734c}
+.module-state.planned-state{background:#fff4df;color:#986319}
+.module-tile.planned{background:#fbfcfd;border-style:dashed}
+.module-tile.planned>span{background:#f0f2f4;color:#81909b}
+.module-tile.planned strong{color:#667987}
+.module-tile:hover:not(.planned){border-color:#a9d3ec;background:#f1f9ff}
+body.dashboard-dark{background:#0e1b27;color:#e4edf5}
+body.dashboard-dark .dashboard-sidebar,body.dashboard-dark .metric,body.dashboard-dark .panel,body.dashboard-dark .module-hub,body.dashboard-dark .module-tile,body.dashboard-dark .global-search{background:#172838;border-color:#2b4356;color:#e4edf5}
+body.dashboard-dark .dashboard-wrap>.page-heading h1,body.dashboard-dark .dashboard-main .panel h2,body.dashboard-dark .module-hub-heading h2,body.dashboard-dark .module-tile strong,body.dashboard-dark .dashboard-main .metric strong{color:#d9efff}
+body.dashboard-dark .metric span,body.dashboard-dark .metric small,body.dashboard-dark .module-tile small,body.dashboard-dark .muted{color:#9fb2c1}
+body.dashboard-dark .owner-stat{background:#172c3c;border-color:#294a62}
+body.dashboard-dark .owner-stat strong{color:#8ed0ff}
+body.dashboard-dark .owner-stat span,body.dashboard-dark .owner-stat small{color:#a3bdce}
+body.dashboard-dark .quick-action{background:#1b3042;border-color:#355269;color:#d6eafa}
+body.dashboard-dark .quick-action.primary-action{background:#187bb8;color:#fff}
+body.dashboard-dark .quick-action.disabled-action{color:#8c9ba6}
+body.dashboard-dark .global-search input{color:#e4edf5}
+body.dashboard-dark .module-tile>span{background:#203e54;color:#91d4ff}
+body.dashboard-dark .module-state.ready{background:#173f32;color:#9de0ba}
+body.dashboard-dark .module-state.planned-state{background:#463a24;color:#f2ce88}
+@media(max-width:850px){.owner-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.module-grid{grid-template-columns:1fr}}
+@media(max-width:520px){.command-bar{align-items:stretch;flex-direction:column}.command-actions{justify-content:space-between}.global-search kbd{display:none}.owner-stat{padding:11px}.owner-stat strong{font-size:18px}.module-hub{padding:13px}.module-tile{padding:10px}.module-state{font-size:8px}}
