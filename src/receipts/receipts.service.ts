@@ -37,12 +37,13 @@ export class ReceiptsService {
     const { rows } = await this.db.pool.query(
       `SELECT r.id, r.receipt_no, r.issued_at, r.total_kes, r.subtotal_kes, r.discount_kes,
               r.payment_method, r.status, c.full_name AS customer_name, c.phone AS customer_phone,
-              c.email AS customer_email,
+              c.email AS customer_email, u.full_name AS cashier_name,
               COALESCE(json_agg(json_build_object('name', ri.name, 'qty', ri.qty,
                 'unitPriceKes', ri.unit_price_kes, 'lineTotalKes', ri.line_total_kes))
                 FILTER (WHERE ri.id IS NOT NULL), '[]'::json) AS items
          FROM receipts r
          LEFT JOIN customers c ON c.id = r.customer_id AND c.tenant_id = r.tenant_id
+         LEFT JOIN users u ON u.id = r.cashier_id AND u.tenant_id = r.tenant_id
          LEFT JOIN receipt_items ri ON ri.receipt_id = r.id
         WHERE r.tenant_id = $1 AND r.store_id = $2
           AND ($3::date IS NULL OR r.issued_at >= $3::date)
@@ -51,7 +52,7 @@ export class ReceiptsService {
                OR COALESCE(c.full_name, '') ILIKE '%' || $5 || '%'
                OR COALESCE(c.phone, '') ILIKE '%' || $5 || '%'
                OR r.total_kes::text ILIKE '%' || $5 || '%')
-        GROUP BY r.id, c.full_name, c.phone, c.email
+        GROUP BY r.id, c.full_name, c.phone, c.email, u.full_name
         ORDER BY r.issued_at DESC, r.id DESC LIMIT $6`,
       [user.tenantId, user.storeId, from, to, q, limit],
     );
@@ -59,7 +60,7 @@ export class ReceiptsService {
       id: r.id, receiptNo: r.receipt_no, issuedAt: r.issued_at,
       totalKes: Number(r.total_kes), subtotalKes: Number(r.subtotal_kes),
       discountKes: Number(r.discount_kes), paymentMethod: r.payment_method,
-      status: r.status, customer: r.customer_name ? {
+      status: r.status, cashier: { name: r.cashier_name || 'Staff' }, customer: r.customer_name ? {
         fullName: r.customer_name, phone: r.customer_phone, email: r.customer_email,
       } : null, items: r.items,
     })) };
