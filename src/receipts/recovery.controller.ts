@@ -79,18 +79,34 @@ export class ReceiptRecoveryController {
     const token = String(req.headers['x-recovery-token'] ?? '');
     if (!token || token.length > 200) throw new BadRequestException('A valid recovery token is required');
     const { rows } = await this.db.pool.query(
-      `SELECT r.id,r.receipt_no,r.total_kes,r.payment_method,r.status,r.issued_at,s.name AS store_name,
-              o.customer_ids
-       FROM recovery_sessions rs JOIN otp_requests o ON o.id=rs.otp_request_id
-       JOIN receipts r ON r.customer_id=ANY(o.customer_ids) JOIN stores s ON s.id=r.store_id
+      `SELECT r.id,r.receipt_no,r.subtotal_kes,r.discount_kes,r.total_kes,r.payment_method,r.status,r.issued_at,r.qr_token,
+              s.name AS store_name,s.location AS store_location,s.logo_data,
+              t.name AS business_name,t.phone AS business_phone,t.email AS business_email,
+              c.full_name AS customer_name,c.phone AS customer_phone,c.email AS customer_email,
+              COALESCE(json_agg(json_build_object(
+                'name',ri.name,'qty',ri.qty,'unitPriceKes',ri.unit_price_kes,'lineTotalKes',ri.line_total_kes
+              ) ORDER BY ri.id) FILTER (WHERE ri.id IS NOT NULL),'[]'::json) AS items
+       FROM recovery_sessions rs
+       JOIN otp_requests o ON o.id=rs.otp_request_id
+       JOIN receipts r ON r.customer_id=ANY(o.customer_ids)
+       JOIN stores s ON s.id=r.store_id
+       JOIN tenants t ON t.id=r.tenant_id
+       LEFT JOIN customers c ON c.id=r.customer_id AND c.tenant_id=r.tenant_id
+       LEFT JOIN receipt_items ri ON ri.receipt_id=r.id
        WHERE rs.token_hash=$1 AND rs.expires_at>now()
+       GROUP BY r.id,s.id,t.id,c.id
        ORDER BY r.issued_at DESC LIMIT 50`, [hash(token)],
     );
     if (!rows.length) {
       const valid = await this.db.pool.query(`SELECT 1 FROM recovery_sessions WHERE token_hash=$1 AND expires_at>now()`, [hash(token)]);
       if (!valid.rowCount) throw new BadRequestException('Recovery session expired. Request a new code.');
     }
-    return { receipts: rows.map(({ customer_ids, ...r }: any) => ({ ...r, totalKes: Number(r.total_kes) })) };
+    return { receipts: rows.map((r: any) => ({
+      ...r,
+      subtotalKes: Number(r.subtotal_kes),
+      discountKes: Number(r.discount_kes),
+      totalKes: Number(r.total_kes),
+    })) };
   }
 
   @Get('receipts/verify/:token')
