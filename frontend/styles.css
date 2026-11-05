@@ -7,3 +7,12 @@
 .profile-panel{padding:20px;margin:0 0 20px}.profile-panel form{display:grid;gap:13px}.profile-logo-row{display:flex;align-items:center;gap:16px}.logo-preview{width:90px;height:90px;object-fit:contain;border:1px solid var(--line);border-radius:12px;background:#fff;padding:6px}.receipt-logo{display:block;max-width:130px;max-height:90px;object-fit:contain;margin:0 auto 8px}.receipt-paper h2{font-size:17px;margin:0 0 4px}@media(max-width:430px){.profile-logo-row{align-items:flex-start;flex-direction:column}}
 
 .history-panel{padding:18px;margin:0 0 20px}.history-filters{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;align-items:end;margin-bottom:12px}.history-list{display:grid;gap:9px}.history-row{border:1px solid var(--line);border-radius:11px;padding:12px;background:#fff}.history-row-top{display:flex;justify-content:space-between;gap:10px}.history-row-top strong:last-child{color:var(--green)}.history-row-meta,.history-row-items{font-size:11px;color:var(--muted);margin-top:5px;overflow-wrap:anywhere}.history-row-items{color:var(--ink)}@media(max-width:700px){.history-filters{grid-template-columns:1fr 1fr}.history-filters label:first-child{grid-column:1/-1}.history-filters button{grid-column:1/-1}}
+
+/* Ink-style official paid stamp on printed receipts */
+.official-paid-stamp{width:154px;height:154px;box-sizing:border-box;border:4px double #a32626;border-radius:50%;color:#a32626;margin:0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;text-align:center;position:relative;transform:rotate(-7deg);font-family:Arial,sans-serif;opacity:.88;background:repeating-linear-gradient(135deg,transparent 0,transparent 3px,#a3262608 3px,#a3262608 5px);box-shadow:inset 0 0 0 2px #a3262640}
+.official-paid-stamp:before,.official-paid-stamp:after{content:"";position:absolute;border:1px solid #a32626;border-radius:50%;inset:5px;pointer-events:none}
+.official-paid-stamp:after{inset:10px;border-style:dashed;opacity:.55}
+.stamp-business{font-size:9px;line-height:1.2;font-weight:900;letter-spacing:1px;text-transform:uppercase;max-width:112px;overflow-wrap:anywhere}
+.stamp-paid{font-size:29px;line-height:1;font-weight:1000;letter-spacing:2px;border-top:2px solid #a32626;border-bottom:2px solid #a32626;padding:6px 4px;margin:8px 0 6px;text-shadow:.5px 0 #a32626}
+.stamp-date{font-size:9px;font-weight:900;letter-spacing:.5px}
+.stamp-branch{font-size:7px;font-weight:700;letter-spacing:.6px;margin-top:4px;max-width:112px;overflow-wrap:anywhere;text-transform:uppercase}
