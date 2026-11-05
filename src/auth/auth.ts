@@ -106,7 +106,9 @@ export class AuthController {
         return user.rows[0];
       });
       const payload: AuthUser = { sub: result.id, tenantId: result.tenant_id, storeId: result.store_id, role: result.role };
-      let emailVerificationSent = false;\n      if (email) { try { emailVerificationSent = (await this.emailVerification.send(result.id, email, fullName)).sent; } catch { emailVerificationSent = false; } }\n      return { accessToken: await this.jwt.signAsync(payload, { expiresIn: '12h' }), trialDays: 7, emailVerificationSent, emailVerificationRequired: !!email };
+      let emailVerificationSent = false;
+      if (email) { try { emailVerificationSent = (await this.emailVerification.send(result.id, email, fullName)).sent; } catch { emailVerificationSent = false; } }
+      return { accessToken: await this.jwt.signAsync(payload, { expiresIn: '12h' }), trialDays: 7, emailVerificationSent, emailVerificationRequired: !!email };
     } catch (err: any) {
       if (err?.code === '23505') throw new UnauthorizedException('This phone number is already registered. Sign in or use another number.');
       throw err;
