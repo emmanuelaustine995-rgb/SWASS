@@ -16,3 +16,14 @@
 .stamp-paid{font-size:29px;line-height:1;font-weight:1000;letter-spacing:2px;border-top:2px solid #a32626;border-bottom:2px solid #a32626;padding:6px 4px;margin:8px 0 6px;text-shadow:.5px 0 #a32626}
 .stamp-date{font-size:9px;font-weight:900;letter-spacing:.5px}
 .stamp-branch{font-size:7px;font-weight:700;letter-spacing:.6px;margin-top:4px;max-width:112px;overflow-wrap:anywhere;text-transform:uppercase}
+
+.customer-lookup-panel{padding:18px;margin:0 0 20px}
+.customer-lookup-form{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end}
+.customer-lookup-form label{display:grid;gap:7px}
+.customer-result{margin-top:12px;padding:15px;border:1px solid var(--line);border-radius:12px;background:#fbfdfb}
+.customer-result p{font-size:13px;margin:7px 0}
+.customer-result-head{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.customer-match{font-size:11px;font-weight:800;color:#17633f;background:#e8f5ed;border-radius:20px;padding:5px 9px}
+.customer-result ul{padding-left:20px;font-size:12px;color:var(--muted)}
+.customer-result li{margin:5px 0}
+@media(max-width:650px){.customer-lookup-form{grid-template-columns:1fr}.customer-lookup-form button{width:100%}}
