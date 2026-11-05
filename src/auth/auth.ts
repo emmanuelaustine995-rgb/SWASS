@@ -65,9 +65,11 @@ export class AuthController {
   }
 
   @Post('register')
-  async register(@Body() body: { businessName?: string; storeName?: string; fullName?: string; phone?: string; email?: string; password?: string }) {
+  async register(@Body() body: { businessName?: string; storeName?: string; storeLocation?: string; fullName?: string; phone?: string; email?: string; password?: string }) {
     const businessName = body?.businessName?.trim();
     const storeName = (body?.storeName || body?.businessName)?.trim();
+    const storeLocation = body?.storeLocation?.trim() || null;
+    if (storeLocation && storeLocation.length > 200) throw new UnauthorizedException('Store location must be at most 200 characters');
     const fullName = body?.fullName?.trim();
     const email = body?.email?.trim().toLowerCase() || null;
     const password = body?.password || '';
@@ -86,8 +88,8 @@ export class AuthController {
         );
         const tenantId = tenant.rows[0].id;
         const store = await c.query(
-          'INSERT INTO stores (tenant_id,name) VALUES ($1,$2) RETURNING id',
-          [tenantId, storeName],
+          'INSERT INTO stores (tenant_id,name,location) VALUES ($1,$2,$3) RETURNING id',
+          [tenantId, storeName, storeLocation],
         );
         const user = await c.query(
           `INSERT INTO users (tenant_id,store_id,full_name,phone,email,password_hash,role)
