@@ -34,6 +34,11 @@ services:
         sync: false
       - key: MPESA_CALLBACK_TOKEN
         generateValue: true
+      # Tuma collects SWASS subscription and wallet payments.
+      - key: TUMA_BUSINESS_EMAIL
+        sync: false
+      - key: TUMA_API_KEY
+        sync: false
       - key: PUBLIC_APP_URL
         value: https://swass-web.onrender.com
       # TalkSasa is the active provider for signup and receipt-recovery OTPs.
