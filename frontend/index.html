@@ -37,7 +37,7 @@
         </form>
       </div>
     </section>
-    <nav id="workspace-nav" class="workspace-nav hidden" aria-label="Main navigation"><button type="button" data-workspace="sales" class="active">Sales</button><button type="button" data-workspace="receipts">Receipts</button><button type="button" data-workspace="customers">Customers</button><button type="button" data-workspace="products">Products & Stock</button><button type="button" data-workspace="reports">Reports</button><button type="button" data-workspace="payments">Account</button></nav>
+    <nav id="workspace-nav" class="workspace-nav hidden" aria-label="Main navigation"><button type="button" data-workspace="dashboard" class="active">Dashboard</button><button type="button" data-workspace="sales">Sales</button><button type="button" data-workspace="receipts">Receipts</button><button type="button" data-workspace="crm">CRM</button><button type="button" data-workspace="accounting">Accounting & Wallet</button><button type="button" data-workspace="logistics">Logistics</button><button type="button" data-workspace="console">Console</button></nav>
     <section id="pos-view" class="hidden">
       
       <div class="page-heading"><div><p class="eyebrow">POINT OF SALE</p><h1>New sale</h1><p class="muted">Find products, add them to the cart and issue a receipt.</p></div><div class="inventory-actions"><button id="profile-toggle" class="btn btn-light" type="button">Business profile</button><button id="refresh-btn" class="btn btn-light">↻ Refresh products</button></div></div>
@@ -60,18 +60,7 @@
     </section>
 <section id="owner-dashboard-view" class="hidden"><div class="page-heading"><div><h1>Business overview</h1><p class="muted">Track sales, stock, expenses and team performance.</p></div><div class="date-filter"><label>From<input id="owner-date-from" type="date"></label><label>To<input id="owner-date-to" type="date"></label><button id="owner-refresh-btn" class="btn btn-primary">Refresh</button></div></div><p id="owner-notice" class="notice hidden"></p>
 <div class="dashboard-layout">
-<aside class="dashboard-sidebar" aria-label="Main menu">
-  <p class="sidebar-label">MAIN MENU</p>
-  <a class="sidebar-link active" href="#owner-overview-section" data-search="overview home dashboard"><span>⌂</span> Overview</a>
-  <a class="sidebar-link" href="#pos-view" data-screen="sales" data-search="sales pos point of sale checkout"><span>▣</span> Sales & POS</a>
-  <a class="sidebar-link" href="#pos-view" data-screen="products" data-search="products inventory stock"><span>▦</span> Products & stock</a>
-  <a class="sidebar-link" href="#receipt-history" data-screen="receipts" data-search="receipts recovery print"><span>▤</span> Receipts</a>
-  <a class="sidebar-link" href="#owner-customers-section" data-search="customers crm loyalty"><span>♙</span> Customers</a>
-  <a class="sidebar-link" href="#expenses-section" data-search="expenses costs team cashier"><span>▧</span> Expenses & team</a>
-  <a class="sidebar-link" href="#owner-reports-section" data-search="reports analytics sales performance"><span>▥</span> Reports</a>
-  <a class="sidebar-link" href="#owner-payments-section" data-search="subscription swass pro wallet payments"><span>↗</span> SWASS Pro & payments</a>
-  <div class="sidebar-help"><strong>Your business, in one place</strong><small>Use this menu to move around your SWASS dashboard.</small><a href="#pos-view">Open point of sale →</a></div>
-</aside>
+
 <div class="dashboard-main">
 <div class="command-bar">
  <div class="global-search"><span aria-hidden="true">⌕</span><input id="owner-workspace-search" type="search" placeholder="Search the menu…" aria-label="Search dashboard menu"><kbd>Search</kbd></div>
