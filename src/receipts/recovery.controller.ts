@@ -121,8 +121,9 @@ export class ReceiptRecoveryController {
               s.name AS store_name,s.location AS store_location,s.logo_data,
               t.name AS business_name,t.phone AS business_phone,t.email AS business_email,
               c.full_name AS customer_name,c.phone AS customer_phone,c.email AS customer_email,
+              u.full_name AS cashier_name,u.phone AS cashier_phone,
               COALESCE(json_agg(json_build_object(
-                'name',ri.name,'qty',ri.qty,'unitPriceKes',ri.unit_price_kes,'lineTotalKes',ri.line_total_kes
+                'name',ri.name,'serialNo',ri.serial_no,'qty',ri.qty,'unitPriceKes',ri.unit_price_kes,'lineTotalKes',ri.line_total_kes
               ) ORDER BY ri.id) FILTER (WHERE ri.id IS NOT NULL),'[]'::json) AS items
        FROM recovery_sessions rs
        JOIN otp_requests o ON o.id=rs.otp_request_id
@@ -130,9 +131,10 @@ export class ReceiptRecoveryController {
        JOIN stores s ON s.id=r.store_id
        JOIN tenants t ON t.id=r.tenant_id
        LEFT JOIN customers c ON c.id=r.customer_id AND c.tenant_id=r.tenant_id
+       LEFT JOIN users u ON u.id=r.cashier_id AND u.tenant_id=r.tenant_id
        LEFT JOIN receipt_items ri ON ri.receipt_id=r.id
        WHERE rs.token_hash=$1 AND rs.expires_at>now()
-       GROUP BY r.id,s.id,t.id,c.id
+       GROUP BY r.id,s.id,t.id,c.id,u.id
        ORDER BY r.issued_at DESC LIMIT 50`, [hash(token)],
     );
     if (!rows.length) {
@@ -141,6 +143,7 @@ export class ReceiptRecoveryController {
     }
     return { receipts: rows.map((r: any) => ({
       ...r,
+      cashier: { name: r.cashier_name || 'Staff', phone: r.cashier_phone || null },
       subtotalKes: Number(r.subtotal_kes),
       discountKes: Number(r.discount_kes),
       totalKes: Number(r.total_kes),
