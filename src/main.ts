@@ -17,8 +17,21 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bodyParser: false });
   app.use(json({ limit: '256kb' }));
   app.use(urlencoded({ extended: true, limit: '256kb' }));
+  // Always allow the production SWASS frontend. CORS_ORIGINS may add
+  // custom domains, but a missing/empty Render variable must not block the app.
+  const allowedOrigins = new Set([
+    'https://swass-web.onrender.com',
+    ...((process.env.CORS_ORIGINS ?? '').split(',').map((v: string) => v.trim()).filter(Boolean)),
+  ]);
+  if (process.env.NODE_ENV !== 'production') {
+    allowedOrigins.add('http://localhost:3000');
+    allowedOrigins.add('http://127.0.0.1:3000');
+  }
   app.enableCors({
-    origin: (process.env.CORS_ORIGINS ?? '').split(',').map((v: string) => v.trim()).filter(Boolean),
+    origin: (origin: string | undefined, callback: (error: Error | null, allowed?: boolean) => void) => {
+      if (!origin || allowedOrigins.has(origin)) return callback(null, true);
+      return callback(null, false);
+    },
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Recovery-Token'],
   });
