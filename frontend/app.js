@@ -26,7 +26,28 @@
     }catch(e){$('history-list').innerHTML='';$('history-error').textContent=e.message||'Could not load receipt history.';}
   }
   async function loadBusinessProfile(){const d=await request('/api/v1/business/profile');const p=d.profile||{};$('profile-business-name').value=p.businessName||'';$('profile-business-phone').value=p.businessPhone||'';$('profile-business-email').value=p.businessEmail||'';$('profile-store-name').value=p.storeName||'';$('profile-store-location').value=p.storeLocation||'';$('profile-receipt-header').value=p.receiptHeader||'';$('profile-receipt-footer').value=p.receiptFooter||'';state.profileLogoData=p.logoData||undefined;const img=$('logo-preview');if(state.profileLogoData){img.src=state.profileLogoData;img.classList.remove('hidden');}else{img.removeAttribute('src');img.classList.add('hidden');}}
-  async function compressLogo(file){if(!file||!['image/png','image/jpeg','image/webp'].includes(file.type))throw new Error('Choose PNG, JPG or WebP.');if(file.size>60000)throw new Error('Choose a logo smaller than 60 KB.');return await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=()=>reject(new Error('Could not read logo.'));r.readAsDataURL(file);});}
+  async function compressLogo(file){
+    if(!file||!['image/png','image/jpeg','image/webp'].includes(file.type))throw new Error('Choose PNG, JPG or WebP.');
+    let bitmap;
+    try{bitmap=await createImageBitmap(file);}catch{throw new Error('This image could not be opened. Please choose another PNG, JPG or WebP image.');}
+    try{
+      let width=bitmap.width,height=bitmap.height;
+      const maxSide=640;
+      if(width>maxSide||height>maxSide){const scale=Math.min(maxSide/width,maxSide/height);width=Math.max(1,Math.round(width*scale));height=Math.max(1,Math.round(height*scale));}
+      const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
+      const ctx=canvas.getContext('2d');if(!ctx)throw new Error('Your browser could not prepare the logo.');
+      ctx.fillStyle='#ffffff';ctx.fillRect(0,0,width,height);ctx.drawImage(bitmap,0,0,width,height);
+      let blob=null;
+      for(let pass=0;pass<7;pass++){
+        const quality=[0.82,0.72,0.62,0.52,0.42,0.32,0.25][pass];
+        blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',quality));
+        if(blob&&blob.size<=45000)break;
+        if(pass===2){canvas.width=Math.max(1,Math.round(canvas.width*0.8));canvas.height=Math.max(1,Math.round(canvas.height*0.8));ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);}
+      }
+      if(!blob||blob.size>45000)throw new Error('This logo is too detailed to reduce. Please choose a simpler image.');
+      return await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(new Error('Could not prepare the logo.'));reader.readAsDataURL(blob);});
+    }finally{bitmap.close?.();}
+  }
   async function loadProducts(){
     const q=$('product-search').value.trim(); const low=$('low-stock').checked;
     const params=new URLSearchParams(); if(q) params.set('q',q); if(low) params.set('lowStock','true');
@@ -63,7 +84,7 @@
       <div class="muted">OFFICIAL SALES RECEIPT</div></div>
       <div class="receipt-divider"></div><div>Receipt: <strong>${escapeHtml(receipt.receiptNo)}</strong></div>
       <div class="receipt-center"><svg id="receipt-barcode" aria-label="Receipt barcode"></svg></div>
-      <div>Date: ${new Date().toLocaleString('en-KE')}</div><div>Payment: ${escapeHtml(sale.paymentMethod.toUpperCase())}</div>
+      <div>Date sold: ${new Date(receipt.issuedAt||Date.now()).toLocaleString('en-KE')}</div><div>Sales agent: ${escapeHtml(receipt.cashier?.name||'Staff')}</div><div>Agent phone: ${escapeHtml(receipt.cashier?.phone||'Not available')}</div><div>Payment: ${escapeHtml(sale.paymentMethod.toUpperCase())}</div>
       ${customer?`<div>Customer: ${escapeHtml(customer.fullName)}</div><div>Phone: ${escapeHtml(customer.phone)}</div>${customer.email?`<div>Email: ${escapeHtml(customer.email)}</div>`:''}`:''}
       <div class="receipt-divider"></div>${lines}<div class="receipt-divider"></div>
       <div class="receipt-line"><span>Subtotal</span><span>${money(sale.subtotal)}</span></div>
@@ -122,7 +143,7 @@
   $('history-search').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();loadReceiptHistory();}});
   $('profile-toggle').addEventListener('click',async()=>{try{$('profile-error').textContent='';await loadBusinessProfile();$('profile-panel').classList.remove('hidden');$('profile-panel').scrollIntoView({behavior:'smooth',block:'start'});}catch(e){showNotice(e.message||'Could not load business profile.',true);}});
   $('profile-close').addEventListener('click',()=>$('profile-panel').classList.add('hidden'));
-  $('business-logo').addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file)return;try{state.profileLogoData=await compressLogo(file);$('logo-preview').src=state.profileLogoData;$('logo-preview').classList.remove('hidden');$('profile-error').textContent='';}catch(err){e.target.value='';$('profile-error').textContent=err.message;}});
+  $('business-logo').addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file)return;const img=$('logo-preview');img.classList.remove('hidden');img.alt='Preparing selected business logo…';$('profile-error').textContent='Preparing logo…';try{state.profileLogoData=await compressLogo(file);img.src=state.profileLogoData;img.alt='Selected business logo preview';$('profile-error').textContent='Logo preview ready. Tap Save business profile to keep it.';}catch(err){state.profileLogoData=undefined;e.target.value='';img.removeAttribute('src');img.classList.add('hidden');$('profile-error').textContent=err.message;}});
   $('profile-form').addEventListener('submit',async e=>{e.preventDefault();const btn=$('profile-form').querySelector('button[type="submit"]');btn.disabled=true;btn.textContent='Saving…';$('profile-error').textContent='';const payload={businessName:$('profile-business-name').value.trim(),businessPhone:$('profile-business-phone').value.trim(),businessEmail:$('profile-business-email').value.trim()||null,storeName:$('profile-store-name').value.trim(),storeLocation:$('profile-store-location').value.trim()||null,receiptHeader:$('profile-receipt-header').value.trim()||null,receiptFooter:$('profile-receipt-footer').value.trim()||null};if(state.profileLogoData!==undefined)payload.logoData=state.profileLogoData;try{await request('/api/v1/business/profile',{method:'PATCH',body:JSON.stringify(payload)});showNotice('Business profile saved. Your logo and details will appear on new receipts.');$('profile-panel').classList.add('hidden');}catch(err){$('profile-error').textContent=err.message||'Could not save business profile.';}finally{btn.disabled=false;btn.textContent='Save business profile';}});
   $('logout-btn').addEventListener('click',()=>{state.token=null;state.role=null;state.cart.clear();renderCart();$('profile-panel').classList.add('hidden');showLogin();});
   $('product-list').addEventListener('click',e=>{const b=e.target.closest('[data-add]');if(b)addToCart(b.dataset.add);});
