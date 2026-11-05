@@ -12,13 +12,15 @@
   function showLogin(){ $('login-view').classList.remove('hidden'); $('dashboard-view').classList.add('hidden'); $('logout-btn').classList.add('hidden'); }
   function showDashboard(){ $('login-view').classList.add('hidden'); $('dashboard-view').classList.remove('hidden'); $('logout-btn').classList.remove('hidden'); $('user-label').textContent=state.role; }
   function notice(msg,error=false){$('notice').textContent=msg;$('notice').classList.remove('hidden');$('notice').style.background=error?'#fff0ef':'#eef8f0';$('notice').style.color=error?'#a12b22':'#21643a';}
-  function periodQuery(){const p=new URLSearchParams();if($('date-from').value)p.set('from',$('date-from').value);if($('date-to').value)p.set('to',$('date-to').value);return p.toString()?`?${p}`:'';}
+  function localDate(d){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');return `${y}-${m}-${day}`;}
+  function initializePeriod(){const now=new Date();$('date-from').value=localDate(new Date(now.getFullYear(),now.getMonth(),1));$('date-to').value=localDate(now);}
+  function periodQuery(){const p=new URLSearchParams();if($('date-from').value)p.set('from',$('date-from').value);if($('date-to').value)p.set('to',$('date-to').value);return p.toString()? `?${p}`:'';}
   async function loadDashboard(){
     try {
       const data=await request(`/api/v1/dashboard/summary${periodQuery()}`); const s=data.sales,i=data.inventory,e=data.expenses;
       $('m-sales').textContent=money(s.salesKes);$('m-transactions').textContent=`${s.transactions} transactions`;
       $('m-profit').textContent=money(s.grossProfitKes);$('m-expenses').textContent=money(s.expensesKes);$('m-expense-count').textContent=`${e.count} entries`;$('m-net').textContent=money(s.estimatedNetOperatingKes);
-      $('m-products').textContent=i.productCount;$('m-low').textContent=`${i.lowStockCount} need restocking`;$('m-stock-cost').textContent=money(i.stockCostKes);$('m-stock-retail').textContent=`Retail value: ${money(i.stockRetailKes)}`;$('m-discounts').textContent=money(s.discountsKes);
+      $('m-products').textContent=i.productCount;$('m-products-top').textContent=Number(i.productCount||0).toLocaleString('en-KE');$('m-locations').textContent='0';$('m-month-transactions').textContent=Number(s.transactions||0).toLocaleString('en-KE');$('channel-pos').textContent=money(s.salesKes);$('channel-api').textContent=money(0);$('channel-invoices').textContent=money(0);$('channel-offline').textContent=money(0);$('m-low').textContent=`${i.lowStockCount} need restocking`;$('m-stock-cost').textContent=money(i.stockCostKes);$('m-stock-retail').textContent=`Retail value: ${money(i.stockRetailKes)}`;$('m-discounts').textContent=money(s.discountsKes);
       $('m-wallet').textContent=money(data.subscription?.balanceKes||0);$('m-subscription').textContent=data.subscription?`${data.subscription.plan} plan · ${data.subscription.status}`:'No subscription details';
       renderDaily(data.daily||[]);renderCashiers(data.cashiers||[]);await loadExpenses();$('notice').classList.add('hidden');
     } catch(err){notice(err.message,true);}
@@ -41,5 +43,6 @@
   $('crm-refresh').addEventListener('click',loadCustomers);$('crm-search-btn').addEventListener('click',loadCustomers);$('crm-search').addEventListener('keydown',ev=>{if(ev.key==='Enter'){ev.preventDefault();loadCustomers();}});
   $('expense-form').addEventListener('submit',async ev=>{ev.preventDefault();$('expense-message').textContent='Saving…';try{await request('/api/v1/dashboard/expenses',{method:'POST',body:JSON.stringify({amountKes:Number($('expense-amount').value),category:$('expense-category').value.trim(),note:$('expense-note').value.trim()||undefined})});$('expense-form').reset();$('expense-message').textContent='Expense saved.';await loadDashboard();}catch(e){$('expense-message').textContent=e.message;}});
   if(!API)$('login-error').textContent='Set SWASS_API_URL in frontend/config.js before signing in.';
+  initializePeriod();
   showLogin();
 })();
