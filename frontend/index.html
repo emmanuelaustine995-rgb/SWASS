@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="./dashboard.css">
 </head>
 <body>
-  <header class="topbar"><a class="brand" href="#"><span class="brand-mark">S</span><span>SWASS<small>BUSINESS & RECEIPT MANAGEMENT</small></span></a><div class="top-actions"><button id="workspace-menu-toggle" class="workspace-menu-toggle hidden" type="button" aria-label="Open navigation menu" aria-expanded="false">☰</button><span id="user-label" class="user-label"></span><span id="dashboard-link" class="btn btn-quiet hidden">Business workspace</span><button id="logout-btn" class="btn btn-quiet hidden">Log out</button></div></header>
+  <header class="topbar"><a class="brand" href="#"><span class="brand-mark">S</span><span>SWASS<small>BUSINESS & RECEIPT MANAGEMENT</small></span></a><div class="top-actions"><span id="user-label" class="user-label"></span><span id="dashboard-link" class="btn btn-quiet hidden">Business workspace</span><button id="logout-btn" class="btn btn-quiet hidden">Log out</button></div></header>
   <main class="shell">
     <section id="login-view" class="login-wrap">
       <div class="login-card"><p class="eyebrow">WELCOME BACK</p><h1>Sign in to your till</h1><p class="muted">Use your SWASS staff phone number and password.</p>
@@ -37,21 +37,7 @@
         </form>
       </div>
     </section>
-    <div id="workspace-menu-overlay" class="workspace-menu-overlay hidden" aria-hidden="true">
-  <aside id="workspace-menu" class="workspace-menu" aria-label="SWASS navigation">
-    <div class="workspace-menu-top"><span class="workspace-menu-brand"><span class="brand-mark">S</span> SWASS</span><button id="workspace-menu-close" class="workspace-menu-close" type="button" aria-label="Close menu">×</button></div>
-    <div class="workspace-menu-profile"><div class="workspace-avatar" aria-hidden="true">●</div><strong>Business workspace</strong><span id="workspace-menu-user">Owner / Manager</span></div>
-    <nav id="workspace-nav" class="workspace-menu-links" aria-label="Main navigation">
-      <button type="button" data-workspace="sales" class="active"><span>⌂</span> Sales</button>
-      <button type="button" data-workspace="receipts"><span>▤</span> Receipts</button>
-      <button type="button" data-workspace="customers"><span>♙</span> Customers / CRM</button>
-      <button type="button" data-workspace="products"><span>▦</span> Products & Stock</button>
-      <button type="button" data-workspace="reports"><span>▥</span> Reports</button>
-      <button type="button" data-workspace="payments"><span>◉</span> Account</button>
-    </nav>
-    <div class="workspace-menu-footer">SWASS · Your business in one place</div>
-  </aside>
-</div>
+    <nav id="workspace-nav" class="workspace-nav hidden" aria-label="Main navigation"><button type="button" data-workspace="sales" class="active">Sales</button><button type="button" data-workspace="receipts">Receipts</button><button type="button" data-workspace="customers">Customers</button><button type="button" data-workspace="products">Products & Stock</button><button type="button" data-workspace="reports">Reports</button><button type="button" data-workspace="payments">Account</button></nav>
     <section id="pos-view" class="hidden">
       
       <div class="page-heading"><div><p class="eyebrow">POINT OF SALE</p><h1>New sale</h1><p class="muted">Find products, add them to the cart and issue a receipt.</p></div><div class="inventory-actions"><button id="profile-toggle" class="btn btn-light" type="button">Business profile</button><button id="refresh-btn" class="btn btn-light">↻ Refresh products</button></div></div>
