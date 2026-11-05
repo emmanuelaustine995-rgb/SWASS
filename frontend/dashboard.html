@@ -4,17 +4,21 @@
 <main class="dashboard-wrap"><section id="login-view" class="panel login-panel"><h1>Owner dashboard</h1><p class="muted">Sign in with your owner or manager account.</p><form id="login-form" class="stack"><label>Phone number<input id="login-phone" type="tel" required autocomplete="username"></label><label>Password<input id="login-password" type="password" required autocomplete="current-password"></label><button class="btn btn-primary" type="submit">Sign in</button><p id="login-error" class="error"></p></form></section>
 <section id="dashboard-view" class="hidden"><div class="page-heading"><div><h1>Business overview</h1><p class="muted">Track sales, stock, expenses and team performance.</p></div><div class="date-filter"><label>From<input id="date-from" type="date"></label><label>To<input id="date-to" type="date"></label><button id="refresh-btn" class="btn btn-primary">Refresh</button></div></div><p id="notice" class="notice hidden"></p>
 <div class="dashboard-layout">
-<aside class="dashboard-sidebar" aria-label="Dashboard navigation">
-  <p class="sidebar-label">WORKSPACE</p>
-  <a class="sidebar-link active" href="#overview-section"><span>▦</span> Overview</a>
-  <a class="sidebar-link" href="#payments-section"><span>↗</span> Payments & SWASS Pro</a>
-  <a class="sidebar-link" href="#customers-section"><span>♙</span> Customers</a>
-  <a class="sidebar-link" href="#expenses-section"><span>▤</span> Expenses & team</a>
-  <div class="sidebar-help"><strong>Need help?</strong><small>Manage your shop and track performance from one place.</small><a href="./index.html">Open point of sale →</a></div>
+<aside class="dashboard-sidebar" aria-label="Main menu">
+  <p class="sidebar-label">MAIN MENU</p>
+  <a class="sidebar-link active" href="#overview-section" data-search="overview home dashboard"><span>⌂</span> Overview</a>
+  <a class="sidebar-link" href="./index.html" data-search="sales pos point of sale checkout"><span>▣</span> Sales & POS</a>
+  <a class="sidebar-link" href="./index.html#products-panel" data-search="products inventory stock"><span>▦</span> Products & stock</a>
+  <a class="sidebar-link" href="./recover.html" data-search="receipts recovery print"><span>▤</span> Receipts</a>
+  <a class="sidebar-link" href="#customers-section" data-search="customers crm loyalty"><span>♙</span> Customers</a>
+  <a class="sidebar-link" href="#expenses-section" data-search="expenses costs team cashier"><span>▧</span> Expenses & team</a>
+  <a class="sidebar-link" href="#reports-section" data-search="reports analytics sales performance"><span>▥</span> Reports</a>
+  <a class="sidebar-link" href="#payments-section" data-search="subscription swass pro wallet payments"><span>↗</span> SWASS Pro & payments</a>
+  <div class="sidebar-help"><strong>Your business, in one place</strong><small>Use this menu to move around your SWASS dashboard.</small><a href="./index.html">Open point of sale →</a></div>
 </aside>
 <div class="dashboard-main">
 <div class="command-bar">
- <div class="global-search"><span aria-hidden="true">⌕</span><input id="workspace-search" type="search" placeholder="Find a dashboard module…" aria-label="Search dashboard modules"><kbd>Search</kbd></div>
+ <div class="global-search"><span aria-hidden="true">⌕</span><input id="workspace-search" type="search" placeholder="Search the menu…" aria-label="Search dashboard menu"><kbd>Search</kbd></div>
  <div class="command-actions"><span id="network-status" class="network-status"><i></i> Online</span><button id="theme-toggle" class="btn btn-secondary" type="button" aria-pressed="false">☾ Dark mode</button></div>
 </div>
 <nav class="quick-actions" aria-label="Quick actions">
@@ -29,22 +33,6 @@
  <article class="owner-stat"><span>Pending customer debt</span><strong id="owner-pending-debt">Not tracked yet</strong><small>Credit ledger not yet enabled</small></article>
  <article class="owner-stat"><span>Low-stock alerts</span><strong id="owner-low-stock">0</strong><small>Products needing restock</small></article>
 </section>
-<section class="module-hub" aria-label="Business operations">
- <div class="module-hub-heading"><div><span class="eyebrow">WORKSPACE MODULES</span><h2>Manage your business</h2><p class="muted">Open a tool below. Items marked Coming soon are planned, not active yet.</p></div></div>
- <div class="module-grid" id="module-grid">
-  <a class="module-tile" data-search="point of sale pos checkout billing new sale" href="./index.html"><span>▣</span><div><strong>Point of sale & billing</strong><small>Product search, checkout, payment and receipt printing</small></div><b class="module-state ready">Available</b></a>
-  <a class="module-tile" data-search="receipts recovery print whatsapp sms email warranty" href="./recover.html"><span>▤</span><div><strong>Receipts & recovery</strong><small>Find and print previously issued customer receipts</small></div><b class="module-state ready">Available</b></a>
-  <a class="module-tile" data-search="inventory stock products low stock" href="./index.html#products-panel"><span>▦</span><div><strong>Inventory & stock</strong><small>Products, quantities, buying cost and restock thresholds</small></div><b class="module-state ready">Available</b></a>
-  <a class="module-tile" data-search="customers crm purchase history loyalty" href="#customers-section"><span>♙</span><div><strong>Customer management</strong><small>Customer contacts, purchase history and loyalty records</small></div><b class="module-state ready">Available</b></a>
-  <a class="module-tile" data-search="expenses profit costs rent utilities" href="#expenses-section"><span>▧</span><div><strong>Expenses & profit</strong><small>Record expenses and review estimated operating results</small></div><b class="module-state ready">Available</b></a>
-  <a class="module-tile" data-search="reports analytics sales cashier reports" href="#overview-section"><span>▥</span><div><strong>Business reports</strong><small>Sales trends, cashiers, inventory value and expenses</small></div><b class="module-state ready">Available</b></a>
-  <article class="module-tile planned" data-search="supplier receipt scan ocr invoice upload snap photo"><span>▧</span><div><strong>Supplier bills · OCR</strong><small>Scan photos or PDFs and capture supplier and item details</small></div><b class="module-state planned-state">Coming soon</b></article>
-  <article class="module-tile planned" data-search="bank mpesa automatic reconciliation sync account"><span>⇄</span><div><strong>Bank & M-Pesa reconciliation</strong><small>Connect accounts and match incoming and outgoing transactions</small></div><b class="module-state planned-state">Integration needed</b></article>
-  <article class="module-tile planned" data-search="staff shifts cashier manager admin z report drawer reconciliation"><span>♧</span><div><strong>Staff & shift management</strong><small>Team permissions, shifts and end-of-day cash reconciliation</small></div><b class="module-state planned-state">Coming soon</b></article>
-  <article class="module-tile planned" data-search="credit layaway debt partial payments refunds returns"><span>↔</span><div><strong>Credit, refunds & layaway</strong><small>Customer balances, deposits, returns and refund history</small></div><b class="module-state planned-state">Coming soon</b></article>
- </div>
- <p id="module-search-empty" class="muted hidden">No matching dashboard tools. Try another search.</p>
-</section>
 <section class="analytics-intro">
   <div><span class="eyebrow">BUSINESS ANALYTICS</span><h2>Your business at a glance</h2><p>Monitor your products, locations and completed transactions.</p></div>
   <span class="account-state"><i></i> Workspace overview</span>
@@ -54,7 +42,7 @@
   <article class="metric highlight-metric"><span>Active locations</span><strong id="m-locations">0</strong><small>Business locations configured</small></article>
   <article class="metric highlight-metric"><span>Completed transactions · selected period</span><strong id="m-month-transactions">0</strong><small>Based on selected reporting dates</small></article>
 </div>
-<section class="panel channel-panel">
+<section id="reports-section" class="panel channel-panel">
  <div class="panel-heading"><div><h2>Transaction channels</h2><p class="muted">See where your business payments are coming from.</p></div><span class="channel-period">Selected period</span></div>
  <div class="channel-grid">
   <article class="channel-card"><span class="channel-icon">▣</span><div><small>POS sales</small><strong id="channel-pos">KSh 0</strong><em>Sales recorded at the point of sale</em></div></article>
