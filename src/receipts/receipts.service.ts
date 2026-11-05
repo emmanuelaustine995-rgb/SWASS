@@ -31,8 +31,8 @@ export class ReceiptsService {
   async list(user: AuthUser, filters: { q?: string; from?: string; to?: string; limit?: string }) {
     if (!user.tenantId || !user.storeId) throw new ForbiddenException('User is not tied to a store');
     const limit = Math.min(100, Math.max(1, Number.parseInt(filters.limit ?? '30', 10) || 30));
-    const from = filters.from && /^\\d{4}-\\d{2}-\\d{2}$/.test(filters.from) ? filters.from : null;
-    const to = filters.to && /^\\d{4}-\\d{2}-\\d{2}$/.test(filters.to) ? filters.to : null;
+    const from = filters.from && /^\d{4}-\d{2}-\d{2}$/.test(filters.from) ? filters.from : null;
+    const to = filters.to && /^\d{4}-\d{2}-\d{2}$/.test(filters.to) ? filters.to : null;
     const q = (filters.q ?? '').trim().slice(0, 100);
     const { rows } = await this.db.pool.query(
       `SELECT r.id, r.receipt_no, r.issued_at, r.total_kes, r.subtotal_kes, r.discount_kes,
