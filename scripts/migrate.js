@@ -6,9 +6,17 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { Pool } = require('pg');
 
+function databaseConnectionString() {
+  const value = process.env.DATABASE_URL;
+  if (!value) throw new Error('DATABASE_URL must be set');
+  const url = new URL(value);
+  const mode = url.searchParams.get('sslmode');
+  if (['prefer', 'require', 'verify-ca'].includes(mode)) url.searchParams.set('sslmode', 'verify-full');
+  return url.toString();
+}
+
 async function main() {
-  if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL must be set');
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  const pool = new Pool({ connectionString: databaseConnectionString() });
   try {
     await pool.query(`CREATE TABLE IF NOT EXISTS schema_migrations (
       name TEXT PRIMARY KEY,
