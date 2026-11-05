@@ -161,20 +161,90 @@
   });
   $('show-register').addEventListener('click',()=>{ $('login-form').classList.add('hidden'); $('register-form').classList.remove('hidden'); $('register-error').textContent=''; });
   $('show-login').addEventListener('click',()=>{ $('register-form').classList.add('hidden'); $('login-form').classList.remove('hidden'); $('login-error').textContent=''; });
+  let signupResendTimer = null;
+  let signupResendSeconds = 0;
+  function signupPayload(){
+    return {
+      businessName:$('reg-business').value.trim(),
+      storeName:$('reg-store').value.trim(),
+      storeLocation:$('reg-location').value.trim(),
+      fullName:$('reg-name').value.trim(),
+      phone:$('reg-phone').value.trim(),
+      email:$('reg-email').value.trim(),
+      password:$('reg-password').value
+    };
+  }
+  function startSignupResendCountdown(){
+    if(signupResendTimer)clearInterval(signupResendTimer);
+    signupResendSeconds=30;
+    $('resend-signup-otp').disabled=true;
+    $('resend-signup-otp').textContent='Resend code in 30 seconds';
+    signupResendTimer=setInterval(()=>{
+      signupResendSeconds--;
+      if(signupResendSeconds<=0){
+        clearInterval(signupResendTimer);signupResendTimer=null;
+        $('resend-signup-otp').disabled=false;
+        $('resend-signup-otp').textContent='Resend verification code';
+      }else{
+        $('resend-signup-otp').textContent='Resend code in '+signupResendSeconds+' seconds';
+      }
+    },1000);
+  }
+  async function requestSignupOtp(){
+    $('register-error').textContent='';$('signup-otp-message').textContent='';
+    const btn=$('register-submit');btn.disabled=true;btn.textContent='Sending code…';
+    try{
+      const data=await request('/api/v1/auth/register',{method:'POST',body:JSON.stringify(signupPayload())});
+      $('register-fields').classList.add('hidden');
+      $('register-submit').classList.add('hidden');
+      $('signup-otp-panel').classList.remove('hidden');
+      $('signup-otp-code').focus();
+      $('signup-otp-message').textContent=data.developmentCode
+        ? 'Development test code: '+data.developmentCode+' (production codes are sent only by SMS).'
+        : 'Verification code sent. It expires in 5 minutes.';
+      startSignupResendCountdown();
+    }catch(err){
+      $('register-error').textContent=err.message||'Could not send the verification code. Please try again.';
+    }finally{btn.disabled=false;btn.textContent='Send verification code';}
+  }
   $('register-form').addEventListener('submit',async e=>{
-    e.preventDefault(); $('register-error').textContent='';
-    const btn=$('register-form').querySelector('button[type="submit"]'); btn.disabled=true; btn.textContent='Creating account…';
-    try {
-      const data=await request('/api/v1/auth/register',{method:'POST',body:JSON.stringify({
-        businessName:$('reg-business').value.trim(),storeName:$('reg-store').value.trim(),storeLocation:$('reg-location').value.trim(),
-        fullName:$('reg-name').value.trim(),phone:$('reg-phone').value.trim(),
-        email:$('reg-email').value.trim(),password:$('reg-password').value
-      })});
-      state.token=data.accessToken; const parts=state.token.split('.')[1];
-      const claims=JSON.parse(atob(parts.replace(/-/g,'+').replace(/_/g,'/'))); state.role=claims.role;
-      $('register-form').reset(); showPOS(); showNotice(data.emailVerificationRequired ? (data.emailVerificationSent ? 'Your business account is ready. We sent an email verification link. Please check your inbox. Your 7-day free trial has started.' : 'Your business account is ready. Email verification is not yet configured; add your email provider settings to Render. Your 7-day free trial has started.') : 'Your business account is ready. Your 7-day free trial has started. Add your products to begin.',false); await loadProducts();
-    } catch(err) { $('register-error').textContent=err.message||'Registration failed. Please try again.'; }
-    finally { btn.disabled=false; btn.textContent='Create business account'; }
+    e.preventDefault();
+    if(!$('signup-otp-panel').classList.contains('hidden'))return;
+    await requestSignupOtp();
+  });
+  $('resend-signup-otp').addEventListener('click',async()=>{
+    if(signupResendSeconds>0)return;
+    await requestSignupOtp();
+  });
+  $('verify-signup-otp').addEventListener('click',async()=>{
+    const btn=$('verify-signup-otp');
+    const code=$('signup-otp-code').value.trim();
+    $('signup-otp-message').textContent='';
+    if(!/^\\d{6}$/.test(code)){
+      $('signup-otp-message').textContent='Enter the complete 6-digit code sent to your phone.';
+      return;
+    }
+    btn.disabled=true;btn.textContent='Verifying phone…';
+    try{
+      const data=await request('/api/v1/auth/register/verify-otp',{
+        method:'POST',
+        body:JSON.stringify({phone:$('reg-phone').value.trim(),code})
+      });
+      state.token=data.accessToken;
+      const parts=state.token.split('.')[1];
+      const claims=JSON.parse(atob(parts.replace(/-/g,'+').replace(/_/g,'/')));
+      state.role=claims.role;
+      if(signupResendTimer)clearInterval(signupResendTimer);
+      $('register-form').reset();
+      $('register-fields').classList.remove('hidden');
+      $('signup-otp-panel').classList.add('hidden');
+      $('register-submit').classList.remove('hidden');
+      showPOS();
+      showNotice('Phone number verified. Your SWASS business account is ready and your 7-day free trial has started. Add your products to begin.');
+      await loadProducts();
+    }catch(err){
+      $('signup-otp-message').textContent=err.message||'Verification failed. Check the code and try again.';
+    }finally{btn.disabled=false;btn.textContent='Verify phone and create account';}
   });
   $('login-form').addEventListener('submit',async e=>{e.preventDefault();$('login-error').textContent='';try{const data=await request('/api/v1/auth/login',{method:'POST',body:JSON.stringify({phone:$('login-phone').value.trim(),password:$('login-password').value})});state.token=data.accessToken;const parts=state.token.split('.')[1];const claims=JSON.parse(atob(parts.replace(/-/g,'+').replace(/_/g,'/')));state.role=claims.role;showPOS();hideNotice();if(['owner','manager'].includes(state.role))await loadBusinessProfile();await loadProducts();}catch(err){$('login-error').textContent=err.message||'Sign-in failed.';}});
   $('history-toggle').addEventListener('click',async()=>{const box=$('history-content');const opening=box.classList.contains('hidden');box.classList.toggle('hidden');$('history-toggle').textContent=opening?'Close history':'Open history';if(opening)await loadReceiptHistory();});
