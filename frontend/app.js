@@ -144,9 +144,9 @@
     }
     if(e.target.id==='register-lookup-customer'){
       $('buyer-name').value='';$('buyer-phone').value=$('lookup-phone').value.trim();$('buyer-email').value='';$('buyer-id').value=$('lookup-national-id').value.trim();
-      $('checkout-modal').classList.remove('hidden');
-      $('buyer-name').focus();
-      $('checkout-error').textContent='Enter the new customer name and confirm their phone number before issuing the first receipt.';
+      showNotice('New customer details will be saved when you issue their first receipt. Select the goods below, then enter the customer name at checkout.');
+      $('products-panel').scrollIntoView({behavior:'smooth',block:'start'});
+      $('product-search').focus();
     }
   });
   $('add-product-btn').addEventListener('click',()=>{ $('product-form').reset(); $('product-error').textContent=''; $('product-modal').classList.remove('hidden'); });
