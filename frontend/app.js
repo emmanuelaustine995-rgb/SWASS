@@ -112,7 +112,7 @@
       })});
       state.token=data.accessToken; const parts=state.token.split('.')[1];
       const claims=JSON.parse(atob(parts.replace(/-/g,'+').replace(/_/g,'/'))); state.role=claims.role;
-      $('register-form').reset(); showPOS(); showNotice('Your business account is ready. Your 7-day free trial has started. Add your products to begin.',false); await loadProducts();
+      $('register-form').reset(); showPOS(); showNotice(data.emailVerificationRequired ? (data.emailVerificationSent ? 'Your business account is ready. We sent an email verification link. Please check your inbox. Your 7-day free trial has started.' : 'Your business account is ready. Email verification is not yet configured; add your email provider settings to Render. Your 7-day free trial has started.') : 'Your business account is ready. Your 7-day free trial has started. Add your products to begin.',false); await loadProducts();
     } catch(err) { $('register-error').textContent=err.message||'Registration failed. Please try again.'; }
     finally { btn.disabled=false; btn.textContent='Create business account'; }
   });
