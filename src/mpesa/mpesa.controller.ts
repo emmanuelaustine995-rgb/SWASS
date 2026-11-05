@@ -35,11 +35,11 @@ export class MpesaService {
 
   normalizePhone(value: unknown): string {
     if (typeof value !== 'string') throw new BadRequestException('Enter a valid M-Pesa phone number');
-    let phone = value.replace(/[\\s()-]/g, '');
+    let phone = value.replace(/[\s()-]/g, '');
     if (phone.startsWith('+')) phone = phone.slice(1);
     if (phone.startsWith('0') && phone.length === 10) phone = `254${phone.slice(1)}`;
-    if (/^[17]\\d{8}$/.test(phone)) phone = `254${phone}`;
-    if (!/^254[17]\\d{8}$/.test(phone)) throw new BadRequestException('Use a Kenyan mobile number, e.g. 0712345678');
+    if (/^[17]\d{8}$/.test(phone)) phone = `254${phone}`;
+    if (!/^254[17]\d{8}$/.test(phone)) throw new BadRequestException('Use a Kenyan mobile number, e.g. 0712345678');
     return phone;
   }
 
@@ -176,7 +176,7 @@ export class MpesaController {
         }
         const receipt = typeof body?.mpesa_receipt_number === 'string' ? body.mpesa_receipt_number.trim() : '';
         const amount = Number(body?.amount);
-        const callbackPhone = typeof body?.phone === 'string' ? body.phone.replace(/^\\+/, '') : '';
+        const callbackPhone = typeof body?.phone === 'string' ? body.phone.replace(/^\+/, '') : '';
         if (!receipt || !Number.isSafeInteger(amount) || amount !== Number(p.amount_kes)) return;
         if (callbackPhone && callbackPhone !== p.phone) return;
 
