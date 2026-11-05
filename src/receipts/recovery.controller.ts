@@ -108,7 +108,7 @@ export class ReceiptRecoveryController {
   private async sendSms(to: string, message: string) {
     const sid = process.env.TWILIO_ACCOUNT_SID;
     const auth = process.env.TWILIO_AUTH_TOKEN;
-    const from = process.env.TWILIO_FROM;
+    const from = process.env.TWILIO_FROM || process.env.TWILIO_FROM_NUMBER;
     if (!sid || !auth || !from) {
       if (process.env.NODE_ENV === 'production') throw new Error('SMS provider is not configured');
       return; // local development code is returned only outside production
