@@ -46,3 +46,34 @@
  .dashboard-main .metric{padding:13px}
  .dashboard-main .metric strong{font-size:20px}
 }
+
+
+/* Light sky-blue analytics theme */
+.analytics-intro{display:flex;justify-content:space-between;align-items:center;gap:14px;margin:4px 0 15px;padding:4px 2px}
+.analytics-intro .eyebrow{font-size:10px;letter-spacing:.16em;font-weight:800;color:#3993c9}
+.analytics-intro h2{font-size:21px;margin:5px 0;color:#153b58;letter-spacing:-.025em}
+.analytics-intro p{font-size:12px;color:#71899a;margin:0}
+.account-state,.channel-period,.setup-count{font-size:11px;color:#4c87aa;background:#edf8ff;border:1px solid #d8efff;padding:7px 10px;border-radius:20px;white-space:nowrap}
+.account-state i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#45a6d8;margin-right:6px}
+.headline-metrics{grid-template-columns:repeat(3,minmax(0,1fr));margin-bottom:15px}
+.headline-metrics .highlight-metric{background:linear-gradient(145deg,#fff 0%,#f1f9ff 100%);border:1px solid #d9edfa;min-height:120px}
+.headline-metrics .metric strong{font-size:30px;color:#1877b5}
+.headline-metrics .metric span{color:#50758e}
+.channel-panel,.setup-panel{margin:0 0 15px;background:#fff;border-color:#dcecf6}
+.channel-panel .panel-heading,.setup-panel .panel-heading{margin-bottom:14px}
+.channel-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.channel-card{display:flex;align-items:flex-start;gap:10px;min-width:0;padding:13px 11px;background:#f6fbff;border:1px solid #e3f1fa;border-radius:11px}
+.channel-icon{flex:0 0 30px;width:30px;height:30px;display:grid;place-items:center;border-radius:9px;background:#e4f4ff;color:#2588c2;font-size:16px}
+.channel-card div{min-width:0}
+.channel-card small{display:block;color:#6c8799;font-size:11px;font-weight:700}
+.channel-card strong{display:block;color:#1b4e70;font-size:17px;margin:5px 0}
+.channel-card em{display:block;color:#91a3af;font-size:10px;line-height:1.35;font-style:normal}
+.setup-steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.setup-steps li{display:flex;align-items:flex-start;gap:10px;padding:13px 11px;background:#f8fcff;border:1px solid #e5f1f8;border-radius:11px;min-width:0}
+.step-number{flex:0 0 25px;height:25px;display:grid;place-items:center;border-radius:50%;background:#dff2ff;color:#1877b5;font-weight:800;font-size:12px}
+.setup-steps li div{min-width:0;flex:1}
+.setup-steps li strong{display:block;font-size:11px;color:#31566f;line-height:1.4}
+.setup-steps li small{display:block;font-size:10px;line-height:1.45;color:#8296a4;margin-top:4px}
+.setup-steps li a{font-size:10px;font-weight:800;color:#2486bd;text-decoration:none;white-space:nowrap}
+@media(max-width:900px){.channel-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.setup-steps{grid-template-columns:1fr}}
+@media(max-width:520px){.analytics-intro{align-items:flex-start;flex-direction:column}.analytics-intro h2{font-size:19px}.headline-metrics{grid-template-columns:1fr;gap:9px}.headline-metrics .highlight-metric{min-height:0;padding:13px 15px}.headline-metrics .metric strong{font-size:25px;margin:6px 0}.channel-grid{grid-template-columns:1fr 1fr;gap:7px}.channel-card{padding:10px 8px;gap:7px}.channel-card strong{font-size:14px}.channel-card em{font-size:9px}.channel-icon{width:26px;height:26px;flex-basis:26px}.setup-steps{gap:7px}}
