@@ -93,10 +93,12 @@ export class ReceiptsService {
     const businessResult = await c.query(
       `SELECT t.name AS business_name, t.phone AS business_phone, t.email AS business_email,
               s.name AS store_name, s.location AS store_location,
-              s.receipt_header, s.receipt_footer, s.logo_data
+              s.receipt_header, s.receipt_footer, s.logo_data,
+              u.full_name AS cashier_name, u.phone AS cashier_phone
          FROM tenants t JOIN stores s ON s.tenant_id=t.id
+         LEFT JOIN users u ON u.id=$3 AND u.tenant_id=t.id AND u.store_id=s.id
         WHERE t.id=$1 AND s.id=$2 LIMIT 1`,
-      [tenantId, user.storeId],
+      [tenantId, user.storeId, user.sub],
     );
     if (!businessResult.rows[0]) throw new ForbiddenException('Business details could not be loaded');
     const businessRow = businessResult.rows[0];
@@ -110,6 +112,7 @@ export class ReceiptsService {
       receiptFooter: businessRow.receipt_footer,
       logoData: businessRow.logo_data,
     };
+    const cashier = { name: businessRow.cashier_name || 'Staff', phone: businessRow.cashier_phone || null };
 
     // 1. Already stored (offline retry)? Return it without charging again.
     const existing = await this.findByClientUuid(c, tenantId, dto.clientUuid, dto);
@@ -178,7 +181,7 @@ export class ReceiptsService {
     const r = await c.query(
       `INSERT INTO receipts (tenant_id, store_id, receipt_no, cashier_id, customer_id,
           subtotal_kes, discount_kes, total_kes, payment_method, qr_token, client_uuid, issued_at, request_hash)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING id, receipt_no, total_kes, qr_token, status`,
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING id, receipt_no, total_kes, qr_token, status, issued_at`,
       [tenantId, user.storeId, dto.receiptNo, user.sub, customerId, subtotal, discount, total,
        dto.paymentMethod, qrToken, dto.clientUuid, issuedAt, this.requestFingerprint(dto)],
     );
@@ -229,13 +232,17 @@ export class ReceiptsService {
 
     return {
       id: receipt.id, receiptNo: receipt.receipt_no, totalKes: Number(receipt.total_kes),
-      qrToken: receipt.qr_token, status: receipt.status, pointsEarned, duplicate: false, business,
+      qrToken: receipt.qr_token, status: receipt.status, issuedAt: receipt.issued_at,
+      cashier, pointsEarned, duplicate: false, business,
     };
   }
 
   private async findByClientUuid(c: PoolClient, tenantId: string, clientUuid: string, dto: CreateReceiptDto) {
     const { rows } = await c.query(
-      `SELECT id, receipt_no, total_kes, qr_token, status, request_hash FROM receipts WHERE client_uuid = $1 AND tenant_id = $2`,
+      `SELECT r.id, r.receipt_no, r.total_kes, r.qr_token, r.status, r.request_hash,
+              r.issued_at, u.full_name AS cashier_name, u.phone AS cashier_phone
+         FROM receipts r LEFT JOIN users u ON u.id = r.cashier_id
+        WHERE r.client_uuid = $1 AND r.tenant_id = $2`,
       [clientUuid, tenantId],
     );
     if (!rows[0]) return null;
@@ -245,7 +252,9 @@ export class ReceiptsService {
     }
     return {
       id: rows[0].id, receiptNo: rows[0].receipt_no, totalKes: Number(rows[0].total_kes),
-      qrToken: rows[0].qr_token, status: rows[0].status, pointsEarned: 0, duplicate: true,
+      qrToken: rows[0].qr_token, status: rows[0].status, issuedAt: rows[0].issued_at,
+      cashier: { name: rows[0].cashier_name || 'Staff', phone: rows[0].cashier_phone || null },
+      pointsEarned: 0, duplicate: true,
     };
   }
 
