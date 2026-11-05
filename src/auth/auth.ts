@@ -83,7 +83,7 @@ export class AuthController {
           signal: AbortSignal.timeout(12000),
           headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            recipient: `+${to}`,
+            recipient: to,
             sender_id: process.env.TALKSASA_SENDER_ID || 'TALK-SASA',
             type: 'plain',
             message,
@@ -92,7 +92,8 @@ export class AuthController {
         const raw = await response.text();
         let result: any = {};
         try { result = raw ? JSON.parse(raw) : {}; } catch { result = {}; }
-        if (response.ok && result?.success !== false && result?.status !== false && !result?.error) return;
+        // The gateway returns status:"success" or status:"error"; HTTP 200 alone is not acceptance.
+        if (response.ok && (result?.status === 'success' || result?.success === true)) return;
         const reason = String(result?.message ?? result?.error ?? raw ?? '').slice(0, 140);
         failures.push(`TalkSasa HTTP ${response.status}${reason ? `: ${reason}` : ''}`);
       } catch (error) {
