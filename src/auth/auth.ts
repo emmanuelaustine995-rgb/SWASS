@@ -72,29 +72,90 @@ export class AuthController {
   }
 
   private async sendSignupSms(to: string, message: string): Promise<void> {
+    const failures: string[] = [];
     const token = process.env.TALKSASA_API_TOKEN;
-    if (!token) {
+
+    // Try the approved TalkSasa sender first.
+    if (token) {
+      try {
+        const response = await fetch(process.env.TALKSASA_API_URL || 'https://bulksms.talksasa.com/api/v3/sms/send', {
+          method: 'POST',
+          signal: AbortSignal.timeout(12000),
+          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            recipient: `+${to}`,
+            sender_id: process.env.TALKSASA_SENDER_ID || 'TALK-SASA',
+            type: 'plain',
+            message,
+          }),
+        });
+        const raw = await response.text();
+        let result: any = {};
+        try { result = raw ? JSON.parse(raw) : {}; } catch { result = {}; }
+        if (response.ok && result?.success !== false && result?.status !== false && !result?.error) return;
+        const reason = String(result?.message ?? result?.error ?? raw ?? '').slice(0, 140);
+        failures.push(`TalkSasa HTTP ${response.status}${reason ? `: ${reason}` : ''}`);
+      } catch (error) {
+        failures.push(`TalkSasa: ${error instanceof Error ? error.message : 'request failed'}`);
+      }
+    }
+
+    // Keep the previously supported Africa's Talking route as a real fallback.
+    const atUsername = process.env.AT_USERNAME;
+    const atApiKey = process.env.AT_API_KEY;
+    if (atUsername && atApiKey) {
+      try {
+        const form = new URLSearchParams({ username: atUsername, to: `+${to}`, message });
+        if (process.env.AT_SENDER_ID) form.set('from', process.env.AT_SENDER_ID);
+        const endpoint = atUsername === 'sandbox'
+          ? 'https://api.sandbox.africastalking.com/version1/messaging'
+          : 'https://api.africastalking.com/version1/messaging';
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          signal: AbortSignal.timeout(12000),
+          headers: { apiKey: atApiKey, Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: form,
+        });
+        const raw = await response.text();
+        let result: any = {};
+        try { result = raw ? JSON.parse(raw) : {}; } catch { result = {}; }
+        const recipients = result?.SMSMessageData?.Recipients;
+        if (response.ok && Array.isArray(recipients) && recipients.length &&
+            recipients.every((r: any) => Number(r.statusCode) === 101)) return;
+        const providerMessage = String(result?.SMSMessageData?.Message ?? result?.message ?? raw ?? '').slice(0, 140);
+        failures.push(`Africa's Talking HTTP ${response.status}${providerMessage ? `: ${providerMessage}` : ''}`);
+      } catch (error) {
+        failures.push(`Africa's Talking: ${error instanceof Error ? error.message : 'request failed'}`);
+      }
+    }
+
+    const sid = process.env.TWILIO_ACCOUNT_SID;
+    const auth = process.env.TWILIO_AUTH_TOKEN;
+    const from = process.env.TWILIO_FROM || process.env.TWILIO_FROM_NUMBER;
+    if (sid && auth && from) {
+      try {
+        const form = new URLSearchParams({ To: `+${to}`, From: from, Body: message });
+        const response = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`, {
+          method: 'POST',
+          signal: AbortSignal.timeout(12000),
+          headers: {
+            Authorization: `Basic ${Buffer.from(`${sid}:${auth}`).toString('base64')}`,
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: form,
+        });
+        if (response.ok) return;
+        failures.push(`Twilio HTTP ${response.status}`);
+      } catch (error) {
+        failures.push(`Twilio: ${error instanceof Error ? error.message : 'request failed'}`);
+      }
+    }
+
+    if (!token && !atUsername && !sid) {
       if (process.env.NODE_ENV !== 'production') return;
-      throw new Error('TalkSasa SMS is not configured');
+      throw new Error('No SMS provider credentials are configured');
     }
-    const response = await fetch(process.env.TALKSASA_API_URL || 'https://bulksms.talksasa.com/api/v3/sms/send', {
-      method: 'POST',
-      signal: AbortSignal.timeout(12000),
-      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        recipient: `+${to}`,
-        sender_id: process.env.TALKSASA_SENDER_ID || 'TALK-SASA',
-        type: 'plain',
-        message,
-      }),
-    });
-    const raw = await response.text();
-    let result: any = {};
-    try { result = raw ? JSON.parse(raw) : {}; } catch { result = {}; }
-    if (!response.ok || result?.success === false || result?.status === false || result?.error) {
-      const reason = String(result?.message ?? result?.error ?? raw ?? '').slice(0, 160);
-      throw new Error(`TalkSasa SMS delivery failed (HTTP ${response.status})${reason ? `: ${reason}` : ''}`);
-    }
+    throw new Error(failures.join(' | ') || 'All configured SMS providers failed');
   }
 
   @Post('register')
