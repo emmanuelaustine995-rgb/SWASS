@@ -17,7 +17,7 @@ export class CustomersController {
     if (!Number.isInteger(n) || n < 1 || n > 100) throw new BadRequestException('limit must be from 1 to 100');
     const { rows } = await this.db.pool.query(
       `SELECT c.id,c.full_name AS "fullName",c.phone,c.email,c.loyalty_points AS "loyaltyPoints",
-              COUNT(DISTINCT r.id)::int AS "purchaseCount",
+              COUNT(DISTINCT r.id) FILTER (WHERE r.status='issued')::int AS "purchaseCount",
               COALESCE(SUM(r.total_kes) FILTER (WHERE r.status='issued'),0)::bigint AS "lifetimeSpendKes",
               MAX(r.issued_at) AS "lastPurchaseAt"
          FROM customers c
