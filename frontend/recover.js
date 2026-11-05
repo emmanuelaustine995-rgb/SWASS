@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const api = (window.SWASS_API_URL || 'http://localhost:3000').replace(/\/$/, '');
+  const api = (window.SWASS_API_URL || 'https://swass-api.onrender.com').replace(/\/$/, '');
   const $ = (id) => document.getElementById(id);
   let phone = '';
   let requestStarted = false;
