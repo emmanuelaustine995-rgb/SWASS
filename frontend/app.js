@@ -436,6 +436,28 @@
   $('checkout-open').addEventListener('click',openCheckout);$('checkout-close').addEventListener('click',()=>$('checkout-modal').classList.add('hidden'));$('checkout-form').addEventListener('submit',completeSale);
   $('receipt-close').addEventListener('click',()=>$('receipt-modal').classList.add('hidden'));$('new-sale').addEventListener('click',()=>$('receipt-modal').classList.add('hidden'));$('print-receipt').addEventListener('click',()=>window.print());
   const shareBtn=$('share-receipt'); if(shareBtn) shareBtn.addEventListener('click', async()=>{ if(!state.lastReceipt)return; const verifyUrl=new URL('verify.html',window.location.href).href+'?token='+encodeURIComponent(state.lastReceipt.qrToken); const text=`SWASS receipt ${state.lastReceipt.receiptNo} · KSh ${Number(state.lastReceipt.totalKes).toLocaleString('en-KE')} · Verify: ${verifyUrl}`; try { if(navigator.share) await navigator.share({title:'SWASS receipt',text}); else if(navigator.clipboard) { await navigator.clipboard.writeText(text); alert('Receipt summary copied.'); } } catch {} });
+  // Installable Android experience: this adds the app without replacing the website.
+  let deferredInstallPrompt = null;
+  const installAppButton = $('install-app-btn');
+  window.addEventListener('beforeinstallprompt', event => {
+    event.preventDefault();
+    deferredInstallPrompt = event;
+    if (installAppButton) installAppButton.classList.remove('hidden');
+  });
+  if (installAppButton) installAppButton.addEventListener('click', async () => {
+    if (!deferredInstallPrompt) return;
+    deferredInstallPrompt.prompt();
+    await deferredInstallPrompt.userChoice;
+    deferredInstallPrompt = null;
+    installAppButton.classList.add('hidden');
+  });
+  window.addEventListener('appinstalled', () => {
+    deferredInstallPrompt = null;
+    if (installAppButton) installAppButton.classList.add('hidden');
+  });
+  if ('serviceWorker' in navigator && window.isSecureContext) {
+    window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(error => console.warn('[SWASS] App installation support unavailable:', error?.message || 'registration failed')));
+  }
   // API URL is configurable without rebuilding: set window.SWASS_API_URL before app.js.
   if(!API){ showNotice('API address is not configured yet. Set SWASS_API_URL in frontend/config.js to your running API URL.',true); }
   showLogin(); renderCart();
