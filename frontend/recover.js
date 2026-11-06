@@ -5,6 +5,13 @@
   let phone = '';
   let requestStarted = false;
   let recoveredReceipts = [];
+  let apiWarmupPromise = null;
+  async function warmApi() {
+    if (apiWarmupPromise) return apiWarmupPromise;
+    apiWarmupPromise = fetch(`${api}/health`, { method: 'GET', cache: 'no-store', signal: AbortSignal.timeout(65000) })
+      .catch(() => null).finally(() => { apiWarmupPromise = null; });
+    return apiWarmupPromise;
+  }
   const message = (text) => { $('message').textContent = text; };
   async function readResponse(response) {
     const raw = await response.text();
@@ -43,24 +50,33 @@
     $('verify-submit').disabled = false;
     $('verify-submit').textContent = 'Verify and find receipts';
     $('resend-button').disabled = true;
-    startResendCountdown();
-    message(isResend ? 'Requesting another OTP. Check your SMS messages.' : 'OTP request sent. Enter the six-digit code when it arrives.');
+    message('Connecting to SWASS server…');
     const sendButton = $('request-form').querySelector('button[type="submit"]');
     sendButton.disabled = true;
-    sendButton.textContent = 'OTP requested';
+    sendButton.textContent = 'Connecting…';
     try {
+      await warmApi();
+      message(isResend ? 'Sending another verification code…' : 'Sending verification code…');
+      sendButton.textContent = 'Sending code…';
       const r = await fetch(`${api}/api/v1/receipt-recovery/request`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone })
       });
       const data = await readResponse(r);
-      message(data.developmentCode
-        ? `Development test code: ${data.developmentCode}`
-        : 'OTP request processed. Enter the newest six-digit code sent to your phone.');
+      message(data.developmentCode ? 'Development test code: ' + data.developmentCode : 'The server accepted the OTP request. Enter the newest six-digit code when it arrives.');
+      startResendCountdown();
+      sendButton.textContent = 'OTP requested';
       $('code').focus();
     } catch (err) {
-      message(err.message || 'Could not confirm the OTP request. If a code arrived, enter it here.');
+      requestStarted = false;
+      sendButton.disabled = false;
+      sendButton.textContent = 'Send verification code';
+      if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
+      secondsLeft = 0;
+      $('resend-area').textContent = '';
+      $('resend-button').disabled = true;
+      message(err.message || 'Could not send the verification code. Please try again.');
     }
   }
   $('request-form').addEventListener('submit', async (e) => {
