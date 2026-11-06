@@ -28,7 +28,7 @@
   let apiWarmupPromise = null;
   async function warmApi() {
     if (!API || document.visibilityState === 'hidden' || apiWarmupPromise) return apiWarmupPromise;
-    apiWarmupPromise = fetch(`${API}/health`, { method: 'GET', cache: 'no-store' })
+    apiWarmupPromise = fetch(`${API}/health`, { method: 'GET', cache: 'no-store', signal: AbortSignal.timeout(65000) })
       .catch(() => null)
       .finally(() => { apiWarmupPromise = null; });
     return apiWarmupPromise;
@@ -355,6 +355,9 @@
     $('register-error').textContent='';$('signup-otp-message').textContent='';
     const btn=$('register-submit');btn.disabled=true;btn.textContent='Sending code…';
     try{
+      $('register-error').textContent='Connecting to SWASS server…';
+      await warmApi();
+      $('register-error').textContent='';
       const data=await request('/api/v1/auth/register',{method:'POST',body:JSON.stringify(signupPayload())});
       $('register-fields').classList.add('hidden');
       $('register-submit').classList.add('hidden');
