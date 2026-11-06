@@ -1,5 +1,5 @@
 import {
-  BadRequestException, CanActivate, Controller, ExecutionContext, ForbiddenException, Injectable,
+  BadRequestException, CanActivate, Controller, ExecutionContext, ForbiddenException, HttpException, HttpStatus, Injectable,
   Post, Body, Req, SetMetadata, UnauthorizedException, UseGuards, ServiceUnavailableException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
@@ -23,7 +23,7 @@ export const Roles = (...roles: Role[]) => SetMetadata('roles', roles);
 /** Reads the Bearer token and attaches the user to the request. */
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private jwt: JwtService) {}
+  constructor(private jwt: JwtService, private db: DbService) {}
 
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
     const req = ctx.switchToHttp().getRequest();
@@ -34,6 +34,27 @@ export class AuthGuard implements CanActivate {
       req.user = (await this.jwt.verifyAsync(token)) as AuthUser;
     } catch {
       throw new UnauthorizedException();
+    }
+
+    const user = req.user as AuthUser;
+    const path = String(req.originalUrl ?? req.url ?? '').split('?')[0];
+    // Keep the payment portal usable when a subscription has expired or has
+    // not yet been purchased. All business-operation APIs remain locked.
+    const paymentRoute = path === '/api/v1/mpesa/stk-push' ||
+      /^\/api\/v1\/mpesa\/payments\/[0-9a-f-]+$/i.test(path);
+    if (user.tenantId && user.role !== 'super_admin' && !paymentRoute) {
+      const active = await this.db.pool.query(
+        `SELECT 1 FROM subscriptions
+          WHERE tenant_id=$1 AND status='active' AND ends_at>now()
+          LIMIT 1`,
+        [user.tenantId],
+      );
+      if (!active.rowCount) {
+        throw new HttpException(
+          'An active SWASS subscription is required. Pay KSh 100 for a monthly subscription or KSh 900 for a yearly subscription to unlock your business workspace.',
+          HttpStatus.PAYMENT_REQUIRED,
+        );
+      }
     }
     return true;
   }
@@ -273,11 +294,7 @@ export class AuthController {
           [tenantId,store.rows[0].id,row.full_name,phone,row.email,row.password_hash],
         );
         await c.query('INSERT INTO wallets (tenant_id) VALUES ($1)', [tenantId]);
-        await c.query(
-          `INSERT INTO subscriptions (tenant_id,plan,price_kes,starts_at,ends_at,status,auto_renew)
-           VALUES ($1,'monthly',100,now(),now()+interval '7 days','active',false)`,
-          [tenantId],
-        );
+        // New accounts remain locked until the owner completes a paid subscription.
         await c.query('UPDATE signup_otp_requests SET verified_at=now(),consumed_at=now() WHERE id=$1', [row.id]);
         return inserted.rows[0];
       });
@@ -290,7 +307,7 @@ export class AuthController {
       }
       return {
         accessToken: await this.jwt.signAsync(payload, { expiresIn: '30d' }),
-        trialDays: 7, phoneVerified: true,
+        trialDays: 0, phoneVerified: true,
         emailVerificationSent: false, emailVerificationRequired: !!row.email,
       };
     } catch (err: any) {
