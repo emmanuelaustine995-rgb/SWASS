@@ -10,7 +10,7 @@ import { AuthGuard, Roles, RolesGuard } from '../auth/auth';
 const MONTHLY_KES = 100;
 const YEARLY_KES = 900;
 const MAX_TOPUP_KES = 150000;
-type Purpose = 'subscription' | 'wallet_topup';
+type Purpose = 'subscription' | 'wallet_topup' | 'recovery';
 
 @Injectable()
 export class MpesaService {
@@ -80,7 +80,7 @@ export class MpesaService {
           amount: input.amount,
           phone: input.phone,
           callback_url: cfg.callbackUrl,
-          description: input.purpose === 'subscription' ? `SWASS subscription ${input.paymentId}` : `SWASS wallet top-up ${input.paymentId}`,
+          description: input.purpose === 'subscription' ? `SWASS subscription ${input.paymentId}` : input.purpose === 'recovery' ? `SWASS receipt recovery ${input.paymentId}` : `SWASS wallet top-up ${input.paymentId}`,
         }),
         signal: AbortSignal.timeout(25000),
       });
@@ -166,6 +166,22 @@ export class MpesaController {
     if (typeof checkoutId !== 'string' || !checkoutId) return { ResultCode: 0, ResultDesc: 'Accepted' };
     try {
       await this.db.tx(async (c) => {
+        const recovery = await c.query(`SELECT * FROM receipt_recovery_payments WHERE checkout_request_id=$1 FOR UPDATE`, [checkoutId]);
+        if (recovery.rowCount) {
+          const rp = recovery.rows[0];
+          if (rp.status !== 'pending') return;
+          if (status !== 'completed' || Number(body?.result_code) !== 0) {
+            if (status === 'failed') await c.query(`UPDATE receipt_recovery_payments SET status='failed' WHERE id=$1 AND status='pending'`, [rp.id]);
+            return;
+          }
+          const recoveryReceipt = typeof body?.mpesa_receipt_number === 'string' ? body.mpesa_receipt_number.trim() : '';
+          const recoveryAmount = Number(body?.amount);
+          const recoveryPhone = typeof body?.phone === 'string' ? body.phone.replace(/^\\+/, '') : '';
+          if (!recoveryReceipt || !Number.isSafeInteger(recoveryAmount) || recoveryAmount !== Number(rp.amount_kes)) return;
+          if (recoveryPhone && recoveryPhone !== rp.phone) return;
+          await c.query(`UPDATE receipt_recovery_payments SET status='success',mpesa_receipt_no=$1,paid_at=now() WHERE id=$2 AND status='pending'`, [recoveryReceipt, rp.id]);
+          return;
+        }
         const found = await c.query(`SELECT * FROM payments WHERE checkout_request_id=$1 FOR UPDATE`, [checkoutId]);
         if (!found.rowCount) return;
         const p = found.rows[0];
