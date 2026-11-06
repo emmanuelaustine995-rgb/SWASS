@@ -3,6 +3,26 @@
   const $ = (id) => document.getElementById(id);
   const state = { token: null, role: null, products: [], cart: new Map(), lastReceipt: null, profileLogoData: undefined };
   const API = (window.SWASS_API_URL || '').replace(/\/$/, '');
+  // Warm the free Render API while the visitor is reading the page. This
+  // reduces the chance that signup is the first request after the service sleeps.
+  let apiWarmupPromise = null;
+  async function warmApi() {
+    if (!API || document.visibilityState === 'hidden' || apiWarmupPromise) return apiWarmupPromise;
+    apiWarmupPromise = fetch(`${API}/health`, { method: 'GET', cache: 'no-store' })
+      .catch(() => null)
+      .finally(() => { apiWarmupPromise = null; });
+    return apiWarmupPromise;
+  }
+  void warmApi();
+  window.addEventListener('focus', () => { void warmApi(); });
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') void warmApi();
+  });
+  // Render's free service sleeps after inactivity; keep an actively open
+  // SWASS tab warm without sending frequent requests.
+  window.setInterval(() => {
+    if (document.visibilityState === 'visible') void warmApi();
+  }, 10 * 60 * 1000);
   const money = (n) => `KSh ${Number(n || 0).toLocaleString('en-KE')}`;
   const escapeHtml = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random()*16|0; return (c==='x'?r:(r&3|8)).toString(16); }));
