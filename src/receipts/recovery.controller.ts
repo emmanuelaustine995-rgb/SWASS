@@ -1,5 +1,5 @@
 import {
-  BadRequestException, Body, Controller, Get, Param, Post, Req, ServiceUnavailableException, TooManyRequestsException,
+  BadRequestException, Body, Controller, Get, HttpException, HttpStatus, Param, Post, Req, ServiceUnavailableException,
 } from '@nestjs/common';
 import { createHash, createHmac, randomBytes, timingSafeEqual } from 'crypto';
 import { DbService } from '../db/db.service';
@@ -41,7 +41,7 @@ export class ReceiptRecoveryController {
         phoneRequests: Number(limits.rows[0].phone_count),
         ipRequests: Number(limits.rows[0].ip_count),
       });
-      throw new TooManyRequestsException('Too many receipt recovery code requests. Please wait 15 minutes before trying again.');
+      throw new HttpException('Too many receipt recovery code requests. Please wait 15 minutes before trying again.', HttpStatus.TOO_MANY_REQUESTS);
     }
 
     // Match both current E.164 storage and older Kenyan local-format customer records.
