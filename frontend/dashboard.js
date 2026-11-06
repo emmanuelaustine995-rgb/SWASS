@@ -86,6 +86,10 @@
       $('mtd-sales').textContent='Unavailable';
       $('product-pie').innerHTML='<span>Sales data unavailable</span>';
       $('product-legend').innerHTML='<p class="muted">Product sales could not be loaded.</p>';
+      $('daily-chart').innerHTML='<p class="muted">Daily sales could not be loaded. Tap Refresh to retry.</p>';
+      $('cashier-rows').innerHTML='<tr><td colspan="3">Cashier figures are unavailable.</td></tr>';
+      $('m-sales').textContent='Unavailable';$('m-transactions').textContent='Sales summary unavailable';
+      $('m-profit').textContent='Unavailable';$('m-expenses').textContent='Unavailable';$('m-net').textContent='Unavailable';
     }
   }
   function renderProductMix(rows){
@@ -137,6 +141,20 @@
     initializePeriod();loadDashboard();loadCustomers();
   }
   window.addEventListener('swass:login',ev=>activateOwnerWorkspace(ev.detail||{}));
+  // app.js restores a saved session before dashboard.js is loaded on refresh.
+  // That early login event would otherwise be missed, leaving the dashboard uninitialized.
+  function restoreDashboardSession(){
+    try{
+      const saved=JSON.parse(localStorage.getItem('swass-auth-session-v1')||'null');
+      if(!saved?.token||!Number.isFinite(saved.lastActivity)||Date.now()-saved.lastActivity>3*60*60*1000)return;
+      const payload=saved.token.split('.')[1];
+      const claims=JSON.parse(atob(payload.replace(/-/g,'+').replace(/_/g,'/')));
+      if(!claims.exp||claims.exp*1000<=Date.now())return;
+      const role=saved.role||claims.role;
+      if(['owner','manager'].includes(role))activateOwnerWorkspace({token:saved.token,role});
+    }catch(error){console.warn('[SWASS] Could not restore dashboard session:',error?.message||error);}
+  }
+  restoreDashboardSession();
   window.addEventListener('swass:sale-issued',()=>{void loadDashboard();});
   window.addEventListener('swass:logout',()=>{state.token=null;state.role=null;$('owner-dashboard-view').classList.add('hidden');});
   $('refresh-btn').addEventListener('click',loadDashboard);
