@@ -51,8 +51,8 @@ export class ReceiptRecoveryController {
     if (ids.length) {
       try {
         const providerStartedAt = Date.now();
-        console.info(`[SWASS][OTP_DIAG] Receipt recovery SMS provider accepted request in ${Date.now() - providerStartedAt}ms; total request ${Date.now() - requestStartedAt}ms`);
         await this.sendSms(phone, `Your SWASS receipt recovery code is ${code}. It expires in 5 minutes. Do not share it.`);
+        console.info(`[SWASS][OTP_DIAG] Receipt recovery SMS provider accepted request in ${Date.now() - providerStartedAt}ms; total request ${Date.now() - requestStartedAt}ms`);
       } catch (error) {
         // Provider diagnostics only; sendSms never includes API keys, phone numbers, or OTP text in its errors.
         const reason = error instanceof Error ? error.message : 'Unknown SMS provider error';
