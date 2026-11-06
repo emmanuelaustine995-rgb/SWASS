@@ -34,12 +34,19 @@ export class ReceiptsService {
     const from = filters.from && /^\d{4}-\d{2}-\d{2}$/.test(filters.from) ? filters.from : null;
     const to = filters.to && /^\d{4}-\d{2}-\d{2}$/.test(filters.to) ? filters.to : null;
     const q = (filters.q ?? '').trim().slice(0, 100);
+    const digits = q.replace(/\\D/g, '');
+    const phoneSearch = digits.startsWith('254') && digits.length === 12 ? digits
+      : digits.startsWith('0') && digits.length === 10 ? `254${digits.slice(1)}`
+      : digits.length === 9 ? `254${digits}` : '';
+    const idHash = /^[0-9A-Za-z-]{5,30}$/.test(q) ? hashNationalId(q) : '';
+    const idLast4 = digits.length >= 4 ? digits.slice(-4) : '';
     const { rows } = await this.db.pool.query(
       `SELECT r.id, r.receipt_no, r.issued_at, r.total_kes, r.subtotal_kes, r.discount_kes,
               r.payment_method, r.status, c.full_name AS customer_name, c.phone AS customer_phone,
-              c.email AS customer_email, u.full_name AS cashier_name,
+              c.email AS customer_email, c.national_id_last4 AS customer_id_last4,
+              u.full_name AS cashier_name,
               COALESCE(json_agg(json_build_object('name', ri.name, 'qty', ri.qty,
-                'unitPriceKes', ri.unit_price_kes, 'lineTotalKes', ri.line_total_kes))
+                'serialNo', ri.serial_no, 'unitPriceKes', ri.unit_price_kes, 'lineTotalKes', ri.line_total_kes))
                 FILTER (WHERE ri.id IS NOT NULL), '[]'::json) AS items
          FROM receipts r
          LEFT JOIN customers c ON c.id = r.customer_id AND c.tenant_id = r.tenant_id
@@ -51,17 +58,23 @@ export class ReceiptsService {
           AND ($5 = '' OR r.receipt_no ILIKE '%' || $5 || '%'
                OR COALESCE(c.full_name, '') ILIKE '%' || $5 || '%'
                OR COALESCE(c.phone, '') ILIKE '%' || $5 || '%'
+               OR ($8 <> '' AND c.phone = $8)
+               OR ($7 <> '' AND c.national_id_hash = $7)
+               OR ($9 <> '' AND c.national_id_last4 = $9)
+               OR EXISTS (SELECT 1 FROM receipt_items search_item
+                           WHERE search_item.receipt_id = r.id
+                             AND COALESCE(search_item.serial_no, '') ILIKE '%' || $5 || '%')
                OR r.total_kes::text ILIKE '%' || $5 || '%')
-        GROUP BY r.id, c.full_name, c.phone, c.email, u.full_name
+        GROUP BY r.id, c.full_name, c.phone, c.email, c.national_id_last4, u.full_name
         ORDER BY r.issued_at DESC, r.id DESC LIMIT $6`,
-      [user.tenantId, user.storeId, from, to, q, limit],
+      [user.tenantId, user.storeId, from, to, q, limit, idHash, phoneSearch, idLast4],
     );
     return { receipts: rows.map((r: any) => ({
       id: r.id, receiptNo: r.receipt_no, issuedAt: r.issued_at,
       totalKes: Number(r.total_kes), subtotalKes: Number(r.subtotal_kes),
       discountKes: Number(r.discount_kes), paymentMethod: r.payment_method,
       status: r.status, cashier: { name: r.cashier_name || 'Staff' }, customer: r.customer_name ? {
-        fullName: r.customer_name, phone: r.customer_phone, email: r.customer_email,
+        fullName: r.customer_name, phone: r.customer_phone, email: r.customer_email, nationalIdLast4: r.customer_id_last4,
       } : null, items: r.items,
     })) };
   }
