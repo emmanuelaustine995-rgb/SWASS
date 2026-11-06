@@ -233,7 +233,8 @@ export class ReceiptsService {
     }
 
     return {
-      id: receipt.id, receiptNo: receipt.receipt_no, totalKes: Number(receipt.total_kes),
+      id: receipt.id, receiptNo: receipt.receipt_no,
+      subtotalKes: subtotal, discountKes: discount, totalKes: Number(receipt.total_kes),
       qrToken: receipt.qr_token, status: receipt.status, issuedAt: receipt.issued_at,
       cashier, pointsEarned, duplicate: false, business,
     };
@@ -241,7 +242,7 @@ export class ReceiptsService {
 
   private async findByClientUuid(c: PoolClient, tenantId: string, clientUuid: string, dto: CreateReceiptDto) {
     const { rows } = await c.query(
-      `SELECT r.id, r.receipt_no, r.total_kes, r.qr_token, r.status, r.request_hash,
+      `SELECT r.id, r.receipt_no, r.subtotal_kes, r.discount_kes, r.total_kes, r.qr_token, r.status, r.request_hash,
               r.issued_at, u.full_name AS cashier_name, u.phone AS cashier_phone
          FROM receipts r LEFT JOIN users u ON u.id = r.cashier_id
         WHERE r.client_uuid = $1 AND r.tenant_id = $2`,
@@ -253,7 +254,9 @@ export class ReceiptsService {
       throw new ConflictException('This offline sale ID was already used for different sale details');
     }
     return {
-      id: rows[0].id, receiptNo: rows[0].receipt_no, totalKes: Number(rows[0].total_kes),
+      id: rows[0].id, receiptNo: rows[0].receipt_no,
+      subtotalKes: Number(rows[0].subtotal_kes), discountKes: Number(rows[0].discount_kes),
+      totalKes: Number(rows[0].total_kes),
       qrToken: rows[0].qr_token, status: rows[0].status, issuedAt: rows[0].issued_at,
       cashier: { name: rows[0].cashier_name || 'Staff', phone: rows[0].cashier_phone || null },
       pointsEarned: 0, duplicate: true,
