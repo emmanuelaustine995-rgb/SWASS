@@ -176,7 +176,7 @@ export class MpesaController {
           }
           const recoveryReceipt = typeof body?.mpesa_receipt_number === 'string' ? body.mpesa_receipt_number.trim() : '';
           const recoveryAmount = Number(body?.amount);
-          const recoveryPhone = typeof body?.phone === 'string' ? body.phone.replace(/^\\+/, '') : '';
+          const recoveryPhone = typeof body?.phone === 'string' ? body.phone.replace(/^\+/, '') : '';
           if (!recoveryReceipt || !Number.isSafeInteger(recoveryAmount) || recoveryAmount !== Number(rp.amount_kes)) return;
           if (recoveryPhone && recoveryPhone !== rp.phone) return;
           await c.query(`UPDATE receipt_recovery_payments SET status='success',mpesa_receipt_no=$1,paid_at=now() WHERE id=$2 AND status='pending'`, [recoveryReceipt, rp.id]);
