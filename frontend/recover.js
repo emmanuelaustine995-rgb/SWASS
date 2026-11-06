@@ -12,6 +12,13 @@
       .catch(() => null).finally(() => { apiWarmupPromise = null; });
     return apiWarmupPromise;
   }
+  // Wake the free API as soon as the recovery page opens, not when the user taps Send.
+  // Keep it awake while this page is actively open so the OTP request avoids cold-start delay.
+  warmApi();
+  const keepApiWarmTimer = setInterval(() => {
+    if (!document.hidden) warmApi();
+  }, 4 * 60 * 1000);
+  window.addEventListener('pagehide', () => clearInterval(keepApiWarmTimer), { once: true });
   const message = (text) => { $('message').textContent = text; };
   async function readResponse(response) {
     const raw = await response.text();
