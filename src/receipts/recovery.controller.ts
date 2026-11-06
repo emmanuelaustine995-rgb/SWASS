@@ -44,7 +44,13 @@ export class ReceiptRecoveryController {
       throw new TooManyRequestsException('Too many receipt recovery code requests. Please wait 15 minutes before trying again.');
     }
 
-    const customers = await this.db.pool.query(`SELECT id FROM customers WHERE phone=$1`, [phone]);
+    // Match both current E.164 storage and older Kenyan local-format customer records.
+    const localPhone = `0${phone.slice(3)}`;
+    const customers = await this.db.pool.query(
+      `SELECT id FROM customers
+       WHERE regexp_replace(phone, '[^0-9]', '', 'g') IN ($1, $2)`,
+      [phone, localPhone],
+    );
     const ids = customers.rows.map((r: any) => r.id);
     // Safe diagnostic: log only whether a matching customer exists, never the phone or customer data.
     console.log('[SWASS] Receipt recovery customer match:', ids.length > 0 ? 'found' : 'not found');
