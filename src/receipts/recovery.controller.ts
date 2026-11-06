@@ -1,138 +1,66 @@
-import {
-  BadRequestException, Body, Controller, Get, HttpException, HttpStatus, Param, Post, Req, ServiceUnavailableException,
-} from '@nestjs/common';
-import { createHash, createHmac, randomBytes, timingSafeEqual } from 'crypto';
+import { BadRequestException, Controller, Get, HttpException, HttpStatus, Param, Post, Body, Req, ServiceUnavailableException } from '@nestjs/common';
+import { createHash, randomBytes } from 'crypto';
 import { DbService } from '../db/db.service';
+import { hashNationalId, normalisePhone } from './receipts.service';
+import { MpesaService } from '../mpesa/mpesa.controller';
 
-function phoneKey(value: string): string {
-  const digits = String(value ?? '').replace(/\D/g, '');
-  const local = digits.startsWith('254') ? digits.slice(3) : digits.startsWith('0') ? digits.slice(1) : digits;
-  if (!/^[17]\d{8}$/.test(local)) throw new BadRequestException('Enter a valid Kenyan mobile number, such as 0712345678');
-  return `254${local}`;
-}
-function hash(value: string): string { return createHash('sha256').update(value).digest('hex'); }
-function codeHash(code: string): string {
-  const secret = process.env.SWASS_ID_SECRET;
-  if (!secret) throw new Error('SWASS_ID_SECRET is required');
-  return createHmac('sha256', secret).update(`receipt-otp:${code}`).digest('hex');
-}
+const RECOVERY_FEE_KES = 10;
+function hashToken(value: string): string { return createHash('sha256').update(value).digest('hex'); }
 
-@Controller('api/v1')
+@Controller('api/v1/receipt-recovery')
 export class ReceiptRecoveryController {
-  constructor(private db: DbService) {}
+  constructor(private db: DbService, private mpesa: MpesaService) {}
 
-  @Post('receipt-recovery/request')
-  async requestOtp(@Body() body: { phone?: string }, @Req() req: any) {
-    if (!body?.phone) throw new BadRequestException('Phone number is required');
-    const phone = phoneKey(body.phone);
-    const ip = String(req.ip ?? '').replace(/^::ffff:/, '') || null;
-    // Generic response prevents revealing whether a customer account exists.
-    const generic = { message: 'If matching receipts exist, a verification code will be sent to the registered phone.' };
-    const requestStartedAt = Date.now();
-    // Check phone and IP rate limits in one database round trip.
-    const limits = await this.db.pool.query(
-      `SELECT
-        (SELECT count(*)::int FROM otp_requests WHERE phone=$1 AND created_at > now()-interval '15 minutes') AS phone_count,
-        (SELECT count(*)::int FROM otp_requests WHERE ip_address=$2::inet AND created_at > now()-interval '15 minutes') AS ip_count`,
-      [phone, ip],
-    );
-    if (limits.rows[0].phone_count >= 5 || limits.rows[0].ip_count >= 20) {
-      console.warn('[SWASS][OTP_DIAG] Receipt recovery OTP generation stopped by rate limit', {
-        phoneRequests: Number(limits.rows[0].phone_count),
-        ipRequests: Number(limits.rows[0].ip_count),
-      });
-      throw new HttpException('Too many receipt recovery code requests. Please wait 15 minutes before trying again.', HttpStatus.TOO_MANY_REQUESTS);
+  @Post('request')
+  async requestPayment(@Body() body: { phone?: string; nationalId?: string }) {
+    if (typeof body?.nationalId !== 'string' || !/^[0-9A-Za-z-]{5,30}$/.test(body.nationalId.trim())) {
+      throw new BadRequestException('Enter the National ID used when purchasing');
     }
+    const phone = normalisePhone(String(body?.phone ?? ''));
+    const idHash = hashNationalId(body.nationalId);
+    const matches = await this.db.pool.query(
+      `SELECT 1 FROM customers WHERE phone=$1 AND national_id_hash=$2 LIMIT 1`,
+      [phone, idHash],
+    );
+    if (!matches.rowCount) throw new HttpException('The National ID and phone number do not match a customer record.', HttpStatus.NOT_FOUND);
 
-    // Match both current E.164 storage and older Kenyan local-format customer records.
-    const localPhone = `0${phone.slice(3)}`;
-    const customers = await this.db.pool.query(
-      `SELECT id FROM customers
-       WHERE regexp_replace(phone, '[^0-9]', '', 'g') IN ($1, $2)`,
-      [phone, localPhone],
+    const recoveryToken = randomBytes(32).toString('base64url');
+    const inserted = await this.db.pool.query(
+      `INSERT INTO receipt_recovery_payments(phone,national_id_hash,amount_kes,status,token_hash)
+       VALUES($1,$2,$3,'pending',$4) RETURNING id`,
+      [phone, idHash, RECOVERY_FEE_KES, hashToken(recoveryToken)],
     );
-    const ids = customers.rows.map((r: any) => r.id);
-    // Safe diagnostic: log only whether a matching customer exists, never the phone or customer data.
-    console.log('[SWASS] Receipt recovery customer match:', ids.length > 0 ? 'found' : 'not found');
-    const code = String(randomBytes(4).readUInt32BE(0) % 1000000).padStart(6, '0');
-    console.info('[SWASS][OTP_DIAG] Receipt recovery OTP generated; saving verification record');
-    const saved = await this.db.pool.query(
-      `INSERT INTO otp_requests(phone,customer_ids,code_hash,expires_at,ip_address)
-       VALUES($1,$2::uuid[],$3,now()+interval '5 minutes',$4::inet) RETURNING id`,
-      [phone, ids, codeHash(code), ip],
-    );
-    console.info('[SWASS][OTP_DIAG] Receipt recovery OTP record saved successfully');
-    if (ids.length) {
-      try {
-        const providerStartedAt = Date.now();
-        await this.sendSms(phone, `Your SWASS receipt recovery code is ${code}. It expires in 5 minutes. Do not share it.`);
-        console.info(`[SWASS][OTP_DIAG] Receipt recovery SMS provider accepted request in ${Date.now() - providerStartedAt}ms; total request ${Date.now() - requestStartedAt}ms`);
-      } catch (error) {
-        // Provider diagnostics only; sendSms never includes API keys, phone numbers, or OTP text in its errors.
-        const reason = error instanceof Error ? error.message : 'Unknown SMS provider error';
-        console.error('[SWASS] Receipt recovery SMS delivery failed:', reason);
-        await this.db.pool.query(`UPDATE otp_requests SET expires_at=now() WHERE id=$1`, [saved.rows[0].id]);
-        throw new ServiceUnavailableException('SMS delivery failed. Please try again later or contact the business.');
+    const paymentId: string = inserted.rows[0].id;
+    try {
+      const checkoutId = await this.mpesa.initiate({ phone, amount: RECOVERY_FEE_KES, purpose: 'recovery', paymentId });
+      await this.db.pool.query(
+        `UPDATE receipt_recovery_payments SET checkout_request_id=$1 WHERE id=$2`,
+        [checkoutId, paymentId],
+      );
+      return { paymentId, recoveryToken, status: 'pending', amountKes: RECOVERY_FEE_KES, message: 'M-Pesa payment request sent. Complete the KSh 10 prompt to unlock all matching receipts.' };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '';
+      if (!(error instanceof ServiceUnavailableException && message.toLowerCase().includes('timed out'))) {
+        await this.db.pool.query(`UPDATE receipt_recovery_payments SET status='failed' WHERE id=$1 AND status='pending'`, [paymentId]);
       }
-    } else {
-      console.warn('[SWASS][OTP_DIAG] OTP record saved but SMS skipped: no matching customer was found');
+      throw error;
     }
-    // Development-only convenience. Never return OTPs in production.
-    return process.env.NODE_ENV === 'production' ? generic : { ...generic, developmentCode: code };
   }
 
-  @Post('receipt-recovery/verify')
-  async verifyOtp(@Body() body: { phone?: string; code?: string }) {
-    const submittedCode = String(body?.code ?? '').replace(/\s/g, '');
-    if (!body?.phone || !/^\d{6}$/.test(submittedCode)) {
-      throw new BadRequestException('Enter your phone number and six-digit code');
-    }
-    const phone = phoneKey(body.phone);
-    // A customer may receive more than one SMS if a previous request appeared to fail.
-    // Accept any still-valid code issued in the last five minutes, not only the newest SMS.
+  @Get('status/:id')
+  async paymentStatus(@Param('id') id: string, @Req() req: any) {
+    const token = String(req.headers['x-recovery-token'] ?? '');
+    if (!token || token.length > 200) throw new BadRequestException('Invalid recovery session');
     const result = await this.db.pool.query(
-      `SELECT id,customer_ids,code_hash,attempts FROM otp_requests
-       WHERE phone=$1 AND verified_at IS NULL AND expires_at>now()
-       ORDER BY created_at DESC LIMIT 3`, [phone],
+      `SELECT status,amount_kes,mpesa_receipt_no FROM receipt_recovery_payments WHERE id=$1 AND token_hash=$2`,
+      [id, hashToken(token)],
     );
-    const supplied = Buffer.from(codeHash(submittedCode), 'hex');
-    const matchedRow = result.rows.find((candidate: any) => {
-      if (Number(candidate.attempts ?? 0) >= 5) return false;
-      const expected = Buffer.from(candidate.code_hash ?? '0'.repeat(64), 'hex');
-      return supplied.length === expected.length && timingSafeEqual(supplied, expected);
-    });
-    if (!matchedRow) {
-      if (result.rows.length) {
-        await this.db.pool.query(
-          `UPDATE otp_requests SET attempts=attempts+1
-           WHERE id = ANY($1::uuid[]) AND attempts < 5`,
-          [result.rows.map((row: any) => row.id)],
-        );
-      }
-      throw new BadRequestException('Code is invalid or expired. Enter a recent code from the SMS, or request a new one.');
-    }
-    if (!matchedRow.customer_ids?.length) {
-      throw new BadRequestException('No receipts were found for this phone number.');
-    }
-    const token = randomBytes(32).toString('base64url');
-    await this.db.tx(async (c) => {
-      await c.query(`UPDATE otp_requests SET verified_at=now() WHERE id=$1`, [matchedRow.id]);
-      // Invalidate other outstanding codes for this phone after one code is verified.
-      await c.query(
-        `UPDATE otp_requests SET expires_at=now()
-         WHERE phone=$1 AND id<>$2 AND verified_at IS NULL AND expires_at>now()`,
-        [phone, matchedRow.id],
-      );
-      await c.query(
-        `INSERT INTO recovery_sessions(otp_request_id,token_hash,expires_at)
-         VALUES($1,$2,now()+interval '10 minutes')`,
-        [matchedRow.id, hash(token)],
-      );
-    });
-    return { recoveryToken: token, expiresInSeconds: 600 };
+    if (!result.rowCount) throw new HttpException('Recovery payment not found', HttpStatus.NOT_FOUND);
+    const row = result.rows[0];
+    return { status: row.status, amountKes: Number(row.amount_kes), mpesaReceiptNumber: row.mpesa_receipt_no };
   }
 
-  @Get('receipt-recovery/receipts')
+  @Get('receipts')
   async recoveredReceipts(@Req() req: any) {
     const token = String(req.headers['x-recovery-token'] ?? '');
     if (!token || token.length > 200) throw new BadRequestException('A valid recovery token is required');
@@ -140,37 +68,36 @@ export class ReceiptRecoveryController {
       `SELECT r.id,r.receipt_no,r.subtotal_kes,r.discount_kes,r.total_kes,r.payment_method,r.status,r.issued_at,r.qr_token,
               s.name AS store_name,s.location AS store_location,s.logo_data,
               t.name AS business_name,t.phone AS business_phone,t.email AS business_email,
-              c.full_name AS customer_name,c.phone AS customer_phone,c.email AS customer_email,c.national_id_last4 AS customer_id_last4,
+              c.full_name AS customer_name,c.phone AS customer_phone,c.national_id_last4 AS customer_id_last4,
               u.full_name AS cashier_name,u.phone AS cashier_phone,
               COALESCE(json_agg(json_build_object(
                 'name',ri.name,'serialNo',ri.serial_no,'qty',ri.qty,'unitPriceKes',ri.unit_price_kes,'lineTotalKes',ri.line_total_kes
               ) ORDER BY ri.id) FILTER (WHERE ri.id IS NOT NULL),'[]'::json) AS items
-       FROM recovery_sessions rs
-       JOIN otp_requests o ON o.id=rs.otp_request_id
-       JOIN receipts r ON r.customer_id=ANY(o.customer_ids)
+       FROM receipt_recovery_payments rp
+       JOIN customers c ON c.phone=rp.phone AND c.national_id_hash=rp.national_id_hash
+       JOIN receipts r ON r.customer_id=c.id
        JOIN stores s ON s.id=r.store_id
        JOIN tenants t ON t.id=r.tenant_id
-       LEFT JOIN customers c ON c.id=r.customer_id AND c.tenant_id=r.tenant_id
        LEFT JOIN users u ON u.id=r.cashier_id AND u.tenant_id=r.tenant_id
        LEFT JOIN receipt_items ri ON ri.receipt_id=r.id
-       WHERE rs.token_hash=$1 AND rs.expires_at>now()
+       WHERE rp.token_hash=$1 AND rp.status='success'
        GROUP BY r.id,s.id,t.id,c.id,u.id
-       ORDER BY r.issued_at DESC LIMIT 50`, [hash(token)],
+       ORDER BY r.issued_at DESC LIMIT 500`,
+      [hashToken(token)],
     );
-    if (!rows.length) {
-      const valid = await this.db.pool.query(`SELECT 1 FROM recovery_sessions WHERE token_hash=$1 AND expires_at>now()`, [hash(token)]);
-      if (!valid.rowCount) throw new BadRequestException('Recovery session expired. Request a new code.');
-    }
+    const payment = await this.db.pool.query(
+      `SELECT status FROM receipt_recovery_payments WHERE token_hash=$1`, [hashToken(token)],
+    );
+    if (!payment.rowCount) throw new BadRequestException('Recovery session not found');
+    if (payment.rows[0].status !== 'success') throw new HttpException('Complete the KSh 10 M-Pesa payment before viewing receipts.', HttpStatus.PAYMENT_REQUIRED);
     return { receipts: rows.map((r: any) => ({
       ...r,
       cashier: { name: r.cashier_name || 'Staff', phone: r.cashier_phone || null },
-      subtotalKes: Number(r.subtotal_kes),
-      discountKes: Number(r.discount_kes),
-      totalKes: Number(r.total_kes),
+      subtotalKes: Number(r.subtotal_kes), discountKes: Number(r.discount_kes), totalKes: Number(r.total_kes),
     })) };
   }
 
-  @Get('receipts/verify/:token')
+  @Get('verify/:token')
   async verifyReceipt(@Param('token') token: string) {
     if (!token || token.length > 100) throw new BadRequestException('Invalid receipt token');
     const { rows } = await this.db.pool.query(
@@ -180,99 +107,5 @@ export class ReceiptRecoveryController {
     if (!rows[0]) return { valid: false, message: 'Receipt not found' };
     const r = rows[0];
     return { valid: r.status === 'issued', receiptNo: r.receipt_no, totalKes: Number(r.total_kes), status: r.status, issuedAt: r.issued_at, storeName: r.store_name };
-  }
-
-  private async sendSms(to: string, message: string) {
-    const failures: string[] = [];
-
-    // TalkSasa is primary. Only an explicit provider acceptance counts as success.
-    const talksasaToken = process.env.TALKSASA_API_TOKEN;
-    if (talksasaToken) {
-      try {
-        const response = await fetch(process.env.TALKSASA_API_URL || 'https://bulksms.talksasa.com/api/v3/sms/send', {
-          method: 'POST',
-          signal: AbortSignal.timeout(12000),
-          headers: {
-            Authorization: `Bearer ${talksasaToken}`,
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            recipient: `+${to}`,
-            sender_id: process.env.TALKSASA_SENDER_ID || 'TALK-SASA',
-            type: 'plain',
-            message,
-          }),
-        });
-        const raw = await response.text();
-        let result: any = {};
-        try { result = raw ? JSON.parse(raw) : {}; } catch { result = {}; }
-        const accepted = response.ok && (result?.status === 'success' || result?.success === true);
-        console.info(`[SWASS] Receipt recovery TalkSasa response: HTTP ${response.status}, accepted=${accepted}`);
-        if (accepted) return;
-        const detail = String(result?.message ?? result?.error ?? raw ?? '').slice(0, 180);
-        failures.push(`TalkSasa HTTP ${response.status}${detail ? `: ${detail}` : ''}`);
-      } catch (error) {
-        failures.push(`TalkSasa: ${error instanceof Error ? error.message : 'request failed'}`);
-      }
-    }
-
-    // Try Africa's Talking if TalkSasa is unavailable or rejects the request.
-    const atUsername = process.env.AT_USERNAME;
-    const atApiKey = process.env.AT_API_KEY;
-    if (atUsername && atApiKey) {
-      try {
-        const form = new URLSearchParams({ username: atUsername, to: `+${to}`, message });
-        if (process.env.AT_SENDER_ID) form.set('from', process.env.AT_SENDER_ID);
-        const endpoint = atUsername === 'sandbox'
-          ? 'https://api.sandbox.africastalking.com/version1/messaging'
-          : 'https://api.africastalking.com/version1/messaging';
-        const response = await fetch(endpoint, {
-          method: 'POST',
-          signal: AbortSignal.timeout(12000),
-          headers: { apiKey: atApiKey, Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: form,
-        });
-        const raw = await response.text();
-        let result: any = {};
-        try { result = raw ? JSON.parse(raw) : {}; } catch { result = {}; }
-        const recipients = result?.SMSMessageData?.Recipients;
-        if (response.ok && Array.isArray(recipients) && recipients.length &&
-            recipients.every((item: any) => Number(item.statusCode) === 101)) return;
-        const detail = String(result?.SMSMessageData?.Message ?? result?.message ?? raw ?? '').slice(0, 180);
-        failures.push(`Africa's Talking HTTP ${response.status}${detail ? `: ${detail}` : ''}`);
-      } catch (error) {
-        failures.push(`Africa's Talking: ${error instanceof Error ? error.message : 'request failed'}`);
-      }
-    }
-
-    // Final configured fallback: Twilio.
-    const sid = process.env.TWILIO_ACCOUNT_SID;
-    const auth = process.env.TWILIO_AUTH_TOKEN;
-    const from = process.env.TWILIO_FROM || process.env.TWILIO_FROM_NUMBER;
-    if (sid && auth && from) {
-      try {
-        const form = new URLSearchParams({ To: `+${to}`, From: from, Body: message });
-        const response = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`, {
-          method: 'POST',
-          signal: AbortSignal.timeout(12000),
-          headers: {
-            Authorization: `Basic ${Buffer.from(`${sid}:${auth}`).toString('base64')}`,
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-          body: form,
-        });
-        if (response.ok) return;
-        const detail = (await response.text()).slice(0, 180);
-        failures.push(`Twilio HTTP ${response.status}${detail ? `: ${detail}` : ''}`);
-      } catch (error) {
-        failures.push(`Twilio: ${error instanceof Error ? error.message : 'request failed'}`);
-      }
-    }
-
-    if (!talksasaToken && !atUsername && !sid) {
-      throw new Error('No SMS provider credentials are configured');
-    }
-    throw new Error(failures.join(' | ') || 'All configured SMS providers failed');
   }
 }
