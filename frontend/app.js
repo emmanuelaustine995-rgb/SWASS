@@ -213,7 +213,12 @@
   }
   async function completeSale(ev){
     ev.preventDefault(); const items=[...state.cart.values()]; if(!items.length)return;
-    const invalidPrice=[...$('cart-list').querySelectorAll('[data-price]')].some(input=>!Number.isSafeInteger(Number(input.value))||Number(input.value)<1||Number(input.value)>100000000000);if(invalidPrice){$('checkout-error').textContent='Enter a valid customer price for every item before issuing the receipt.';return;}
+    const priceInputs=[...$('cart-list').querySelectorAll('[data-price]')];
+    const invalidPrice=priceInputs.some(input=>!Number.isSafeInteger(Number(input.value))||Number(input.value)<1||Number(input.value)>100000000000);
+    if(invalidPrice){$('checkout-error').textContent='Enter a valid customer price for every item before issuing the receipt.';return;}
+    // Read the final values directly from the visible fields at checkout so
+    // the receipt payload can never fall back to an older product price.
+    priceInputs.forEach(input=>{const row=state.cart.get(input.dataset.price);if(row)row.unitPriceKes=Number(input.value);});
     const t=totals(); const needsBuyer=items.some(r=>r.product.requiresBuyerId);
     const customer={fullName:$('buyer-name').value.trim(),phone:$('buyer-phone').value.trim(),email:$('buyer-email').value.trim(),nationalId:$('buyer-id').value.trim()};
     if((customer.fullName&&!customer.phone)||(!customer.fullName&&customer.phone)){ $('checkout-error').textContent='Enter both the customer full name and phone number, or leave both blank.';return; }
