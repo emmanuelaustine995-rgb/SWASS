@@ -36,18 +36,26 @@ export class ReceiptRecoveryController {
         (SELECT count(*)::int FROM otp_requests WHERE ip_address=$2::inet AND created_at > now()-interval '15 minutes') AS ip_count`,
       [phone, ip],
     );
-    if (limits.rows[0].phone_count >= 3 || limits.rows[0].ip_count >= 10) return generic;
+    if (limits.rows[0].phone_count >= 3 || limits.rows[0].ip_count >= 10) {
+      console.warn('[SWASS][OTP_DIAG] Receipt recovery OTP generation stopped by rate limit', {
+        phoneRequests: Number(limits.rows[0].phone_count),
+        ipRequests: Number(limits.rows[0].ip_count),
+      });
+      return generic;
+    }
 
     const customers = await this.db.pool.query(`SELECT id FROM customers WHERE phone=$1`, [phone]);
     const ids = customers.rows.map((r: any) => r.id);
     // Safe diagnostic: log only whether a matching customer exists, never the phone or customer data.
     console.log('[SWASS] Receipt recovery customer match:', ids.length > 0 ? 'found' : 'not found');
     const code = String(randomBytes(4).readUInt32BE(0) % 1000000).padStart(6, '0');
+    console.info('[SWASS][OTP_DIAG] Receipt recovery OTP generated; saving verification record');
     const saved = await this.db.pool.query(
       `INSERT INTO otp_requests(phone,customer_ids,code_hash,expires_at,ip_address)
        VALUES($1,$2::uuid[],$3,now()+interval '5 minutes',$4::inet) RETURNING id`,
       [phone, ids, codeHash(code), ip],
     );
+    console.info('[SWASS][OTP_DIAG] Receipt recovery OTP record saved successfully');
     if (ids.length) {
       try {
         const providerStartedAt = Date.now();
@@ -60,6 +68,8 @@ export class ReceiptRecoveryController {
         await this.db.pool.query(`UPDATE otp_requests SET expires_at=now() WHERE id=$1`, [saved.rows[0].id]);
         throw new ServiceUnavailableException('SMS delivery failed. Please try again later or contact the business.');
       }
+    } else {
+      console.warn('[SWASS][OTP_DIAG] OTP record saved but SMS skipped: no matching customer was found');
     }
     // Development-only convenience. Never return OTPs in production.
     return process.env.NODE_ENV === 'production' ? generic : { ...generic, developmentCode: code };
