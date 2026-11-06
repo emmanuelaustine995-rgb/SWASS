@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#0789f9"/><stop offset="1" stop-color="#061b59"/></linearGradient>
+    <linearGradient id="green" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#b5ff37"/><stop offset="1" stop-color="#36d900"/></linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <path d="M84 215c34-103 117-151 216-151 67 0 119 25 151 65-49-24-97-30-143-19-77 18-112 66-149 124z" fill="url(#green)"/>
+  <rect x="92" y="168" width="207" height="175" rx="28" fill="#071b49" stroke="#dceaff" stroke-width="10"/>
+  <rect x="113" y="190" width="165" height="86" rx="12" fill="#087be9"/>
+  <path d="M135 255l33-29 27 15 47-39" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M224 202h19v19" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round"/>
+  <path d="M145 304h100M145 324h75" stroke="#fff" stroke-width="9" stroke-linecap="round"/>
+  <path d="M320 194h42l19 104h78l20-72H371" fill="none" stroke="#fff" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="392" cy="330" r="13" fill="#b5ff37"/><circle cx="449" cy="330" r="13" fill="#b5ff37"/>
+  <path d="M64 372c79 42 166 48 257 21 41-12 81-34 120-64" fill="none" stroke="#b5ff37" stroke-width="13" stroke-linecap="round"/>
+  <text x="256" y="439" text-anchor="middle" font-family="Arial,sans-serif" font-size="57" font-weight="900" letter-spacing="-3" fill="#fff">SWASS</text>
+</svg>
