@@ -17,7 +17,7 @@
     try{if(['owner','manager'].includes(state.role))await loadBusinessProfile();await loadProducts();}
     catch(error){showNotice('You are signed in, but some business data could not load. '+(error.message||''),true);}
     if(['owner','manager'].includes(state.role)){
-      let selected='dashboard';try{const candidate=localStorage.getItem('swass-active-workspace-v1');if(['dashboard','sales','receipts','crm','accounting','logistics','console'].includes(candidate))selected=candidate;}catch{}
+      let selected='dashboard';try{const candidate=localStorage.getItem('swass-active-workspace-v1');if(['dashboard','operations','receipts','crm','accounting'].includes(candidate))selected=candidate;}catch{}
       showWorkspaceScreen(selected);
     }
   }
@@ -69,7 +69,8 @@
     const lookup=document.querySelector('.customer-lookup-panel');
     const profile=document.getElementById('profile-panel');
     if(!owner||!pos)return;
-    [history,crm,lookup,profile].forEach(el=>el?.classList.add('hidden'));
+    [history,crm,lookup].forEach(el=>el?.classList.add('hidden'));
+    profile?.classList.toggle('hidden',screen!=='dashboard');
     owner.classList.add('hidden');
     owner.classList.remove('workspace-dashboard','workspace-accounting','workspace-console');
     pos.classList.remove('workspace-logistics');
@@ -80,6 +81,13 @@
       pos.classList.remove('hidden');owner.classList.remove('hidden');
       owner.classList.add('workspace-dashboard');
       owner.querySelector('#owner-period-comparison')?.scrollIntoView({block:'start'});
+    }else if(screen==='operations'){
+      pos.classList.remove('hidden');
+      posGrid?.classList.remove('hidden');
+      lookup?.classList.remove('hidden');
+      owner.classList.remove('hidden');
+      owner.classList.add('workspace-console');
+      pos.scrollIntoView({block:'start'});
     }else if(screen==='sales'){
       pos.classList.remove('hidden');
       posGrid?.classList.remove('hidden');
