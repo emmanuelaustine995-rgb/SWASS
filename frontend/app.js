@@ -14,11 +14,17 @@
     if(!sessionIsValid(saved)){clearSession();showLogin();return;}
     state.token=saved.token;state.role=saved.role||'owner';lastSessionWrite=Number(saved.lastActivity)||Date.now();
     showPOS();publishWorkspaceSession();
+    let subscriptionRequired=false;
     try{if(['owner','manager'].includes(state.role))await loadBusinessProfile();await loadProducts();}
-    catch(error){showNotice('You are signed in, but some business data could not load. '+(error.message||''),true);}
+    catch(error){
+      if(error.status===402) subscriptionRequired=true;
+      else showNotice('You are signed in, but some business data could not load. '+(error.message||''),true);
+    }
     if(['owner','manager'].includes(state.role)){
       let selected='dashboard';try{const candidate=localStorage.getItem('swass-active-workspace-v1');if(['dashboard','operations','receipts','crm','accounting'].includes(candidate))selected=candidate;}catch{}
+      if(subscriptionRequired) selected='accounting';
       showWorkspaceScreen(selected);
+      if(subscriptionRequired) showNotice('SWASS is locked until you subscribe. Pay KSh 100 for one month or KSh 900 for one year, then add receipt credits at KSh 2 each.');
     }
   }
   function checkSessionExpiry(){ if(!state.token)return; let saved;try{saved=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');}catch{} if(!sessionIsValid(saved)){clearSession();window.dispatchEvent(new Event('swass:logout'));state.cart.clear();renderCart();showLogin();showNotice('Your session ended after 3 hours without activity. Please sign in again.');} }
@@ -50,7 +56,11 @@
     touchSession();
     const res = await fetch(`${API}${path}`, { ...options, headers: { 'Content-Type':'application/json', ...(state.token ? { Authorization:`Bearer ${state.token}` } : {}), ...(options.headers || {}) } });
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.message || `Request failed (${res.status})`);
+    if (!res.ok) {
+      const error = new Error(data.message || `Request failed (${res.status})`);
+      error.status = res.status;
+      throw error;
+    }
     return data;
   }
   function publishWorkspaceSession(){saveSession();window.dispatchEvent(new CustomEvent('swass:login',{detail:{token:state.token,role:state.role}}));}
@@ -403,9 +413,8 @@
       $('signup-otp-panel').classList.add('hidden');
       $('register-submit').classList.remove('hidden');
       showPOS();
-      showNotice('Phone number verified. Your SWASS business account is ready and your 7-day free trial has started. Add your products to begin.');
-      try { await loadProducts(); }
-      catch (loadError) { showNotice('Your account is ready, but the product list could not load. Refresh the page to try again.', true); }
+      showWorkspaceScreen('accounting');
+      showNotice('Your SWASS account is ready. Subscribe for KSh 100 per month (or KSh 900 per year), then top up your receipt wallet. KSh 40 gives you 20 receipts.');
     }catch(err){
       $('signup-otp-message').textContent=err.message||'Verification failed. Check the code and try again.';
     }finally{btn.disabled=false;btn.textContent='Verify phone and create account';}
@@ -439,12 +448,25 @@
       if(button){button.disabled=false;button.textContent='Sign in';}
     }
     if(!signedIn)return;
+    let subscriptionRequired = false;
     if(['owner','manager'].includes(state.role)){
       try{await loadBusinessProfile();}
-      catch(err){showNotice('You are signed in, but the business profile could not be loaded. '+(err.message||''),true);}
+      catch(err){
+        if(err.status === 402) subscriptionRequired = true;
+        else showNotice('You are signed in, but the business profile could not be loaded. '+(err.message||''),true);
+      }
     }
-    try { await loadProducts(); }
-    catch (loadError) { showNotice('You are signed in, but the product list could not load. Refresh the page to try again.', true); }
+    if(!subscriptionRequired){
+      try { await loadProducts(); }
+      catch (loadError) {
+        if(loadError.status === 402) subscriptionRequired = true;
+        else showNotice('You are signed in, but the product list could not load. Refresh the page to try again.', true);
+      }
+    }
+    if(subscriptionRequired){
+      showWorkspaceScreen('accounting');
+      showNotice('SWASS is locked until you subscribe. Pay KSh 100 for one month or KSh 900 for one year, then add receipt credits at KSh 2 each.');
+    }
   });
   $('show-password-reset').addEventListener('click',()=>{
     $('login-form').classList.add('hidden');
