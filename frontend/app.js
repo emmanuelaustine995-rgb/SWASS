@@ -130,7 +130,7 @@
     if(q)p.set('q',q);if(from)p.set('from',from);if(to)p.set('to',to);p.set('limit','50');
     try{const d=await request('/api/v1/receipts?'+p.toString());const rows=d.receipts||[];
       if(!rows.length){$('history-list').innerHTML='<div class="empty">No receipts match your search.</div>';return;}
-      $('history-list').innerHTML=rows.map(r=>'<article class="history-row"><div class="history-row-top"><strong>'+escapeHtml(r.receiptNo)+'</strong><strong>'+money(r.totalKes)+'</strong></div><div class="history-row-meta">'+escapeHtml(new Date(r.issuedAt).toLocaleString('en-KE'))+' · '+escapeHtml(r.status)+' · '+escapeHtml(String(r.paymentMethod||'').toUpperCase())+'</div><div class="history-row-meta">Sales agent: '+escapeHtml(r.cashier?.name||'Staff')+'</div><div class="history-row-meta">'+(r.customer?escapeHtml(r.customer.fullName)+' · '+escapeHtml(r.customer.phone):'Walk-in customer')+'</div><div class="history-row-items">'+(r.items||[]).map(i=>escapeHtml(i.name)+' × '+Number(i.qty)).join(' · ')+'</div></article>').join('');
+      $('history-list').innerHTML=rows.map(r=>'<article class="history-row"><div class="history-row-top"><strong>'+escapeHtml(r.receiptNo)+'</strong><strong>'+money(r.totalKes)+'</strong></div><div class="history-row-meta">'+escapeHtml(new Date(r.issuedAt).toLocaleString('en-KE'))+' · '+escapeHtml(r.status)+' · '+escapeHtml(String(r.paymentMethod||'').toUpperCase())+'</div><div class="history-row-meta">Sales agent: '+escapeHtml(r.cashier?.name||'Staff')+'</div><div class="history-row-meta">'+(r.customer?escapeHtml(r.customer.fullName)+' · '+escapeHtml(r.customer.phone)+(r.customer.nationalIdLast4?' · ID ending '+escapeHtml(r.customer.nationalIdLast4):''):'Walk-in customer')+'</div><div class="history-row-items">'+(r.items||[]).map(i=>escapeHtml(i.name)+' × '+Number(i.qty)+(i.serialNo?' · IMEI: '+escapeHtml(i.serialNo):'')).join(' · ')+'</div></article>').join('');
     }catch(e){$('history-list').innerHTML='';$('history-error').textContent=e.message||'Could not load receipt history.';}
   }
   async function loadBusinessProfile(){const d=await request('/api/v1/business/profile');const p=d.profile||{};$('profile-business-name').value=p.businessName||'';$('profile-business-phone').value=p.businessPhone||'';$('profile-business-email').value=p.businessEmail||'';$('profile-store-name').value=p.storeName||'';$('profile-store-location').value=p.storeLocation||'';$('profile-receipt-header').value=p.receiptHeader||'';$('profile-receipt-footer').value=p.receiptFooter||'';state.profileLogoData=p.logoData||undefined;const img=$('logo-preview');if(state.profileLogoData){img.src=state.profileLogoData;img.classList.remove('hidden');}else{img.removeAttribute('src');img.classList.add('hidden');}}
@@ -180,7 +180,7 @@
     const rows=[...state.cart.entries()]; $('cart-list').innerHTML=rows.length?rows.map(([id,r])=>`<div class="cart-row"><div><div class="cart-row-name">${escapeHtml(r.product.name)}</div><div class="cart-row-sub">Shop buying cost: ${money(r.product.costKes)} · Default selling price: ${money(r.product.priceKes)}</div><label class="cart-unit-price">Customer price per item (KSh)<input type="number" min="1" max="100000000000" step="1" inputmode="numeric" data-price="${id}" value="${Number(r.unitPriceKes??r.product.priceKes)}" required></label><div class="cart-row-sub cart-line-total">Line subtotal: ${money(Number(r.unitPriceKes??r.product.priceKes)*r.qty)}</div><label>IMEI / Serial number (optional)<input type="text" maxlength="32" data-imei="${id}" value="${escapeHtml(r.imei||'')}" placeholder="Optional"></label></div><div class="qty-control"><button type="button" data-qty="${id}" data-delta="-1" aria-label="Decrease">−</button><span>${r.qty}</span><button type="button" data-qty="${id}" data-delta="1" aria-label="Increase">+</button></div></div>`).join(''):'<div class="empty">Your cart is empty.</div>';
     const t=totals(); $('subtotal').textContent=money(t.subtotal);$('total').textContent=money(t.total);$('checkout-open').disabled=!rows.length||t.total<0;
   }
-  function openCheckout(){const items=[...state.cart.values()];const needsBuyer=items.some(r=>r.product.requiresBuyerId);$('buyer-id-wrap').classList.toggle('hidden',!needsBuyer);$('buyer-id-note').classList.toggle('hidden',!needsBuyer);$('checkout-total').textContent=money(totals().total);$('checkout-error').textContent='';$('checkout-modal').classList.remove('hidden');}
+  function openCheckout(){const items=[...state.cart.values()];const needsBuyer=items.some(r=>r.product.requiresBuyerId);$('buyer-id-wrap').classList.remove('hidden');$('buyer-id-note').classList.toggle('hidden',!needsBuyer);$('checkout-total').textContent=money(totals().total);$('checkout-error').textContent='';$('checkout-modal').classList.remove('hidden');}
   function makeReceiptMarkup(receipt, sale, customer){
     const business=receipt.business||{};
     const lines=sale.items.map(i=>`<div class="receipt-line"><span><strong>${escapeHtml(i.name)}</strong> × ${i.qty}<br><small>Unit price: ${money(i.price)}${i.serialNo?`<br>IMEI / Serial: ${escapeHtml(i.serialNo)}`:''}</small></span><strong>${money(i.price*i.qty)}</strong></div>`).join('');
@@ -428,6 +428,44 @@
     }
     try { await loadProducts(); }
     catch (loadError) { showNotice('You are signed in, but the product list could not load. Refresh the page to try again.', true); }
+  });
+  $('show-password-reset').addEventListener('click',()=>{
+    $('login-form').classList.add('hidden');
+    $('password-reset-form').classList.remove('hidden');
+    $('password-reset-message').textContent='';
+    $('password-reset-confirm-fields').classList.add('hidden');
+  });
+  $('cancel-password-reset').addEventListener('click',()=>{
+    $('password-reset-form').classList.add('hidden');
+    $('login-form').classList.remove('hidden');
+  });
+  $('password-reset-form').addEventListener('submit',async e=>{
+    e.preventDefault();
+    const btn=$('request-password-reset');
+    btn.disabled=true;btn.textContent='Sending code…';
+    $('password-reset-message').textContent='Requesting a secure reset code…';
+    try{
+      const result=await request('/api/v1/auth/password-reset/request',{method:'POST',body:JSON.stringify({phone:$('reset-phone').value.trim()})});
+      $('password-reset-confirm-fields').classList.remove('hidden');
+      $('password-reset-message').textContent=result.message||'If an account matches that phone number, a password reset code has been sent.';
+    }catch(err){$('password-reset-message').textContent=err.message||'Could not request a reset code.';}
+    finally{btn.disabled=false;btn.textContent='Send reset code';}
+  });
+  $('confirm-password-reset').addEventListener('click',async()=>{
+    const btn=$('confirm-password-reset');
+    btn.disabled=true;btn.textContent='Updating password…';
+    $('password-reset-message').textContent='';
+    try{
+      const result=await request('/api/v1/auth/password-reset/confirm',{method:'POST',body:JSON.stringify({
+        phone:$('reset-phone').value.trim(),code:$('reset-code').value.trim(),newPassword:$('reset-new-password').value
+      })});
+      $('password-reset-message').textContent=result.message||'Password updated. You can now sign in.';
+      $('password-reset-form').classList.add('hidden');
+      $('login-form').classList.remove('hidden');
+      $('login-phone').value=$('reset-phone').value.trim();
+      $('login-password').value='';
+    }catch(err){$('password-reset-message').textContent=err.message||'Password could not be reset.';}
+    finally{btn.disabled=false;btn.textContent='Reset password';}
   });
   $('workspace-nav').addEventListener('click',e=>{const b=e.target.closest('[data-workspace]');if(b)showWorkspaceScreen(b.dataset.workspace);});
   $('back-to-receipts').addEventListener('click',()=>{
