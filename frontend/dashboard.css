@@ -369,3 +369,13 @@ body.dashboard-dark .sidebar-help small{color:#b2c9bf}
 
 #pos-view #back-to-receipts{display:none}
 #pos-view.workspace-issue-mode #back-to-receipts{display:inline-flex}
+
+
+/* Dashboard-owned business profile and first-time setup */
+.dashboard-business-card{display:flex;align-items:center;justify-content:space-between;gap:18px;margin:0 0 18px;padding:18px 20px;border:1px solid #dce8e2;border-radius:18px;background:#fff}
+.dashboard-business-identity{display:flex;align-items:center;gap:14px;min-width:0}
+.dashboard-profile-image{width:64px;height:64px;flex:0 0 64px;border-radius:50%;object-fit:cover;border:1px solid #dce8e2;background:#f1f6f3}
+.dashboard-business-card h2{margin:2px 0 5px;font-size:19px;color:#173b2c}
+.dashboard-business-card p{margin:0}
+#profile-panel{margin:0 0 20px}
+@media(max-width:560px){.dashboard-business-card{align-items:stretch;flex-direction:column}.dashboard-business-card>.btn{width:100%}.dashboard-business-identity{align-items:flex-start}}
