@@ -9,7 +9,7 @@ on:
     branches: [main]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build-apk:
@@ -35,3 +35,13 @@ jobs:
           path: android-app/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 30
+      - name: Publish direct APK download
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: swass-android-latest
+          name: SWASS Android APK (Latest)
+          target_commitish: main
+          prerelease: true
+          make_latest: false
+          files: android-app/app/build/outputs/apk/debug/app-debug.apk
+          overwrite_files: true
