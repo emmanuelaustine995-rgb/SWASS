@@ -292,7 +292,7 @@
     catch(err){$('product-error').textContent=err.message||'Could not save goods.';}
     finally{btn.disabled=false;btn.textContent='Save goods to inventory';}
   });
-  $('show-register').addEventListener('click',()=>{ $('login-form').classList.add('hidden'); $('register-form').classList.remove('hidden'); $('register-error').textContent=''; });
+  $('show-register').addEventListener('click',()=>{ void warmApi(); $('login-form').classList.add('hidden'); $('register-form').classList.remove('hidden'); $('register-error').textContent=''; });
   $('show-login').addEventListener('click',()=>{ $('register-form').classList.add('hidden'); $('login-form').classList.remove('hidden'); $('login-error').textContent=''; });
   let signupResendTimer = null;
   let signupResendSeconds = 0;
