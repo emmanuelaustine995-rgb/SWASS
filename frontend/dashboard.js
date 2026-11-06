@@ -2,19 +2,21 @@
   'use strict';
   const $ = id => document.getElementById(id.startsWith('owner-') ? id : `owner-${id}`);
   const API = (window.SWASS_API_URL || '').replace(/\/$/, '');
-  const state = { token: null, role: null };
+  const state = { token: null, role: null, dashboardRequest: null, lastDashboardData: null };
+  const DASHBOARD_CACHE_KEY='swass-dashboard-cache-v1';
+  const DASHBOARD_REFRESH_MS=60000;
   const money = n => `KSh ${Number(n || 0).toLocaleString('en-KE')}`;
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   async function request(path, options={}) {
     const controller = new AbortController();
-    const timeout = window.setTimeout(()=>controller.abort(),20000);
+    const timeout = window.setTimeout(()=>controller.abort(),90000);
     try{
       const res = await fetch(`${API}${path}`, { ...options, signal:options.signal||controller.signal, headers:{'Content-Type':'application/json', ...(state.token?{Authorization:`Bearer ${state.token}`}:{})} });
       const data = await res.json().catch(()=>({}));
       if(!res.ok) throw new Error(data.message || `Request failed (${res.status})`);
       return data;
     }catch(error){
-      if(error.name==='AbortError') throw new Error('The dashboard request timed out. The free server may be waking up. Tap Refresh to try again.');
+      if(error.name==='AbortError') throw new Error('The dashboard request timed out after 90 seconds. Check your connection and tap Refresh to try again.');
       throw error;
     }finally{window.clearTimeout(timeout);}
   }
@@ -41,6 +43,8 @@
     return `${change>0?'+':''}${change.toFixed(1)}%`;
   }
   async function loadDashboard(){
+    if(state.dashboardRequest)return state.dashboardRequest;
+    state.dashboardRequest=(async()=>{
     $('compare-sales').textContent='Loading…';
     $('compare-transactions').textContent='Loading…';
     $('mtd-sales').textContent='Loading…';
@@ -55,6 +59,8 @@
         currentRequest,
         comparisonRequest.then(value=>({value})).catch(error=>({error}))
       ]);
+      state.lastDashboardData=data;
+      try{sessionStorage.setItem(DASHBOARD_CACHE_KEY,JSON.stringify({savedAt:Date.now(),data}));}catch{}
       const s=data.sales,i=data.inventory,e=data.expenses;
       $('owner-today-sales').textContent=money(s.salesKes);$('owner-net-profit').textContent=money(s.estimatedNetOperatingKes);$('owner-low-stock').textContent=Number(i.lowStockCount||0).toLocaleString('en-KE');$('m-sales').textContent=money(s.salesKes);$('m-transactions').textContent=`${s.transactions} transactions`;
       $('m-profit').textContent=money(s.grossProfitKes);$('m-expenses').textContent=money(s.expensesKes);$('m-expense-count').textContent=`${e.count} entries`;$('m-net').textContent=money(s.estimatedNetOperatingKes);
@@ -91,6 +97,8 @@
       $('m-sales').textContent='Unavailable';$('m-transactions').textContent='Sales summary unavailable';
       $('m-profit').textContent='Unavailable';$('m-expenses').textContent='Unavailable';$('m-net').textContent='Unavailable';
     }
+    })();
+    try{return await state.dashboardRequest;}finally{state.dashboardRequest=null;}
   }
   function renderProductMix(rows){
     const colors=['#2676b8','#16a36a','#e6a23c','#8b65c8','#e16b75','#36a6a6','#65758b','#c27b42','#789b42','#b05c9d','#4b83a8','#9a8c73'];
@@ -156,7 +164,11 @@
   }
   restoreDashboardSession();
   window.addEventListener('swass:sale-issued',()=>{void loadDashboard();});
-  window.addEventListener('swass:logout',()=>{state.token=null;state.role=null;$('owner-dashboard-view').classList.add('hidden');});
+  window.addEventListener('swass:logout',()=>{state.token=null;state.role=null;state.lastDashboardData=null;try{sessionStorage.removeItem(DASHBOARD_CACHE_KEY);}catch{}$('owner-dashboard-view').classList.add('hidden');});
+  // Refresh the dashboard automatically while the workspace is open. Avoid
+  // background traffic when the tab is hidden or the device is offline.
+  window.setInterval(()=>{if(state.token&&document.visibilityState==='visible'&&navigator.onLine){void loadDashboard();}},DASHBOARD_REFRESH_MS);
+  window.addEventListener('online',()=>{if(state.token)void loadDashboard();});
   $('refresh-btn').addEventListener('click',loadDashboard);
   $('mpesa-purpose').addEventListener('change',()=>{const subscription=$('mpesa-purpose').value==='subscription';$('topup-amount-wrap').classList.toggle('hidden',subscription);$('plan-wrap').classList.toggle('hidden',!subscription);});
   $('mpesa-form').addEventListener('submit',async ev=>{ev.preventDefault();const message=$('mpesa-message');message.textContent='Requesting payment prompt…';try{const purpose=$('mpesa-purpose').value;const payload={purpose,phone:$('mpesa-phone').value.trim()};if(purpose==='wallet_topup')payload.amountKes=Number($('topup-amount').value);else payload.plan=$('subscription-plan').value;const result=await request('/api/v1/mpesa/stk-push',{method:'POST',body:JSON.stringify(payload)});message.textContent=`STK prompt requested for ${money(result.amountKes)}. Enter your M-Pesa PIN on your phone. Checking payment status…`;let attempts=0;const check=async()=>{try{const status=await request(`/api/v1/mpesa/payments/${result.paymentId}`);if(status.status==='success'){message.textContent=`Payment confirmed. M-Pesa receipt: ${status.receiptNumber||'recorded'}.`;await loadDashboard();return;}if(status.status==='failed'){message.textContent='Payment was not completed. You can try again.';return;}attempts++;if(attempts<12){setTimeout(check,5000);}else{message.textContent=`Payment is still pending. Use Refresh status later. Payment reference: ${result.paymentId}`;}}catch(e){message.textContent=e.message;}};await check();}catch(e){message.textContent=e.message;}});
