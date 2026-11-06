@@ -1,0 +1,17 @@
+{
+  "id": "/",
+  "name": "SWASS – Smart Business Management",
+  "short_name": "SWASS",
+  "description": "Sales, receipts, stock and customer management by E-Tech.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#071b49",
+  "theme_color": "#075bd8",
+  "categories": ["business", "finance", "productivity"],
+  "icons": [
+    { "src": "./swass-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "./swass-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}
