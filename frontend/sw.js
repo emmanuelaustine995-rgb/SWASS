@@ -1,4 +1,4 @@
-const CACHE_NAME = 'swass-shell-v3';
+const CACHE_NAME = 'swass-shell-v4';
 const SHELL = ['./', './index.html', './styles.css', './dashboard.css', './app.js', './dashboard.js', './config.js', './swass-icon.svg'];
 
 self.addEventListener('install', event => {
