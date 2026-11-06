@@ -6,8 +6,17 @@
   const money = n => `KSh ${Number(n || 0).toLocaleString('en-KE')}`;
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   async function request(path, options={}) {
-    const res = await fetch(`${API}${path}`, { ...options, headers:{'Content-Type':'application/json', ...(state.token?{Authorization:`Bearer ${state.token}`}:{})} });
-    const data = await res.json().catch(()=>({})); if(!res.ok) throw new Error(data.message || `Request failed (${res.status})`); return data;
+    const controller = new AbortController();
+    const timeout = window.setTimeout(()=>controller.abort(),20000);
+    try{
+      const res = await fetch(`${API}${path}`, { ...options, signal:options.signal||controller.signal, headers:{'Content-Type':'application/json', ...(state.token?{Authorization:`Bearer ${state.token}`}:{})} });
+      const data = await res.json().catch(()=>({}));
+      if(!res.ok) throw new Error(data.message || `Request failed (${res.status})`);
+      return data;
+    }catch(error){
+      if(error.name==='AbortError') throw new Error('The dashboard request timed out. The free server may be waking up. Tap Refresh to try again.');
+      throw error;
+    }finally{window.clearTimeout(timeout);}
   }
   function showLogin(){ $('login-view').classList.remove('hidden'); $('dashboard-view').classList.add('hidden'); $('logout-btn').classList.add('hidden'); }
   function showDashboard(){ $('login-view').classList.add('hidden'); $('dashboard-view').classList.remove('hidden'); $('logout-btn').classList.remove('hidden'); $('user-label').textContent=state.role; }
@@ -38,13 +47,13 @@
     $('product-pie').innerHTML='<span>Loading…</span>';
     $('product-legend').innerHTML='<p class="muted">Loading product sales…</p>';
     const currentRequest=request(`/api/v1/dashboard/summary${periodQuery()}`);
-    const previousRequest=request(`/api/v1/dashboard/summary${previousPeriodQuery()}`);
-    // Do not hold the visible dashboard hostage while the expense list loads.
-    void loadExpenses().catch(err=>{$('expense-list').innerHTML='<p class="muted">Expenses could not be loaded.</p>';});
+    const comparisonRequest=request(`/api/v1/dashboard/comparison${periodQuery()}`);
+    // Expenses are secondary; never make the sales dashboard wait for them.
+    void loadExpenses().catch(()=>{$('expense-list').innerHTML='<p class="muted">Expenses could not be loaded.</p>';});
     try {
-      const [data,previousResult]=await Promise.all([
+      const [data,comparisonResult]=await Promise.all([
         currentRequest,
-        previousRequest.then(value=>({value})).catch(error=>({error}))
+        comparisonRequest.then(value=>({value})).catch(error=>({error}))
       ]);
       const s=data.sales,i=data.inventory,e=data.expenses;
       $('owner-today-sales').textContent=money(s.salesKes);$('owner-net-profit').textContent=money(s.estimatedNetOperatingKes);$('owner-low-stock').textContent=Number(i.lowStockCount||0).toLocaleString('en-KE');$('m-sales').textContent=money(s.salesKes);$('m-transactions').textContent=`${s.transactions} transactions`;
@@ -54,13 +63,13 @@
       const mtd=data.monthToDate||{};
       $('mtd-sales').textContent=money(mtd.salesKes);
       $('mtd-transactions').textContent=`${Number(mtd.transactions||0).toLocaleString('en-KE')} transactions · ${mtd.from||'this month'} to date`;
-      if(previousResult.error){
+      if(comparisonResult.error){
         $('compare-sales').textContent='Unavailable';$('compare-transactions').textContent='Unavailable';
-        $('compare-sales-detail').textContent='Previous-period comparison could not be loaded';
-        $('compare-transactions-detail').textContent='Previous-period comparison could not be loaded';
+        $('compare-sales-detail').textContent='Comparison is temporarily unavailable; the main sales figures are loaded';
+        $('compare-transactions-detail').textContent='Comparison is temporarily unavailable; the main sales figures are loaded';
       }else{
-        const previous=previousResult.value;
-        const priorSales=Number(previous.sales?.salesKes||0),priorTransactions=Number(previous.sales?.transactions||0);
+        const previous=comparisonResult.value.previous||{};
+        const priorSales=Number(previous.salesKes||0),priorTransactions=Number(previous.transactions||0);
         $('compare-sales').textContent=comparisonLabel(Number(s.salesKes||0),priorSales);
         $('compare-sales-detail').textContent=`${money(s.salesKes)} now · ${money(priorSales)} previous`;
         $('compare-transactions').textContent=comparisonLabel(Number(s.transactions||0),priorTransactions);
