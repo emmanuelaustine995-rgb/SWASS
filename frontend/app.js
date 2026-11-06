@@ -455,7 +455,7 @@
   $('confirm-password-reset').addEventListener('click',async()=>{
     const btn=$('confirm-password-reset');
     const code=$('reset-code').value.trim(),newPassword=$('reset-new-password').value;
-    if(!/^\\d{6}$/.test(code)){$('password-reset-message').textContent='Enter the six-digit code sent by SMS.';return;}
+    if(!/^\d{6}$/.test(code)){$('password-reset-message').textContent='Enter the six-digit code sent by SMS.';return;}
     if(newPassword.length<10||newPassword.length>128){$('password-reset-message').textContent='Your new password must be at least 10 characters.';return;}
     btn.disabled=true;btn.textContent='Updating password…';
     $('password-reset-message').textContent='';
