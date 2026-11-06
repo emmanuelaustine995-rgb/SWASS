@@ -12,7 +12,7 @@ export interface CreateReceiptDto {
   issuedAt?: string;                  // ISO time at the till (offline sales)
   paymentMethod: 'cash' | 'mpesa' | 'card';
   discountKes?: number;
-  items: { productId: string; qty: number; serialNo?: string }[];
+  items: { productId: string; qty: number; unitPriceKes?: number; serialNo?: string }[];
   customer?: { fullName: string; phone: string; email?: string; nationalId?: string };
 }
 
@@ -150,7 +150,8 @@ export class ReceiptsService {
 
     const lines = dto.items.map((i) => {
       const p = byId.get(i.productId);
-      const unit = Number(p.price_kes);
+      const unit = i.unitPriceKes === undefined ? Number(p.price_kes) : i.unitPriceKes;
+      if (!Number.isSafeInteger(unit) || unit < 1 || unit > 100000000000) throw new BadRequestException('Customer selling price must be a positive whole KSh amount');
       const total = i.qty * unit;
       if (!Number.isSafeInteger(unit) || !Number.isSafeInteger(total)) {
         throw new BadRequestException('Product price or line total exceeds the supported amount');
@@ -288,7 +289,7 @@ export class ReceiptsService {
     const canonical = {
       receiptNo: dto.receiptNo, issuedAt: dto.issuedAt ?? null, paymentMethod: dto.paymentMethod,
       discountKes: dto.discountKes ?? 0,
-      items: dto.items.map((i) => ({ productId: i.productId, qty: i.qty, serialNo: i.serialNo ?? null })),
+      items: dto.items.map((i) => ({ productId: i.productId, qty: i.qty, unitPriceKes: i.unitPriceKes ?? null, serialNo: i.serialNo ?? null })),
       customer: dto.customer ? {
         fullName: dto.customer.fullName.trim(), phone: normalisePhone(dto.customer.phone), email: dto.customer.email?.trim().toLowerCase() || null,
         nationalId: dto.customer.nationalId ? hashNationalId(dto.customer.nationalId) : null,
@@ -313,6 +314,9 @@ export class ReceiptsService {
     for (const i of dto.items) {
       if (!uuid.test(i.productId ?? '') || !Number.isInteger(i.qty) || i.qty < 1 || i.qty > 1000000) {
         throw new BadRequestException('Each item needs a productId and a whole qty of 1 or more');
+      }
+      if (i.unitPriceKes !== undefined && (!Number.isSafeInteger(i.unitPriceKes) || i.unitPriceKes < 1 || i.unitPriceKes > 100000000000)) {
+        throw new BadRequestException('Customer selling price must be a positive whole KSh amount');
       }
     }
     const d = dto.discountKes ?? 0;
