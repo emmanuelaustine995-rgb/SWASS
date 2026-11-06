@@ -354,3 +354,15 @@ body.dashboard-dark .sidebar-help small{color:#b2c9bf}
   #pos-view{padding-bottom:calc(86px + env(safe-area-inset-bottom))}
   #owner-dashboard-view{padding-bottom:12px}
 }
+
+
+/* Receipts landing screen: only Issue Receipt and Recover Receipt. */
+.receipts-home{margin:10px 0 20px;padding:20px}
+.receipt-actions-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.receipt-choice{display:flex;flex-direction:column;align-items:flex-start;gap:9px;min-height:150px;padding:20px;border:1px solid #dce8ef;border-radius:16px;background:#fff;color:#173d59;text-align:left;cursor:pointer}
+.receipt-choice>span{display:grid;place-items:center;width:42px;height:42px;border-radius:12px;background:#e8f5ff;color:#0874b5;font-size:27px}
+.receipt-choice strong{font-size:17px}
+.receipt-choice small{font-size:12px;color:#6b8190;line-height:1.45}
+#pos-view .page-heading #back-to-receipts{margin-bottom:10px}
+#pos-view .buyer-fields input:required{border-color:#b8cbd8}
+@media(max-width:600px){.receipt-actions-grid{grid-template-columns:1fr}.receipt-choice{min-height:120px;padding:17px}}
