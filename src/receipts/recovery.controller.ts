@@ -140,7 +140,7 @@ export class ReceiptRecoveryController {
       `SELECT r.id,r.receipt_no,r.subtotal_kes,r.discount_kes,r.total_kes,r.payment_method,r.status,r.issued_at,r.qr_token,
               s.name AS store_name,s.location AS store_location,s.logo_data,
               t.name AS business_name,t.phone AS business_phone,t.email AS business_email,
-              c.full_name AS customer_name,c.phone AS customer_phone,c.email AS customer_email,
+              c.full_name AS customer_name,c.phone AS customer_phone,c.email AS customer_email,c.national_id_last4 AS customer_id_last4,
               u.full_name AS cashier_name,u.phone AS cashier_phone,
               COALESCE(json_agg(json_build_object(
                 'name',ri.name,'serialNo',ri.serial_no,'qty',ri.qty,'unitPriceKes',ri.unit_price_kes,'lineTotalKes',ri.line_total_kes
