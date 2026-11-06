@@ -129,19 +129,19 @@ export class DashboardController {
     const previousStart = this.addDays(previousEnd, -days);
     const { rows } = await this.db.pool.query(
       `SELECT
-         COUNT(*) FILTER (WHERE issued_at >= ($3::date::timestamp AT TIME ZONE 'Africa/Nairobi')
+         COUNT(*) FILTER (WHERE issued_at >= ($5::date::timestamp AT TIME ZONE 'Africa/Nairobi')
                             AND issued_at < ($4::date::timestamp AT TIME ZONE 'Africa/Nairobi'))::int AS transactions,
          COALESCE(SUM(total_kes) FILTER (WHERE issued_at >= ($5::date::timestamp AT TIME ZONE 'Africa/Nairobi')
                             AND issued_at < ($4::date::timestamp AT TIME ZONE 'Africa/Nairobi')),0)::bigint AS sales_kes,
-         COUNT(*) FILTER (WHERE issued_at >= ($5::date::timestamp AT TIME ZONE 'Africa/Nairobi')
-                            AND issued_at < ($6::date::timestamp AT TIME ZONE 'Africa/Nairobi'))::int AS previous_transactions,
+         COUNT(*) FILTER (WHERE issued_at >= ($3::date::timestamp AT TIME ZONE 'Africa/Nairobi')
+                            AND issued_at < ($5::date::timestamp AT TIME ZONE 'Africa/Nairobi'))::int AS previous_transactions,
          COALESCE(SUM(total_kes) FILTER (WHERE issued_at >= ($3::date::timestamp AT TIME ZONE 'Africa/Nairobi')
                             AND issued_at < ($5::date::timestamp AT TIME ZONE 'Africa/Nairobi')),0)::bigint AS previous_sales_kes
        FROM receipts
        WHERE tenant_id=$1 AND store_id=$2 AND status='issued'
          AND issued_at >= ($3::date::timestamp AT TIME ZONE 'Africa/Nairobi')
          AND issued_at < ($4::date::timestamp AT TIME ZONE 'Africa/Nairobi')`,
-      [tenantId, storeId, previousStart, currentEnd, currentStart, previousEnd]);
+      [tenantId, storeId, previousStart, currentEnd, currentStart]);
     const row = rows[0];
     return { current: { salesKes: Number(row.sales_kes), transactions: Number(row.transactions) },
              previous: { salesKes: Number(row.previous_sales_kes), transactions: Number(row.previous_transactions) } };
