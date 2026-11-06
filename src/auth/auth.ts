@@ -78,6 +78,7 @@ export class AuthController {
     // Try the approved TalkSasa sender first.
     if (token) {
       try {
+        const providerStartedAt = Date.now();
         const response = await fetch(process.env.TALKSASA_API_URL || 'https://bulksms.talksasa.com/api/v3/sms/send', {
           method: 'POST',
           signal: AbortSignal.timeout(12000),
@@ -92,11 +93,15 @@ export class AuthController {
         const raw = await response.text();
         let result: any = {};
         try { result = raw ? JSON.parse(raw) : {}; } catch { result = {}; }
+        // Log timing and provider acceptance only; never log the phone, OTP, token or message.
+        const accepted = response.ok && (result?.status === 'success' || result?.success === true);
+        console.info(`[SWASS] Signup OTP TalkSasa response: HTTP ${response.status}, accepted=${accepted}, durationMs=${Date.now() - providerStartedAt}`);
         // The gateway returns status:"success" or status:"error"; HTTP 200 alone is not acceptance.
-        if (response.ok && (result?.status === 'success' || result?.success === true)) return;
+        if (accepted) return;
         const reason = String(result?.message ?? result?.error ?? raw ?? '').slice(0, 140);
         failures.push(`TalkSasa HTTP ${response.status}${reason ? `: ${reason}` : ''}`);
       } catch (error) {
+        console.warn(`[SWASS] Signup OTP TalkSasa request failed after ${Date.now() - providerStartedAt}ms: ${error instanceof Error ? error.name : 'request failed'}`);
         failures.push(`TalkSasa: ${error instanceof Error ? error.message : 'request failed'}`);
       }
     }
@@ -161,6 +166,7 @@ export class AuthController {
 
   @Post('register')
   async register(@Body() body: { businessName?: string; storeName?: string; storeLocation?: string; fullName?: string; phone?: string; email?: string; password?: string }, @Req() req: any) {
+    const registrationStartedAt = Date.now();
     const businessName = body?.businessName?.trim();
     const storeName = (body?.storeName || body?.businessName)?.trim();
     const storeLocation = body?.storeLocation?.trim() || null;
@@ -205,6 +211,7 @@ export class AuthController {
     );
     try {
       await this.sendSignupSms(phone, `Your SWASS signup verification code is ${code}. It expires in 5 minutes. Do not share this code.`);
+      console.info(`[SWASS] Signup OTP request accepted by SMS provider; totalDurationMs=${Date.now() - registrationStartedAt}`);
     } catch (error) {
       await this.db.pool.query('UPDATE signup_otp_requests SET expires_at=now() WHERE id=$1', [saved.rows[0].id]);
       const reason = error instanceof Error ? error.message : 'SMS provider error';
