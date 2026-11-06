@@ -213,6 +213,7 @@
   }
   async function completeSale(ev){
     ev.preventDefault(); const items=[...state.cart.values()]; if(!items.length)return;
+    const invalidPrice=[...$('cart-list').querySelectorAll('[data-price]')].some(input=>!Number.isSafeInteger(Number(input.value))||Number(input.value)<1||Number(input.value)>100000000000);if(invalidPrice){$('checkout-error').textContent='Enter a valid customer price for every item before issuing the receipt.';return;}
     const t=totals(); const needsBuyer=items.some(r=>r.product.requiresBuyerId);
     const customer={fullName:$('buyer-name').value.trim(),phone:$('buyer-phone').value.trim(),email:$('buyer-email').value.trim(),nationalId:$('buyer-id').value.trim()};
     if((customer.fullName&&!customer.phone)||(!customer.fullName&&customer.phone)){ $('checkout-error').textContent='Enter both the customer full name and phone number, or leave both blank.';return; }
@@ -438,7 +439,7 @@
   $('logout-btn').addEventListener('click',()=>{clearSession();window.dispatchEvent(new Event('swass:logout'));state.cart.clear();renderCart();$('profile-panel').classList.add('hidden');showLogin();});
   $('product-list').addEventListener('click',e=>{const b=e.target.closest('[data-add]');if(b)addToCart(b.dataset.add);});
   $('cart-list').addEventListener('click',e=>{const b=e.target.closest('[data-qty]');if(b)changeQty(b.dataset.qty,Number(b.dataset.delta));});
-  $('cart-list').addEventListener('input',e=>{const price=e.target.closest('[data-price]');if(price){const row=state.cart.get(price.dataset.price);const value=Number(price.value);if(row&&Number.isSafeInteger(value)&&value>=1&&value<=100000000000){row.unitPriceKes=value;const line=price.closest('.cart-row')?.querySelector('.cart-line-total');if(line)line.textContent='Line total: '+money(value*row.qty);const t=totals();$('subtotal').textContent=money(t.subtotal);$('total').textContent=money(t.total);$('checkout-open').disabled=!state.cart.size||t.total<0;}return;}const field=e.target.closest('[data-imei]');if(field){const row=state.cart.get(field.dataset.imei);if(row)row.imei=field.value;}});
+  $('cart-list').addEventListener('input',e=>{const price=e.target.closest('[data-price]');if(price){const row=state.cart.get(price.dataset.price);const value=Number(price.value);if(!row||!Number.isSafeInteger(value)||value<1||value>100000000000){$('checkout-open').disabled=true;return;}if(row&&Number.isSafeInteger(value)&&value>=1&&value<=100000000000){row.unitPriceKes=value;const line=price.closest('.cart-row')?.querySelector('.cart-line-total');if(line)line.textContent='Line total: '+money(value*row.qty);const t=totals();$('subtotal').textContent=money(t.subtotal);$('total').textContent=money(t.total);$('checkout-open').disabled=!state.cart.size||t.total<0;}return;}const field=e.target.closest('[data-imei]');if(field){const row=state.cart.get(field.dataset.imei);if(row)row.imei=field.value;}});
   let productSearchTimer;
   $('product-search').addEventListener('input',()=>{clearTimeout(productSearchTimer);productSearchTimer=setTimeout(loadProducts,300);});
   $('low-stock').addEventListener('change',()=>loadProducts());$('refresh-btn').addEventListener('click',loadProducts);
