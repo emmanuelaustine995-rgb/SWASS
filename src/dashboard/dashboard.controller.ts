@@ -25,7 +25,12 @@ export class DashboardController {
     const endAt = end ? this.addDays(end, 1) : new Date(Date.now() + 86400000).toISOString().slice(0, 10);
     const params = [tenantId, storeId, startAt, endAt];
 
-    const [sales, inventory, expenses, cashiers, subscription] = await Promise.all([
+    const monthStart = new Date();
+    const nairobiParts = new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Nairobi', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(monthStart);
+    const part = (type: string) => nairobiParts.find((p) => p.type === type)?.value ?? '';
+    const monthFrom = `${part('year')}-${part('month')}-01`;
+    const todayNairobi = `${part('year')}-${part('month')}-${part('day')}`;
+    const [sales, inventory, expenses, cashiers, subscription, productSales, monthToDate] = await Promise.all([
       this.db.pool.query(
         `SELECT COUNT(*)::int AS transactions,
                 COALESCE(SUM(total_kes),0)::bigint AS sales_kes,
@@ -33,6 +38,26 @@ export class DashboardController {
            FROM receipts WHERE tenant_id=$1 AND store_id=$2 AND status='issued'
              AND issued_at >= ($3::date::timestamp AT TIME ZONE 'Africa/Nairobi')
              AND issued_at < ($4::date::timestamp AT TIME ZONE 'Africa/Nairobi')`, params),
+      this.db.pool.query(
+        `SELECT ri.name AS product_name,
+                COALESCE(SUM(ri.qty),0)::bigint AS units_sold,
+                COALESCE(SUM(ri.line_total_kes),0)::bigint AS sales_kes
+           FROM receipt_items ri
+           JOIN receipts r ON r.id=ri.receipt_id
+          WHERE r.tenant_id=$1 AND r.store_id=$2 AND r.status='issued'
+            AND r.issued_at >= ($3::date::timestamp AT TIME ZONE 'Africa/Nairobi')
+            AND r.issued_at < ($4::date::timestamp AT TIME ZONE 'Africa/Nairobi')
+          GROUP BY ri.name
+          ORDER BY SUM(ri.line_total_kes) DESC
+          LIMIT 12`, params),
+      this.db.pool.query(
+        `SELECT COUNT(*)::int AS transactions,
+                COALESCE(SUM(total_kes),0)::bigint AS sales_kes
+           FROM receipts
+          WHERE tenant_id=$1 AND store_id=$2 AND status='issued'
+            AND issued_at >= ($3::date::timestamp AT TIME ZONE 'Africa/Nairobi')
+            AND issued_at < (($4::date + 1)::timestamp AT TIME ZONE 'Africa/Nairobi')`,
+        [tenantId, storeId, monthFrom, todayNairobi]),
       this.db.pool.query(
         `SELECT COUNT(*) FILTER (WHERE stock_qty <= reorder_level)::int AS low_stock_count,
                 COUNT(*)::int AS product_count,
@@ -80,6 +105,8 @@ export class DashboardController {
     return {
       period: { from: startAt, toExclusive: endAt },
       sales: { transactions: sale.transactions, salesKes, discountsKes: Number(sale.discounts_kes), costOfGoodsKes: costKes, grossProfitKes: salesKes - costKes, expensesKes, estimatedNetOperatingKes: salesKes - costKes - expensesKes },
+      productSales: productSales.rows.map((r: any) => ({ name: r.product_name, unitsSold: Number(r.units_sold), salesKes: Number(r.sales_kes) })),
+      monthToDate: { from: monthFrom, to: todayNairobi, salesKes: Number(monthToDate.rows[0].sales_kes), transactions: Number(monthToDate.rows[0].transactions) },
       inventory: { productCount: stock.product_count, lowStockCount: stock.low_stock_count, stockCostKes: Number(stock.stock_cost_kes), stockRetailKes: Number(stock.stock_retail_kes) },
       expenses: { count: expense.expense_count, totalKes: expensesKes },
       daily: daily.rows.map((r: any) => ({ day: new Date(r.day).toISOString().slice(0,10), salesKes: Number(r.sales_kes), transactions: r.transactions })),
