@@ -9,7 +9,18 @@
   function touchSession(){ if(!state.token)return; const now=Date.now(); if(now-lastSessionWrite<30000)return; try{const saved=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');if(saved?.token===state.token){saved.lastActivity=now;localStorage.setItem(SESSION_KEY,JSON.stringify(saved));lastSessionWrite=now;}}catch{localStorage.removeItem(SESSION_KEY);} }
   function clearSession(){ localStorage.removeItem(SESSION_KEY); state.token=null; state.role=null; }
   function sessionIsValid(saved){ if(!saved?.token||!Number.isFinite(saved.lastActivity)||Date.now()-saved.lastActivity>SESSION_IDLE_MS)return false; try{const part=saved.token.split('.')[1];const claims=JSON.parse(atob(part.replace(/-/g,'+').replace(/_/g,'/')));return !!claims.exp&&claims.exp*1000>Date.now();}catch{return false;} }
-  async function restoreSession(){ let saved; try{saved=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');}catch{} if(!sessionIsValid(saved)){clearSession();showLogin();return;} state.token=saved.token;state.role=saved.role||'owner';lastSessionWrite=Number(saved.lastActivity)||Date.now();showPOS();publishWorkspaceSession();try{if(['owner','manager'].includes(state.role))await loadBusinessProfile();await loadProducts();}catch(error){showNotice('You are signed in, but some business data could not load. '+(error.message||''),true);} }
+  async function restoreSession(){
+    let saved;try{saved=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');}catch{}
+    if(!sessionIsValid(saved)){clearSession();showLogin();return;}
+    state.token=saved.token;state.role=saved.role||'owner';lastSessionWrite=Number(saved.lastActivity)||Date.now();
+    showPOS();publishWorkspaceSession();
+    try{if(['owner','manager'].includes(state.role))await loadBusinessProfile();await loadProducts();}
+    catch(error){showNotice('You are signed in, but some business data could not load. '+(error.message||''),true);}
+    if(['owner','manager'].includes(state.role)){
+      let selected='dashboard';try{const candidate=localStorage.getItem('swass-active-workspace-v1');if(['dashboard','sales','receipts','crm','accounting','logistics','console'].includes(candidate))selected=candidate;}catch{}
+      showWorkspaceScreen(selected);
+    }
+  }
   function checkSessionExpiry(){ if(!state.token)return; let saved;try{saved=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');}catch{} if(!sessionIsValid(saved)){clearSession();window.dispatchEvent(new Event('swass:logout'));state.cart.clear();renderCart();showLogin();showNotice('Your session ended after 3 hours without activity. Please sign in again.');} }
   const API = (window.SWASS_API_URL || '').replace(/\/$/, '');
   // Warm the free Render API while the visitor is reading the page. This
@@ -48,6 +59,7 @@
   function showLogin(){ $('login-view').classList.remove('hidden'); $('pos-view').classList.add('hidden'); $('logout-btn').classList.add('hidden'); $('dashboard-link').classList.add('hidden'); $('workspace-nav').classList.add('hidden'); $('user-label').textContent=''; }
 
   function showWorkspaceScreen(screen){
+    try{localStorage.setItem('swass-active-workspace-v1',screen);}catch{}
     const owner=document.getElementById('owner-dashboard-view'),pos=$('pos-view');
     const products=document.getElementById('products-panel');
     const cart=document.querySelector('.cart-panel');
