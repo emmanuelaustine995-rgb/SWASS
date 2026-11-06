@@ -77,8 +77,8 @@ export class AuthController {
 
     // Try the approved TalkSasa sender first.
     if (token) {
+      const providerStartedAt = Date.now();
       try {
-        const providerStartedAt = Date.now();
         const response = await fetch(process.env.TALKSASA_API_URL || 'https://bulksms.talksasa.com/api/v3/sms/send', {
           method: 'POST',
           signal: AbortSignal.timeout(12000),
