@@ -11,7 +11,7 @@
   "theme_color": "#075bd8",
   "categories": ["business", "finance", "productivity"],
   "icons": [
-    { "src": "./swass-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
-    { "src": "./swass-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+    { "src": "./swass-icon.svg", "sizes": "192x192 512x512", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "./swass-icon.svg", "sizes": "192x192 512x512", "type": "image/svg+xml", "purpose": "maskable" }
   ]
 }
