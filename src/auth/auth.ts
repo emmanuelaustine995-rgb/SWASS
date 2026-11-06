@@ -333,6 +333,89 @@ export class AuthController {
     return { created: true, role: admin.role, message: 'Company administrator created. Sign in using the normal login endpoint.' };
   }
 
+
+  private passwordResetCodeHash(code: string): string {
+    const secret = process.env.SWASS_ID_SECRET;
+    if (!secret) throw new Error('SWASS_ID_SECRET is required');
+    return createHmac('sha256', secret).update(`password-reset:${code}`).digest('hex');
+  }
+
+  @Post('password-reset/request')
+  async requestPasswordReset(@Body() body: { phone?: string }) {
+    const phone = this.normalizePhone(String(body?.phone ?? ''));
+    const generic = { message: 'If an account matches that phone number, a password reset code has been sent.' };
+    const found = await this.db.pool.query(
+      `SELECT id FROM users WHERE regexp_replace(phone, '[^0-9]', '', 'g') IN ($1,$2) AND is_active=true LIMIT 1`,
+      [phone, '0' + phone.slice(3)],
+    );
+    if (!found.rowCount) return generic;
+    const userId = found.rows[0].id;
+    const recent = await this.db.pool.query(
+      `SELECT count(*)::int AS n FROM password_reset_requests
+       WHERE user_id=$1 AND created_at>now()-interval '15 minutes'`, [userId],
+    );
+    if (Number(recent.rows[0].n) >= 4) {
+      throw new BadRequestException('Too many reset requests. Please wait 15 minutes and try again.');
+    }
+    const code = String(randomBytes(4).readUInt32BE(0) % 1000000).padStart(6, '0');
+    await this.db.pool.query(
+      `UPDATE password_reset_requests SET used_at=now()
+       WHERE user_id=$1 AND used_at IS NULL AND expires_at>now()`, [userId],
+    );
+    const saved = await this.db.pool.query(
+      `INSERT INTO password_reset_requests(user_id,phone,code_hash,expires_at)
+       VALUES($1,$2,$3,now()+interval '5 minutes') RETURNING id`,
+      [userId, phone, this.passwordResetCodeHash(code)],
+    );
+    try {
+      await this.sendSignupSms(phone, `Your SWASS password reset code is ${code}. It expires in 5 minutes. Do not share this code.`);
+    } catch (error) {
+      await this.db.pool.query('UPDATE password_reset_requests SET expires_at=now() WHERE id=$1', [saved.rows[0].id]);
+      throw new ServiceUnavailableException('We could not send the reset code. Please try again later.');
+    }
+    return generic;
+  }
+
+  @Post('password-reset/confirm')
+  async confirmPasswordReset(@Body() body: { phone?: string; code?: string; newPassword?: string }) {
+    const phone = this.normalizePhone(String(body?.phone ?? ''));
+    const code = String(body?.code ?? '').trim();
+    const newPassword = String(body?.newPassword ?? '');
+    if (!/^\\d{6}$/.test(code)) throw new BadRequestException('Enter the six-digit reset code.');
+    if (newPassword.length < 10 || newPassword.length > 128) {
+      throw new BadRequestException('New password must be at least 10 characters.');
+    }
+    const pending = await this.db.pool.query(
+      `SELECT pr.id,pr.user_id,pr.code_hash,pr.attempts
+       FROM password_reset_requests pr JOIN users u ON u.id=pr.user_id
+       WHERE pr.phone=$1 AND pr.used_at IS NULL AND pr.expires_at>now() AND u.is_active=true
+       ORDER BY pr.created_at DESC LIMIT 1`, [phone],
+    );
+    const row = pending.rows[0];
+    if (!row || Number(row.attempts) >= 5) throw new BadRequestException('Reset code is invalid or expired. Request a new code.');
+    const supplied = Buffer.from(this.passwordResetCodeHash(code), 'hex');
+    const expected = Buffer.from(row.code_hash, 'hex');
+    if (supplied.length !== expected.length || !timingSafeEqual(supplied, expected)) {
+      await this.db.pool.query('UPDATE password_reset_requests SET attempts=attempts+1 WHERE id=$1 AND attempts<5', [row.id]);
+      throw new BadRequestException('That reset code is incorrect. Try again.');
+    }
+    const passwordHash = await argon2.hash(newPassword);
+    await this.db.tx(async c => {
+      const locked = await c.query(
+        `SELECT id FROM password_reset_requests
+         WHERE id=$1 AND used_at IS NULL AND expires_at>now() AND attempts<5 FOR UPDATE`, [row.id],
+      );
+      if (!locked.rowCount) throw new BadRequestException('Reset code has expired. Request a new one.');
+      await c.query('UPDATE users SET password_hash=$1 WHERE id=$2', [passwordHash, row.user_id]);
+      await c.query('UPDATE password_reset_requests SET used_at=now() WHERE id=$1', [row.id]);
+      await c.query(
+        'UPDATE password_reset_requests SET used_at=now() WHERE user_id=$1 AND id<>$2 AND used_at IS NULL',
+        [row.user_id, row.id],
+      );
+    });
+    return { reset: true, message: 'Password updated. You can now sign in with your new password.' };
+  }
+
   @Post('login')
   async login(@Body() body: { phone?: string; password?: string }) {
     const { password } = body ?? {};
