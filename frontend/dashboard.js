@@ -32,25 +32,74 @@
     return `${change>0?'+':''}${change.toFixed(1)}%`;
   }
   async function loadDashboard(){
+    $('compare-sales').textContent='Loading…';
+    $('compare-transactions').textContent='Loading…';
+    $('mtd-sales').textContent='Loading…';
+    $('product-pie').innerHTML='<span>Loading…</span>';
+    $('product-legend').innerHTML='<p class="muted">Loading product sales…</p>';
+    const currentRequest=request(`/api/v1/dashboard/summary${periodQuery()}`);
+    const previousRequest=request(`/api/v1/dashboard/summary${previousPeriodQuery()}`);
+    // Do not hold the visible dashboard hostage while the expense list loads.
+    void loadExpenses().catch(err=>{$('expense-list').innerHTML='<p class="muted">Expenses could not be loaded.</p>';});
     try {
-      const data=await request(`/api/v1/dashboard/summary${periodQuery()}`); const s=data.sales,i=data.inventory,e=data.expenses;
+      const [data,previousResult]=await Promise.all([
+        currentRequest,
+        previousRequest.then(value=>({value})).catch(error=>({error}))
+      ]);
+      const s=data.sales,i=data.inventory,e=data.expenses;
       $('owner-today-sales').textContent=money(s.salesKes);$('owner-net-profit').textContent=money(s.estimatedNetOperatingKes);$('owner-low-stock').textContent=Number(i.lowStockCount||0).toLocaleString('en-KE');$('m-sales').textContent=money(s.salesKes);$('m-transactions').textContent=`${s.transactions} transactions`;
       $('m-profit').textContent=money(s.grossProfitKes);$('m-expenses').textContent=money(s.expensesKes);$('m-expense-count').textContent=`${e.count} entries`;$('m-net').textContent=money(s.estimatedNetOperatingKes);
       $('m-products').textContent=i.productCount;$('m-products-top').textContent=Number(i.productCount||0).toLocaleString('en-KE');$('m-locations').textContent='0';$('m-month-transactions').textContent=Number(s.transactions||0).toLocaleString('en-KE');$('channel-pos').textContent=money(s.salesKes);$('channel-api').textContent=money(0);$('channel-invoices').textContent=money(0);$('channel-offline').textContent=money(0);$('m-low').textContent=`${i.lowStockCount} need restocking`;$('m-stock-cost').textContent=money(i.stockCostKes);$('m-stock-retail').textContent=`Retail value: ${money(i.stockRetailKes)}`;$('m-discounts').textContent=money(s.discountsKes);
       $('m-wallet').textContent=money(data.subscription?.balanceKes||0);$('m-subscription').textContent=data.subscription?`${data.subscription.plan} plan · ${data.subscription.status}`:'No subscription details';
-      try{
-        const previous=await request(`/api/v1/dashboard/summary${previousPeriodQuery()}`);
+      const mtd=data.monthToDate||{};
+      $('mtd-sales').textContent=money(mtd.salesKes);
+      $('mtd-transactions').textContent=`${Number(mtd.transactions||0).toLocaleString('en-KE')} transactions · ${mtd.from||'this month'} to date`;
+      if(previousResult.error){
+        $('compare-sales').textContent='Unavailable';$('compare-transactions').textContent='Unavailable';
+        $('compare-sales-detail').textContent='Previous-period comparison could not be loaded';
+        $('compare-transactions-detail').textContent='Previous-period comparison could not be loaded';
+      }else{
+        const previous=previousResult.value;
         const priorSales=Number(previous.sales?.salesKes||0),priorTransactions=Number(previous.sales?.transactions||0);
         $('compare-sales').textContent=comparisonLabel(Number(s.salesKes||0),priorSales);
         $('compare-sales-detail').textContent=`${money(s.salesKes)} now · ${money(priorSales)} previous`;
         $('compare-transactions').textContent=comparisonLabel(Number(s.transactions||0),priorTransactions);
         $('compare-transactions-detail').textContent=`${Number(s.transactions||0)} now · ${priorTransactions} previous`;
-      }catch(compareError){
-        $('compare-sales').textContent='Unavailable';$('compare-transactions').textContent='Unavailable';
-        $('compare-sales-detail').textContent='Previous-period data could not be loaded';$('compare-transactions-detail').textContent='Previous-period data could not be loaded';
       }
-      renderDaily(data.daily||[]);renderCashiers(data.cashiers||[]);await loadExpenses();$('notice').classList.add('hidden');
-    } catch(err){notice(err.message,true);}
+      renderDaily(data.daily||[]);
+      renderProductMix(data.productSales||[]);
+      renderCashiers(data.cashiers||[]);
+      $('notice').classList.add('hidden');
+    } catch(err){
+      notice(err.message,true);
+      $('compare-sales').textContent='Unavailable';
+      $('compare-transactions').textContent='Unavailable';
+      $('mtd-sales').textContent='Unavailable';
+      $('product-pie').innerHTML='<span>Sales data unavailable</span>';
+      $('product-legend').innerHTML='<p class="muted">Product sales could not be loaded.</p>';
+    }
+  }
+  function renderProductMix(rows){
+    const colors=['#2676b8','#16a36a','#e6a23c','#8b65c8','#e16b75','#36a6a6','#65758b','#c27b42','#789b42','#b05c9d','#4b83a8','#9a8c73'];
+    const valid=rows.filter(row=>Number(row.salesKes)>0);
+    const total=valid.reduce((sum,row)=>sum+Number(row.salesKes),0);
+    if(!valid.length||!total){
+      $('product-pie').innerHTML='<span>No product sales<br>for these dates</span>';
+      $('product-legend').innerHTML='<p class="muted">Issued receipts with item details will appear here.</p>';
+      return;
+    }
+    let cursor=0;
+    const slices=valid.map((row,index)=>{
+      const start=cursor;
+      cursor+=Number(row.salesKes)/total*100;
+      return `${colors[index%colors.length]} ${start.toFixed(2)}% ${cursor.toFixed(2)}%`;
+    });
+    $('product-pie').style.background=`conic-gradient(${slices.join(',')})`;
+    $('product-pie').innerHTML=`<span>${money(total)}<small>Total product sales</small></span>`;
+    $('product-legend').innerHTML=valid.map((row,index)=>{
+      const share=Number(row.salesKes)/total*100;
+      return `<div class="product-legend-row"><i style="background:${colors[index%colors.length]}"></i><span><strong>${esc(row.name)}</strong><small>${Number(row.unitsSold||0)} units · ${share.toFixed(1)}%</small></span><b>${money(row.salesKes)}</b></div>`;
+    }).join('');
   }
   function renderDaily(rows){const max=Math.max(1,...rows.map(r=>Number(r.salesKes)));$('daily-chart').innerHTML=rows.length?rows.map(r=>{const h=Math.max(3,Number(r.salesKes)/max*125);return `<div class="day-bar" title="${esc(r.day)} · ${money(r.salesKes)}"><small>${money(r.salesKes)}</small><i style="height:${h}px"></i><b>${new Date(`${r.day}T00:00:00`).toLocaleDateString('en-KE',{day:'numeric',month:'short'})}</b></div>`;}).join(''):'<p class="muted">No sales data for this period.</p>';}
   function renderCashiers(rows){$('cashier-rows').innerHTML=rows.length?rows.map(r=>`<tr><td>${esc(r.name)}</td><td>${r.transactions}</td><td>${money(r.salesKes)}</td></tr>`).join(''):'<tr><td colspan="3">No cashier sales for this period.</td></tr>';}
