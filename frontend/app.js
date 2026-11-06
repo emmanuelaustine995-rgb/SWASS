@@ -2,6 +2,15 @@
   'use strict';
   const $ = (id) => document.getElementById(id);
   const state = { token: null, role: null, products: [], cart: new Map(), lastReceipt: null, profileLogoData: undefined };
+  const SESSION_KEY = 'swass-auth-session-v1';
+  const SESSION_IDLE_MS = 3 * 60 * 60 * 1000;
+  let lastSessionWrite = 0;
+  function saveSession(){ if(!state.token)return; const now=Date.now(); localStorage.setItem(SESSION_KEY,JSON.stringify({token:state.token,role:state.role,lastActivity:now})); lastSessionWrite=now; }
+  function touchSession(){ if(!state.token)return; const now=Date.now(); if(now-lastSessionWrite<30000)return; try{const saved=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');if(saved?.token===state.token){saved.lastActivity=now;localStorage.setItem(SESSION_KEY,JSON.stringify(saved));lastSessionWrite=now;}}catch{localStorage.removeItem(SESSION_KEY);} }
+  function clearSession(){ localStorage.removeItem(SESSION_KEY); state.token=null; state.role=null; }
+  function sessionIsValid(saved){ if(!saved?.token||!Number.isFinite(saved.lastActivity)||Date.now()-saved.lastActivity>SESSION_IDLE_MS)return false; try{const part=saved.token.split('.')[1];const claims=JSON.parse(atob(part.replace(/-/g,'+').replace(/_/g,'/')));return !!claims.exp&&claims.exp*1000>Date.now();}catch{return false;} }
+  async function restoreSession(){ let saved; try{saved=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');}catch{} if(!sessionIsValid(saved)){clearSession();showLogin();return;} state.token=saved.token;state.role=saved.role||'owner';lastSessionWrite=Number(saved.lastActivity)||Date.now();showPOS();publishWorkspaceSession();try{if(['owner','manager'].includes(state.role))await loadBusinessProfile();await loadProducts();}catch(error){showNotice('You are signed in, but some business data could not load. '+(error.message||''),true);} }
+  function checkSessionExpiry(){ if(!state.token)return; let saved;try{saved=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');}catch{} if(!sessionIsValid(saved)){clearSession();window.dispatchEvent(new Event('swass:logout'));state.cart.clear();renderCart();showLogin();showNotice('Your session ended after 3 hours without activity. Please sign in again.');} }
   const API = (window.SWASS_API_URL || '').replace(/\/$/, '');
   // Warm the free Render API while the visitor is reading the page. This
   // reduces the chance that signup is the first request after the service sleeps.
@@ -27,12 +36,13 @@
   const escapeHtml = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random()*16|0; return (c==='x'?r:(r&3|8)).toString(16); }));
   async function request(path, options = {}) {
+    touchSession();
     const res = await fetch(`${API}${path}`, { ...options, headers: { 'Content-Type':'application/json', ...(state.token ? { Authorization:`Bearer ${state.token}` } : {}), ...(options.headers || {}) } });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.message || `Request failed (${res.status})`);
     return data;
   }
-  function publishWorkspaceSession(){window.dispatchEvent(new CustomEvent('swass:login',{detail:{token:state.token,role:state.role}}));}
+  function publishWorkspaceSession(){saveSession();window.dispatchEvent(new CustomEvent('swass:login',{detail:{token:state.token,role:state.role}}));}
   function showNotice(message, error = false) { const el=$('notice'); el.textContent=message; el.classList.remove('hidden'); el.style.background=error?'#fff0ef':'#fff5e8'; el.style.color=error?'#a12b22':'#8a4b08'; }
   function hideNotice(){ $('notice').classList.add('hidden'); }
   function showLogin(){ $('login-view').classList.remove('hidden'); $('pos-view').classList.add('hidden'); $('logout-btn').classList.add('hidden'); $('dashboard-link').classList.add('hidden'); $('workspace-nav').classList.add('hidden'); $('user-label').textContent=''; }
@@ -169,11 +179,11 @@
       return `<button class="product-card" data-add="${p.id}" type="button" ${unavailable?'disabled aria-disabled="true"':''}><span class="product-name">${escapeHtml(p.name)}</span><span class="product-meta"><span class="price">${money(p.priceKes)}</span><span class="stock ${stockClass}">${stockLabel}</span></span>${p.sku?`<span class="stock">SKU: ${escapeHtml(p.sku)}</span>`:''}</button>`;
     }).join('');
   }
-  function addToCart(id){ const p=state.products.find(x=>x.id===id); if(!p)return; const stock=Math.max(0,Number(p.stockQty)||0); const old=state.cart.get(id); if(stock<=0){showNotice('This product is out of stock.',true);return;} if((old?.qty||0)>=stock){showNotice('Available stock limit reached. Update inventory first.',true);return;} state.cart.set(id,{product:p,qty:(old?.qty||0)+1,imei:old?.imei||''});hideNotice();renderCart(); }
+  function addToCart(id){ const p=state.products.find(x=>x.id===id); if(!p)return; const stock=Math.max(0,Number(p.stockQty)||0); const old=state.cart.get(id); if(stock<=0){showNotice('This product is out of stock.',true);return;} if((old?.qty||0)>=stock){showNotice('Available stock limit reached. Update inventory first.',true);return;} state.cart.set(id,{product:p,qty:(old?.qty||0)+1,unitPriceKes:old?.unitPriceKes??Number(p.priceKes),imei:old?.imei||''});hideNotice();renderCart(); }
   function changeQty(id,delta){const row=state.cart.get(id);if(!row)return;const next=row.qty+delta;const stock=Math.max(0,Number(row.product.stockQty)||0);if(next>stock){showNotice('Only '+stock+' units are currently in stock.',true);return;}if(next<=0)state.cart.delete(id);else row.qty=next;renderCart();}
-  function totals(){const subtotal=[...state.cart.values()].reduce((s,r)=>s+Number(r.product.priceKes)*r.qty,0);const requested=Math.max(0,Math.floor(Number($('discount').value)||0));const discount=Math.min(subtotal,requested);if(requested>subtotal)$('discount').value=String(discount);return {subtotal,discount,total:subtotal-discount};}
+  function totals(){const subtotal=[...state.cart.values()].reduce((s,r)=>s+Number(r.unitPriceKes??r.product.priceKes)*r.qty,0);const requested=Math.max(0,Math.floor(Number($('discount').value)||0));const discount=Math.min(subtotal,requested);if(requested>subtotal)$('discount').value=String(discount);return {subtotal,discount,total:subtotal-discount};}
   function renderCart(){
-    const rows=[...state.cart.entries()]; $('cart-list').innerHTML=rows.length?rows.map(([id,r])=>`<div class="cart-row"><div><div class="cart-row-name">${escapeHtml(r.product.name)}</div><div class="cart-row-sub">${money(r.product.priceKes)} each · ${money(Number(r.product.priceKes)*r.qty)}</div><label>IMEI / Serial number (optional)<input type="text" maxlength="32" data-imei="${id}" value="${escapeHtml(r.imei||'')}" placeholder="Optional"></label></div><div class="qty-control"><button type="button" data-qty="${id}" data-delta="-1" aria-label="Decrease">−</button><span>${r.qty}</span><button type="button" data-qty="${id}" data-delta="1" aria-label="Increase">+</button></div></div>`).join(''):'<div class="empty">Your cart is empty.</div>';
+    const rows=[...state.cart.entries()]; $('cart-list').innerHTML=rows.length?rows.map(([id,r])=>`<div class="cart-row"><div><div class="cart-row-name">${escapeHtml(r.product.name)}</div><div class="cart-row-sub">Shop buying cost: ${money(r.product.costKes)} · Default selling price: ${money(r.product.priceKes)}</div><label class="cart-unit-price">Customer price (KSh)<input type="number" min="1" max="100000000000" step="1" inputmode="numeric" data-price="${id}" value="${Number(r.unitPriceKes??r.product.priceKes)}" required></label><div class="cart-row-sub cart-line-total">Line total: ${money(Number(r.unitPriceKes??r.product.priceKes)*r.qty)}</div><label>IMEI / Serial number (optional)<input type="text" maxlength="32" data-imei="${id}" value="${escapeHtml(r.imei||'')}" placeholder="Optional"></label></div><div class="qty-control"><button type="button" data-qty="${id}" data-delta="-1" aria-label="Decrease">−</button><span>${r.qty}</span><button type="button" data-qty="${id}" data-delta="1" aria-label="Increase">+</button></div></div>`).join(''):'<div class="empty">Your cart is empty.</div>';
     const t=totals(); $('subtotal').textContent=money(t.subtotal);$('total').textContent=money(t.total);$('checkout-open').disabled=!rows.length||t.total<0;
   }
   function openCheckout(){const items=[...state.cart.values()];const needsBuyer=items.some(r=>r.product.requiresBuyerId);$('buyer-id-wrap').classList.toggle('hidden',!needsBuyer);$('buyer-id-note').classList.toggle('hidden',!needsBuyer);$('checkout-total').textContent=money(totals().total);$('checkout-error').textContent='';$('checkout-modal').classList.remove('hidden');}
@@ -207,13 +217,13 @@
     const customer={fullName:$('buyer-name').value.trim(),phone:$('buyer-phone').value.trim(),email:$('buyer-email').value.trim(),nationalId:$('buyer-id').value.trim()};
     if((customer.fullName&&!customer.phone)||(!customer.fullName&&customer.phone)){ $('checkout-error').textContent='Enter both the customer full name and phone number, or leave both blank.';return; }
     if(needsBuyer&&(!customer.fullName||!customer.phone||!customer.nationalId)){ $('checkout-error').textContent='Enter the buyer full name, phone number and National ID for this item.';return; }
-    const saleId=uuid();const payload={clientUuid:saleId,receiptNo:`SW-${new Date().toISOString().slice(0,10).replace(/-/g,'')}-${saleId.replace(/-/g,'').slice(0,10).toUpperCase()}`,paymentMethod:$('payment-method').value,discountKes:t.discount,items:items.map(r=>({productId:r.product.id,qty:r.qty,...(r.imei&&r.imei.trim()?{serialNo:r.imei.trim()}: {})}))};
+    const saleId=uuid();const payload={clientUuid:saleId,receiptNo:`SW-${new Date().toISOString().slice(0,10).replace(/-/g,'')}-${saleId.replace(/-/g,'').slice(0,10).toUpperCase()}`,paymentMethod:$('payment-method').value,discountKes:t.discount,items:items.map(r=>({productId:r.product.id,qty:r.qty,unitPriceKes:Number(r.unitPriceKes??r.product.priceKes),...(r.imei&&r.imei.trim()?{serialNo:r.imei.trim()}: {})}))};
     if(customer.fullName&&customer.phone)payload.customer=customer;
     const btn=$('complete-sale');btn.disabled=true;btn.textContent='Issuing receipt…';$('checkout-error').textContent='';
     try{
       const receipt=await request('/api/v1/receipts',{method:'POST',body:JSON.stringify(payload)});
-      state.lastReceipt=receipt; const sale={items:items.map(r=>({name:r.product.name,qty:r.qty,price:Number(r.product.priceKes),serialNo:r.imei&&r.imei.trim()?r.imei.trim():null})),subtotal:t.subtotal,discount:t.discount,paymentMethod:payload.paymentMethod};
-      $('receipt-paper').innerHTML=makeReceiptMarkup(receipt,sale,payload.customer);if(window.QRCode&&receipt.qrToken){try{const verifyUrl=new URL('verify.html',window.location.href).href+'?token='+encodeURIComponent(receipt.qrToken);new QRCode($('receipt-qr'),{text:verifyUrl,width:116,height:116,correctLevel:QRCode.CorrectLevel.M});}catch{}}$('checkout-modal').classList.add('hidden');$('receipt-modal').classList.remove('hidden');state.cart.clear();$('discount').value='0';$('checkout-form').reset();renderCart();await loadProducts();hideNotice();
+      state.lastReceipt=receipt; const sale={items:items.map(r=>({name:r.product.name,qty:r.qty,price:Number(r.unitPriceKes??r.product.priceKes),serialNo:r.imei&&r.imei.trim()?r.imei.trim():null})),subtotal:t.subtotal,discount:t.discount,paymentMethod:payload.paymentMethod};
+      $('receipt-paper').innerHTML=makeReceiptMarkup(receipt,sale,payload.customer);if(window.QRCode&&receipt.qrToken){try{const verifyUrl=new URL('verify.html',window.location.href).href+'?token='+encodeURIComponent(receipt.qrToken);new QRCode($('receipt-qr'),{text:verifyUrl,width:116,height:116,correctLevel:QRCode.CorrectLevel.M});}catch{}}$('checkout-modal').classList.add('hidden');$('receipt-modal').classList.remove('hidden');state.cart.clear();$('discount').value='0';$('checkout-form').reset();renderCart();await loadProducts();window.dispatchEvent(new CustomEvent('swass:sale-issued',{detail:{receiptNo:receipt.receiptNo,totalKes:receipt.totalKes}}));hideNotice();
     }catch(e){$('checkout-error').textContent=e.message;}
     finally{btn.disabled=false;btn.textContent='Issue receipt';}
   }
@@ -425,10 +435,10 @@
   $('profile-close').addEventListener('click',()=>$('profile-panel').classList.add('hidden'));
   $('business-logo').addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file)return;const img=$('logo-preview');img.classList.remove('hidden');img.alt='Preparing selected business logo…';$('profile-error').textContent='Preparing logo…';try{state.profileLogoData=await compressLogo(file);img.src=state.profileLogoData;img.alt='Selected business logo preview';$('profile-error').textContent='Logo preview ready. Tap Save business profile to keep it.';}catch(err){state.profileLogoData=undefined;e.target.value='';img.removeAttribute('src');img.classList.add('hidden');$('profile-error').textContent=err.message;}});
   $('profile-form').addEventListener('submit',async e=>{e.preventDefault();const btn=$('profile-form').querySelector('button[type="submit"]');btn.disabled=true;btn.textContent='Saving…';$('profile-error').textContent='';const payload={businessName:$('profile-business-name').value.trim(),businessPhone:$('profile-business-phone').value.trim(),businessEmail:$('profile-business-email').value.trim()||null,storeName:$('profile-store-name').value.trim(),storeLocation:$('profile-store-location').value.trim()||null,receiptHeader:$('profile-receipt-header').value.trim()||null,receiptFooter:$('profile-receipt-footer').value.trim()||null};if(state.profileLogoData!==undefined)payload.logoData=state.profileLogoData;try{await request('/api/v1/business/profile',{method:'PATCH',body:JSON.stringify(payload)});showNotice('Business profile saved. Your logo and details will appear on new receipts.');$('profile-panel').classList.add('hidden');}catch(err){$('profile-error').textContent=err.message||'Could not save business profile.';}finally{btn.disabled=false;btn.textContent='Save business profile';}});
-  $('logout-btn').addEventListener('click',()=>{state.token=null;state.role=null;window.dispatchEvent(new Event('swass:logout'));state.cart.clear();renderCart();$('profile-panel').classList.add('hidden');showLogin();});
+  $('logout-btn').addEventListener('click',()=>{clearSession();window.dispatchEvent(new Event('swass:logout'));state.cart.clear();renderCart();$('profile-panel').classList.add('hidden');showLogin();});
   $('product-list').addEventListener('click',e=>{const b=e.target.closest('[data-add]');if(b)addToCart(b.dataset.add);});
   $('cart-list').addEventListener('click',e=>{const b=e.target.closest('[data-qty]');if(b)changeQty(b.dataset.qty,Number(b.dataset.delta));});
-  $('cart-list').addEventListener('input',e=>{const field=e.target.closest('[data-imei]');if(field){const row=state.cart.get(field.dataset.imei);if(row)row.imei=field.value;}});
+  $('cart-list').addEventListener('input',e=>{const price=e.target.closest('[data-price]');if(price){const row=state.cart.get(price.dataset.price);const value=Number(price.value);if(row&&Number.isSafeInteger(value)&&value>=1&&value<=100000000000){row.unitPriceKes=value;const line=price.closest('.cart-row')?.querySelector('.cart-line-total');if(line)line.textContent='Line total: '+money(value*row.qty);const t=totals();$('subtotal').textContent=money(t.subtotal);$('total').textContent=money(t.total);$('checkout-open').disabled=!state.cart.size||t.total<0;}return;}const field=e.target.closest('[data-imei]');if(field){const row=state.cart.get(field.dataset.imei);if(row)row.imei=field.value;}});
   let productSearchTimer;
   $('product-search').addEventListener('input',()=>{clearTimeout(productSearchTimer);productSearchTimer=setTimeout(loadProducts,300);});
   $('low-stock').addEventListener('change',()=>loadProducts());$('refresh-btn').addEventListener('click',loadProducts);
@@ -458,7 +468,12 @@
   if ('serviceWorker' in navigator && window.isSecureContext) {
     window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(error => console.warn('[SWASS] App installation support unavailable:', error?.message || 'registration failed')));
   }
+  // Keep the signed-in session across refreshes; expire it after 3 idle hours.
+  ['pointerdown','keydown','touchstart','click','scroll'].forEach(type=>window.addEventListener(type,touchSession,{passive:true}));
+  window.addEventListener('focus',checkSessionExpiry);
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkSessionExpiry();});
+  window.setInterval(checkSessionExpiry,30000);
   // API URL is configurable without rebuilding: set window.SWASS_API_URL before app.js.
   if(!API){ showNotice('API address is not configured yet. Set SWASS_API_URL in frontend/config.js to your running API URL.',true); }
-  showLogin(); renderCart();
+  renderCart();void restoreSession();
 })();
