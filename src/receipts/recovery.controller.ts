@@ -19,8 +19,8 @@ export class ReceiptRecoveryController {
     const phone = normalisePhone(String(body?.phone ?? ''));
     const idHash = hashNationalId(body.nationalId);
     const matches = await this.db.pool.query(
-      `SELECT 1 FROM customers WHERE phone=$1 AND national_id_hash=$2 LIMIT 1`,
-      [phone, idHash],
+      `SELECT 1 FROM customers WHERE regexp_replace(phone, '[^0-9]', '', 'g') IN ($1, $2) AND national_id_hash=$3 LIMIT 1`,
+      [phone, `0${phone.slice(3)}`, idHash],
     );
     if (!matches.rowCount) throw new HttpException('The National ID and phone number do not match a customer record.', HttpStatus.NOT_FOUND);
 
@@ -74,7 +74,7 @@ export class ReceiptRecoveryController {
                 'name',ri.name,'serialNo',ri.serial_no,'qty',ri.qty,'unitPriceKes',ri.unit_price_kes,'lineTotalKes',ri.line_total_kes
               ) ORDER BY ri.id) FILTER (WHERE ri.id IS NOT NULL),'[]'::json) AS items
        FROM receipt_recovery_payments rp
-       JOIN customers c ON c.phone=rp.phone AND c.national_id_hash=rp.national_id_hash
+       JOIN customers c ON regexp_replace(c.phone, '[^0-9]', '', 'g') IN (rp.phone, '0' || substring(rp.phone from 4)) AND c.national_id_hash=rp.national_id_hash
        JOIN receipts r ON r.customer_id=c.id
        JOIN stores s ON s.id=r.store_id
        JOIN tenants t ON t.id=r.tenant_id
