@@ -115,6 +115,38 @@ export class DashboardController {
     };
   }
 
+  @Get('comparison')
+  @Roles('owner', 'manager')
+  async comparison(@Req() req: any, @Query('from') from?: string, @Query('to') to?: string) {
+    const [tenantId, storeId] = this.scope(req.user);
+    const start = this.dateParam(from, 'from');
+    const end = this.dateParam(to, 'to');
+    if (start && end && start >= end) throw new BadRequestException('from must be earlier than to');
+    const currentStart = start ?? new Date(Date.now() - 29 * 86400000).toISOString().slice(0, 10);
+    const currentEnd = end ? this.addDays(end, 1) : new Date(Date.now() + 86400000).toISOString().slice(0, 10);
+    const days = Math.max(1, Math.round((new Date(`${currentEnd}T00:00:00Z`).getTime() - new Date(`${currentStart}T00:00:00Z`).getTime()) / 86400000));
+    const previousEnd = currentStart;
+    const previousStart = this.addDays(previousEnd, -days);
+    const { rows } = await this.db.pool.query(
+      `SELECT
+         COUNT(*) FILTER (WHERE issued_at >= ($3::date::timestamp AT TIME ZONE 'Africa/Nairobi')
+                            AND issued_at < ($4::date::timestamp AT TIME ZONE 'Africa/Nairobi'))::int AS transactions,
+         COALESCE(SUM(total_kes) FILTER (WHERE issued_at >= ($3::date::timestamp AT TIME ZONE 'Africa/Nairobi')
+                            AND issued_at < ($4::date::timestamp AT TIME ZONE 'Africa/Nairobi')),0)::bigint AS sales_kes,
+         COUNT(*) FILTER (WHERE issued_at >= ($5::date::timestamp AT TIME ZONE 'Africa/Nairobi')
+                            AND issued_at < ($6::date::timestamp AT TIME ZONE 'Africa/Nairobi'))::int AS previous_transactions,
+         COALESCE(SUM(total_kes) FILTER (WHERE issued_at >= ($5::date::timestamp AT TIME ZONE 'Africa/Nairobi')
+                            AND issued_at < ($6::date::timestamp AT TIME ZONE 'Africa/Nairobi')),0)::bigint AS previous_sales_kes
+       FROM receipts
+       WHERE tenant_id=$1 AND store_id=$2 AND status='issued'
+         AND issued_at >= ($3::date::timestamp AT TIME ZONE 'Africa/Nairobi')
+         AND issued_at < ($6::date::timestamp AT TIME ZONE 'Africa/Nairobi')`,
+      [tenantId, storeId, previousStart, currentEnd, currentStart, previousEnd]);
+    const row = rows[0];
+    return { current: { salesKes: Number(row.sales_kes), transactions: Number(row.transactions) },
+             previous: { salesKes: Number(row.previous_sales_kes), transactions: Number(row.previous_transactions) } };
+  }
+
   @Get('expenses')
   @Roles('owner', 'manager')
   async listExpenses(@Req() req: any, @Query('limit') limit?: string) {
