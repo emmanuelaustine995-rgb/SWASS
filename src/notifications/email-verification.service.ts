@@ -30,6 +30,30 @@ export class EmailVerificationService {
     return { sent: true };
   }
 
+  async sendReceipt(input: {
+    to: string; customerName: string; receiptNo: string; totalKes: number;
+    issuedAt: string | Date; businessName: string; storeName: string;
+    items: { qty: number; productId: string }[];
+  }) {
+    const apiKey = process.env.RESEND_API_KEY;
+    const from = process.env.RESEND_FROM_EMAIL;
+    if (!apiKey || !from) throw new Error('Receipt email provider is not configured');
+    const escape = (value: unknown) => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
+    const issued = new Date(input.issuedAt).toLocaleString('en-KE', { timeZone: 'Africa/Nairobi' });
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      signal: AbortSignal.timeout(12000),
+      headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from, to: [input.to], subject: `Your receipt ${input.receiptNo} from ${input.businessName}`,
+        html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#17251f;padding:20px"><h2 style="color:#176b4a">Thank you for shopping with ${escape(input.businessName)}</h2><p>Hello ${escape(input.customerName)},</p><p>Your receipt has been issued successfully.</p><div style="border:1px solid #dce8e2;border-radius:12px;padding:18px"><p><strong>Receipt:</strong> ${escape(input.receiptNo)}</p><p><strong>Branch:</strong> ${escape(input.storeName || 'Main branch')}</p><p><strong>Date:</strong> ${escape(issued)}</p><p style="font-size:22px"><strong>Total paid: KSh ${Number(input.totalKes).toLocaleString('en-KE')}</strong></p></div><p>Keep this email as your digital receipt. You can contact the business if you need assistance.</p></div>`,
+      }),
+    });
+    const raw = await response.text();
+    if (!response.ok) throw new Error(`Resend HTTP ${response.status}: ${raw.slice(0,180)}`);
+    return { sent: true };
+  }
+
   async verify(token: string) {
     if (typeof token !== 'string' || token.length < 20 || token.length > 200) throw new BadRequestException('Invalid or expired verification link');
     const tokenHash = createHash('sha256').update(token).digest('hex');
