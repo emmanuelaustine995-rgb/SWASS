@@ -99,7 +99,7 @@ export class ReceiptsService {
             issuedAt: receipt.issuedAt,
             businessName: receipt.business?.name || 'SWASS business',
             storeName: receipt.business?.storeName || '',
-            items: dto.items.map((item) => ({ qty: item.qty, productId: item.productId })),
+            items: receipt.items || [],
           });
           emailDelivery = { sent: true, message: 'Receipt emailed to the customer.' };
         } catch (error) {
@@ -275,6 +275,7 @@ export class ReceiptsService {
       subtotalKes: subtotal, discountKes: discount, totalKes: Number(receipt.total_kes),
       qrToken: receipt.qr_token, status: receipt.status, issuedAt: receipt.issued_at,
       cashier, pointsEarned, duplicate: false, business,
+      items: lines.map((line) => ({ name: line.name, qty: line.qty, unitPriceKes: line.unit, lineTotalKes: line.total, serialNo: line.serialNo })),
     };
   }
 
