@@ -20,7 +20,9 @@ export class DashboardController {
     const end = this.dateParam(to, 'to');
     if (start && end && start >= end) throw new BadRequestException('from must be earlier than to');
     const startAt = start ?? new Date(Date.now() - 29 * 86400000).toISOString().slice(0, 10);
-    const endAt = end ?? new Date(Date.now() + 86400000).toISOString().slice(0, 10);
+    // The date picker is inclusive. SQL uses an exclusive upper bound, so
+    // include the selected final day (in the shop's Africa/Nairobi timezone).
+    const endAt = end ? this.addDays(end, 1) : new Date(Date.now() + 86400000).toISOString().slice(0, 10);
     const params = [tenantId, storeId, startAt, endAt];
 
     const [sales, inventory, expenses, cashiers, subscription] = await Promise.all([
@@ -29,7 +31,8 @@ export class DashboardController {
                 COALESCE(SUM(total_kes),0)::bigint AS sales_kes,
                 COALESCE(SUM(discount_kes),0)::bigint AS discounts_kes
            FROM receipts WHERE tenant_id=$1 AND store_id=$2 AND status='issued'
-             AND issued_at >= $3::date AND issued_at < $4::date`, params),
+             AND issued_at >= ($3::date::timestamp AT TIME ZONE 'Africa/Nairobi')
+             AND issued_at < ($4::date::timestamp AT TIME ZONE 'Africa/Nairobi')`, params),
       this.db.pool.query(
         `SELECT COUNT(*) FILTER (WHERE stock_qty <= reorder_level)::int AS low_stock_count,
                 COUNT(*)::int AS product_count,
@@ -39,12 +42,15 @@ export class DashboardController {
       this.db.pool.query(
         `SELECT COALESCE(SUM(amount_kes),0)::bigint AS expenses_kes, COUNT(*)::int AS expense_count
            FROM business_expenses WHERE tenant_id=$1 AND store_id=$2
-             AND spent_at >= $3::date AND spent_at < $4::date`, params),
+             AND spent_at >= ($3::date::timestamp AT TIME ZONE 'Africa/Nairobi')
+             AND spent_at < ($4::date::timestamp AT TIME ZONE 'Africa/Nairobi')`, params),
       this.db.pool.query(
         `SELECT u.full_name AS name, COUNT(r.id)::int AS transactions,
                 COALESCE(SUM(r.total_kes),0)::bigint AS sales_kes
            FROM users u LEFT JOIN receipts r ON r.cashier_id=u.id AND r.tenant_id=$1 AND r.store_id=$2
-             AND r.status='issued' AND r.issued_at >= $3::date AND r.issued_at < $4::date
+             AND r.status='issued'
+             AND r.issued_at >= ($3::date::timestamp AT TIME ZONE 'Africa/Nairobi')
+             AND r.issued_at < ($4::date::timestamp AT TIME ZONE 'Africa/Nairobi')
           WHERE u.tenant_id=$1 AND u.store_id=$2 AND u.role='cashier'
           GROUP BY u.id,u.full_name ORDER BY SUM(r.total_kes) DESC NULLS LAST LIMIT 10`, params),
       this.db.pool.query(
@@ -58,13 +64,15 @@ export class DashboardController {
         `SELECT COALESCE(SUM(ri.qty * ri.unit_cost_kes),0)::bigint AS cost_kes
            FROM receipt_items ri JOIN receipts r ON r.id=ri.receipt_id
           WHERE r.tenant_id=$1 AND r.store_id=$2 AND r.status='issued'
-            AND r.issued_at >= $3::date AND r.issued_at < $4::date`, params),
+            AND r.issued_at >= ($3::date::timestamp AT TIME ZONE 'Africa/Nairobi')
+            AND r.issued_at < ($4::date::timestamp AT TIME ZONE 'Africa/Nairobi')`, params),
       this.db.pool.query(
         `SELECT d.day::date AS day, COALESCE(SUM(r.total_kes),0)::bigint AS sales_kes,
                 COUNT(r.id)::int AS transactions
            FROM generate_series($3::date, ($4::date - interval '1 day'), interval '1 day') d(day)
            LEFT JOIN receipts r ON r.tenant_id=$1 AND r.store_id=$2 AND r.status='issued'
-             AND r.issued_at >= d.day AND r.issued_at < d.day + interval '1 day'
+             AND r.issued_at >= (d.day::date::timestamp AT TIME ZONE 'Africa/Nairobi')
+             AND r.issued_at < ((d.day::date + 1)::timestamp AT TIME ZONE 'Africa/Nairobi')
           GROUP BY d.day ORDER BY d.day`, params),
     ]);
     const sale = sales.rows[0], stock = inventory.rows[0], expense = expenses.rows[0];
@@ -108,6 +116,12 @@ export class DashboardController {
        RETURNING id, amount_kes AS "amountKes", category, note, spent_at AS "spentAt"`,
       [tenantId, storeId, req.user.sub, body.amountKes, body.category.trim(), body.note?.trim() || null, spentAt?.toISOString() ?? null]);
     return { expense: rows[0] };
+  }
+
+  private addDays(value: string, days: number): string {
+    const date = new Date(`${value}T00:00:00.000Z`);
+    date.setUTCDate(date.getUTCDate() + days);
+    return date.toISOString().slice(0, 10);
   }
 
   private dateParam(value: string | undefined, name: string): string | null {
