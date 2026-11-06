@@ -366,3 +366,6 @@ body.dashboard-dark .sidebar-help small{color:#b2c9bf}
 #pos-view .page-heading #back-to-receipts{margin-bottom:10px}
 #pos-view .buyer-fields input:required{border-color:#b8cbd8}
 @media(max-width:600px){.receipt-actions-grid{grid-template-columns:1fr}.receipt-choice{min-height:120px;padding:17px}}
+
+#pos-view #back-to-receipts{display:none}
+#pos-view.workspace-issue-mode #back-to-receipts{display:inline-flex}
