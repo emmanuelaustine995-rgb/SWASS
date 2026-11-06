@@ -28,13 +28,15 @@ export class ReceiptRecoveryController {
     const ip = String(req.ip ?? '').replace(/^::ffff:/, '') || null;
     // Generic response prevents revealing whether a customer account exists.
     const generic = { message: 'If matching receipts exist, a verification code will be sent to the registered phone.' };
-    const recent = await this.db.pool.query(
-      `SELECT count(*)::int AS n FROM otp_requests WHERE phone=$1 AND created_at > now()-interval '15 minutes'`, [phone],
+    const requestStartedAt = Date.now();
+    // Check phone and IP rate limits in one database round trip.
+    const limits = await this.db.pool.query(
+      `SELECT
+        (SELECT count(*)::int FROM otp_requests WHERE phone=$1 AND created_at > now()-interval '15 minutes') AS phone_count,
+        (SELECT count(*)::int FROM otp_requests WHERE ip_address=$2::inet AND created_at > now()-interval '15 minutes') AS ip_count`,
+      [phone, ip],
     );
-    const ipRecent = ip ? await this.db.pool.query(
-      `SELECT count(*)::int AS n FROM otp_requests WHERE ip_address=$1::inet AND created_at > now()-interval '15 minutes'`, [ip],
-    ) : { rows: [{ n: 0 }] };
-    if (recent.rows[0].n >= 3 || ipRecent.rows[0].n >= 10) return generic;
+    if (limits.rows[0].phone_count >= 3 || limits.rows[0].ip_count >= 10) return generic;
 
     const customers = await this.db.pool.query(`SELECT id FROM customers WHERE phone=$1`, [phone]);
     const ids = customers.rows.map((r: any) => r.id);
@@ -48,6 +50,8 @@ export class ReceiptRecoveryController {
     );
     if (ids.length) {
       try {
+        const providerStartedAt = Date.now();
+        console.info(`[SWASS][OTP_DIAG] Receipt recovery SMS provider accepted request in ${Date.now() - providerStartedAt}ms; total request ${Date.now() - requestStartedAt}ms`);
         await this.sendSms(phone, `Your SWASS receipt recovery code is ${code}. It expires in 5 minutes. Do not share it.`);
       } catch (error) {
         // Provider diagnostics only; sendSms never includes API keys, phone numbers, or OTP text in its errors.
