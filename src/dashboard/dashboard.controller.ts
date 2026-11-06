@@ -30,7 +30,7 @@ export class DashboardController {
     const part = (type: string) => nairobiParts.find((p) => p.type === type)?.value ?? '';
     const monthFrom = `${part('year')}-${part('month')}-01`;
     const todayNairobi = `${part('year')}-${part('month')}-${part('day')}`;
-    const [sales, inventory, expenses, cashiers, subscription, productSales, monthToDate] = await Promise.all([
+    const [sales, productSales, monthToDate, inventory, expenses, cashiers, subscription] = await Promise.all([
       this.db.pool.query(
         `SELECT COUNT(*)::int AS transactions,
                 COALESCE(SUM(total_kes),0)::bigint AS sales_kes,
