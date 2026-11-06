@@ -84,44 +84,26 @@
     }else if(screen==='operations'){
       pos.classList.remove('hidden');
       posGrid?.classList.remove('hidden');
-      lookup?.classList.remove('hidden');
       owner.classList.remove('hidden');
       owner.classList.add('workspace-console');
       pos.scrollIntoView({block:'start'});
-    }else if(screen==='sales'){
-      pos.classList.remove('hidden');
-      posGrid?.classList.remove('hidden');
-      lookup?.classList.remove('hidden');
-      pos.scrollIntoView({block:'start'});
-    }else if(screen==='logistics'){
-      pos.classList.remove('hidden');
-      posGrid?.classList.remove('hidden');
-      cart?.classList.add('hidden');
-      pos.classList.add('workspace-logistics');
-      products?.scrollIntoView({block:'start'});
     }else if(screen==='receipts'){
       pos.classList.remove('hidden');
       history?.classList.remove('hidden');
+      lookup?.classList.remove('hidden');
+      crm?.classList.remove('hidden');
       const content=$('history-content');
       if(content?.classList.contains('hidden')){
         $('history-toggle').textContent='Close history';
         content.classList.remove('hidden');
         loadReceiptHistory();
       }
-      history?.scrollIntoView({block:'start'});
-    }else if(screen==='crm'){
-      pos.classList.remove('hidden');
-      crm?.classList.remove('hidden');
-      crm?.scrollIntoView({block:'start'});
       window.dispatchEvent(new CustomEvent('swass:crm-open'));
+      history?.scrollIntoView({block:'start'});
     }else if(screen==='accounting'){
       pos.classList.remove('hidden');owner.classList.remove('hidden');
       owner.classList.add('workspace-accounting');
       document.getElementById('owner-payments-section')?.scrollIntoView({block:'start'});
-    }else if(screen==='console'){
-      pos.classList.remove('hidden');owner.classList.remove('hidden');
-      owner.classList.add('workspace-console');
-      document.getElementById('owner-expenses-section')?.scrollIntoView({block:'start'});
     }
     document.querySelectorAll('#workspace-nav button').forEach(b=>b.classList.toggle('active',b.dataset.workspace===screen));
   }
