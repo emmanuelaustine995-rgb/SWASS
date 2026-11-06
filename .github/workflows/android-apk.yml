@@ -1,0 +1,60 @@
+name: Build SWASS Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'frontend/**'
+      - 'android-app/**'
+      - '.github/workflows/android-apk.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out SWASS
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Install Capacitor
+        working-directory: android-app
+        run: npm install
+      - name: Generate Android project
+        working-directory: android-app
+        run: npx cap add android
+      - name: Sync SWASS web app
+        working-directory: android-app
+        run: npx cap sync android
+      - name: Build installable APK
+        working-directory: android-app/android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug
+      - name: Rename APK
+        run: cp android-app/android/app/build/outputs/apk/debug/app-debug.apk SWASS-Android.apk
+      - name: Save APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SWASS-Android-APK
+          path: SWASS-Android.apk
+          retention-days: 30
+      - name: Publish direct APK download
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: swass-android-${{ github.run_number }}
+        run: |
+          gh release create "$TAG" SWASS-Android.apk \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "SWASS Android APK ${{ github.run_number }}" \
+            --notes "Installable Android APK for SWASS. Download SWASS-Android.apk below."
