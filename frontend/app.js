@@ -68,8 +68,9 @@
     const crm=document.getElementById('owner-customers-section');
     const lookup=document.querySelector('.customer-lookup-panel');
     const profile=document.getElementById('profile-panel');
+    const receiptHome=document.getElementById('receipts-home');
     if(!owner||!pos)return;
-    [history,crm,lookup].forEach(el=>el?.classList.add('hidden'));
+    [history,crm,lookup,receiptHome].forEach(el=>el?.classList.add('hidden'));
     profile?.classList.toggle('hidden',screen!=='dashboard');
     owner.classList.add('hidden');
     owner.classList.remove('workspace-dashboard','workspace-accounting','workspace-console');
@@ -88,18 +89,9 @@
       owner.classList.add('workspace-console');
       pos.scrollIntoView({block:'start'});
     }else if(screen==='receipts'){
-      pos.classList.remove('hidden');
-      history?.classList.remove('hidden');
-      lookup?.classList.remove('hidden');
-      crm?.classList.remove('hidden');
-      const content=$('history-content');
-      if(content?.classList.contains('hidden')){
-        $('history-toggle').textContent='Close history';
-        content.classList.remove('hidden');
-        loadReceiptHistory();
-      }
-      window.dispatchEvent(new CustomEvent('swass:crm-open'));
-      history?.scrollIntoView({block:'start'});
+      pos.classList.add('hidden');
+      receiptHome?.classList.remove('hidden');
+      receiptHome?.scrollIntoView({block:'start'});
     }else if(screen==='accounting'){
       pos.classList.remove('hidden');owner.classList.remove('hidden');
       owner.classList.add('workspace-accounting');
@@ -223,10 +215,10 @@
     priceInputs.forEach(input=>{const row=state.cart.get(input.dataset.price);if(row)row.unitPriceKes=Number(input.value);});
     const t=totals(); const needsBuyer=items.some(r=>r.product.requiresBuyerId);
     const customer={fullName:$('buyer-name').value.trim(),phone:$('buyer-phone').value.trim(),email:$('buyer-email').value.trim(),nationalId:$('buyer-id').value.trim()};
-    if((customer.fullName&&!customer.phone)||(!customer.fullName&&customer.phone)){ $('checkout-error').textContent='Enter both the customer full name and phone number, or leave both blank.';return; }
+    if(!customer.fullName||!customer.phone||!customer.email||!customer.nationalId){ $('checkout-error').textContent='Enter the customer full name, phone number, email and National ID before issuing the receipt.';return; }
     if(needsBuyer&&(!customer.fullName||!customer.phone||!customer.nationalId)){ $('checkout-error').textContent='Enter the buyer full name, phone number and National ID for this item.';return; }
     const saleId=uuid();const payload={clientUuid:saleId,receiptNo:`SW-${new Date().toISOString().slice(0,10).replace(/-/g,'')}-${saleId.replace(/-/g,'').slice(0,10).toUpperCase()}`,paymentMethod:$('payment-method').value,discountKes:t.discount,items:items.map(r=>({productId:r.product.id,qty:r.qty,unitPriceKes:Number(r.unitPriceKes??r.product.priceKes),...(r.imei&&r.imei.trim()?{serialNo:r.imei.trim()}: {})}))};
-    if(customer.fullName&&customer.phone)payload.customer=customer;
+    payload.customer=customer;
     const btn=$('complete-sale');btn.disabled=true;btn.textContent='Issuing receipt…';$('checkout-error').textContent='';
     try{
       const receipt=await request('/api/v1/receipts',{method:'POST',body:JSON.stringify(payload)});
@@ -438,6 +430,21 @@
     catch (loadError) { showNotice('You are signed in, but the product list could not load. Refresh the page to try again.', true); }
   });
   $('workspace-nav').addEventListener('click',e=>{const b=e.target.closest('[data-workspace]');if(b)showWorkspaceScreen(b.dataset.workspace);});
+  $('back-to-receipts').addEventListener('click',()=>{
+    $('pos-view').classList.add('hidden');
+    $('receipts-home').classList.remove('hidden');
+  });
+  $('open-issue-receipt').addEventListener('click',()=>{
+    $('receipts-home').classList.add('hidden');
+    $('pos-view').classList.remove('hidden');
+    $('pos-grid')?.classList.remove('hidden');
+    document.querySelector('.pos-grid')?.classList.remove('hidden');
+    $('history-panel').classList.remove('hidden');
+    $('history-content').classList.add('hidden');
+    $('history-toggle').textContent='Open history';
+    document.querySelector('.page-heading')?.scrollIntoView({block:'start'});
+  });
+  $('open-recover-receipt').addEventListener('click',()=>{window.location.href='recover.html';});
   document.querySelector('.dashboard-sidebar')?.addEventListener('click',e=>{const link=e.target.closest('.sidebar-link');if(!link)return;const screen=link.dataset.screen||(link.getAttribute('href')==='#owner-customers-section'?'customers':link.getAttribute('href')==='#owner-reports-section'?'reports':link.getAttribute('href')==='#owner-payments-section'?'payments':'overview');e.preventDefault();showWorkspaceScreen(screen);});
   $('history-toggle').addEventListener('click',async()=>{const box=$('history-content');const opening=box.classList.contains('hidden');box.classList.toggle('hidden');$('history-toggle').textContent=opening?'Close history':'Open history';if(opening)await loadReceiptHistory();});
   $('history-search-btn').addEventListener('click',loadReceiptHistory);
