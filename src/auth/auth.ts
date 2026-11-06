@@ -289,7 +289,7 @@ export class AuthController {
           .catch(error => console.error('[SWASS] Welcome email delivery failed:', error instanceof Error ? error.message : error));
       }
       return {
-        accessToken: await this.jwt.signAsync(payload, { expiresIn: '12h' }),
+        accessToken: await this.jwt.signAsync(payload, { expiresIn: '30d' }),
         trialDays: 7, phoneVerified: true,
         emailVerificationSent: false, emailVerificationRequired: !!row.email,
       };
@@ -361,6 +361,6 @@ export class AuthController {
     if (!ok) throw new UnauthorizedException('Invalid phone or password');
 
     const payload: AuthUser = { sub: u.id, tenantId: u.tenant_id, storeId: u.store_id, role: u.role };
-    return { accessToken: await this.jwt.signAsync(payload, { expiresIn: '12h' }) };
+    return { accessToken: await this.jwt.signAsync(payload, { expiresIn: '30d' }) };
   }
 }
