@@ -1,5 +1,5 @@
 import {
-  BadRequestException, Body, Controller, Get, Param, Post, Req, ServiceUnavailableException,
+  BadRequestException, Body, Controller, Get, Param, Post, Req, ServiceUnavailableException, TooManyRequestsException,
 } from '@nestjs/common';
 import { createHash, createHmac, randomBytes, timingSafeEqual } from 'crypto';
 import { DbService } from '../db/db.service';
@@ -36,12 +36,12 @@ export class ReceiptRecoveryController {
         (SELECT count(*)::int FROM otp_requests WHERE ip_address=$2::inet AND created_at > now()-interval '15 minutes') AS ip_count`,
       [phone, ip],
     );
-    if (limits.rows[0].phone_count >= 3 || limits.rows[0].ip_count >= 10) {
+    if (limits.rows[0].phone_count >= 5 || limits.rows[0].ip_count >= 20) {
       console.warn('[SWASS][OTP_DIAG] Receipt recovery OTP generation stopped by rate limit', {
         phoneRequests: Number(limits.rows[0].phone_count),
         ipRequests: Number(limits.rows[0].ip_count),
       });
-      return generic;
+      throw new TooManyRequestsException('Too many receipt recovery code requests. Please wait 15 minutes before trying again.');
     }
 
     const customers = await this.db.pool.query(`SELECT id FROM customers WHERE phone=$1`, [phone]);
