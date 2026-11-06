@@ -79,6 +79,7 @@
     initializePeriod();loadDashboard();loadCustomers();
   }
   window.addEventListener('swass:login',ev=>activateOwnerWorkspace(ev.detail||{}));
+  window.addEventListener('swass:sale-issued',()=>{void loadDashboard();});
   window.addEventListener('swass:logout',()=>{state.token=null;state.role=null;$('owner-dashboard-view').classList.add('hidden');});
   $('refresh-btn').addEventListener('click',loadDashboard);
   $('mpesa-purpose').addEventListener('change',()=>{const subscription=$('mpesa-purpose').value==='subscription';$('topup-amount-wrap').classList.toggle('hidden',subscription);$('plan-wrap').classList.toggle('hidden',!subscription);});
