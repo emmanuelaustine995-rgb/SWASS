@@ -27,3 +27,6 @@
 .customer-result ul{padding-left:20px;font-size:12px;color:var(--muted)}
 .customer-result li{margin:5px 0}
 @media(max-width:650px){.customer-lookup-form{grid-template-columns:1fr}.customer-lookup-form button{width:100%}}
+
+/* SWASS install-app action */
+.btn-install{background:#e9f7e9!important;color:#12632f!important;border:1px solid #a8dfb5!important;font-weight:800}
