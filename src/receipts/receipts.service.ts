@@ -18,7 +18,6 @@ export interface CreateReceiptDto {
 }
 
 const RECEIPT_FEE_KES = 2;
-const GRACE_DAYS = 3;
 const POINTS_PER_KES = 100;           // 1 point per KSh 100 spent (adjust to taste)
 const CASHIER_MAX_DISCOUNT_PCT = Number(process.env.CASHIER_MAX_DISCOUNT_PCT ?? 5);
 if (!Number.isInteger(CASHIER_MAX_DISCOUNT_PCT) || CASHIER_MAX_DISCOUNT_PCT < 0 || CASHIER_MAX_DISCOUNT_PCT > 100) {
@@ -157,23 +156,27 @@ export class ReceiptsService {
     const existing = await this.findByClientUuid(c, tenantId, dto.clientUuid, dto);
     if (existing) return { ...existing, business };
 
-    // 2. Subscription must be active, or inside the grace period.
+    // 2. A paid subscription must be active now; no free trial or grace period.
     const sub = await c.query(
       `SELECT 1 FROM subscriptions
-        WHERE tenant_id = $1 AND status = 'active'
-          AND ends_at + make_interval(days => $2) > now() LIMIT 1`,
-      [tenantId, GRACE_DAYS],
-    );
-    if (!sub.rowCount) throw new HttpException('Subscription expired', 402);
-
-    // 3. Lock the wallet and check the KSh 2 fee fits inside balance + overdraft.
-    const w = await c.query(
-      `SELECT balance_kes, overdraft_limit_kes FROM wallets WHERE tenant_id = $1 FOR UPDATE`,
+        WHERE tenant_id = $1 AND status = 'active' AND ends_at > now() LIMIT 1`,
       [tenantId],
     );
-    if (!w.rowCount) throw new HttpException('No wallet for this shop', 402);
-    if (BigInt(w.rows[0].balance_kes) - BigInt(RECEIPT_FEE_KES) < -BigInt(w.rows[0].overdraft_limit_kes)) {
-      throw new HttpException('Wallet balance too low. Top up to keep issuing receipts', 402);
+    if (!sub.rowCount) throw new HttpException('An active SWASS subscription is required. Pay KSh 100 for one month or KSh 900 for one year.', 402);
+
+    // 3. Receipt wallet is prepaid: KSh 2 must already be available.
+    const w = await c.query(
+      `SELECT balance_kes FROM wallets WHERE tenant_id = $1 FOR UPDATE`,
+      [tenantId],
+    );
+    if (!w.rowCount) throw new HttpException('No receipt wallet for this shop. Contact SWASS support.', 402);
+    if (BigInt(w.rows[0].balance_kes) < BigInt(RECEIPT_FEE_KES)) {
+      const balance = Number(w.rows[0].balance_kes);
+      const availableReceipts = Math.max(0, Math.floor(balance / RECEIPT_FEE_KES));
+      throw new HttpException(
+        `Receipt wallet balance is too low. Your balance can generate ${availableReceipts} more receipts. Top up your receipt wallet; KSh 2 is charged per receipt.`,
+        402,
+      );
     }
 
     // 4. Lock the products and price the sale from the database, never from the client.
