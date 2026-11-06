@@ -5,6 +5,7 @@ import { createHmac, randomBytes } from 'crypto';
 import { PoolClient } from 'pg';
 import { AuthUser } from '../auth/auth';
 import { DbService } from '../db/db.service';
+import { EmailVerificationService } from '../notifications/email-verification.service';
 
 export interface CreateReceiptDto {
   clientUuid: string;                 // generated on the till; makes retries safe
@@ -26,7 +27,7 @@ if (!Number.isInteger(CASHIER_MAX_DISCOUNT_PCT) || CASHIER_MAX_DISCOUNT_PCT < 0 
 
 @Injectable()
 export class ReceiptsService {
-  constructor(private db: DbService) {}
+  constructor(private db: DbService, private emailVerification: EmailVerificationService) {}
 
   async list(user: AuthUser, filters: { q?: string; from?: string; to?: string; limit?: string }) {
     if (!user.tenantId || !user.storeId) throw new ForbiddenException('User is not tied to a store');
@@ -84,7 +85,31 @@ export class ReceiptsService {
     if (!user.tenantId || !user.storeId) throw new ForbiddenException('User is not tied to a store');
 
     try {
-      return await this.db.tx((c) => this.createInTx(c, user, dto));
+      const receipt = await this.db.tx((c) => this.createInTx(c, user, dto));
+      let emailDelivery: { sent: boolean; message: string };
+      if (receipt.duplicate) {
+        emailDelivery = { sent: false, message: 'This receipt was already issued; no duplicate email was sent.' };
+      } else if (dto.customer?.email?.trim()) {
+        try {
+          await this.emailVerification.sendReceipt({
+            to: dto.customer.email.trim().toLowerCase(),
+            customerName: dto.customer.fullName,
+            receiptNo: receipt.receiptNo,
+            totalKes: receipt.totalKes,
+            issuedAt: receipt.issuedAt,
+            businessName: receipt.business?.name || 'SWASS business',
+            storeName: receipt.business?.storeName || '',
+            items: dto.items.map((item) => ({ qty: item.qty, productId: item.productId })),
+          });
+          emailDelivery = { sent: true, message: 'Receipt emailed to the customer.' };
+        } catch (error) {
+          console.error('[SWASS] Receipt email delivery failed:', error instanceof Error ? error.message : 'Email provider error');
+          emailDelivery = { sent: false, message: 'Receipt issued, but the email could not be sent. Check email provider settings.' };
+        }
+      } else {
+        emailDelivery = { sent: false, message: 'No customer email was provided.' };
+      }
+      return { ...receipt, emailDelivery };
     } catch (err: any) {
       if (err?.code === '23505') {
         // Two requests for the same sale racing each other: the loser returns the stored receipt.
