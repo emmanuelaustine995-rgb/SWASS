@@ -18,8 +18,8 @@
           <label>Registered phone number<input id="reset-phone" type="tel" inputmode="tel" placeholder="07XX XXX XXX" required></label>
           <button id="request-password-reset" class="btn btn-primary full" type="submit">Send reset code</button>
           <div id="password-reset-confirm-fields" class="hidden">
-            <label>Six-digit reset code<input id="reset-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" required></label>
-            <label>New password<input id="reset-new-password" type="password" minlength="10" maxlength="128" autocomplete="new-password" placeholder="At least 10 characters" required></label>
+            <label>Six-digit reset code<input id="reset-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}"></label>
+            <label>New password<input id="reset-new-password" type="password" minlength="10" maxlength="128" autocomplete="new-password" placeholder="At least 10 characters"></label>
             <button id="confirm-password-reset" class="btn btn-primary full" type="button">Reset password</button>
           </div>
           <p id="password-reset-message" class="muted small" role="status"></p>
