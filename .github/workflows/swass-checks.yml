@@ -13,6 +13,6 @@ jobs:
         with:
           node-version: 22
       - run: npm install --include=dev
-      - run: node --check frontend/app.js && node --check frontend/recover.js
+      - run: node --check frontend/app.js && node --check frontend/recover.js && node --check frontend/dashboard.js && node --check frontend/sw.js
       - run: npm run build
 
