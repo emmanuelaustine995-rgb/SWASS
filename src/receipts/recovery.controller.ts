@@ -178,7 +178,7 @@ export class ReceiptRecoveryController {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            recipient: to,
+            recipient: `+${to}`,
             sender_id: process.env.TALKSASA_SENDER_ID || 'TALK-SASA',
             type: 'plain',
             message,
@@ -187,7 +187,9 @@ export class ReceiptRecoveryController {
         const raw = await response.text();
         let result: any = {};
         try { result = raw ? JSON.parse(raw) : {}; } catch { result = {}; }
-        if (response.ok && (result?.status === 'success' || result?.success === true)) return;
+        const accepted = response.ok && (result?.status === 'success' || result?.success === true);
+        console.info(`[SWASS] Receipt recovery TalkSasa response: HTTP ${response.status}, accepted=${accepted}`);
+        if (accepted) return;
         const detail = String(result?.message ?? result?.error ?? raw ?? '').slice(0, 180);
         failures.push(`TalkSasa HTTP ${response.status}${detail ? `: ${detail}` : ''}`);
       } catch (error) {
@@ -200,7 +202,7 @@ export class ReceiptRecoveryController {
     const atApiKey = process.env.AT_API_KEY;
     if (atUsername && atApiKey) {
       try {
-        const form = new URLSearchParams({ username: atUsername, to: to, message });
+        const form = new URLSearchParams({ username: atUsername, to: `+${to}`, message });
         if (process.env.AT_SENDER_ID) form.set('from', process.env.AT_SENDER_ID);
         const endpoint = atUsername === 'sandbox'
           ? 'https://api.sandbox.africastalking.com/version1/messaging'
