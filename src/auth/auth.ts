@@ -167,6 +167,7 @@ export class AuthController {
   @Post('register')
   async register(@Body() body: { businessName?: string; storeName?: string; storeLocation?: string; fullName?: string; phone?: string; email?: string; password?: string }, @Req() req: any) {
     const registrationStartedAt = Date.now();
+    console.info('[SWASS][OTP_DIAG] Signup registration request received');
     const businessName = body?.businessName?.trim();
     const storeName = (body?.storeName || body?.businessName)?.trim();
     const storeLocation = body?.storeLocation?.trim() || null;
@@ -183,6 +184,7 @@ export class AuthController {
     const ip = String(req.ip ?? '').replace(/^::ffff:/, '') || null;
 
     // Run independent database checks and password hashing together to shorten signup time.
+    const checksStartedAt = Date.now();
     const [existing, limits, passwordHash] = await Promise.all([
       this.db.pool.query(`SELECT 1 FROM users WHERE phone = ANY($1::text[]) OR regexp_replace(phone, '[^0-9]', '', 'g') = ANY($1::text[]) LIMIT 1`, [[phone, '0' + phone.slice(3)]]),
       this.db.pool.query(
@@ -193,11 +195,13 @@ export class AuthController {
       ),
       argon2.hash(password),
     ]);
+    console.info(`[SWASS][OTP_DIAG] Signup validation, database checks and password hash completed in ${Date.now() - checksStartedAt}ms`);
     if (existing.rowCount) throw new UnauthorizedException('This phone number is already registered. Sign in or use another number.');
     if (limits.rows[0].phone_count >= 3 || limits.rows[0].ip_count >= 10) {
       throw new BadRequestException('Too many OTP requests. Please wait 15 minutes before trying again.');
     }
     const code = String(randomBytes(4).readUInt32BE(0) % 1000000).padStart(6, '0');
+    const saveOtpStartedAt = Date.now();
     await this.db.pool.query(
       `UPDATE signup_otp_requests SET expires_at=now()
        WHERE phone=$1 AND verified_at IS NULL AND consumed_at IS NULL AND expires_at>now()`,
@@ -209,13 +213,14 @@ export class AuthController {
        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9::inet,now()+interval '5 minutes') RETURNING id`,
       [phone,businessName,storeName,storeLocation,fullName,email,passwordHash,this.signupCodeHash(code),ip],
     );
+    console.info(`[SWASS][OTP_DIAG] OTP record saved in ${Date.now() - saveOtpStartedAt}ms; starting SMS provider request`);
     try {
       await this.sendSignupSms(phone, `Your SWASS signup verification code is ${code}. It expires in 5 minutes. Do not share this code.`);
-      console.info(`[SWASS] Signup OTP request accepted by SMS provider; totalDurationMs=${Date.now() - registrationStartedAt}`);
+      console.info(`[SWASS][OTP_DIAG] SMS provider accepted signup OTP; total registration duration ${Date.now() - registrationStartedAt}ms`);
     } catch (error) {
       await this.db.pool.query('UPDATE signup_otp_requests SET expires_at=now() WHERE id=$1', [saved.rows[0].id]);
       const reason = error instanceof Error ? error.message : 'SMS provider error';
-      console.error('[SWASS] Signup OTP delivery failed:', reason);
+      console.error(`[SWASS][OTP_DIAG] Signup OTP delivery failed after ${Date.now() - registrationStartedAt}ms:`, reason);
       throw new ServiceUnavailableException('We could not send your verification code. Please check the phone number and try again.');
     }
     return process.env.NODE_ENV === 'production'
