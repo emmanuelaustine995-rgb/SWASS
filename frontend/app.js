@@ -74,7 +74,7 @@
     profile?.classList.toggle('hidden',screen!=='dashboard');
     owner.classList.add('hidden');
     owner.classList.remove('workspace-dashboard','workspace-accounting','workspace-console');
-    pos.classList.remove('workspace-logistics');
+    pos.classList.remove('workspace-logistics','workspace-issue-mode');
     posGrid?.classList.add('hidden');
     products?.classList.remove('hidden');
     cart?.classList.remove('hidden');
@@ -471,12 +471,13 @@
   $('workspace-nav').addEventListener('click',e=>{const b=e.target.closest('[data-workspace]');if(b)showWorkspaceScreen(b.dataset.workspace);});
   $('back-to-receipts').addEventListener('click',()=>{
     $('pos-view').classList.add('hidden');
+    $('pos-view').classList.remove('workspace-issue-mode');
     $('receipts-home').classList.remove('hidden');
   });
   $('open-issue-receipt').addEventListener('click',()=>{
     $('receipts-home').classList.add('hidden');
     $('pos-view').classList.remove('hidden');
-    $('pos-grid')?.classList.remove('hidden');
+    $('pos-view').classList.add('workspace-issue-mode');
     document.querySelector('.pos-grid')?.classList.remove('hidden');
     $('history-panel').classList.remove('hidden');
     $('history-content').classList.add('hidden');
