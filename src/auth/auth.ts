@@ -84,7 +84,7 @@ export class AuthController {
           signal: AbortSignal.timeout(12000),
           headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            recipient: to,
+            recipient: `+${to}`,
             sender_id: process.env.TALKSASA_SENDER_ID || 'TALK-SASA',
             type: 'plain',
             message,
