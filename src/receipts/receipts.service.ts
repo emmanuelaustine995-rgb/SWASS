@@ -34,7 +34,7 @@ export class ReceiptsService {
     const from = filters.from && /^\d{4}-\d{2}-\d{2}$/.test(filters.from) ? filters.from : null;
     const to = filters.to && /^\d{4}-\d{2}-\d{2}$/.test(filters.to) ? filters.to : null;
     const q = (filters.q ?? '').trim().slice(0, 100);
-    const digits = q.replace(/\\D/g, '');
+    const digits = q.replace(/\D/g, '');
     const phoneSearch = digits.startsWith('254') && digits.length === 12 ? digits
       : digits.startsWith('0') && digits.length === 10 ? `254${digits.slice(1)}`
       : digits.length === 9 ? `254${digits}` : '';
