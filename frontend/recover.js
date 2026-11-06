@@ -115,8 +115,9 @@
       });
       const found = await readResponse(list);
       recoveredReceipts = found.receipts || [];
+      $('recovered-search-wrap').classList.toggle('hidden', !recoveredReceipts.length);
       $('receipt-list').innerHTML = recoveredReceipts.length
-        ? recoveredReceipts.map((r, i) => `<article class="panel recovered-receipt"><div class="history-row-top"><strong>${escapeHtml(r.receipt_no)}</strong><strong>KSh ${Number(r.totalKes).toLocaleString('en-KE',{minimumFractionDigits:2})}</strong></div><p>${escapeHtml(r.business_name || r.store_name)} · ${escapeHtml(r.store_name || '')}</p><p>${escapeHtml(r.customer_name || 'Customer')} · ${escapeHtml(r.customer_phone || '')}</p><p>${new Date(r.issued_at).toLocaleString('en-KE')} · ${escapeHtml(r.status)} · ${escapeHtml(String(r.payment_method || '').toUpperCase())}</p><div>${(r.items || []).map(item => `<div class="history-row-meta">${escapeHtml(item.name)} × ${Number(item.qty)} — KSh ${Number(item.lineTotalKes).toLocaleString('en-KE',{minimumFractionDigits:2})}</div>`).join('')}</div><button type="button" class="print-recovered" data-index="${i}">Print receipt</button></article>`).join('')
+        ? recoveredReceipts.map((r, i) => `<article class="panel recovered-receipt" data-search="${escapeHtml([r.customer_name,r.customer_phone,r.customer_id_last4,...(r.items||[]).map(item=>item.serialNo||'')].join(' '))}"><div class="history-row-top"><strong>${escapeHtml(r.receipt_no)}</strong><strong>KSh ${Number(r.totalKes).toLocaleString('en-KE',{minimumFractionDigits:2})}</strong></div><p>${escapeHtml(r.business_name || r.store_name)} · ${escapeHtml(r.store_name || '')}</p><p>${escapeHtml(r.customer_name || 'Customer')} · ${escapeHtml(r.customer_phone || '')}</p><p>${new Date(r.issued_at).toLocaleString('en-KE')} · ${escapeHtml(r.status)} · ${escapeHtml(String(r.payment_method || '').toUpperCase())}</p><div>${(r.items || []).map(item => `<div class="history-row-meta">${escapeHtml(item.name)} × ${Number(item.qty)} — KSh ${Number(item.lineTotalKes).toLocaleString('en-KE',{minimumFractionDigits:2})}</div>`).join('')}</div><button type="button" class="print-recovered" data-index="${i}">Print receipt</button></article>`).join('')
         : '<p>No receipts were found.</p>';
       if (countdownTimer) clearInterval(countdownTimer);
       $('resend-area').textContent = '';
@@ -128,6 +129,15 @@
       button.disabled = false;
       button.textContent = 'Verify and find receipts';
     }
+  });
+  $('recovered-search').addEventListener('input',()=>{
+    const query=$('recovered-search').value.trim().toLowerCase();
+    const digits=query.replace(/\D/g,'');
+    document.querySelectorAll('#receipt-list .recovered-receipt').forEach(card=>{
+      const haystack=(card.dataset.search||'').toLowerCase();
+      const idSuffix=digits.length>=4&&haystack.includes(digits.slice(-4));
+      card.classList.toggle('hidden',!!query&&!haystack.includes(query)&&!idSuffix);
+    });
   });
   $('receipt-list').addEventListener('click', (e) => {
     const button = e.target.closest('.print-recovered');
