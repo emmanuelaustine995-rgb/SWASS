@@ -381,7 +381,7 @@ export class AuthController {
     const phone = this.normalizePhone(String(body?.phone ?? ''));
     const code = String(body?.code ?? '').trim();
     const newPassword = String(body?.newPassword ?? '');
-    if (!/^\\d{6}$/.test(code)) throw new BadRequestException('Enter the six-digit reset code.');
+    if (!/^\d{6}$/.test(code)) throw new BadRequestException('Enter the six-digit reset code.');
     if (newPassword.length < 10 || newPassword.length > 128) {
       throw new BadRequestException('New password must be at least 10 characters.');
     }
