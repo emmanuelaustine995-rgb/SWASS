@@ -3,13 +3,18 @@ import { Injectable } from '@nestjs/common';
 @Injectable()
 export class WhatsAppReceiptService {
   async sendPdf(input: { to: string; receiptNo: string; businessName: string; pdf: Buffer }) {
+    const phone = input.to.replace(/\\D/g, '');
+    const normalised = phone.startsWith('0') ? '254' + phone.slice(1) : phone.startsWith('254') ? phone : '254' + phone;
+    if (!/^254[17]\\d{8}$/.test(normalised)) throw new Error('Invalid customer WhatsApp number');
+
+    const provider = (process.env.WHATSAPP_PROVIDER || 'cloud').trim().toLowerCase();
+    if (provider === 'flaresend') return this.sendWithFlareSend({ ...input, phone: normalised });
+    if (provider !== 'cloud') throw new Error('Unsupported WHATSAPP_PROVIDER. Use cloud or flaresend.');
+
     const token = process.env.WHATSAPP_ACCESS_TOKEN;
     const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
     const graphVersion = process.env.WHATSAPP_GRAPH_VERSION || 'v22.0';
     if (!token || !phoneNumberId) throw new Error('WhatsApp Cloud API is not configured');
-    const phone = input.to.replace(/\D/g, '');
-    const normalised = phone.startsWith('0') ? '254' + phone.slice(1) : phone.startsWith('254') ? phone : '254' + phone;
-    if (!/^254[17]\d{8}$/.test(normalised)) throw new Error('Invalid customer WhatsApp number');
     const base = `https://graph.facebook.com/${graphVersion}/${phoneNumberId}`;
     const form = new FormData();
     form.append('messaging_product', 'whatsapp');
@@ -36,6 +41,30 @@ export class WhatsAppReceiptService {
     });
     const result = await sent.json() as { messages?: { id?: string }[]; error?: { message?: string } };
     if (!sent.ok || !result.messages?.[0]?.id) throw new Error(result.error?.message || `WhatsApp message failed (${sent.status})`);
-    return { sent: true, messageId: result.messages[0].id };
+    return { sent: true, messageId: result.messages[0].id, provider: 'cloud' };
+  }
+
+  private async sendWithFlareSend(input: { to: string; receiptNo: string; businessName: string; pdf: Buffer; phone: string }) {
+    const apiKey = process.env.FLARESEND_API_KEY?.trim();
+    if (!apiKey) throw new Error('FlareSend is selected but FLARESEND_API_KEY is not configured');
+    const form = new FormData();
+    form.append('recipients[]', input.phone);
+    form.append('type', 'document');
+    form.append('file', new Blob([new Uint8Array(input.pdf)], { type: 'application/pdf' }), `${input.receiptNo}.pdf`);
+    form.append('caption', `Thank you for shopping with ${input.businessName}. Your receipt ${input.receiptNo} is attached.`);
+    const response = await fetch('https://api.flaresend.com/send-message', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${apiKey}` },
+      body: form,
+      signal: AbortSignal.timeout(30000),
+    });
+    const raw = await response.text();
+    let result: any = {};
+    try { result = raw ? JSON.parse(raw) : {}; } catch { /* retain provider response status */ }
+    if (!response.ok || result.success === false || (Array.isArray(result.failed_recipients) && result.failed_recipients.length > 0)) {
+      throw new Error(result.message || result.error || `FlareSend WhatsApp delivery failed (${response.status})`);
+    }
+    const recipient = Array.isArray(result.successful_recipients) ? result.successful_recipients[0] : undefined;
+    return { sent: true, messageId: result.messageId || result.message_id || null, recipient, provider: 'flaresend' };
   }
 }
