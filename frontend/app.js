@@ -470,10 +470,14 @@
       $('signup-otp-panel').classList.add('hidden');
       $('register-submit').classList.remove('hidden');
       if(state.role==='cashier'){
+        clearSession();
         $('login-view').classList.remove('hidden');
         $('register-form').classList.add('hidden');
-        $('first-password-form').classList.remove('hidden');
-        $('first-password-message').textContent='Your shop account is ready. Create your private password to continue.';
+        $('first-password-form').classList.add('hidden');
+        $('login-form').classList.remove('hidden');
+        $('login-phone').value=$('reg-phone').value.trim();
+        $('login-password').value='';
+        $('login-error').textContent='Your shop account is ready. Sign in using the 8-digit code given by your shop owner.';
       }else{
         showPOS();
         publishWorkspaceSession();
