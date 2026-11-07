@@ -122,7 +122,7 @@
     }else if(screen==='receipts'){
       pos.classList.add('hidden');
       receiptHome?.classList.remove('hidden');
-      $('open-recover-receipt')?.classList.toggle('hidden',state.role==='cashier');
+      $('open-recover-receipt')?.classList.remove('hidden');
       receiptHome?.scrollIntoView({block:'start'});
     }else if(screen==='accounting'){
       pos.classList.remove('hidden');owner.classList.remove('hidden');
@@ -246,13 +246,13 @@
   function changeQty(id,delta){const row=state.cart.get(id);if(!row)return;const next=row.qty+delta;const stock=Math.max(0,Number(row.product.stockQty)||0);if(next>stock){showNotice('Only '+stock+' units are currently in stock.',true);return;}if(next<=0)state.cart.delete(id);else row.qty=next;renderCart();}
   function totals(){const subtotal=[...state.cart.values()].reduce((s,r)=>s+Number(r.unitPriceKes??r.product.priceKes)*r.qty,0);const requested=Math.max(0,Math.floor(Number($('discount').value)||0));const discount=Math.min(subtotal,requested);if(requested>subtotal)$('discount').value=String(discount);return {subtotal,discount,total:subtotal-discount};}
   function renderCart(){
-    const rows=[...state.cart.entries()]; $('cart-list').innerHTML=rows.length?rows.map(([id,r])=>`<div class="cart-row"><div><div class="cart-row-name">${escapeHtml(r.product.name)}</div><div class="cart-row-sub">Shop buying cost: ${money(r.product.costKes)} · Default selling price: ${money(r.product.priceKes)}</div><label class="cart-unit-price">Customer price per item (KSh)<input type="number" min="1" max="100000000000" step="1" inputmode="numeric" data-price="${id}" value="${Number(r.unitPriceKes??r.product.priceKes)}" required></label><div class="cart-row-sub cart-line-total">Line subtotal: ${money(Number(r.unitPriceKes??r.product.priceKes)*r.qty)}</div><label>IMEI / Serial number${r.product.requiresBuyerId?' (required)':' (if applicable)'}<input type="text" maxlength="32" data-imei="${id}" value="${escapeHtml(r.imei||'')}" placeholder="${r.product.requiresBuyerId?'Enter IMEI / serial number':'Enter if applicable'}" ${r.product.requiresBuyerId?'required':''}></label></div><div class="qty-control"><button type="button" data-qty="${id}" data-delta="-1" aria-label="Decrease">−</button><span>${r.qty}</span><button type="button" data-qty="${id}" data-delta="1" aria-label="Increase">+</button></div></div>`).join(''):'<div class="empty">Your cart is empty.</div>';
+    const rows=[...state.cart.entries()]; $('cart-list').innerHTML=rows.length?rows.map(([id,r])=>`<div class="cart-row"><div><div class="cart-row-name">${escapeHtml(r.product.name)}</div><div class="cart-row-sub">Shop buying cost: ${money(r.product.costKes)} · Default selling price: ${money(r.product.priceKes)}</div><label class="cart-unit-price">Customer price per item (KSh)<input type="number" min="1" max="100000000000" step="1" inputmode="numeric" data-price="${id}" value="${Number(r.unitPriceKes??r.product.priceKes)}" required></label><div class="cart-row-sub cart-line-total">Line subtotal: ${money(Number(r.unitPriceKes??r.product.priceKes)*r.qty)}</div><label>IMEI / Serial number${r.product.requiresBuyerId?' (required)':' (if applicable)'}<input type="text" maxlength="32" data-imei="${id}" value="${escapeHtml(r.imei||'')}" placeholder="${r.product.requiresBuyerId?'Enter IMEI / serial number':'Enter if applicable'}" ${r.product.requiresBuyerId?'required':''}></label><button type="button" class="btn btn-light btn-small" data-scan-imei="${id}">Scan QR / barcode</button></div><div class="qty-control"><button type="button" data-qty="${id}" data-delta="-1" aria-label="Decrease">−</button><span>${r.qty}</span><button type="button" data-qty="${id}" data-delta="1" aria-label="Increase">+</button></div></div>`).join(''):'<div class="empty">Your cart is empty.</div>';
     const t=totals(); $('subtotal').textContent=money(t.subtotal);$('total').textContent=money(t.total);$('checkout-open').disabled=!rows.length||t.total<0;
   }
   function openCheckout(){const items=[...state.cart.values()];const needsBuyer=items.some(r=>r.product.requiresBuyerId);$('buyer-id-wrap').classList.remove('hidden');$('buyer-id-note').classList.toggle('hidden',!needsBuyer);$('checkout-total').textContent=money(totals().total);$('checkout-error').textContent='';$('checkout-modal').classList.remove('hidden');}
   function makeReceiptMarkup(receipt, sale, customer){
     const business=receipt.business||{};
-    const lines=sale.items.map(i=>`<div class="receipt-line"><span><strong>${escapeHtml(i.name)}</strong> × ${i.qty}<br><small>Unit price: ${money(i.price)}${i.serialNo?`<br>IMEI / Serial: ${escapeHtml(i.serialNo)}`:''}</small></span><strong>${money(i.price*i.qty)}</strong></div>`).join('');
+    const lines=sale.items.map(i=>`<div class="receipt-line"><span><strong>${escapeHtml(i.name)}</strong> × ${i.qty}<br><small>Unit price: ${money(i.price)}${i.serialNo?`<br>IMEI / Serial: ${escapeHtml(i.serialNo)}<br><span id="imei-qr-${sale.items.indexOf(i)}" class="imei-qr"></span>`:''}</small></span><strong>${money(i.price*i.qty)}</strong></div>`).join('');
     const verifyUrl=new URL('verify.html',window.location.href).href+'?token='+encodeURIComponent(receipt.qrToken); const recoveryUrl=new URL('recover.html',window.location.href).href;
     return `<div class="receipt-center">${business.logoData?'<img class="receipt-logo" src="'+escapeHtml(business.logoData)+'" alt="Business logo">':''}<h2>${escapeHtml(business.name||'BUSINESS NAME')}</h2>
       ${business.storeName?`<div>${escapeHtml(business.storeName)}</div>`:''}
@@ -293,7 +293,7 @@
     try{
       const receipt=await request('/api/v1/receipts',{method:'POST',body:JSON.stringify(payload)});
       state.lastReceipt=receipt; const sale={items:items.map(r=>({name:r.product.name,qty:r.qty,price:Number(r.unitPriceKes??r.product.priceKes),serialNo:r.imei&&r.imei.trim()?r.imei.trim():null})),subtotal:Number(receipt.subtotalKes??t.subtotal),discount:Number(receipt.discountKes??t.discount),paymentMethod:payload.paymentMethod};
-      $('receipt-paper').innerHTML=makeReceiptMarkup(receipt,sale,payload.customer);if(window.QRCode&&receipt.qrToken){try{const verifyUrl=new URL('verify.html',window.location.href).href+'?token='+encodeURIComponent(receipt.qrToken);new QRCode($('receipt-qr'),{text:verifyUrl,width:116,height:116,correctLevel:QRCode.CorrectLevel.M});}catch{}}$('checkout-modal').classList.add('hidden');$('receipt-modal').classList.remove('hidden');state.cart.clear();$('discount').value='0';$('checkout-form').reset();renderCart();const emailStatus=$('receipt-email-status');if(emailStatus){emailStatus.textContent='Email: '+(receipt.emailDelivery?.message||(payload.customer?.email?'Delivery status unavailable.':'No customer email was provided.'))+' WhatsApp: '+(receipt.whatsappDelivery?.message||(payload.customer?.phone?'Delivery status unavailable.':'No customer phone was provided.'));emailStatus.classList.toggle('error',!!((payload.customer?.email&&!receipt.emailDelivery?.sent)||(payload.customer?.phone&&!receipt.whatsappDelivery?.sent)));}window.dispatchEvent(new CustomEvent('swass:sale-issued',{detail:{receiptNo:receipt.receiptNo,totalKes:receipt.totalKes}}));await loadProducts();hideNotice();
+      $('receipt-paper').innerHTML=makeReceiptMarkup(receipt,sale,payload.customer);if(window.QRCode){try{if(receipt.qrToken){const verifyUrl=new URL('verify.html',window.location.href).href+'?token='+encodeURIComponent(receipt.qrToken);new QRCode($('receipt-qr'),{text:verifyUrl,width:116,height:116,correctLevel:QRCode.CorrectLevel.M});}sale.items.forEach((item,index)=>{if(item.serialNo){const target=$('imei-qr-'+index);if(target)new QRCode(target,{text:item.serialNo,width:72,height:72,correctLevel:QRCode.CorrectLevel.M});}});}catch(error){console.warn('Receipt QR rendering failed:',error?.message||'unknown error');}}$('checkout-modal').classList.add('hidden');$('receipt-modal').classList.remove('hidden');state.cart.clear();$('discount').value='0';$('checkout-form').reset();renderCart();const emailStatus=$('receipt-email-status');if(emailStatus){emailStatus.textContent='Email: '+(receipt.emailDelivery?.message||(payload.customer?.email?'Delivery status unavailable.':'No customer email was provided.'))+' WhatsApp: '+(receipt.whatsappDelivery?.message||(payload.customer?.phone?'Delivery status unavailable.':'No customer phone was provided.'));emailStatus.classList.toggle('error',!!((payload.customer?.email&&!receipt.emailDelivery?.sent)||(payload.customer?.phone&&!receipt.whatsappDelivery?.sent)));}window.dispatchEvent(new CustomEvent('swass:sale-issued',{detail:{receiptNo:receipt.receiptNo,totalKes:receipt.totalKes}}));await loadProducts();hideNotice();
     }catch(e){$('checkout-error').textContent=e.message;}
     finally{btn.disabled=false;btn.textContent='Issue receipt';}
   }
@@ -348,6 +348,56 @@
       button.disabled = false;
     }
   });
+
+  // Scan an item's QR/barcode with the Android camera, with manual entry as a fallback.
+  let imeiScannerStream=null, imeiScannerFrame=0, imeiScannerDetector=null, imeiScannerTarget='';
+  function stopImeiScanner(){
+    if(imeiScannerFrame)cancelAnimationFrame(imeiScannerFrame);
+    imeiScannerFrame=0;
+    if(imeiScannerStream)imeiScannerStream.getTracks().forEach(track=>track.stop());
+    imeiScannerStream=null;
+    const video=$('imei-scanner-video');if(video)video.srcObject=null;
+    $('imei-scanner-modal')?.classList.add('hidden');
+  }
+  function applyScannedImei(value){
+    const code=String(value||'').trim().slice(0,32);
+    if(!code){$('imei-scanner-message').textContent='Enter or scan a valid code.';return;}
+    const row=state.cart.get(imeiScannerTarget);
+    if(!row){$('imei-scanner-message').textContent='This sale item is no longer in the cart.';return;}
+    row.imei=code;
+    const field=$('cart-list').querySelector('[data-imei="'+CSS.escape(imeiScannerTarget)+'"]');
+    if(field)field.value=code;
+    stopImeiScanner();
+    showNotice('Scanned code added to '+row.product.name+'.');
+  }
+  async function openImeiScanner(productId){
+    imeiScannerTarget=productId;
+    $('imei-scanner-manual').value='';
+    $('imei-scanner-message').textContent='Point your camera at the item QR code or barcode. You can also type the code below.';
+    $('imei-scanner-modal').classList.remove('hidden');
+    if(!('BarcodeDetector' in window) || !navigator.mediaDevices?.getUserMedia){
+      $('imei-scanner-message').textContent='Camera scanning is not supported in this browser. Enter the QR/barcode value manually below.';
+      return;
+    }
+    try{
+      imeiScannerDetector=new BarcodeDetector({formats:['qr_code','code_128','code_39','ean_13','ean_8','upc_a','upc_e']});
+      imeiScannerStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});
+      const video=$('imei-scanner-video');video.srcObject=imeiScannerStream;await video.play();
+      const scanFrame=async()=>{
+        if(!imeiScannerStream)return;
+        try{const codes=await imeiScannerDetector.detect(video);if(codes.length&&codes[0].rawValue){applyScannedImei(codes[0].rawValue);return;}}
+        catch(error){$('imei-scanner-message').textContent='Camera scan failed. You can enter the code manually.';}
+        imeiScannerFrame=requestAnimationFrame(scanFrame);
+      };
+      imeiScannerFrame=requestAnimationFrame(scanFrame);
+    }catch(error){
+      $('imei-scanner-message').textContent='Camera permission was not granted or the camera is unavailable. Enter the code manually.';
+    }
+  }
+  $('imei-scanner-close')?.addEventListener('click',stopImeiScanner);
+  $('imei-scanner-modal')?.addEventListener('click',e=>{if(e.target.id==='imei-scanner-modal')stopImeiScanner();});
+  $('imei-scanner-use')?.addEventListener('click',()=>applyScannedImei($('imei-scanner-manual').value));
+
   $('customer-lookup-form').addEventListener('submit',lookupCustomer);
   $('customer-lookup-result').addEventListener('click',e=>{
     if(e.target.id==='add-customer-package'){
@@ -625,7 +675,7 @@
   $('profile-form').addEventListener('submit',async e=>{e.preventDefault();const btn=$('profile-form').querySelector('button[type="submit"]');btn.disabled=true;btn.textContent='Saving…';$('profile-error').textContent='';const payload={businessName:$('profile-business-name').value.trim(),businessPhone:$('profile-business-phone').value.trim(),businessEmail:$('profile-business-email').value.trim()||null,storeName:$('profile-store-name').value.trim(),storeLocation:$('profile-store-location').value.trim()||null,receiptHeader:$('profile-receipt-header').value.trim()||null,receiptFooter:$('profile-receipt-footer').value.trim()||null};if(state.profileLogoData!==undefined)payload.logoData=state.profileLogoData;try{await request('/api/v1/business/profile',{method:'PATCH',body:JSON.stringify(payload)});state.businessProfile={...state.businessProfile,...payload};renderDashboardBusinessProfile();$('profile-panel').classList.add('hidden');showNotice('Business profile saved. Your logo and details will appear on new receipts.');}catch(err){$('profile-error').textContent=err.message||'Could not save business profile.';}finally{btn.disabled=false;btn.textContent='Save business profile';}});
   $('logout-btn').addEventListener('click',()=>{clearSession();window.dispatchEvent(new Event('swass:logout'));state.cart.clear();renderCart();$('profile-panel').classList.add('hidden');showLogin();});
   $('product-list').addEventListener('click',e=>{const b=e.target.closest('[data-add]');if(b)addToCart(b.dataset.add);});
-  $('cart-list').addEventListener('click',e=>{const b=e.target.closest('[data-qty]');if(b)changeQty(b.dataset.qty,Number(b.dataset.delta));});
+  $('cart-list').addEventListener('click',e=>{const scan=e.target.closest('[data-scan-imei]');if(scan){openImeiScanner(scan.dataset.scanImei);return;}const b=e.target.closest('[data-qty]');if(b)changeQty(b.dataset.qty,Number(b.dataset.delta));});
   $('cart-list').addEventListener('input',e=>{const price=e.target.closest('[data-price]');if(price){const row=state.cart.get(price.dataset.price);const value=Number(price.value);if(!row||!Number.isSafeInteger(value)||value<1||value>100000000000){$('checkout-open').disabled=true;return;}if(row&&Number.isSafeInteger(value)&&value>=1&&value<=100000000000){row.unitPriceKes=value;const line=price.closest('.cart-row')?.querySelector('.cart-line-total');if(line)line.textContent='Line subtotal: '+money(value*row.qty);const t=totals();$('subtotal').textContent=money(t.subtotal);$('total').textContent=money(t.total);$('checkout-open').disabled=!state.cart.size||t.total<0||[...$('cart-list').querySelectorAll('[data-price]')].some(input=>!Number.isSafeInteger(Number(input.value))||Number(input.value)<1||Number(input.value)>100000000000);}return;}const field=e.target.closest('[data-imei]');if(field){const row=state.cart.get(field.dataset.imei);if(row)row.imei=field.value;}});
   let productSearchTimer;
   $('product-search').addEventListener('input',()=>{clearTimeout(productSearchTimer);productSearchTimer=setTimeout(loadProducts,300);});
