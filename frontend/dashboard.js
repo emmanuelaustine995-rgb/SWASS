@@ -84,7 +84,6 @@
       renderDaily(data.daily||[]);
       renderProductMix(data.productSales||[]);
       renderCashiers(data.cashiers||[]);
-      renderStaffReports();
       $('notice').classList.add('hidden');
     } catch(err){
       notice(err.message,true);
@@ -125,29 +124,6 @@
   }
   function renderDaily(rows){const max=Math.max(1,...rows.map(r=>Number(r.salesKes)));$('daily-chart').innerHTML=rows.length?rows.map(r=>{const h=Math.max(3,Number(r.salesKes)/max*125);return `<div class="day-bar" title="${esc(r.day)} · ${money(r.salesKes)}"><small>${money(r.salesKes)}</small><i style="height:${h}px"></i><b>${new Date(`${r.day}T00:00:00`).toLocaleDateString('en-KE',{day:'numeric',month:'short'})}</b></div>`;}).join(''):'<p class="muted">No sales data for this period.</p>';}
   function renderCashiers(rows){const target=document.getElementById('owner-cashier-rows');if(!target)return;target.innerHTML=rows.length?rows.map(r=>`<tr><td><strong>${esc(r.name)}</strong></td><td>${Number(r.todayTransactions||0).toLocaleString('en-KE')}</td><td>${money(r.todaySalesKes)}</td><td>${Number(r.mtdTransactions||0).toLocaleString('en-KE')}</td><td>${money(r.mtdSalesKes)}</td></tr>`).join(''):'<tr><td colspan="5">No staff accounts found yet. Invite a staff member to begin tracking performance.</td></tr>';const message=document.getElementById('owner-staff-performance-message');if(message)message.textContent=`Showing ${rows.length} staff member(s). Daily and MTD figures update when the dashboard refreshes.`;}
-  function renderStaffReports(){
-    const data=state.lastDashboardData||{};
-    const rows=data.cashiers||[];
-    const filter=document.getElementById('owner-staff-report-filter');
-    const body=document.getElementById('owner-staff-report-rows');
-    const message=document.getElementById('owner-staff-report-message');
-    if(!filter||!body)return;
-    const selected=filter.value||'all';
-    const names=rows.map(r=>r.name).filter(Boolean);
-    const previous=filter.dataset.names||'';
-    const signature=names.join('|');
-    if(previous!==signature){
-      filter.innerHTML='<option value="all">All staff</option>'+names.map(name=>'<option value="'+esc(name)+'">'+esc(name)+'</option>').join('');
-      filter.dataset.names=signature;
-      filter.value=names.includes(selected)?selected:'all';
-    }
-    const visible=filter.value==='all'?rows:rows.filter(r=>r.name===filter.value);
-    body.innerHTML=visible.length?visible.map(r=>'<tr><td><strong>'+esc(r.name)+'</strong></td><td>'+Number(r.todayTransactions||0).toLocaleString('en-KE')+'</td><td>'+money(r.todaySalesKes)+'</td><td>'+Number(r.mtdTransactions||0).toLocaleString('en-KE')+'</td><td>'+money(r.mtdSalesKes)+'</td><td>'+Number(r.transactions||0).toLocaleString('en-KE')+'</td><td>'+money(r.salesKes)+'</td></tr>').join(''):'<tr><td colspan="7">No staff accounts found yet. Invite a staff member to start recording performance.</td></tr>';
-    if(message)message.textContent='Showing '+visible.length+' of '+rows.length+' staff member(s). Figures update when the dashboard refreshes.';
-  }
-  window.refreshStaffReports=renderStaffReports;
-  document.getElementById('owner-staff-report-filter')?.addEventListener('change',renderStaffReports);
-
   async function loadCustomers(){
     const q=$('crm-search').value.trim();const p=new URLSearchParams();if(q)p.set('q',q);p.set('limit','100');
     $('crm-message').textContent='Loading customers…';
