@@ -189,12 +189,12 @@ export class AuthController {
   }
 
   @Post('register')
-  async register(@Body() body: { accountType?: string; inviteCode?: string; businessName?: string; storeName?: string; storeLocation?: string; fullName?: string; phone?: string; email?: string; password?: string }, @Req() req: any) {
+  async register(@Body() body: { accountType?: string; businessName?: string; storeName?: string; storeLocation?: string; fullName?: string; phone?: string; email?: string; password?: string }, @Req() req: any) {
     const registrationStartedAt = Date.now();
     console.info('[SWASS][OTP_DIAG] Signup registration request received');
-    const role = body?.accountType === 'cashier' ? 'cashier' : 'owner';
-    if (role === 'cashier') throw new BadRequestException('Staff accounts can only be created by accepting an email invitation from the shop owner.');
-    let invitationId: string | null = null;
+    if (body?.accountType === 'cashier') throw new BadRequestException('Staff accounts can only be created by accepting an email invitation from the shop owner.');
+    const role = 'owner';
+    const invitationId: string | null = null;
     let businessName = body?.businessName?.trim() || '';
     let storeName = (body?.storeName || body?.businessName)?.trim() || '';
     let storeLocation = body?.storeLocation?.trim() || null;
@@ -221,12 +221,12 @@ export class AuthController {
       storeName = invite.rows[0].store_name;
       storeLocation = invite.rows[0].store_location;
     }
-    if ((role === 'owner' && (!businessName || businessName.length > 120 || !storeName || storeName.length > 120)) || !fullName || fullName.length > 120) {
+    if (!businessName || businessName.length > 120 || !storeName || storeName.length > 120 || !fullName || fullName.length > 120) {
       throw new BadRequestException('Enter your business name, store name and full name (maximum 120 characters each)');
     }
     if (storeLocation && storeLocation.length > 200) throw new BadRequestException('Store location must be at most 200 characters');
     if (email && (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254)) throw new BadRequestException('Enter a valid email address');
-    if (role === 'owner' && (password.length < 10 || password.length > 128)) throw new BadRequestException('Password must be at least 10 characters');
+    if (password.length < 10 || password.length > 128) throw new BadRequestException('Password must be at least 10 characters');
     const phone = this.normalizePhone(body.phone || '');
     const ip = String(req.ip ?? '').replace(/^::ffff:/, '') || null;
 
@@ -240,7 +240,7 @@ export class AuthController {
           (SELECT count(*)::int FROM signup_otp_requests WHERE ip_address=$2::inet AND created_at>now()-interval '15 minutes') AS ip_count`,
         [phone, ip],
       ),
-      argon2.hash(role === 'cashier' ? cashierAccessCode : password),
+      argon2.hash(password),
     ]);
     console.info(`[SWASS][OTP_DIAG] Signup validation, database checks and password hash completed in ${Date.now() - checksStartedAt}ms`);
     if (existing.rowCount) throw new UnauthorizedException('This phone number is already registered. Sign in or use another number.');
