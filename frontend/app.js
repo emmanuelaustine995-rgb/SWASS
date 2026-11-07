@@ -1,18 +1,18 @@
 (() => {
   'use strict';
   const $ = (id) => document.getElementById(id);
-  const state = { token: null, role: null, userName: '', products: [], cart: new Map(), lastReceipt: null, profileLogoData: undefined, businessProfile: {} };
+  const state = { token: null, role: null, userName: '', staffTitle: '', userPhotoData: '', products: [], cart: new Map(), lastReceipt: null, profileLogoData: undefined, businessProfile: {} };
   const SESSION_KEY = 'swass-auth-session-v1';
   const SESSION_IDLE_MS = 3 * 60 * 60 * 1000;
   let lastSessionWrite = 0;
-  function saveSession(){ if(!state.token)return; const now=Date.now(); localStorage.setItem(SESSION_KEY,JSON.stringify({token:state.token,role:state.role,userName:state.userName,lastActivity:now})); lastSessionWrite=now; }
+  function saveSession(){ if(!state.token)return; const now=Date.now(); localStorage.setItem(SESSION_KEY,JSON.stringify({token:state.token,role:state.role,userName:state.userName,staffTitle:state.staffTitle,userPhotoData:state.userPhotoData,lastActivity:now})); lastSessionWrite=now; }
   function touchSession(){ if(!state.token)return; const now=Date.now(); if(now-lastSessionWrite<30000)return; try{const saved=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');if(saved?.token===state.token){saved.lastActivity=now;localStorage.setItem(SESSION_KEY,JSON.stringify(saved));lastSessionWrite=now;}}catch{localStorage.removeItem(SESSION_KEY);} }
   function clearSession(){ localStorage.removeItem(SESSION_KEY); state.token=null; state.role=null; }
   function sessionIsValid(saved){ if(!saved?.token||!Number.isFinite(saved.lastActivity)||Date.now()-saved.lastActivity>SESSION_IDLE_MS)return false; try{const part=saved.token.split('.')[1];const claims=JSON.parse(atob(part.replace(/-/g,'+').replace(/_/g,'/')));return !!claims.exp&&claims.exp*1000>Date.now();}catch{return false;} }
   async function restoreSession(){
     let saved;try{saved=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');}catch{}
     if(!sessionIsValid(saved)){clearSession();showLogin();return;}
-    state.token=saved.token;state.role=saved.role||'owner';state.userName=saved.userName||'';lastSessionWrite=Number(saved.lastActivity)||Date.now();
+    state.token=saved.token;state.role=saved.role||'owner';state.userName=saved.userName||'';state.staffTitle=saved.staffTitle||'';state.userPhotoData=saved.userPhotoData||'';lastSessionWrite=Number(saved.lastActivity)||Date.now();
     showPOS();publishWorkspaceSession();
     let subscriptionRequired=false;
     try{if(['owner','manager'].includes(state.role))await loadBusinessProfile();await loadProducts();}
@@ -132,7 +132,7 @@
     document.querySelectorAll('#workspace-nav button').forEach(b=>b.classList.toggle('active',b.dataset.workspace===screen));
   }
 
-  function showPOS(){ $('login-view').classList.add('hidden'); $('pos-view').classList.remove('hidden'); const welcome=$('welcome-back-banner'); if(welcome){const hour=new Date().getHours();const greeting=hour<12?'Good morning':hour<17?'Good afternoon':'Good evening';welcome.textContent=`${greeting}, welcome back${state.userName?' '+state.userName:''}!`;welcome.classList.remove('hidden');} $('logout-btn').classList.remove('hidden'); $('user-label').textContent=state.role === 'cashier' ? 'Shop Attendant' : state.role ? state.role.replace('_',' ') : 'Staff'; $('add-product-btn').classList.toggle('hidden', !['owner','manager'].includes(state.role)); $('dashboard-link').classList.toggle('hidden', !['owner','manager'].includes(state.role));$('workspace-nav').classList.toggle('hidden', !['owner','manager'].includes(state.role));  }
+  function showPOS(){ $('login-view').classList.add('hidden'); $('pos-view').classList.remove('hidden'); const welcome=$('welcome-back-banner'); if(welcome){const hour=new Date().getHours();const greeting=hour<12?'Good morning':hour<17?'Good afternoon':'Good evening';welcome.textContent=`${greeting}, welcome back${state.userName?' '+state.userName:''}!`;welcome.classList.remove('hidden');} $('logout-btn').classList.remove('hidden'); const label=$('user-label');label.textContent=state.staffTitle||(state.role==='cashier'?'Shop Attendant':state.role?state.role.replace('_',' '):'Staff');if(state.userPhotoData){const avatar=document.createElement('img');avatar.src=state.userPhotoData;avatar.alt='Staff profile photo';avatar.style.cssText='width:30px;height:30px;object-fit:cover;border-radius:50%;vertical-align:middle;margin-right:8px';label.prepend(avatar);} $('add-product-btn').classList.toggle('hidden', !['owner','manager'].includes(state.role)); $('dashboard-link').classList.toggle('hidden', !['owner','manager'].includes(state.role));$('workspace-nav').classList.toggle('hidden', !['owner','manager'].includes(state.role));  }
   async function lookupCustomer(ev){
     ev.preventDefault();
     const phone=$('lookup-phone').value.trim();
@@ -509,7 +509,7 @@
       const claims=JSON.parse(atob(parts.replace(/-/g,'+').replace(/_/g,'/')));
       state.token=data.accessToken;
       state.role=claims.role;
-      state.userName=data.user?.fullName||data.user?.name||data.user?.displayName||claims.fullName||claims.name||claims.displayName||claims.firstName||'';
+      state.userName=data.user?.fullName||data.user?.name||data.user?.displayName||claims.fullName||claims.name||claims.displayName||claims.firstName||'';state.staffTitle=data.user?.staffTitle||'';state.userPhotoData=data.user?.profilePhotoData||'';
       if(data.mustChangePassword || claims.mustChangePassword){
         $('login-form').classList.add('hidden');
         $('show-password-reset').parentElement.classList.add('hidden');
@@ -525,7 +525,7 @@
     }catch(err){
       state.token=null;
       state.role=null;
-      state.userName='';
+      state.userName='';state.staffTitle='';state.userPhotoData='';
       $('login-error').textContent=err.message||'Sign-in failed. Check your phone number and password.';
     }finally{
       if(button){button.disabled=false;button.textContent='Sign in';}
