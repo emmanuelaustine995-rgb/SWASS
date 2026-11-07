@@ -7,9 +7,9 @@ export class EmailVerificationService {
   constructor(private db: DbService) {}
 
   async send(userId: string, email: string, fullName: string) {
-    const apiKey = process.env.RESEND_API_KEY;
-    const from = process.env.RESEND_FROM_EMAIL;
-    if (!apiKey || !from) return { sent: false, reason: 'Email verification provider is not configured' };
+    const apiKey = process.env.BREVO_API_KEY?.trim();
+    const from = process.env.BREVO_FROM_EMAIL?.trim();
+    if (!apiKey || !from) return { sent: false, reason: 'Brevo email provider is not configured' };
     const token = randomBytes(32).toString('base64url');
     const tokenHash = createHash('sha256').update(token).digest('hex');
     await this.db.pool.query(
@@ -18,11 +18,11 @@ export class EmailVerificationService {
       [userId,email,tokenHash],
     );
     const verifyUrl = `${(process.env.PUBLIC_APP_URL || 'https://swass-web.onrender.com').replace(/\/$/,'')}/verify-email.html?token=${encodeURIComponent(token)}`;
-    const response = await fetch('https://api.resend.com/emails', {
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
-      headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      headers: { 'api-key': apiKey, 'Content-Type': 'application/json', accept: 'application/json' },
       body: JSON.stringify({
-        from, to: [email], subject: 'Verify your SWASS business email',
+        sender: { email: from, name: 'SWASS' }, to: [{ email }], subject: 'Verify your SWASS business email',
         html: `<div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;color:#17251f"><h2>Welcome to SWASS, ${this.escape(fullName)}</h2><p>Confirm your email address to keep your business account details up to date.</p><p><a href="${verifyUrl}" style="display:inline-block;padding:13px 20px;background:#176b4a;color:#fff;text-decoration:none;border-radius:8px">Verify email address</a></p><p>This link expires in 30 minutes. If you did not create this account, ignore this message.</p></div>`,
       }),
     });
@@ -35,61 +35,28 @@ export class EmailVerificationService {
     issuedAt: string | Date; businessName: string; storeName: string;
     items: { name: string; qty: number; unitPriceKes: number; lineTotalKes: number; serialNo?: string | null }[];
   }) {
-    const apiKey = process.env.RESEND_API_KEY?.trim();
-    const from = process.env.RESEND_FROM_EMAIL?.trim();
-    const smtpHost = process.env.RESEND_SMTP_HOST?.trim() || 'smtp.resend.com';
-    const smtpPort = Number(process.env.RESEND_SMTP_PORT || 465);
-    const smtpUser = process.env.RESEND_SMTP_USER?.trim() || 'resend';
-    const smtpPassword = process.env.RESEND_SMTP_PASSWORD;
-    if (!from) throw new Error('Receipt email sender is not configured');
+    const apiKey = process.env.BREVO_API_KEY?.trim();
+    const from = process.env.BREVO_FROM_EMAIL?.trim();
+    if (!apiKey || !from) throw new Error('Brevo email provider is not configured. Set BREVO_API_KEY and BREVO_FROM_EMAIL.');
     const escape = (value: unknown) => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
     const issued = new Date(input.issuedAt).toLocaleString('en-KE', { timeZone: 'Africa/Nairobi' });
     const subject = `Your receipt ${input.receiptNo} from ${input.businessName}`;
     const html = `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#17251f;padding:20px"><h2 style="color:#176b4a">Thank you for shopping with ${escape(input.businessName)}</h2><p>Hello ${escape(input.customerName)},</p><p>Your receipt has been issued successfully.</p><div style="border:1px solid #dce8e2;border-radius:12px;padding:18px"><p><strong>Receipt:</strong> ${escape(input.receiptNo)}</p><p><strong>Branch:</strong> ${escape(input.storeName || 'Main branch')}</p><p><strong>Date:</strong> ${escape(issued)}</p><p style="font-size:22px"><strong>Total paid: KSh ${Number(input.totalKes).toLocaleString('en-KE')}</strong></p><table style="width:100%;border-collapse:collapse;margin-top:16px"><thead><tr><th align="left" style="border-bottom:1px solid #ddd;padding:8px">Item</th><th align="right" style="border-bottom:1px solid #ddd;padding:8px">Qty</th><th align="right" style="border-bottom:1px solid #ddd;padding:8px">Amount</th></tr></thead><tbody>${input.items.map(item => `<tr><td style="border-bottom:1px solid #eee;padding:8px">${escape(item.name)}${item.serialNo ? `<br><small>IMEI/Serial: ${escape(item.serialNo)}</small>` : ''}</td><td align="right" style="border-bottom:1px solid #eee;padding:8px">${Number(item.qty)}</td><td align="right" style="border-bottom:1px solid #eee;padding:8px">KSh ${Number(item.lineTotalKes).toLocaleString('en-KE')}</td></tr>`).join('')}</tbody></table></div><p>Keep this email as your digital receipt. You can contact the business if you need assistance.</p></div>`;
-    const attachments = input.pdf ? [{ filename: `${input.receiptNo}.pdf`, content: input.pdf }] : [];
-    let apiError: unknown = null;
-    if (apiKey) {
-      try {
-        const response = await fetch('https://api.resend.com/emails', {
-          method: 'POST',
-          signal: AbortSignal.timeout(12000),
-          headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            from, to: [input.to], subject,
-            ...(input.pdf ? { attachments: [{ filename: `${input.receiptNo}.pdf`, content: input.pdf.toString('base64') }] } : {}),
-            html,
-          }),
-        });
-        const raw = await response.text();
-        if (!response.ok) throw new Error(`Resend API HTTP ${response.status}: ${raw.slice(0,180)}`);
-        return { sent: true, provider: 'resend-api' };
-      } catch (error) {
-        apiError = error;
-      }
-    }
-    if (smtpPassword) {
-      try {
-        const nodemailer = require('nodemailer');
-        const transporter = nodemailer.createTransport({
-          host: smtpHost,
-          port: smtpPort,
-          secure: smtpPort === 465 || smtpPort === 2465,
-          auth: { user: smtpUser, pass: smtpPassword },
-          connectionTimeout: 12000,
-          greetingTimeout: 12000,
-          socketTimeout: 15000,
-        });
-        await transporter.sendMail({ from, to: input.to, subject, html, attachments });
-        return { sent: true, provider: 'resend-smtp' };
-      } catch (smtpError) {
-        const apiMessage = apiError instanceof Error ? apiError.message : 'Resend API not configured or failed';
-        const smtpMessage = smtpError instanceof Error ? smtpError.message : 'SMTP delivery failed';
-        throw new Error(`Email delivery failed. API: ${apiMessage}. SMTP: ${smtpMessage}`);
-      }
-    }
-    if (apiError instanceof Error) throw apiError;
-    throw new Error('Email provider is not configured. Set RESEND_API_KEY or RESEND_SMTP_PASSWORD.');
-
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      signal: AbortSignal.timeout(15000),
+      headers: { 'api-key': apiKey, 'Content-Type': 'application/json', accept: 'application/json' },
+      body: JSON.stringify({
+        sender: { email: from, name: 'SWASS' },
+        to: [{ email: input.to, name: input.customerName }],
+        subject,
+        htmlContent: html,
+        ...(input.pdf ? { attachment: [{ name: `${input.receiptNo}.pdf`, content: input.pdf.toString('base64') }] } : {}),
+      }),
+    });
+    const raw = await response.text();
+    if (!response.ok) throw new Error(`Brevo HTTP ${response.status}: ${raw.slice(0, 240)}`);
+    return { sent: true, provider: 'brevo' };
   }
 
   async verify(token: string) {
