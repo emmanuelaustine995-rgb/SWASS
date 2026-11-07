@@ -200,7 +200,7 @@ export class AuthController {
     let storeLocation = body?.storeLocation?.trim() || null;
     const houseName=body?.houseName?.trim()||null; const floor=body?.floor?.trim()||null; const houseNumber=body?.houseNumber?.trim()||null; const websiteUrl=body?.websiteUrl?.trim()||null; const kraPin=body?.kraPin?.trim()||null; const legalName=body?.legalName?.trim()||null; const businessEmail=body?.businessEmail?.trim().toLowerCase()||null;
     if(legalName && legalName.length>160) throw new BadRequestException('Legal entity name is too long');
-    if(businessEmail && (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(businessEmail)||businessEmail.length>254)) throw new BadRequestException('Enter a valid business email address');
+    if(businessEmail && (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(businessEmail)||businessEmail.length>254)) throw new BadRequestException('Enter a valid business email address');
     if(websiteUrl && (websiteUrl.length>255 || !/^https?:\/\//i.test(websiteUrl))) throw new BadRequestException('Enter a valid website URL beginning with http:// or https://');
     if(kraPin && kraPin.length>40) throw new BadRequestException('KRA PIN is too long');
     const fullName = body?.fullName?.trim();
