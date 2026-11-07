@@ -45,6 +45,8 @@ export class ReceiptsService {
     const { rows } = await this.db.pool.query(
       `SELECT r.id, r.receipt_no, r.issued_at, r.total_kes, r.subtotal_kes, r.discount_kes,
               r.payment_method, r.status, c.full_name AS customer_name, c.phone AS customer_phone,
+              COALESCE(dl.email_status,'not_requested') AS email_delivery_status,
+              COALESCE(dl.whatsapp_status,'not_requested') AS whatsapp_delivery_status,
               c.email AS customer_email, c.national_id_last4 AS customer_id_last4,
               u.full_name AS cashier_name,
               COALESCE(json_agg(json_build_object('name', ri.name, 'qty', ri.qty,
@@ -53,6 +55,7 @@ export class ReceiptsService {
          FROM receipts r
          LEFT JOIN customers c ON c.id = r.customer_id AND c.tenant_id = r.tenant_id
          LEFT JOIN users u ON u.id = r.cashier_id AND u.tenant_id = r.tenant_id
+         LEFT JOIN receipt_delivery_logs dl ON dl.receipt_id = r.id
          LEFT JOIN receipt_items ri ON ri.receipt_id = r.id
         WHERE r.tenant_id = $1 AND r.store_id = $2
           AND ($3::date IS NULL OR r.issued_at >= $3::date)
@@ -75,7 +78,7 @@ export class ReceiptsService {
       id: r.id, receiptNo: r.receipt_no, issuedAt: r.issued_at,
       totalKes: Number(r.total_kes), subtotalKes: Number(r.subtotal_kes),
       discountKes: Number(r.discount_kes), paymentMethod: r.payment_method,
-      status: r.status, cashier: { name: r.cashier_name || 'Staff' }, customer: r.customer_name ? {
+      status: r.status, delivery: { email: r.email_delivery_status, whatsapp: r.whatsapp_delivery_status }, cashier: { name: r.cashier_name || 'Staff' }, customer: r.customer_name ? {
         fullName: r.customer_name, phone: r.customer_phone, email: r.customer_email, nationalIdLast4: r.customer_id_last4,
       } : null, items: r.items,
     })) };
