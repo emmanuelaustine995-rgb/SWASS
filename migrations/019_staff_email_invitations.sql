@@ -23,3 +23,6 @@ CREATE INDEX IF NOT EXISTS idx_staff_email_invites_email
 
 ALTER TABLE users ADD COLUMN IF NOT EXISTS staff_title TEXT;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_photo_data TEXT;
+
+-- Expire any unfinished legacy cashier code-based signup requests.
+UPDATE signup_otp_requests SET expires_at=now() WHERE role='cashier' AND consumed_at IS NULL;
