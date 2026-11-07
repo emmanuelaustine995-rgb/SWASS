@@ -1,4 +1,4 @@
-import { BadRequestException, Controller, Delete, Get, Post, Body, Req, UseGuards } from '@nestjs/common';
+import { BadRequestException, Controller, Delete, Get, Post, Patch, Body, Req, UseGuards } from '@nestjs/common';
 import { createHash, randomBytes } from 'node:crypto';
 import * as argon2 from 'argon2';
 import { AuthGuard, Roles, RolesGuard } from '../auth/auth';
