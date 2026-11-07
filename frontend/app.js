@@ -375,6 +375,9 @@
     $('reg-business').required=!attendant;
     $('reg-store').required=!attendant;
     $('reg-invite-code').required=attendant;
+    $('reg-invite-code').maxLength=8;
+    $('reg-password').required=!attendant;
+    $('reg-password-field').classList.toggle('hidden',attendant);
     $('register-submit').textContent=attendant?'Join business · Send verification code':'Create business · Send verification code';
   }
   $('reg-account-type').addEventListener('change',updateSignupAccountType);
@@ -393,7 +396,7 @@
       fullName:$('reg-name').value.trim(),
       phone:$('reg-phone').value.trim(),
       email:$('reg-email').value.trim(),
-      password:$('reg-password').value
+      password:$('reg-account-type').value==='cashier' ? $('reg-invite-code').value.trim() : $('reg-password').value
     };
   }
   function startSignupResendCountdown(){
@@ -459,18 +462,21 @@
       state.userName=$('reg-name').value.trim();
       const parts=state.token.split('.')[1];
       const claims=JSON.parse(atob(parts.replace(/-/g,'+').replace(/_/g,'/')));
-      state.role=claims.role;publishWorkspaceSession();
+      state.role=claims.role;
       if(signupResendTimer)clearInterval(signupResendTimer);
       $('register-form').reset();
       updateSignupAccountType();
       $('register-fields').classList.remove('hidden');
       $('signup-otp-panel').classList.add('hidden');
       $('register-submit').classList.remove('hidden');
-      showPOS();
       if(state.role==='cashier'){
-        showWorkspaceScreen('receipts');
-        showNotice('You have joined the business. Open Issue Receipt to start serving customers.');
+        $('login-view').classList.remove('hidden');
+        $('register-form').classList.add('hidden');
+        $('first-password-form').classList.remove('hidden');
+        $('first-password-message').textContent='Your shop account is ready. Create your private password to continue.';
       }else{
+        showPOS();
+        publishWorkspaceSession();
         showWorkspaceScreen('accounting');
         showNotice('Your business account is ready. Subscribe for KSh 100 per month (or KSh 900 per year), then top up your receipt wallet.');
       }
@@ -495,6 +501,13 @@
       state.token=data.accessToken;
       state.role=claims.role;
       state.userName=data.user?.fullName||data.user?.name||data.user?.displayName||claims.fullName||claims.name||claims.displayName||claims.firstName||'';
+      if(data.mustChangePassword || claims.mustChangePassword){
+        $('login-form').classList.add('hidden');
+        $('show-password-reset').parentElement.classList.add('hidden');
+        $('first-password-form').classList.remove('hidden');
+        $('first-password-message').textContent='This is your temporary shop access code. Create your own password to continue.';
+        return;
+      }
       signedIn=true;
       showPOS();
       publishWorkspaceSession();
@@ -532,6 +545,27 @@
     } else {
       showWorkspaceScreen('dashboard');
     }
+  });
+  $('first-password-form').addEventListener('submit',async e=>{
+    e.preventDefault();
+    const password=$('first-new-password').value;
+    const confirm=$('first-confirm-password').value;
+    const message=$('first-password-message');
+    if(password.length<10){message.textContent='Use at least 10 characters.';return;}
+    if(password!==confirm){message.textContent='The passwords do not match.';return;}
+    const btn=$('save-first-password');btn.disabled=true;btn.textContent='Saving…';
+    try{
+      const result=await request('/api/v1/auth/change-password',{method:'POST',body:JSON.stringify({newPassword:password})});
+      clearSession();
+      $('first-password-form').classList.add('hidden');
+      $('show-password-reset').parentElement.classList.remove('hidden');
+      $('login-form').classList.remove('hidden');
+      $('login-password').value='';
+      $('first-new-password').value='';$('first-confirm-password').value='';
+      message.textContent=result.message||'Password saved. Sign in with your new password.';
+      $('login-error').textContent='Your password is ready. Sign in using your new password.';
+    }catch(err){message.textContent=err.message||'Could not save your password.';}
+    finally{btn.disabled=false;btn.textContent='Save my password';}
   });
   $('show-password-reset').addEventListener('click',()=>{
     $('login-form').classList.add('hidden');
