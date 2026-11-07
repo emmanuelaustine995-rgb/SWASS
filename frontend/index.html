@@ -11,8 +11,16 @@
   <header class="topbar"><a class="brand" href="#"><span class="brand-mark">E</span><span>E-RECEIPT<small>BY E-TECH</small></span></a><div class="top-actions"><button id="install-app-btn" class="btn btn-install hidden" type="button">Install app</button><span id="user-label" class="user-label"></span><span id="dashboard-link" class="btn btn-quiet hidden">Business workspace</span><button id="logout-btn" class="btn btn-quiet hidden">Log out</button></div></header>
   <main class="shell">
     <section id="login-view" class="login-wrap"><div class="aurora-welcome"><p class="aurora-kicker">E-TECH PRESENTS</p><h1>E-RECEIPT</h1><p>Welcome to <strong>AURORA E-RECEIPT</strong></p><span>Smart receipts. Clear records. Better business.</span></div>
-      <div class="login-card"><p class="eyebrow">WELCOME TO AURORA</p><h2>Sign in to continue</h2><p class="muted">Use your E-RECEIPT phone number and password.</p>
-        <form id="login-form"><label>Phone number<input id="login-phone" name="phone" autocomplete="username" inputmode="tel" placeholder="07XX XXX XXX" required></label><label>Password<input id="login-password" name="password" type="password" autocomplete="current-password" required></label><button class="btn btn-primary full" type="submit">Sign in</button><p id="login-error" class="error" role="alert"></p></form><p class="muted small" style="text-align:center"><button id="show-password-reset" class="text-btn" type="button">Forgot password?</button></p>
+      <div class="login-card"><p class="eyebrow">WELCOME TO AURORA</p><h2>Sign in to continue</h2><p class="muted">Shop attendants: enter your phone number and the short access code given by the shop owner for your first sign in.</p>
+        <form id="login-form"><label>Phone number<input id="login-phone" name="phone" autocomplete="username" inputmode="tel" placeholder="07XX XXX XXX" required></label><label>Password / shop access code<input id="login-password" name="password" type="password" autocomplete="current-password" required></label><button class="btn btn-primary full" type="submit">Sign in</button><p id="login-error" class="error" role="alert"></p></form><p class="muted small" style="text-align:center"><button id="show-password-reset" class="text-btn" type="button">Forgot password?</button></p>
+        <form id="first-password-form" class="hidden">
+          <p class="eyebrow">SECURE YOUR SHOP ACCOUNT</p><h3>Create your own password</h3>
+          <p class="muted small">Your owner-provided access code is temporary. Choose a private password of at least 10 characters.</p>
+          <label>New password<input id="first-new-password" type="password" minlength="10" maxlength="128" autocomplete="new-password" required></label>
+          <label>Confirm new password<input id="first-confirm-password" type="password" minlength="10" maxlength="128" autocomplete="new-password" required></label>
+          <button id="save-first-password" class="btn btn-primary full" type="submit">Save my password</button>
+          <p id="first-password-message" class="muted small" role="status"></p>
+        </form>
         <form id="password-reset-form" class="hidden">
           <p class="muted small">Enter the phone number registered with SWASS. We will send a six-digit password reset code by SMS.</p>
           <label>Registered phone number<input id="reset-phone" type="tel" inputmode="tel" placeholder="07XX XXX XXX" required></label>
@@ -40,14 +48,14 @@
             <label>Business location (optional)<input id="reg-location" maxlength="200" placeholder="Building, street, town"></label>
           </div>
           <div id="attendant-signup-fields" class="hidden">
-            <label>Invitation code from your business owner<input id="reg-invite-code" maxlength="16" autocomplete="off" placeholder="16-character invitation code"></label>
-            <p class="muted small">Ask your business owner to create an attendant invitation inside their business workspace.</p>
+            <label>Short access code from your shop owner<input id="reg-invite-code" maxlength="8" inputmode="numeric" autocomplete="off" placeholder="8-digit shop code"></label>
+            <p class="muted small">Your shop owner gives you this code. It is your temporary sign-in password. You will create your own password after joining.</p>
           </div>
           <div id="register-fields">
             <label>Your full name<input id="reg-name" required maxlength="120" autocomplete="name"></label>
             <label>Phone number<input id="reg-phone" required inputmode="tel" autocomplete="tel" placeholder="07XX XXX XXX"></label>
             <label>Email (optional)<input id="reg-email" type="email" autocomplete="email"></label>
-            <label>Create password<input id="reg-password" type="password" required minlength="10" autocomplete="new-password" placeholder="At least 10 characters"></label>
+            <label id="reg-password-field">Create password<input id="reg-password" type="password" required minlength="10" autocomplete="new-password" placeholder="At least 10 characters"></label>
           </div>
           <div id="signup-otp-panel" class="hidden">
             <p class="muted small">We sent a 6-digit verification code by SMS to your phone. Enter it below to activate your business account.</p>
