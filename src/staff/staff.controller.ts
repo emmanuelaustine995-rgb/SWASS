@@ -80,29 +80,35 @@ export class StaffController {
        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id,expires_at`,
       [user.tenantId,user.storeId,user.sub,fullName,email,phone,jobTitle,photo,this.hash(token),expiresAt],
     );
-    const apiKey = process.env.BREVO_API_KEY?.trim();
-    const from = process.env.BREVO_FROM_EMAIL?.trim();
+    const resendKey = process.env.RESEND_API_KEY?.trim();
+    const resendFrom = process.env.RESEND_FROM_EMAIL?.trim();
+    const brevoKey = process.env.BREVO_API_KEY?.trim();
+    const brevoFrom = process.env.BREVO_FROM_EMAIL?.trim();
+    const useResend = !!(resendKey && resendFrom);
+    const apiKey = useResend ? resendKey : brevoKey;
+    const from = useResend ? resendFrom : brevoFrom;
     if (!apiKey || !from) {
       await this.db.pool.query('DELETE FROM staff_email_invitations WHERE id=$1', [saved.rows[0].id]);
-      throw new BadRequestException('Email invitations are not configured yet. Set BREVO_API_KEY and BREVO_FROM_EMAIL in the API hosting settings.');
+      throw new BadRequestException('Email invitations are not configured. Set RESEND_API_KEY and RESEND_FROM_EMAIL, or BREVO_API_KEY and BREVO_FROM_EMAIL, in the API hosting settings.');
     }
     const base = (process.env.PUBLIC_APP_URL || 'https://swass-web.onrender.com').replace(/\/$/,'');
     const inviteUrl = base + '/staff-invite.html?token=' + encodeURIComponent(token);
     const safeName = this.escape(fullName), safeRole = this.escape(jobTitle);
-    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+    const html = `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#172033;padding:24px"><h2>Welcome to AURORA E-RECEIPT</h2><p>Hello ${safeName},</p><p>You have been invited to join a shop as <strong>${safeRole}</strong>.</p><p>Use the secure button below to accept your invitation and create your own password. Your link expires in 7 days and can only be used once.</p><p><a href="${inviteUrl}" style="display:inline-block;background:#176bce;color:white;padding:14px 22px;border-radius:8px;text-decoration:none">Accept staff invitation</a></p><p>If you were not expecting this invitation, you can ignore this email.</p></div>`;
+    const response = await fetch(useResend ? 'https://api.resend.com/emails' : 'https://api.brevo.com/v3/smtp/email', {
       method: 'POST', signal: AbortSignal.timeout(15000),
-      headers: { 'api-key': apiKey, 'Content-Type': 'application/json', accept: 'application/json' },
-      body: JSON.stringify({
-        sender: { email: from, name: 'AURORA E-RECEIPT' },
-        to: [{ email, name: fullName }],
-        subject: 'You are invited to join a shop on AURORA E-RECEIPT',
-        htmlContent: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#172033;padding:24px"><h2>Welcome to AURORA E-RECEIPT</h2><p>Hello ${safeName},</p><p>You have been invited to join a shop as <strong>${safeRole}</strong>.</p><p>Use the secure button below to accept your invitation and create your own password. Your link expires in 7 days and can only be used once.</p><p><a href="${inviteUrl}" style="display:inline-block;background:#176bce;color:white;padding:14px 22px;border-radius:8px;text-decoration:none">Accept staff invitation</a></p><p>If you were not expecting this invitation, you can ignore this email.</p></div>`,
-      }),
+      headers: useResend
+        ? { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' }
+        : { 'api-key': apiKey, 'Content-Type': 'application/json', accept: 'application/json' },
+      body: JSON.stringify(useResend
+        ? { from: `AURORA E-RECEIPT <${from}>`, to: [email], subject: 'You are invited to join a shop on AURORA E-RECEIPT', html }
+        : { sender: { email: from, name: 'AURORA E-RECEIPT' }, to: [{ email, name: fullName }], subject: 'You are invited to join a shop on AURORA E-RECEIPT', htmlContent: html }),
     });
-    const raw = await response.text();
+    const providerReply = await response.text();
     if (!response.ok) {
       await this.db.pool.query('DELETE FROM staff_email_invitations WHERE id=$1', [saved.rows[0].id]);
-      throw new BadRequestException('Invitation email could not be sent. Check the verified Brevo sender and email settings.');
+      console.error('[AURORA] Staff invitation email provider rejected the message:', response.status, providerReply.slice(0, 180));
+      throw new BadRequestException('Invitation email could not be sent. Check that your email sender is verified and the email provider credentials are correct.');
     }
     return { invitation: { id: saved.rows[0].id, fullName, email, phone, role: jobTitle, expiresAt: saved.rows[0].expires_at, emailSent: true } };
   }
