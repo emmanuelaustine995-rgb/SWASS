@@ -16,6 +16,7 @@ export interface AuthUser {
   tenantId: string | null;
   storeId: string | null;
   role: Role;
+  mustChangePassword?: boolean;
 }
 
 export const Roles = (...roles: Role[]) => SetMetadata('roles', roles);
@@ -38,9 +39,10 @@ export class AuthGuard implements CanActivate {
 
     const user = req.user as AuthUser;
     const path = String(req.originalUrl ?? req.url ?? '').split('?')[0];
+    if (user.mustChangePassword && path !== '/api/v1/auth/change-password') throw new ForbiddenException('Please create your own password before using the shop workspace.');
     // Keep the payment portal usable when a subscription has expired or has
     // not yet been purchased. All business-operation APIs remain locked.
-    const paymentRoute = path === '/api/v1/mpesa/stk-push' ||
+    const paymentRoute = path === '/api/v1/mpesa/stk-push' || path === '/api/v1/auth/change-password' ||
       /^\/api\/v1\/mpesa\/payments\/[0-9a-f-]+$/i.test(path);
     if (user.tenantId && user.role !== 'super_admin' && !paymentRoute) {
       const active = await this.db.pool.query(
@@ -197,9 +199,11 @@ export class AuthController {
     const fullName = body?.fullName?.trim();
     const email = body?.email?.trim().toLowerCase() || null;
     const password = body?.password || '';
+    let cashierAccessCode = '';
     if (role === 'cashier') {
-      const code = String(body?.inviteCode || '').trim().toUpperCase();
-      if (!/^[A-F0-9]{16}$/.test(code)) throw new BadRequestException('Enter the 16-character invitation code from your business owner.');
+      const code = String(body?.inviteCode || '').trim();
+      if (!/^\d{8}$/.test(code)) throw new BadRequestException('Enter the 8-digit access code from your business owner.');
+      cashierAccessCode = code;
       const secret = process.env.SWASS_ID_SECRET;
       if (!secret) throw new Error('SWASS_ID_SECRET is required');
       const codeHash = createHmac('sha256', secret).update('staff-invite:' + code).digest('hex');
@@ -220,7 +224,7 @@ export class AuthController {
     }
     if (storeLocation && storeLocation.length > 200) throw new BadRequestException('Store location must be at most 200 characters');
     if (email && (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254)) throw new BadRequestException('Enter a valid email address');
-    if (password.length < 10 || password.length > 128) throw new BadRequestException('Password must be at least 10 characters');
+    if (role === 'owner' && (password.length < 10 || password.length > 128)) throw new BadRequestException('Password must be at least 10 characters');
     const phone = this.normalizePhone(body.phone || '');
     const ip = String(req.ip ?? '').replace(/^::ffff:/, '') || null;
 
@@ -234,7 +238,7 @@ export class AuthController {
           (SELECT count(*)::int FROM signup_otp_requests WHERE ip_address=$2::inet AND created_at>now()-interval '15 minutes') AS ip_count`,
         [phone, ip],
       ),
-      argon2.hash(password),
+      argon2.hash(role === 'cashier' ? cashierAccessCode : password),
     ]);
     console.info(`[SWASS][OTP_DIAG] Signup validation, database checks and password hash completed in ${Date.now() - checksStartedAt}ms`);
     if (existing.rowCount) throw new UnauthorizedException('This phone number is already registered. Sign in or use another number.');
@@ -312,8 +316,8 @@ export class AuthController {
           tenantId = invite.rows[0].tenant_id;
           storeId = invite.rows[0].store_id;
           inserted = await c.query(
-            `INSERT INTO users (tenant_id,store_id,full_name,phone,email,password_hash,role)
-             VALUES ($1,$2,$3,$4,$5,$6,'cashier') RETURNING id,tenant_id,store_id,role`,
+            `INSERT INTO users (tenant_id,store_id,full_name,phone,email,password_hash,role,must_change_password)
+             VALUES ($1,$2,$3,$4,$5,$6,'cashier',true) RETURNING id,tenant_id,store_id,role`,
             [tenantId,storeId,row.full_name,phone,row.email,row.password_hash],
           );
           await c.query('UPDATE staff_invitations SET accepted_by=$1 WHERE id=$2', [inserted.rows[0].id,row.invitation_id]);
@@ -339,7 +343,7 @@ export class AuthController {
         await c.query('UPDATE signup_otp_requests SET verified_at=now(),consumed_at=now() WHERE id=$1', [row.id]);
         return inserted.rows[0];
       });
-      const payload: AuthUser = { sub: user.id, tenantId: user.tenant_id, storeId: user.store_id, role: user.role };
+      const payload: AuthUser = { sub: user.id, tenantId: user.tenant_id, storeId: user.store_id, role: user.role, mustChangePassword: row.role === 'cashier' };
       // Complete account creation without waiting for the external email provider.
       // Email verification continues independently after the account is ready.
       if (row.email) {
@@ -350,6 +354,7 @@ export class AuthController {
         accessToken: await this.jwt.signAsync(payload, { expiresIn: '30d' }),
         trialDays: 0, phoneVerified: true,
         emailVerificationSent: false, emailVerificationRequired: !!row.email,
+        mustChangePassword: row.role === 'cashier',
       };
     } catch (err: any) {
       if (err?.code === '23505') throw new UnauthorizedException('This phone number is already registered. Sign in or use another number.');
@@ -474,6 +479,16 @@ export class AuthController {
     return { reset: true, message: 'Password updated. You can now sign in with your new password.' };
   }
 
+  @Post('change-password')
+  @UseGuards(AuthGuard)
+  async changePassword(@Req() req: any, @Body() body: { newPassword?: string }) {
+    const password = String(body?.newPassword ?? '');
+    if (password.length < 10 || password.length > 128) throw new BadRequestException('New password must be at least 10 characters.');
+    const hash = await argon2.hash(password);
+    await this.db.pool.query('UPDATE users SET password_hash=$1,must_change_password=false WHERE id=$2', [hash, req.user.sub]);
+    return { changed: true, message: 'Your password has been created. Please sign in again using it.' };
+  }
+
   @Post('login')
   async login(@Body() body: { phone?: string; password?: string }) {
     const { password } = body ?? {};
@@ -483,7 +498,7 @@ export class AuthController {
     const localPhone = '0' + phone.slice(3);
     const phoneVariants = [phone, localPhone];
     const { rows } = await this.db.pool.query(
-      `SELECT u.id, u.tenant_id, u.store_id, u.role, u.password_hash, u.is_active, t.status AS tenant_status
+      `SELECT u.id, u.tenant_id, u.store_id, u.role, u.password_hash, u.is_active, u.must_change_password, t.status AS tenant_status
          FROM users u LEFT JOIN tenants t ON t.id = u.tenant_id
         WHERE u.phone = ANY($1::text[])
            OR regexp_replace(u.phone, '[^0-9]', '', 'g') = ANY($1::text[])
@@ -501,7 +516,7 @@ export class AuthController {
     const ok = u && u.is_active && tenantIsUsable && passwordOk;
     if (!ok) throw new UnauthorizedException('Invalid phone or password');
 
-    const payload: AuthUser = { sub: u.id, tenantId: u.tenant_id, storeId: u.store_id, role: u.role };
-    return { accessToken: await this.jwt.signAsync(payload, { expiresIn: '30d' }) };
+    const payload: AuthUser = { sub: u.id, tenantId: u.tenant_id, storeId: u.store_id, role: u.role, mustChangePassword: !!u.must_change_password };
+    return { accessToken: await this.jwt.signAsync(payload, { expiresIn: '30d' }), mustChangePassword: !!u.must_change_password };
   }
 }
