@@ -28,7 +28,7 @@ export class StaffController {
       );
       const invite = found.rows[0];
       if (!invite) throw new BadRequestException('This invitation link is invalid, expired or already used. Ask the shop owner to send another invitation.');
-      const phoneDigits = String(invite.phone).replace(/\\D/g, '');
+      const phoneDigits = String(invite.phone).replace(/\D/g, '');
       const phone = phoneDigits.startsWith('0') ? '254' + phoneDigits.slice(1) : phoneDigits.startsWith('254') ? phoneDigits : '254' + phoneDigits;
       const duplicate = await c.query(
         `SELECT 1 FROM users WHERE regexp_replace(phone,'[^0-9]','','g') IN ($1,$2)
@@ -55,16 +55,16 @@ export class StaffController {
     const fullName = String(body?.fullName ?? '').trim();
     const email = String(body?.email ?? '').trim().toLowerCase();
     const rawPhone = String(body?.phone ?? '').trim();
-    const digits = rawPhone.replace(/\\D/g, '');
+    const digits = rawPhone.replace(/\D/g, '');
     const phone = digits.startsWith('254') ? digits : digits.startsWith('0') ? '254' + digits.slice(1) : '254' + digits;
     const jobTitle = String(body?.role ?? 'Shop Attendant').trim();
     const allowed = ['Cashier','Shop Attendant','Salesperson','Store Assistant'];
     if (!fullName || fullName.length > 120) throw new BadRequestException('Enter the staff member’s full name.');
-    if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) || email.length > 254) throw new BadRequestException('Enter a valid staff email address.');
-    if (!/^254\\d{9}$/.test(phone)) throw new BadRequestException('Enter a valid Kenyan phone number.');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) throw new BadRequestException('Enter a valid staff email address.');
+    if (!/^254\d{9}$/.test(phone)) throw new BadRequestException('Enter a valid Kenyan phone number.');
     if (!allowed.includes(jobTitle)) throw new BadRequestException('Choose a valid staff role.');
     const photo = body?.profilePhotoData || null;
-    if (photo && (typeof photo !== 'string' || photo.length > 65000 || !/^data:image\\/(jpeg|png|webp);base64,/.test(photo))) {
+    if (photo && (typeof photo !== 'string' || photo.length > 65000 || !/^data:image\/(jpeg|png|webp);base64,/.test(photo))) {
       throw new BadRequestException('Profile photo must be a small PNG, JPG or WebP image (maximum 45 KB).');
     }
     const exists = await this.db.pool.query(
@@ -86,7 +86,7 @@ export class StaffController {
       await this.db.pool.query('DELETE FROM staff_email_invitations WHERE id=$1', [saved.rows[0].id]);
       throw new BadRequestException('Email invitations are not configured yet. Set BREVO_API_KEY and BREVO_FROM_EMAIL in the API hosting settings.');
     }
-    const base = (process.env.PUBLIC_APP_URL || 'https://swass-web.onrender.com').replace(/\\/$/,'');
+    const base = (process.env.PUBLIC_APP_URL || 'https://swass-web.onrender.com').replace(/\/$/,'');
     const inviteUrl = base + '/staff-invite.html?token=' + encodeURIComponent(token);
     const safeName = this.escape(fullName), safeRole = this.escape(jobTitle);
     const response = await fetch('https://api.brevo.com/v3/smtp/email', {
