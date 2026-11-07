@@ -115,6 +115,28 @@ export class DashboardController {
     };
   }
 
+
+  @Get('staff-summary')
+  @Roles('cashier')
+  async staffSummary(@Req() req: any) {
+    const [tenantId, storeId] = this.scope(req.user);
+    const { rows } = await this.db.pool.query(
+      `SELECT
+         COUNT(*) FILTER (WHERE status='issued')::int AS transactions,
+         COALESCE(SUM(total_kes) FILTER (WHERE status='issued'),0)::bigint AS sales_kes,
+         COUNT(*) FILTER (WHERE status='issued' AND issued_at >= (date_trunc('day', now() AT TIME ZONE 'Africa/Nairobi') AT TIME ZONE 'Africa/Nairobi'))::int AS today_transactions,
+         COALESCE(SUM(total_kes) FILTER (WHERE status='issued' AND issued_at >= (date_trunc('day', now() AT TIME ZONE 'Africa/Nairobi') AT TIME ZONE 'Africa/Nairobi')),0)::bigint AS today_sales_kes
+       FROM receipts
+       WHERE tenant_id=$1 AND store_id=$2 AND cashier_id=$3`,
+      [tenantId, storeId, req.user.sub],
+    );
+    const row = rows[0];
+    return {
+      staff: { transactions: Number(row.transactions), salesKes: Number(row.sales_kes),
+        todayTransactions: Number(row.today_transactions), todaySalesKes: Number(row.today_sales_kes) },
+    };
+  }
+
   @Get('comparison')
   @Roles('owner', 'manager')
   async comparison(@Req() req: any, @Query('from') from?: string, @Query('to') to?: string) {
