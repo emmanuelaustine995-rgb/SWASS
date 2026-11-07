@@ -38,18 +38,28 @@ export class StaffController {
       if (duplicate.rowCount) throw new BadRequestException('This phone number or email is already registered. Contact the shop owner.');
       const inserted = await c.query(
         `INSERT INTO users (tenant_id,store_id,full_name,phone,email,password_hash,role,must_change_password,staff_title,profile_photo_data)
-         VALUES ($1,$2,$3,$4,$5,$6,'cashier',false,$7,$8) RETURNING id`,
-        [invite.tenant_id, invite.store_id, invite.full_name, phone, invite.email, passwordHash, invite.job_title, invite.profile_photo_data],
+         VALUES ($1,$2,$3,$4,$5,$6,'cashier',false,$7,NULL) RETURNING id`,
+        [invite.tenant_id, invite.store_id, invite.full_name, phone, invite.email, passwordHash, invite.job_title],
       );
       await c.query('UPDATE staff_email_invitations SET accepted_by=$1,accepted_at=now() WHERE id=$2', [inserted.rows[0].id, invite.id]);
       return { accepted: true, message: 'Your staff account is ready. Sign in with your phone number and the password you just created.' };
     });
   }
 
+  @Patch('profile-photo')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('cashier')
+  async updateOwnProfilePhoto(@Req() req: any, @Body() body: { profilePhotoData?: string }) {
+    const photo = String(body?.profilePhotoData ?? '');
+    if (!/^data:image\/(jpeg|png|webp);base64,/.test(photo) || photo.length > 65000) throw new BadRequestException('Choose a PNG, JPG or WebP image no larger than 45 KB.');
+    await this.db.pool.query("UPDATE users SET profile_photo_data=$1 WHERE id=$2 AND role='cashier' AND tenant_id=$3 AND store_id=$4", [photo, req.user.sub, req.user.tenantId, req.user.storeId]);
+    return { saved: true, profilePhotoData: photo };
+  }
+
   @Post('invitations')
   @UseGuards(AuthGuard, RolesGuard)
   @Roles('owner')
-  async createInvitation(@Req() req: any, @Body() body: { fullName?: string; email?: string; phone?: string; role?: string; profilePhotoData?: string }) {
+  async createInvitation(@Req() req: any, @Body() body: { fullName?: string; email?: string; phone?: string; role?: string }) {
     const user = req.user;
     if (!user?.tenantId || !user?.storeId) throw new BadRequestException('Business owner account required.');
     const fullName = String(body?.fullName ?? '').trim();
@@ -63,10 +73,6 @@ export class StaffController {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) throw new BadRequestException('Enter a valid staff email address.');
     if (!/^254\d{9}$/.test(phone)) throw new BadRequestException('Enter a valid Kenyan phone number.');
     if (!allowed.includes(jobTitle)) throw new BadRequestException('Choose a valid staff role.');
-    const photo = body?.profilePhotoData || null;
-    if (photo && (typeof photo !== 'string' || photo.length > 65000 || !/^data:image\/(jpeg|png|webp);base64,/.test(photo))) {
-      throw new BadRequestException('Profile photo must be a small PNG, JPG or WebP image (maximum 45 KB).');
-    }
     const exists = await this.db.pool.query(
       `SELECT 1 FROM users WHERE regexp_replace(phone,'[^0-9]','','g') IN ($1,$2) OR lower(email)=lower($3) LIMIT 1`,
       [phone, '0' + phone.slice(3), email],
@@ -76,9 +82,9 @@ export class StaffController {
     const expiresAt = new Date(Date.now() + 7 * 86400000);
     const saved = await this.db.pool.query(
       `INSERT INTO staff_email_invitations
-       (tenant_id,store_id,created_by,full_name,email,phone,job_title,profile_photo_data,token_hash,expires_at)
-       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id,expires_at`,
-      [user.tenantId,user.storeId,user.sub,fullName,email,phone,jobTitle,photo,this.hash(token),expiresAt],
+       (tenant_id,store_id,created_by,full_name,email,phone,job_title,token_hash,expires_at)
+       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id,expires_at`,
+      [user.tenantId,user.storeId,user.sub,fullName,email,phone,jobTitle,this.hash(token),expiresAt],
     );
     const apiKey = process.env.BREVO_API_KEY?.trim();
     const from = process.env.BREVO_FROM_EMAIL?.trim();
