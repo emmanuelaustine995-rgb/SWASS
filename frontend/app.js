@@ -464,6 +464,7 @@
       const claims=JSON.parse(atob(parts.replace(/-/g,'+').replace(/_/g,'/')));
       state.role=claims.role;
       if(signupResendTimer)clearInterval(signupResendTimer);
+      const registeredPhone=$('reg-phone').value.trim();
       $('register-form').reset();
       updateSignupAccountType();
       $('register-fields').classList.remove('hidden');
@@ -475,7 +476,7 @@
         $('register-form').classList.add('hidden');
         $('first-password-form').classList.add('hidden');
         $('login-form').classList.remove('hidden');
-        $('login-phone').value=$('reg-phone').value.trim();
+        $('login-phone').value=registeredPhone;
         $('login-password').value='';
         $('login-error').textContent='Your shop account is ready. Sign in using the 8-digit code given by your shop owner.';
       }else{
