@@ -37,18 +37,14 @@ export class StaffController {
       );
       if (duplicate.rowCount) throw new BadRequestException('This phone number or email is already registered. Contact the shop owner.');
       const inserted = await c.query(
-        `INSERT INTO users (tenant_id,store_id,full_name,phone,email,password_hash,role,must_change_password)
-         VALUES ($1,$2,$3,$4,$5,$6,'cashier',false) RETURNING id`,
-        [invite.tenant_id, invite.store_id, invite.full_name, phone, invite.email, passwordHash],
+        `INSERT INTO users (tenant_id,store_id,full_name,phone,email,password_hash,role,must_change_password,staff_title,profile_photo_data)
+         VALUES ($1,$2,$3,$4,$5,$6,'cashier',false,$7,$8) RETURNING id`,
+        [invite.tenant_id, invite.store_id, invite.full_name, phone, invite.email, passwordHash, invite.job_title, invite.profile_photo_data],
       );
       await c.query('UPDATE staff_email_invitations SET accepted_by=$1,accepted_at=now() WHERE id=$2', [inserted.rows[0].id, invite.id]);
       return { accepted: true, message: 'Your staff account is ready. Sign in with your phone number and the password you just created.' };
     });
   }
-
-  @Controller
-  @UseGuards(AuthGuard, RolesGuard)
-  staticRoutes() {}
 
   @Post('invitations')
   @UseGuards(AuthGuard, RolesGuard)
