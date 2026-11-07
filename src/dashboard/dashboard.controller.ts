@@ -70,14 +70,27 @@ export class DashboardController {
              AND spent_at >= ($3::date::timestamp AT TIME ZONE 'Africa/Nairobi')
              AND spent_at < ($4::date::timestamp AT TIME ZONE 'Africa/Nairobi')`, params),
       this.db.pool.query(
-        `SELECT u.full_name AS name, COUNT(r.id)::int AS transactions,
-                COALESCE(SUM(r.total_kes),0)::bigint AS sales_kes
+        `SELECT u.full_name AS name,
+                COUNT(r.id) FILTER (WHERE r.status='issued'
+                  AND r.issued_at >= ($3::date::timestamp AT TIME ZONE 'Africa/Nairobi')
+                  AND r.issued_at < ($4::date::timestamp AT TIME ZONE 'Africa/Nairobi'))::int AS transactions,
+                COALESCE(SUM(r.total_kes) FILTER (WHERE r.status='issued'
+                  AND r.issued_at >= ($3::date::timestamp AT TIME ZONE 'Africa/Nairobi')
+                  AND r.issued_at < ($4::date::timestamp AT TIME ZONE 'Africa/Nairobi')),0)::bigint AS sales_kes,
+                COUNT(r.id) FILTER (WHERE r.status='issued'
+                  AND r.issued_at >= (date_trunc('day', now() AT TIME ZONE 'Africa/Nairobi') AT TIME ZONE 'Africa/Nairobi'))::int AS today_transactions,
+                COALESCE(SUM(r.total_kes) FILTER (WHERE r.status='issued'
+                  AND r.issued_at >= (date_trunc('day', now() AT TIME ZONE 'Africa/Nairobi') AT TIME ZONE 'Africa/Nairobi')),0)::bigint AS today_sales_kes,
+                COUNT(r.id) FILTER (WHERE r.status='issued'
+                  AND r.issued_at >= (date_trunc('month', now() AT TIME ZONE 'Africa/Nairobi') AT TIME ZONE 'Africa/Nairobi'))::int AS mtd_transactions,
+                COALESCE(SUM(r.total_kes) FILTER (WHERE r.status='issued'
+                  AND r.issued_at >= (date_trunc('month', now() AT TIME ZONE 'Africa/Nairobi') AT TIME ZONE 'Africa/Nairobi')),0)::bigint AS mtd_sales_kes
            FROM users u LEFT JOIN receipts r ON r.cashier_id=u.id AND r.tenant_id=$1 AND r.store_id=$2
-             AND r.status='issued'
-             AND r.issued_at >= ($3::date::timestamp AT TIME ZONE 'Africa/Nairobi')
-             AND r.issued_at < ($4::date::timestamp AT TIME ZONE 'Africa/Nairobi')
           WHERE u.tenant_id=$1 AND u.store_id=$2 AND u.role='cashier'
-          GROUP BY u.id,u.full_name ORDER BY SUM(r.total_kes) DESC NULLS LAST LIMIT 10`, params),
+          GROUP BY u.id,u.full_name
+          ORDER BY COALESCE(SUM(r.total_kes) FILTER (WHERE r.status='issued'
+                    AND r.issued_at >= (date_trunc('month', now() AT TIME ZONE 'Africa/Nairobi') AT TIME ZONE 'Africa/Nairobi')),0) DESC
+          LIMIT 50`, params),
       this.db.pool.query(
         `SELECT s.plan, s.status, s.starts_at, s.ends_at, s.auto_renew,
                 w.balance_kes, w.low_balance_alert_kes
@@ -110,7 +123,7 @@ export class DashboardController {
       inventory: { productCount: stock.product_count, lowStockCount: stock.low_stock_count, stockCostKes: Number(stock.stock_cost_kes), stockRetailKes: Number(stock.stock_retail_kes) },
       expenses: { count: expense.expense_count, totalKes: expensesKes },
       daily: daily.rows.map((r: any) => ({ day: new Date(r.day).toISOString().slice(0,10), salesKes: Number(r.sales_kes), transactions: r.transactions })),
-      cashiers: cashiers.rows.map((r: any) => ({ name: r.name, transactions: r.transactions, salesKes: Number(r.sales_kes) })),
+      cashiers: cashiers.rows.map((r: any) => ({ name: r.name, transactions: r.transactions, salesKes: Number(r.sales_kes), todayTransactions: r.today_transactions, todaySalesKes: Number(r.today_sales_kes), mtdTransactions: r.mtd_transactions, mtdSalesKes: Number(r.mtd_sales_kes) })),
       subscription: subscription.rows[0] ? { ...subscription.rows[0], balanceKes: Number(subscription.rows[0].balance_kes ?? 0), lowBalanceAlertKes: Number(subscription.rows[0].low_balance_alert_kes ?? 0) } : null,
     };
   }
