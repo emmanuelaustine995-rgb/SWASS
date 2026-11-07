@@ -123,7 +123,7 @@
     }).join('');
   }
   function renderDaily(rows){const max=Math.max(1,...rows.map(r=>Number(r.salesKes)));$('daily-chart').innerHTML=rows.length?rows.map(r=>{const h=Math.max(3,Number(r.salesKes)/max*125);return `<div class="day-bar" title="${esc(r.day)} · ${money(r.salesKes)}"><small>${money(r.salesKes)}</small><i style="height:${h}px"></i><b>${new Date(`${r.day}T00:00:00`).toLocaleDateString('en-KE',{day:'numeric',month:'short'})}</b></div>`;}).join(''):'<p class="muted">No sales data for this period.</p>';}
-  function renderCashiers(rows){$('cashier-rows').innerHTML=rows.length?rows.map(r=>`<tr><td>${esc(r.name)}</td><td>${r.transactions}</td><td>${money(r.salesKes)}</td></tr>`).join(''):'<tr><td colspan="3">No cashier sales for this period.</td></tr>';}
+  function renderCashiers(rows){$('cashier-rows').innerHTML=rows.length?rows.map(r=>`<tr><td><strong>${esc(r.name)}</strong></td><td>${Number(r.todayTransactions||0).toLocaleString('en-KE')}</td><td>${money(r.todaySalesKes)}</td><td>${Number(r.mtdTransactions||0).toLocaleString('en-KE')}</td><td>${money(r.mtdSalesKes)}</td></tr>`).join(''):'<tr><td colspan="5">No staff members or sales recorded yet.</td></tr>';}
   async function loadCustomers(){
     const q=$('crm-search').value.trim();const p=new URLSearchParams();if(q)p.set('q',q);p.set('limit','100');
     $('crm-message').textContent='Loading customers…';
