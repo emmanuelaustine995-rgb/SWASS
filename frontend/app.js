@@ -87,6 +87,9 @@
     panel.classList.toggle('hidden',complete);
   }
 
+  let staffProfilePhotoDraft=null;
+  $('staff-profile-photo')?.addEventListener('change',async e=>{const file=e.target.files?.[0];staffProfilePhotoDraft=null;if(!file)return;try{staffProfilePhotoDraft=await compressLogo(file);$('staff-profile-preview').src=staffProfilePhotoDraft;}catch(err){e.target.value='';$('staff-profile-message').textContent=err.message||'Could not prepare your photo.';}});
+  $('save-staff-profile-photo')?.addEventListener('click',async()=>{const btn=$('save-staff-profile-photo'),message=$('staff-profile-message');if(!staffProfilePhotoDraft){message.textContent='Choose a photo first.';return;}btn.disabled=true;message.textContent='Saving your profile photo…';try{const data=await request('/api/v1/staff/profile-photo',{method:'PATCH',body:JSON.stringify({profilePhotoData:staffProfilePhotoDraft})});state.userPhotoData=data.profilePhotoData||staffProfilePhotoDraft;saveSession();message.textContent='Your profile photo has been saved.';}catch(err){message.textContent=err.message||'Could not save your photo.';}finally{btn.disabled=false;}});
   async function loadStaffSalesSummary(){
     const panel=$('staff-sales-summary');
     if(!panel||state.role!=='cashier')return;
@@ -117,12 +120,12 @@
     const staffSummary=document.getElementById('staff-sales-summary');
     if(!owner||!pos)return;
     staffSummary?.classList.toggle('hidden',!(screen==='receipts'&&state.role==='cashier'));
+    document.getElementById('staff-profile-panel')?.classList.toggle('hidden',!(screen==='receipts'&&state.role==='cashier'));
     [history,crm,lookup,receiptHome].forEach(el=>el?.classList.add('hidden'));
     profile?.classList.add('hidden');
     $('dashboard-business-card')?.classList.toggle('hidden',screen!=='dashboard');
     owner.classList.add('hidden');
-    owner.classList.remove('workspace-dashboard','workspace-accounting','workspace-console','workspace-staff-reports');
-    document.getElementById('owner-staff-reports-page')?.classList.add('hidden');
+    owner.classList.remove('workspace-dashboard','workspace-accounting','workspace-console');
     pos.classList.remove('workspace-logistics','workspace-issue-mode');
     posGrid?.classList.add('hidden');
     products?.classList.remove('hidden');
@@ -133,13 +136,6 @@
       owner.classList.add('workspace-dashboard');
       renderDashboardBusinessProfile();
       owner.querySelector('#owner-period-comparison')?.scrollIntoView({block:'start'});
-    }else if(screen==='staff-reports'&&['owner','manager'].includes(state.role)){
-      pos.classList.add('hidden');
-      owner.classList.remove('hidden');
-      owner.classList.add('workspace-staff-reports');
-      document.getElementById('owner-staff-reports-page')?.classList.remove('hidden');
-      if(window.refreshStaffReports)window.refreshStaffReports();
-      document.getElementById('owner-staff-reports-page')?.scrollIntoView({block:'start'});
     }else if(screen==='operations'){
       pos.classList.remove('hidden');
       posGrid?.classList.remove('hidden');
@@ -150,7 +146,7 @@
       pos.classList.add('hidden');
       receiptHome?.classList.remove('hidden');
       $('open-recover-receipt')?.classList.remove('hidden');
-      if(state.role==='cashier')void loadStaffSalesSummary();
+      if(state.role==='cashier'){void loadStaffSalesSummary();if(state.userPhotoData)$('staff-profile-preview').src=state.userPhotoData;}
       receiptHome?.scrollIntoView({block:'start'});
     }else if(screen==='accounting'){
       pos.classList.remove('hidden');owner.classList.remove('hidden');
@@ -229,27 +225,20 @@
       }).join('');
     }catch(e){list.innerHTML='<div class="empty">'+escapeHtml(e.message||'Could not load invitations.')+'</div>';}
   }
-  let staffPhotoData=null;
-  $('staff-invite-photo')?.addEventListener('change',async e=>{
-    const file=e.target.files?.[0],preview=$('staff-invite-photo-preview');staffPhotoData=null;
-    if(!file){preview.classList.add('hidden');return;}
-    try{staffPhotoData=await compressLogo(file);preview.src=staffPhotoData;preview.classList.remove('hidden');}
-    catch(err){e.target.value='';preview.classList.add('hidden');$('staff-invite-message').textContent=err.message||'Could not prepare profile photo.';}
-  });
   const staffInviteForm=$('staff-invite-form');
   const showStaffInvite=$('show-staff-invite-form');
   const cancelStaffInvite=$('cancel-staff-invite');
   const setStaffInviteOpen=open=>{staffInviteForm?.classList.toggle('hidden',!open);if(showStaffInvite){showStaffInvite.textContent=open?'Close invitation form':'＋ Send invitation';showStaffInvite.setAttribute('aria-expanded',String(open));}};
   showStaffInvite?.addEventListener('click',()=>setStaffInviteOpen(staffInviteForm?.classList.contains('hidden')));
-  cancelStaffInvite?.addEventListener('click',()=>{staffInviteForm?.reset();staffPhotoData=null;$('staff-invite-photo-preview')?.classList.add('hidden');setStaffInviteOpen(false);});
+  cancelStaffInvite?.addEventListener('click',()=>{staffInviteForm?.reset();setStaffInviteOpen(false);});
   $('staff-invite-form')?.addEventListener('submit',async e=>{
     e.preventDefault();const btn=$('create-staff-invite'),message=$('staff-invite-message');
     btn.disabled=true;btn.textContent='Sending invitation…';message.textContent='Sending a secure invitation email…';
     try{
-      const payload={fullName:$('staff-invite-name').value.trim(),email:$('staff-invite-email').value.trim(),phone:$('staff-invite-phone').value.trim(),role:$('staff-invite-role').value,profilePhotoData:staffPhotoData};
+      const payload={fullName:$('staff-invite-name').value.trim(),email:$('staff-invite-email').value.trim(),phone:$('staff-invite-phone').value.trim(),role:$('staff-invite-role').value};
       const data=await request('/api/v1/staff/invitations',{method:'POST',body:JSON.stringify(payload)});
       message.textContent='Invitation email sent to '+data.invitation.email+'. The staff member can accept the link and create their own password. The link expires in 7 days.';
-      $('staff-invite-form').reset();staffPhotoData=null;$('staff-invite-photo-preview').classList.add('hidden');setStaffInviteOpen(false);await loadStaffInvitations();
+      $('staff-invite-form').reset();setStaffInviteOpen(false);await loadStaffInvitations();
     }catch(err){message.textContent=err.message||'Could not send the staff invitation.';}
     finally{btn.disabled=false;btn.textContent='Send email invitation';}
   });
@@ -691,6 +680,13 @@
       $('login-password').value='';
     }catch(err){$('password-reset-message').textContent=err.message||'Password could not be reset.';}
     finally{btn.disabled=false;btn.textContent='Reset password';}
+  });
+  document.getElementById('owner-staff-area')?.addEventListener('click',e=>{
+    const tab=e.target.closest('[data-staff-tab]');if(!tab)return;
+    const performance=tab.dataset.staffTab==='performance';
+    document.getElementById('staff-invitations-panel')?.classList.toggle('hidden',performance);
+    document.getElementById('owner-staff-performance')?.classList.toggle('hidden',!performance);
+    document.querySelectorAll('[data-staff-tab]').forEach(b=>{const active=b===tab;b.classList.toggle('active',active);b.setAttribute('aria-selected',String(active));});
   });
   $('workspace-nav').addEventListener('click',e=>{const b=e.target.closest('[data-workspace]');if(b)showWorkspaceScreen(b.dataset.workspace);});
   $('back-to-receipts').addEventListener('click',()=>{
