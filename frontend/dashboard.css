@@ -379,3 +379,9 @@ body.dashboard-dark .sidebar-help small{color:#b2c9bf}
 .dashboard-business-card p{margin:0}
 #profile-panel{margin:0 0 20px}
 @media(max-width:560px){.dashboard-business-card{align-items:stretch;flex-direction:column}.dashboard-business-card>.btn{width:100%}.dashboard-business-identity{align-items:flex-start}}
+
+/* Dedicated owner-only Staff Reports workspace */
+#owner-dashboard-view.workspace-staff-reports > :not(#owner-staff-reports-page){display:none!important}
+#owner-staff-reports-page{margin-top:18px}
+#owner-staff-reports-page .panel-heading label{display:grid;gap:6px;font-size:13px;font-weight:600}
+#owner-staff-report-filter{min-height:40px;border:1px solid #d7e0e9;border-radius:9px;padding:8px;background:#fff}
