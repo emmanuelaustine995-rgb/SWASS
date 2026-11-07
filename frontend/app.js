@@ -483,7 +483,7 @@
     try{
       const data=await request('/api/v1/auth/login',{
         method:'POST',
-        body:JSON.stringify({phone:$('login-phone').value.trim(),password:$('login-password').value})
+        body:JSON.stringify({phone:$('login-phone').value.trim(),password:$('login-password').value,accountType:$('login-account-type').value})
       });
       if(!data.accessToken)throw new Error('The server did not return a sign-in token. Please try again.');
       const parts=data.accessToken.split('.')[1];
@@ -495,7 +495,7 @@
         $('login-form').classList.add('hidden');
         $('show-password-reset').parentElement.classList.add('hidden');
         $('first-password-form').classList.remove('hidden');
-        $('first-password-message').textContent='This is your temporary shop access code. Create your own password to continue.';
+        $('first-password-message').textContent='Please create your own private password before continuing.';
         return;
       }
       signedIn=true;
