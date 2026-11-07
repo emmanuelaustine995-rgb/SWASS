@@ -21,14 +21,14 @@ export class MpesaService {
     // Render secrets can contain copied quotes, invisible characters, or a pasted
     // "Bearer " prefix. Normalize these safely before sending credentials to Tuma.
     const cleanEnv = (value?: string) => (value ?? '')
-      .replace(/^\\uFEFF/, '')
-      .replace(/[\\u200B-\\u200D\\u2060]/g, '')
+      .replace(/^\uFEFF/, '')
+      .replace(/[\u200B-\u200D\u2060]/g, '')
       .trim()
-      .replace(/^(['"])(.*)\\1$/s, '$2');
+      .replace(/^(['"])(.*)\1$/s, '$2');
     const email = cleanEnv(process.env.TUMA_BUSINESS_EMAIL).toLowerCase();
     const apiKey = cleanEnv(process.env.TUMA_API_KEY)
-      .replace(/^Bearer\\s+/i, '')
-      .replace(/\\s+/g, '');
+      .replace(/^Bearer\s+/i, '')
+      .replace(/\s+/g, '');
     if (!email || !apiKey) {
       throw new ServiceUnavailableException('Tuma Payments is not configured. Add TUMA_BUSINESS_EMAIL and TUMA_API_KEY in Render.');
     }
