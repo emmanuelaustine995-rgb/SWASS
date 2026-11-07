@@ -17,6 +17,7 @@ export interface AuthUser {
   storeId: string | null;
   role: Role;
   mustChangePassword?: boolean;
+  fullName?: string;
 }
 
 export const Roles = (...roles: Role[]) => SetMetadata('roles', roles);
@@ -192,6 +193,7 @@ export class AuthController {
     const registrationStartedAt = Date.now();
     console.info('[SWASS][OTP_DIAG] Signup registration request received');
     const role = body?.accountType === 'cashier' ? 'cashier' : 'owner';
+    if (role === 'cashier') throw new BadRequestException('Staff accounts can only be created by accepting an email invitation from the shop owner.');
     let invitationId: string | null = null;
     let businessName = body?.businessName?.trim() || '';
     let storeName = (body?.storeName || body?.businessName)?.trim() || '';
@@ -498,7 +500,7 @@ export class AuthController {
     const localPhone = '0' + phone.slice(3);
     const phoneVariants = [phone, localPhone];
     const { rows } = await this.db.pool.query(
-      `SELECT u.id, u.tenant_id, u.store_id, u.role, u.password_hash, u.is_active, u.must_change_password, t.status AS tenant_status
+      `SELECT u.id, u.tenant_id, u.store_id, u.role, u.full_name, u.staff_title, u.profile_photo_data, u.password_hash, u.is_active, u.must_change_password, t.status AS tenant_status
          FROM users u LEFT JOIN tenants t ON t.id = u.tenant_id
         WHERE u.phone = ANY($1::text[])
            OR regexp_replace(u.phone, '[^0-9]', '', 'g') = ANY($1::text[])
@@ -516,7 +518,7 @@ export class AuthController {
     const ok = u && u.is_active && tenantIsUsable && passwordOk;
     if (!ok) throw new UnauthorizedException('Invalid phone or password');
 
-    const payload: AuthUser = { sub: u.id, tenantId: u.tenant_id, storeId: u.store_id, role: u.role, mustChangePassword: !!u.must_change_password };
-    return { accessToken: await this.jwt.signAsync(payload, { expiresIn: '30d' }), mustChangePassword: !!u.must_change_password };
+    const payload: AuthUser = { sub: u.id, tenantId: u.tenant_id, storeId: u.store_id, role: u.role, mustChangePassword: !!u.must_change_password, fullName: u.full_name };
+    return { accessToken: await this.jwt.signAsync(payload, { expiresIn: '30d' }), mustChangePassword: !!u.must_change_password, user: { fullName: u.full_name, role: u.role, staffTitle: u.staff_title, profilePhotoData: u.profile_photo_data } };
   }
 }
