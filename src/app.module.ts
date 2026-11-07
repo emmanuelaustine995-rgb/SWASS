@@ -12,12 +12,13 @@ import { ReceiptRecoveryController } from './receipts/recovery.controller';
 import { PlatformFinanceController } from './platform-finance/platform-finance.controller';
 import { BusinessProfileController } from './business/business-profile.controller';
 import { CustomersController } from './customers/customers.controller';
+import { StaffController } from './staff/staff.controller';
 import { EmailVerificationService } from './notifications/email-verification.service';
 import { WhatsAppReceiptService } from './notifications/whatsapp-receipt.service';
 
 @Module({
   imports: [JwtModule.register({ global: true, secret: process.env.JWT_SECRET })],
-  controllers: [HealthController, AuthController, ReceiptsController, InventoryController, DashboardController, MpesaController, ReceiptRecoveryController, PlatformFinanceController, BusinessProfileController, CustomersController],
+  controllers: [HealthController, AuthController, ReceiptsController, InventoryController, DashboardController, MpesaController, ReceiptRecoveryController, PlatformFinanceController, BusinessProfileController, CustomersController, StaffController],
   providers: [DbService, ReceiptsService, EmailVerificationService, WhatsAppReceiptService, AuthGuard, RolesGuard, { provide: MpesaService, useClass: MpesaService }],
 })
 export class AppModule {}
