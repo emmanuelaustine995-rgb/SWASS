@@ -215,7 +215,7 @@ export class AuthController {
       storeName = invite.rows[0].store_name;
       storeLocation = invite.rows[0].store_location;
     }
-    if (!businessName || businessName.length > 120 || !storeName || storeName.length > 120 || !fullName || fullName.length > 120) {
+    if ((role === 'owner' && (!businessName || businessName.length > 120 || !storeName || storeName.length > 120)) || !fullName || fullName.length > 120) {
       throw new BadRequestException('Enter your business name, store name and full name (maximum 120 characters each)');
     }
     if (storeLocation && storeLocation.length > 200) throw new BadRequestException('Store location must be at most 200 characters');
