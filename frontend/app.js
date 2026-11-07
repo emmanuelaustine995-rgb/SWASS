@@ -86,6 +86,23 @@
     close.classList.toggle('hidden',!complete);
     panel.classList.toggle('hidden',complete);
   }
+
+  async function loadStaffSalesSummary(){
+    const panel=$('staff-sales-summary');
+    if(!panel||state.role!=='cashier')return;
+    try{
+      const data=await request('/api/v1/dashboard/staff-summary');
+      const s=data.staff||{};
+      $('staff-today-sales').textContent=money(s.todaySalesKes);
+      $('staff-today-transactions').textContent=Number(s.todayTransactions||0)+' receipts today';
+      $('staff-total-sales').textContent=money(s.salesKes);
+      $('staff-total-transactions').textContent=Number(s.transactions||0)+' receipts recorded';
+    }catch(error){
+      $('staff-today-sales').textContent='Unavailable';
+      $('staff-today-transactions').textContent=error.message||'Could not load today’s sales';
+    }
+  }
+
   function showWorkspaceScreen(screen){
     try{localStorage.setItem('swass-active-workspace-v1',screen);}catch{}
     const owner=document.getElementById('owner-dashboard-view'),pos=$('pos-view');
@@ -97,7 +114,9 @@
     const lookup=document.querySelector('.customer-lookup-panel');
     const profile=document.getElementById('profile-panel');
     const receiptHome=document.getElementById('receipts-home');
+    const staffSummary=document.getElementById('staff-sales-summary');
     if(!owner||!pos)return;
+    staffSummary?.classList.toggle('hidden',!(screen==='receipts'&&state.role==='cashier'));
     [history,crm,lookup,receiptHome].forEach(el=>el?.classList.add('hidden'));
     profile?.classList.add('hidden');
     $('dashboard-business-card')?.classList.toggle('hidden',screen!=='dashboard');
@@ -123,6 +142,7 @@
       pos.classList.add('hidden');
       receiptHome?.classList.remove('hidden');
       $('open-recover-receipt')?.classList.remove('hidden');
+      if(state.role==='cashier')void loadStaffSalesSummary();
       receiptHome?.scrollIntoView({block:'start'});
     }else if(screen==='accounting'){
       pos.classList.remove('hidden');owner.classList.remove('hidden');
