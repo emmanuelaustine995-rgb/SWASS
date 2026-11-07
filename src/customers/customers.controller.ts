@@ -9,7 +9,7 @@ export class CustomersController {
   constructor(private db: DbService) {}
 
   @Post('lookup')
-  @Roles('owner', 'manager', 'cashier')
+  @Roles('owner', 'manager')
   async lookup(@Req() req: any, @Body() body: { phone?: string; nationalId?: string }) {
     const { tenantId, storeId } = req.user ?? {};
     if (!tenantId || !storeId) throw new BadRequestException('User is not tied to a store');
