@@ -189,7 +189,7 @@ export class AuthController {
   }
 
   @Post('register')
-  async register(@Body() body: { accountType?: string; businessName?: string; storeName?: string; storeLocation?: string; houseName?: string; floor?: string; houseNumber?: string; websiteUrl?: string; kraPin?: string; fullName?: string; phone?: string; email?: string; password?: string }, @Req() req: any) {
+  async register(@Body() body: { accountType?: string; businessName?: string; storeName?: string; storeLocation?: string; houseName?: string; floor?: string; houseNumber?: string; websiteUrl?: string; kraPin?: string; legalName?: string; businessEmail?: string; fullName?: string; phone?: string; email?: string; password?: string }, @Req() req: any) {
     const registrationStartedAt = Date.now();
     console.info('[SWASS][OTP_DIAG] Signup registration request received');
     if (body?.accountType === 'cashier') throw new BadRequestException('Staff accounts can only be created by accepting an email invitation from the shop owner.');
@@ -198,7 +198,9 @@ export class AuthController {
     let businessName = body?.businessName?.trim() || '';
     let storeName = (body?.storeName || body?.businessName)?.trim() || '';
     let storeLocation = body?.storeLocation?.trim() || null;
-    const houseName=body?.houseName?.trim()||null; const floor=body?.floor?.trim()||null; const houseNumber=body?.houseNumber?.trim()||null; const websiteUrl=body?.websiteUrl?.trim()||null; const kraPin=body?.kraPin?.trim()||null;
+    const houseName=body?.houseName?.trim()||null; const floor=body?.floor?.trim()||null; const houseNumber=body?.houseNumber?.trim()||null; const websiteUrl=body?.websiteUrl?.trim()||null; const kraPin=body?.kraPin?.trim()||null; const legalName=body?.legalName?.trim()||null; const businessEmail=body?.businessEmail?.trim().toLowerCase()||null;
+    if(legalName && legalName.length>160) throw new BadRequestException('Legal entity name is too long');
+    if(businessEmail && (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(businessEmail)||businessEmail.length>254)) throw new BadRequestException('Enter a valid business email address');
     if(websiteUrl && (websiteUrl.length>255 || !/^https?:\/\//i.test(websiteUrl))) throw new BadRequestException('Enter a valid website URL beginning with http:// or https://');
     if(kraPin && kraPin.length>40) throw new BadRequestException('KRA PIN is too long');
     const fullName = body?.fullName?.trim();
