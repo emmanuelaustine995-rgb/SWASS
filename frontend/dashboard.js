@@ -93,7 +93,7 @@
       $('product-pie').innerHTML='<span>Sales data unavailable</span>';
       $('product-legend').innerHTML='<p class="muted">Product sales could not be loaded.</p>';
       $('daily-chart').innerHTML='<p class="muted">Daily sales could not be loaded. Tap Refresh to retry.</p>';
-      $('cashier-rows').innerHTML='<tr><td colspan="3">Cashier figures are unavailable.</td></tr>';
+      const staffRows=document.getElementById('owner-cashier-rows');if(staffRows)staffRows.innerHTML='<tr><td colspan="5">Staff performance could not load. Tap Refresh to try again.</td></tr>';const staffMessage=document.getElementById('owner-staff-performance-message');if(staffMessage)staffMessage.textContent=err.message;
       $('m-sales').textContent='Unavailable';$('m-transactions').textContent='Sales summary unavailable';
       $('m-profit').textContent='Unavailable';$('m-expenses').textContent='Unavailable';$('m-net').textContent='Unavailable';
     }
@@ -123,7 +123,7 @@
     }).join('');
   }
   function renderDaily(rows){const max=Math.max(1,...rows.map(r=>Number(r.salesKes)));$('daily-chart').innerHTML=rows.length?rows.map(r=>{const h=Math.max(3,Number(r.salesKes)/max*125);return `<div class="day-bar" title="${esc(r.day)} · ${money(r.salesKes)}"><small>${money(r.salesKes)}</small><i style="height:${h}px"></i><b>${new Date(`${r.day}T00:00:00`).toLocaleDateString('en-KE',{day:'numeric',month:'short'})}</b></div>`;}).join(''):'<p class="muted">No sales data for this period.</p>';}
-  function renderCashiers(rows){$('cashier-rows').innerHTML=rows.length?rows.map(r=>`<tr><td><strong>${esc(r.name)}</strong></td><td>${Number(r.todayTransactions||0).toLocaleString('en-KE')}</td><td>${money(r.todaySalesKes)}</td><td>${Number(r.mtdTransactions||0).toLocaleString('en-KE')}</td><td>${money(r.mtdSalesKes)}</td></tr>`).join(''):'<tr><td colspan="5">No staff members or sales recorded yet.</td></tr>';}
+  function renderCashiers(rows){const target=document.getElementById('owner-cashier-rows');if(!target)return;target.innerHTML=rows.length?rows.map(r=>`<tr><td><strong>${esc(r.name)}</strong></td><td>${Number(r.todayTransactions||0).toLocaleString('en-KE')}</td><td>${money(r.todaySalesKes)}</td><td>${Number(r.mtdTransactions||0).toLocaleString('en-KE')}</td><td>${money(r.mtdSalesKes)}</td></tr>`).join(''):'<tr><td colspan="5">No staff accounts found yet. Invite a staff member to begin tracking performance.</td></tr>';const message=document.getElementById('owner-staff-performance-message');if(message)message.textContent=`Showing ${rows.length} staff member(s). Daily and MTD figures update when the dashboard refreshes.`;}
   async function loadCustomers(){
     const q=$('crm-search').value.trim();const p=new URLSearchParams();if(q)p.set('q',q);p.set('limit','100');
     $('crm-message').textContent='Loading customers…';
