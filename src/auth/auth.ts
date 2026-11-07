@@ -241,9 +241,9 @@ export class AuthController {
     );
     const saved = await this.db.pool.query(
       `INSERT INTO signup_otp_requests
-       (phone,business_name,store_name,store_location,full_name,email,password_hash,code_hash,ip_address,expires_at,role,invitation_id)
-       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9::inet,now()+interval '5 minutes',$10,$11) RETURNING id`,
-      [phone,businessName,storeName,storeLocation,fullName,email,passwordHash,this.signupCodeHash(code),ip,role,invitationId],
+       (phone,business_name,store_name,store_location,full_name,email,password_hash,code_hash,ip_address,expires_at,role,invitation_id,house_name,floor,house_number,website_url,kra_pin,legal_name,business_email)
+       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9::inet,now()+interval '5 minutes',$10,$11,$12,$13,$14,$15,$16,$17,$18) RETURNING id`,
+      [phone,businessName,storeName,storeLocation,fullName,email,passwordHash,this.signupCodeHash(code),ip,role,invitationId,houseName,floor,houseNumber,websiteUrl,kraPin,legalName,businessEmail],
     );
     console.info(`[SWASS][OTP_DIAG] OTP record saved in ${Date.now() - saveOtpStartedAt}ms; starting SMS provider request`);
     try {
@@ -310,13 +310,13 @@ export class AuthController {
           await c.query('UPDATE staff_invitations SET accepted_by=$1 WHERE id=$2', [inserted.rows[0].id,row.invitation_id]);
         } else {
           const tenant = await c.query(
-            'INSERT INTO tenants (name, phone, email) VALUES ($1,$2,$3) RETURNING id',
-            [row.business_name, phone, row.email],
+            'INSERT INTO tenants (name, phone, email, website_url, kra_pin, legal_name) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id',
+            [row.business_name, phone, row.business_email || row.email, row.website_url, row.kra_pin, row.legal_name],
           );
           tenantId = tenant.rows[0].id;
           const store = await c.query(
-            'INSERT INTO stores (tenant_id,name,location) VALUES ($1,$2,$3) RETURNING id',
-            [tenantId, row.store_name, row.store_location],
+            'INSERT INTO stores (tenant_id,name,location,house_name,floor,house_number) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id',
+            [tenantId, row.store_name, row.store_location, row.house_name, row.floor, row.house_number],
           );
           storeId = store.rows[0].id;
           inserted = await c.query(
