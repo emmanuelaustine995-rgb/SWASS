@@ -472,7 +472,7 @@ export class AuthController {
   }
 
   @Post('login')
-  async login(@Body() body: { phone?: string; password?: string }) {
+  async login(@Body() body: { phone?: string; password?: string; accountType?: string }) {
     const { password } = body ?? {};
     if (!body?.phone || !password) throw new UnauthorizedException();
     const phone = this.normalizePhone(body.phone);
@@ -496,7 +496,9 @@ export class AuthController {
     }
     const tenantIsUsable = !u?.tenant_id || u.tenant_status === 'active';
     const ok = u && u.is_active && tenantIsUsable && passwordOk;
-    if (!ok) throw new UnauthorizedException('Invalid phone or password');
+    const requestedType = body.accountType === 'staff' ? 'staff' : 'owner';
+    const roleMatches = requestedType === 'staff' ? u?.role === 'cashier' : ['owner','manager','super_admin'].includes(u?.role);
+    if (!ok || !roleMatches) throw new UnauthorizedException('Invalid phone or password for this sign-in type');
 
     const payload: AuthUser = { sub: u.id, tenantId: u.tenant_id, storeId: u.store_id, role: u.role, mustChangePassword: !!u.must_change_password, fullName: u.full_name };
     return { accessToken: await this.jwt.signAsync(payload, { expiresIn: '30d' }), mustChangePassword: !!u.must_change_password, user: { fullName: u.full_name, role: u.role, staffTitle: u.staff_title, profilePhotoData: u.profile_photo_data } };
