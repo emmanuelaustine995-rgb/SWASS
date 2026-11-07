@@ -19,7 +19,7 @@ export class StaffController {
   async createInvitation(@Req() req: any) {
     const user = req.user;
     if (!user?.tenantId || !user?.storeId) throw new BadRequestException('Business owner account required');
-    const code = randomBytes(8).toString('hex').toUpperCase();
+    const code = String(10000000 + (randomBytes(4).readUInt32BE(0) % 90000000));
     const expiresAt = new Date(Date.now() + 7 * 86400000);
     const result = await this.db.pool.query(
       `INSERT INTO staff_invitations(tenant_id,store_id,code_hash,created_by,expires_at)
