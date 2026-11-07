@@ -7,7 +7,7 @@
   let lastSessionWrite = 0;
   function saveSession(){ if(!state.token)return; const now=Date.now(); localStorage.setItem(SESSION_KEY,JSON.stringify({token:state.token,role:state.role,userName:state.userName,staffTitle:state.staffTitle,userPhotoData:state.userPhotoData,lastActivity:now})); lastSessionWrite=now; }
   function touchSession(){ if(!state.token)return; const now=Date.now(); if(now-lastSessionWrite<30000)return; try{const saved=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');if(saved?.token===state.token){saved.lastActivity=now;localStorage.setItem(SESSION_KEY,JSON.stringify(saved));lastSessionWrite=now;}}catch{localStorage.removeItem(SESSION_KEY);} }
-  function clearSession(){ localStorage.removeItem(SESSION_KEY); state.token=null; state.role=null; }
+  function clearSession(){ localStorage.removeItem(SESSION_KEY); state.token=null; state.role=null; state.userName=''; state.staffTitle=''; state.userPhotoData=''; }
   function sessionIsValid(saved){ if(!saved?.token||!Number.isFinite(saved.lastActivity)||Date.now()-saved.lastActivity>SESSION_IDLE_MS)return false; try{const part=saved.token.split('.')[1];const claims=JSON.parse(atob(part.replace(/-/g,'+').replace(/_/g,'/')));return !!claims.exp&&claims.exp*1000>Date.now();}catch{return false;} }
   async function restoreSession(){
     let saved;try{saved=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');}catch{}
@@ -461,7 +461,6 @@
       const claims=JSON.parse(atob(parts.replace(/-/g,'+').replace(/_/g,'/')));
       state.role=claims.role;
       if(signupResendTimer)clearInterval(signupResendTimer);
-      const registeredPhone=$('reg-phone').value.trim();
       $('register-form').reset();
       updateSignupAccountType();
       $('register-fields').classList.remove('hidden');
