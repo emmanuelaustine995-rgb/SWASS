@@ -6,6 +6,8 @@ import { PoolClient } from 'pg';
 import { AuthUser } from '../auth/auth';
 import { DbService } from '../db/db.service';
 import { EmailVerificationService } from '../notifications/email-verification.service';
+import { WhatsAppReceiptService } from '../notifications/whatsapp-receipt.service';
+import { buildReceiptPdf } from './receipt-pdf';
 
 export interface CreateReceiptDto {
   clientUuid: string;                 // generated on the till; makes retries safe
@@ -26,7 +28,7 @@ if (!Number.isInteger(CASHIER_MAX_DISCOUNT_PCT) || CASHIER_MAX_DISCOUNT_PCT < 0 
 
 @Injectable()
 export class ReceiptsService {
-  constructor(private db: DbService, private emailVerification: EmailVerificationService) {}
+  constructor(private db: DbService, private emailVerification: EmailVerificationService, private whatsapp: WhatsAppReceiptService) {}
 
   async list(user: AuthUser, filters: { q?: string; from?: string; to?: string; limit?: string }) {
     if (!user.tenantId || !user.storeId) throw new ForbiddenException('User is not tied to a store');
@@ -85,30 +87,63 @@ export class ReceiptsService {
 
     try {
       const receipt = await this.db.tx((c) => this.createInTx(c, user, dto));
-      let emailDelivery: { sent: boolean; message: string };
       if (receipt.duplicate) {
-        emailDelivery = { sent: false, message: 'This receipt was already issued; no duplicate email was sent.' };
-      } else if (dto.customer?.email?.trim()) {
+        return { ...receipt, emailDelivery: { sent: false, message: 'This receipt was already issued; no duplicate email was sent.' }, whatsappDelivery: { sent: false, message: 'This receipt was already issued; no duplicate WhatsApp message was sent.' } };
+      }
+      const pdf = await buildReceiptPdf({
+        receiptNo: receipt.receiptNo, issuedAt: receipt.issuedAt,
+        businessName: receipt.business?.name || 'SWASS business',
+        businessPhone: receipt.business?.phone, businessEmail: receipt.business?.email,
+        storeName: receipt.business?.storeName, storeLocation: receipt.business?.location,
+        logoData: receipt.business?.logoData,
+        customerName: dto.customer?.fullName, customerPhone: dto.customer?.phone,
+        cashierName: receipt.cashier?.name, cashierPhone: receipt.cashier?.phone,
+        paymentMethod: dto.paymentMethod, subtotalKes: receipt.subtotalKes,
+        discountKes: receipt.discountKes, totalKes: receipt.totalKes, items: receipt.items || [],
+      });
+      const emailDelivery: { sent: boolean; message: string } = { sent: false, message: dto.customer?.email ? 'Email not sent.' : 'No customer email was provided.' };
+      const whatsappDelivery: { sent: boolean; message: string } = { sent: false, message: dto.customer?.phone ? 'WhatsApp not sent.' : 'No customer phone number was provided.' };
+      let emailMessageId: string | null = null;
+      let whatsappMessageId: string | null = null;
+      if (dto.customer?.email?.trim()) {
         try {
           await this.emailVerification.sendReceipt({
-            to: dto.customer.email.trim().toLowerCase(),
-            customerName: dto.customer.fullName,
-            receiptNo: receipt.receiptNo,
-            totalKes: receipt.totalKes,
-            issuedAt: receipt.issuedAt,
+            to: dto.customer.email.trim().toLowerCase(), customerName: dto.customer.fullName,
+            receiptNo: receipt.receiptNo, totalKes: receipt.totalKes, issuedAt: receipt.issuedAt,
             businessName: receipt.business?.name || 'SWASS business',
-            storeName: receipt.business?.storeName || '',
-            items: receipt.items || [],
+            storeName: receipt.business?.storeName || '', items: receipt.items || [], pdf,
           });
-          emailDelivery = { sent: true, message: 'Receipt emailed to the customer.' };
+          emailDelivery.sent = true; emailDelivery.message = 'Receipt PDF emailed to the customer.';
         } catch (error) {
           console.error('[SWASS] Receipt email delivery failed:', error instanceof Error ? error.message : 'Email provider error');
-          emailDelivery = { sent: false, message: 'Receipt issued, but the email could not be sent. Check email provider settings.' };
+          emailDelivery.message = 'Receipt issued, but the PDF email failed. Check Resend settings.';
         }
-      } else {
-        emailDelivery = { sent: false, message: 'No customer email was provided.' };
       }
-      return { ...receipt, emailDelivery };
+      if (dto.customer?.phone?.trim()) {
+        try {
+          const sent = await this.whatsapp.sendPdf({
+            to: dto.customer.phone, receiptNo: receipt.receiptNo,
+            businessName: receipt.business?.name || 'the business', pdf,
+          });
+          whatsappDelivery.sent = true; whatsappDelivery.message = 'Receipt PDF sent to WhatsApp.';
+          whatsappMessageId = sent.messageId || null;
+        } catch (error) {
+          console.error('[SWASS] Receipt WhatsApp delivery failed:', error instanceof Error ? error.message : 'WhatsApp provider error');
+          whatsappDelivery.message = 'Receipt issued, but WhatsApp PDF delivery failed. Check WhatsApp Cloud API settings.';
+        }
+      }
+      await this.db.pool.query(
+        `INSERT INTO receipt_delivery_logs(receipt_id,email_status,whatsapp_status,email_error,whatsapp_error,email_message_id,whatsapp_message_id)
+         VALUES($1,$2,$3,$4,$5,$6,$7)
+         ON CONFLICT(receipt_id) DO UPDATE SET email_status=EXCLUDED.email_status,whatsapp_status=EXCLUDED.whatsapp_status,
+           email_error=EXCLUDED.email_error,whatsapp_error=EXCLUDED.whatsapp_error,email_message_id=EXCLUDED.email_message_id,
+           whatsapp_message_id=EXCLUDED.whatsapp_message_id,updated_at=now()`,
+        [receipt.id, dto.customer?.email ? (emailDelivery.sent ? 'sent' : 'failed') : 'not_requested',
+          dto.customer?.phone ? (whatsappDelivery.sent ? 'sent' : 'failed') : 'not_requested',
+          emailDelivery.sent ? null : emailDelivery.message, whatsappDelivery.sent ? null : whatsappDelivery.message,
+          emailMessageId, whatsappMessageId],
+      );
+      return { ...receipt, emailDelivery, whatsappDelivery };
     } catch (err: any) {
       if (err?.code === '23505') {
         // Two requests for the same sale racing each other: the loser returns the stored receipt.
