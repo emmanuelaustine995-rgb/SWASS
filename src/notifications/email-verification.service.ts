@@ -31,32 +31,44 @@ export class EmailVerificationService {
   }
 
   async sendReceipt(input: {
-    to: string; customerName: string; receiptNo: string; totalKes: number; pdf?: Buffer;
-    issuedAt: string | Date; businessName: string; storeName: string;
-    items: { name: string; qty: number; unitPriceKes: number; lineTotalKes: number; serialNo?: string | null }[];
+    to:string; customerName:string; receiptNo:string; totalKes:number; pdf?:Buffer;
+    issuedAt:string|Date; businessName:string; storeName:string;
+    businessPhone?:string; businessEmail?:string; storeLocation?:string; logoData?:string;
+    receiptHeader?:string; receiptFooter?:string; cashierName?:string; cashierPhone?:string;
+    paymentMethod:string; subtotalKes:number; discountKes:number; verificationUrl?:string; recoveryUrl?:string;
+    items:{name:string;qty:number;unitPriceKes:number;lineTotalKes:number;serialNo?:string|null}[];
   }) {
-    const apiKey = process.env.BREVO_API_KEY?.trim();
-    const from = process.env.BREVO_FROM_EMAIL?.trim();
-    if (!apiKey || !from) throw new Error('Brevo email provider is not configured. Set BREVO_API_KEY and BREVO_FROM_EMAIL.');
-    const escape = (value: unknown) => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
-    const issued = new Date(input.issuedAt).toLocaleString('en-KE', { timeZone: 'Africa/Nairobi' });
-    const subject = `Your receipt ${input.receiptNo} from ${input.businessName}`;
-    const html = `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#17251f;padding:20px"><h2 style="color:#176b4a">Thank you for shopping with ${escape(input.businessName)}</h2><p>Hello ${escape(input.customerName)},</p><p>Your receipt has been issued successfully.</p><div style="border:1px solid #dce8e2;border-radius:12px;padding:18px"><p><strong>Receipt:</strong> ${escape(input.receiptNo)}</p><p><strong>Branch:</strong> ${escape(input.storeName || 'Main branch')}</p><p><strong>Date:</strong> ${escape(issued)}</p><p style="font-size:22px"><strong>Total paid: KSh ${Number(input.totalKes).toLocaleString('en-KE')}</strong></p><table style="width:100%;border-collapse:collapse;margin-top:16px"><thead><tr><th align="left" style="border-bottom:1px solid #ddd;padding:8px">Item</th><th align="right" style="border-bottom:1px solid #ddd;padding:8px">Qty</th><th align="right" style="border-bottom:1px solid #ddd;padding:8px">Amount</th></tr></thead><tbody>${input.items.map(item => `<tr><td style="border-bottom:1px solid #eee;padding:8px">${escape(item.name)}${item.serialNo ? `<br><small>IMEI/Serial: ${escape(item.serialNo)}</small>` : ''}</td><td align="right" style="border-bottom:1px solid #eee;padding:8px">${Number(item.qty)}</td><td align="right" style="border-bottom:1px solid #eee;padding:8px">KSh ${Number(item.lineTotalKes).toLocaleString('en-KE')}</td></tr>`).join('')}</tbody></table></div><p>Keep this email as your digital receipt. You can contact the business if you need assistance.</p></div>`;
-    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
-      method: 'POST',
-      signal: AbortSignal.timeout(15000),
-      headers: { 'api-key': apiKey, 'Content-Type': 'application/json', accept: 'application/json' },
-      body: JSON.stringify({
-        sender: { email: from, name: 'SWASS' },
-        to: [{ email: input.to, name: input.customerName }],
-        subject,
-        htmlContent: html,
-        ...(input.pdf ? { attachment: [{ name: `${input.receiptNo}.pdf`, content: input.pdf.toString('base64') }] } : {}),
-      }),
-    });
-    const raw = await response.text();
-    if (!response.ok) throw new Error(`Brevo HTTP ${response.status}: ${raw.slice(0, 240)}`);
-    return { sent: true, provider: 'brevo' };
+    const apiKey=process.env.BREVO_API_KEY?.trim(), from=process.env.BREVO_FROM_EMAIL?.trim();
+    if(!apiKey||!from)throw new Error('Brevo email provider is not configured. Set BREVO_API_KEY and BREVO_FROM_EMAIL.');
+    const esc=(v:unknown)=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
+    const money=(n:number)=>Number(n||0).toLocaleString('en-KE',{minimumFractionDigits:2,maximumFractionDigits:2});
+    const issued=new Date(input.issuedAt).toLocaleString('en-KE',{timeZone:'Africa/Nairobi'});
+    const rows=input.items.map(i=>`<tr><td style="padding:11px 8px;border-bottom:1px dashed #cbd5d1"><strong>${esc(i.name)}</strong>${i.serialNo?`<br><small>IMEI / Serial: ${esc(i.serialNo)}</small>`:''}<br><small>Unit price: KSh ${money(i.unitPriceKes)}</small></td><td align="center" style="padding:11px 4px;border-bottom:1px dashed #cbd5d1">${i.qty}</td><td align="right" style="padding:11px 8px;border-bottom:1px dashed #cbd5d1">KSh ${money(i.lineTotalKes)}</td></tr>`).join('');
+    const logo=input.logoData?.startsWith('data:image/')?`<img src="${esc(input.logoData)}" alt="Business logo" style="max-width:110px;max-height:75px;object-fit:contain;margin-bottom:10px">`:'';
+    const html=`<div style="margin:0 auto;max-width:620px;background:#fff;border:1px solid #dce8e2;border-radius:16px;padding:26px;color:#17251f;font-family:Arial,sans-serif">
+      <div style="text-align:center">${logo}<h1 style="font-size:23px;color:#145c43;margin:4px 0">${esc(input.businessName)}</h1>
+      ${input.storeName?`<div>${esc(input.storeName)}</div>`:''}${input.storeLocation?`<div>${esc(input.storeLocation)}</div>`:''}
+      ${input.businessPhone?`<div>Tel: ${esc(input.businessPhone)}</div>`:''}${input.businessEmail?`<div>Email: ${esc(input.businessEmail)}</div>`:''}
+      ${input.receiptHeader?`<p>${esc(input.receiptHeader)}</p>`:''}<strong style="letter-spacing:2px">OFFICIAL SALES RECEIPT</strong></div>
+      <hr style="border:0;border-top:1px dashed #82938a;margin:18px 0">
+      <p><strong>Receipt:</strong> ${esc(input.receiptNo)}</p><p><strong>Date sold:</strong> ${esc(issued)}</p>
+      <p><strong>Customer:</strong> ${esc(input.customerName)}</p><p><strong>Sales agent:</strong> ${esc(input.cashierName||'Staff')}${input.cashierPhone?' · '+esc(input.cashierPhone):''}</p>
+      <p><strong>Payment:</strong> ${esc(input.paymentMethod.toUpperCase())}</p>
+      <table style="width:100%;border-collapse:collapse;font-size:14px"><thead><tr style="background:#edf5f0"><th align="left" style="padding:10px 8px">ITEM</th><th>QTY</th><th align="right">TOTAL</th></tr></thead><tbody>${rows}</tbody></table>
+      <div style="margin-top:16px;text-align:right"><p>Subtotal: KSh ${money(input.subtotalKes)}</p><p>Discount: KSh ${money(input.discountKes)}</p>
+      <div style="background:#e8f3ed;color:#145c43;padding:14px;border-radius:8px;font-size:20px;font-weight:bold">TOTAL PAID: KSh ${money(input.totalKes)}</div></div>
+      <div style="text-align:center;margin:24px auto;color:#a32626;border:3px double #a32626;border-radius:50%;width:135px;height:115px;padding-top:20px;box-sizing:border-box"><strong style="font-size:25px">ISSUED</strong><br><small>${esc(new Date(input.issuedAt).toLocaleDateString('en-KE',{timeZone:'Africa/Nairobi'}))}</small></div>
+      <div style="text-align:center;margin-top:18px"><strong>Thank you for shopping with us!</strong>${input.receiptFooter?`<p>${esc(input.receiptFooter)}</p>`:''}
+      ${input.verificationUrl?`<p><a href="${esc(input.verificationUrl)}">Verify this receipt online</a></p>`:''}
+      ${input.recoveryUrl?`<p><a href="${esc(input.recoveryUrl)}">Recover a lost receipt</a></p>`:''}</div>
+      <p style="font-size:12px;color:#65736b;text-align:center">Your complete, branded PDF receipt is attached to this email.</p></div>`;
+    const response=await fetch('https://api.brevo.com/v3/smtp/email',{method:'POST',signal:AbortSignal.timeout(15000),
+      headers:{'api-key':apiKey,'Content-Type':'application/json',accept:'application/json'},
+      body:JSON.stringify({sender:{email:from,name:input.businessName||'AURORA E-RECEIPT'},to:[{email:input.to,name:input.customerName}],
+        subject:`Your receipt ${input.receiptNo} from ${input.businessName}`,htmlContent:html,
+        ...(input.pdf?{attachment:[{name:`${input.receiptNo}.pdf`,content:input.pdf.toString('base64') }]}:{})})});
+    const raw=await response.text();if(!response.ok)throw new Error(`Brevo HTTP ${response.status}: ${raw.slice(0,240)}`);
+    return {sent:true,provider:'brevo'};
   }
 
   async verify(token: string) {
