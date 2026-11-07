@@ -492,6 +492,7 @@
     return {
       accountType:'owner',
       businessName:$('reg-business').value.trim(),
+      legalName:$('reg-legal-name').value.trim(),businessEmail:$('reg-business-email').value.trim(),
       storeName:$('reg-store').value.trim(),
       storeLocation:$('reg-location').value.trim(),
       houseName:$('reg-house-name').value.trim(),floor:$('reg-floor').value.trim(),houseNumber:$('reg-house-number').value.trim(),websiteUrl:$('reg-website').value.trim(),kraPin:$('reg-kra-pin').value.trim(),
