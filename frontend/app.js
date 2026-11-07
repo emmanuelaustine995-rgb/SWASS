@@ -122,6 +122,7 @@
     }else if(screen==='receipts'){
       pos.classList.add('hidden');
       receiptHome?.classList.remove('hidden');
+      $('open-recover-receipt')?.classList.toggle('hidden',state.role==='cashier');
       receiptHome?.scrollIntoView({block:'start'});
     }else if(screen==='accounting'){
       pos.classList.remove('hidden');owner.classList.remove('hidden');
