@@ -373,34 +373,27 @@
     finally{btn.disabled=false;btn.textContent='Save goods to inventory';}
   });
   function updateSignupAccountType(){
-    const attendant=$('reg-account-type').value==='cashier';
-    $('owner-signup-fields').classList.toggle('hidden',attendant);
-    $('attendant-signup-fields').classList.toggle('hidden',!attendant);
-    $('reg-business').required=!attendant;
-    $('reg-store').required=!attendant;
-    $('reg-invite-code').required=attendant;
-    $('reg-invite-code').maxLength=8;
-    $('reg-password').required=!attendant;
-    $('reg-password-field').classList.toggle('hidden',attendant);
-    $('register-submit').textContent=attendant?'Join business · Send verification code':'Create business · Send verification code';
+    $('reg-account-type').value='owner';
+    $('owner-signup-fields').classList.remove('hidden');
+    $('reg-business').required=true;
+    $('reg-store').required=true;
+    $('reg-password').required=true;
+    $('reg-password-field').classList.remove('hidden');
+    $('register-submit').textContent='Create business · Send verification code';
   }
-  $('reg-account-type').addEventListener('change',updateSignupAccountType);
   updateSignupAccountType();
-  $('show-register').addEventListener('click',()=>{ void warmApi(); $('login-form').classList.add('hidden'); $('register-form').classList.remove('hidden'); $('register-error').textContent=''; });
-  $('show-login').addEventListener('click',()=>{ $('register-form').classList.add('hidden'); $('login-form').classList.remove('hidden'); $('login-error').textContent=''; });
   let signupResendTimer = null;
   let signupResendSeconds = 0;
   function signupPayload(){
     return {
-      accountType:$('reg-account-type').value,
-      inviteCode:$('reg-invite-code').value.trim(),
+      accountType:'owner',
       businessName:$('reg-business').value.trim(),
       storeName:$('reg-store').value.trim(),
       storeLocation:$('reg-location').value.trim(),
       fullName:$('reg-name').value.trim(),
       phone:$('reg-phone').value.trim(),
       email:$('reg-email').value.trim(),
-      password:$('reg-account-type').value==='cashier' ? $('reg-invite-code').value.trim() : $('reg-password').value
+      password:$('reg-password').value
     };
   }
   function startSignupResendCountdown(){
@@ -474,21 +467,10 @@
       $('register-fields').classList.remove('hidden');
       $('signup-otp-panel').classList.add('hidden');
       $('register-submit').classList.remove('hidden');
-      if(state.role==='cashier'){
-        clearSession();
-        $('login-view').classList.remove('hidden');
-        $('register-form').classList.add('hidden');
-        $('first-password-form').classList.add('hidden');
-        $('login-form').classList.remove('hidden');
-        $('login-phone').value=registeredPhone;
-        $('login-password').value='';
-        $('login-error').textContent='Your shop account is ready. Sign in using the 8-digit code given by your shop owner.';
-      }else{
-        showPOS();
-        publishWorkspaceSession();
-        showWorkspaceScreen('accounting');
-        showNotice('Your business account is ready. Subscribe for KSh 100 per month (or KSh 900 per year), then top up your receipt wallet.');
-      }
+      showPOS();
+      publishWorkspaceSession();
+      showWorkspaceScreen('accounting');
+      showNotice('Your business account is ready. Subscribe for KSh 100 per month (or KSh 900 per year), then top up your receipt wallet.');
     }catch(err){
       $('signup-otp-message').textContent=err.message||'Verification failed. Check the code and try again.';
     }finally{btn.disabled=false;btn.textContent='Verify phone and create account';}
