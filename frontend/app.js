@@ -210,7 +210,7 @@
       $('staff-invite-code').textContent=data.invitation.code;
       $('staff-invite-expiry').textContent='Valid until '+new Date(data.invitation.expiresAt).toLocaleString('en-KE')+'. This code is shown only once, so share it securely.';
       $('staff-invite-code-box').classList.remove('hidden');
-      message.textContent='Invitation created. The attendant should select Shop Attendant during signup and enter this code.';
+      message.textContent='Invitation created. Give the 8-digit code to your attendant. They use it as their temporary password when joining, then create their own private password.';
       await loadStaffInvitations();
     }catch(e){message.textContent=e.message||'Could not create invitation.';}
     finally{btn.disabled=false;btn.textContent='＋ Invite attendant';}
