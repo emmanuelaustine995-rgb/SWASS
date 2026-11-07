@@ -54,9 +54,9 @@ services:
         sync: false
       - key: AT_SENDER_ID
         sync: false
-      - key: RESEND_API_KEY
+      - key: BREVO_API_KEY
         sync: false
-      - key: RESEND_FROM_EMAIL
+      - key: BREVO_FROM_EMAIL
         sync: false
       - key: WHATSAPP_ACCESS_TOKEN
         sync: false
