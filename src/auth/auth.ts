@@ -199,7 +199,7 @@ export class AuthController {
     const password = body?.password || '';
     if (role === 'cashier') {
       const code = String(body?.inviteCode || '').trim().toUpperCase();
-      if (!/^[A-F0-9]{10}$/.test(code)) throw new BadRequestException('Enter the 10-character invitation code from your business owner.');
+      if (!/^[A-F0-9]{16}$/.test(code)) throw new BadRequestException('Enter the 16-character invitation code from your business owner.');
       const secret = process.env.SWASS_ID_SECRET;
       if (!secret) throw new Error('SWASS_ID_SECRET is required');
       const codeHash = createHmac('sha256', secret).update('staff-invite:' + code).digest('hex');
