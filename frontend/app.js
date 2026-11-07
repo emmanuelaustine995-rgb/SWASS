@@ -27,6 +27,8 @@
       if(subscriptionRequired) showNotice('SWASS is locked until you subscribe. Pay KSh 100 for one month or KSh 900 for one year, then add receipt credits at KSh 2 each.');
     } else if(state.role === 'cashier') {
       showWorkspaceScreen('receipts');
+    } else {
+      showWorkspaceScreen('dashboard');
     }
   }
   function checkSessionExpiry(){ if(!state.token)return; let saved;try{saved=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');}catch{} if(!sessionIsValid(saved)){clearSession();window.dispatchEvent(new Event('swass:logout'));state.cart.clear();renderCart();showLogin();showNotice('Your session ended after 3 hours without activity. Please sign in again.');} }
@@ -107,6 +109,7 @@
     cart?.classList.remove('hidden');
     if(screen==='dashboard'){
       pos.classList.remove('hidden');owner.classList.remove('hidden');
+      if(state.role==='owner')void loadStaffInvitations();
       owner.classList.add('workspace-dashboard');
       renderDashboardBusinessProfile();
       owner.querySelector('#owner-period-comparison')?.scrollIntoView({block:'start'});
@@ -184,6 +187,39 @@
       return await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(new Error('Could not prepare the logo.'));reader.readAsDataURL(blob);});
     }finally{bitmap.close?.();}
   }
+  async function loadStaffInvitations(){
+    const list=$('staff-invitations-list');if(!list)return;
+    list.innerHTML='<div class="empty">Loading invitations…</div>';
+    try{
+      const data=await request('/api/v1/staff/invitations');
+      const rows=data.invitations||[];
+      if(!rows.length){list.innerHTML='<div class="empty">No attendant invitations yet.</div>';return;}
+      list.innerHTML=rows.map(i=>{
+        const status=i.accepted?'Used':i.revokedAt?'Revoked':new Date(i.expiresAt)<=new Date()?'Expired':'Waiting for signup';
+        const canRevoke=!i.accepted&&!i.revokedAt&&new Date(i.expiresAt)>new Date();
+        return '<article class="history-row"><div class="history-row-top"><strong>Shop attendant invitation</strong><strong>'+status+'</strong></div><div class="history-row-meta">Expires: '+escapeHtml(new Date(i.expiresAt).toLocaleString('en-KE'))+(i.acceptedBy?' · Joined by '+escapeHtml(i.acceptedBy):'')+'</div>'+(canRevoke?'<button class="btn btn-light" type="button" data-revoke-invite="'+escapeHtml(i.id)+'">Revoke code</button>':'')+'</article>';
+      }).join('');
+    }catch(e){list.innerHTML='<div class="empty">'+escapeHtml(e.message||'Could not load invitations.')+'</div>';}
+  }
+  $('create-staff-invite')?.addEventListener('click',async()=>{
+    const btn=$('create-staff-invite'),message=$('staff-invite-message');
+    btn.disabled=true;btn.textContent='Creating code…';message.textContent='';
+    try{
+      const data=await request('/api/v1/staff/invitations',{method:'POST',body:'{}'});
+      $('staff-invite-code').textContent=data.invitation.code;
+      $('staff-invite-expiry').textContent='Valid until '+new Date(data.invitation.expiresAt).toLocaleString('en-KE')+'. This code is shown only once, so share it securely.';
+      $('staff-invite-code-box').classList.remove('hidden');
+      message.textContent='Invitation created. The attendant should select Shop Attendant during signup and enter this code.';
+      await loadStaffInvitations();
+    }catch(e){message.textContent=e.message||'Could not create invitation.';}
+    finally{btn.disabled=false;btn.textContent='＋ Invite attendant';}
+  });
+  $('staff-invitations-list')?.addEventListener('click',async e=>{
+    const btn=e.target.closest('[data-revoke-invite]');if(!btn)return;
+    btn.disabled=true;
+    try{await request('/api/v1/staff/invitations/'+encodeURIComponent(btn.dataset.revokeInvite),{method:'DELETE'});$('staff-invite-message').textContent='Invitation revoked.';await loadStaffInvitations();}
+    catch(err){$('staff-invite-message').textContent=err.message||'Could not revoke invitation.';btn.disabled=false;}
+  });
   async function loadProducts(){
     const q=$('product-search').value.trim(); const low=$('low-stock').checked;
     const params=new URLSearchParams(); if(q) params.set('q',q); if(low) params.set('lowStock','true');
@@ -491,6 +527,8 @@
       showNotice('SWASS is locked until you subscribe. Pay KSh 100 for one month or KSh 900 for one year, then add receipt credits at KSh 2 each.');
     } else if(state.role==='cashier') {
       showWorkspaceScreen('receipts');
+    } else {
+      showWorkspaceScreen('dashboard');
     }
   });
   $('show-password-reset').addEventListener('click',()=>{
