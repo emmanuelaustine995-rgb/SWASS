@@ -51,7 +51,7 @@ export class CustomersController {
   }
 
   @Get()
-  @Roles('owner', 'manager', 'cashier')
+  @Roles('owner', 'manager')
   async list(@Req() req: any, @Query('q') q?: string, @Query('limit') limit?: string) {
     const { tenantId, storeId } = req.user ?? {};
     if (!tenantId || !storeId) throw new BadRequestException('User is not tied to a store');
