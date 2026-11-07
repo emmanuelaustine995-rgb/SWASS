@@ -25,6 +25,8 @@
       if(subscriptionRequired) selected='accounting';
       showWorkspaceScreen(selected);
       if(subscriptionRequired) showNotice('SWASS is locked until you subscribe. Pay KSh 100 for one month or KSh 900 for one year, then add receipt credits at KSh 2 each.');
+    } else if(state.role === 'cashier') {
+      showWorkspaceScreen('receipts');
     }
   }
   function checkSessionExpiry(){ if(!state.token)return; let saved;try{saved=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');}catch{} if(!sessionIsValid(saved)){clearSession();window.dispatchEvent(new Event('swass:logout'));state.cart.clear();renderCart();showLogin();showNotice('Your session ended after 3 hours without activity. Please sign in again.');} }
@@ -329,12 +331,25 @@
     catch(err){$('product-error').textContent=err.message||'Could not save goods.';}
     finally{btn.disabled=false;btn.textContent='Save goods to inventory';}
   });
+  function updateSignupAccountType(){
+    const attendant=$('reg-account-type').value==='cashier';
+    $('owner-signup-fields').classList.toggle('hidden',attendant);
+    $('attendant-signup-fields').classList.toggle('hidden',!attendant);
+    $('reg-business').required=!attendant;
+    $('reg-store').required=!attendant;
+    $('reg-invite-code').required=attendant;
+    $('register-submit').textContent=attendant?'Join business · Send verification code':'Create business · Send verification code';
+  }
+  $('reg-account-type').addEventListener('change',updateSignupAccountType);
+  updateSignupAccountType();
   $('show-register').addEventListener('click',()=>{ void warmApi(); $('login-form').classList.add('hidden'); $('register-form').classList.remove('hidden'); $('register-error').textContent=''; });
   $('show-login').addEventListener('click',()=>{ $('register-form').classList.add('hidden'); $('login-form').classList.remove('hidden'); $('login-error').textContent=''; });
   let signupResendTimer = null;
   let signupResendSeconds = 0;
   function signupPayload(){
     return {
+      accountType:$('reg-account-type').value,
+      inviteCode:$('reg-invite-code').value.trim(),
       businessName:$('reg-business').value.trim(),
       storeName:$('reg-store').value.trim(),
       storeLocation:$('reg-location').value.trim(),
@@ -404,6 +419,7 @@
         body:JSON.stringify({phone:$('reg-phone').value.trim(),code})
       });
       state.token=data.accessToken;
+      state.userName=$('reg-name').value.trim();
       const parts=state.token.split('.')[1];
       const claims=JSON.parse(atob(parts.replace(/-/g,'+').replace(/_/g,'/')));
       state.role=claims.role;publishWorkspaceSession();
@@ -413,8 +429,13 @@
       $('signup-otp-panel').classList.add('hidden');
       $('register-submit').classList.remove('hidden');
       showPOS();
-      showWorkspaceScreen('accounting');
-      showNotice('Your SWASS account is ready. Subscribe for KSh 100 per month (or KSh 900 per year), then top up your receipt wallet. KSh 40 gives you 20 receipts.');
+      if(state.role==='cashier'){
+        showWorkspaceScreen('receipts');
+        showNotice('You have joined the business. Open Issue Receipt to start serving customers.');
+      }else{
+        showWorkspaceScreen('accounting');
+        showNotice('Your business account is ready. Subscribe for KSh 100 per month (or KSh 900 per year), then top up your receipt wallet.');
+      }
     }catch(err){
       $('signup-otp-message').textContent=err.message||'Verification failed. Check the code and try again.';
     }finally{btn.disabled=false;btn.textContent='Verify phone and create account';}
@@ -468,6 +489,8 @@
     if(subscriptionRequired){
       showWorkspaceScreen('accounting');
       showNotice('SWASS is locked until you subscribe. Pay KSh 100 for one month or KSh 900 for one year, then add receipt credits at KSh 2 each.');
+    } else if(state.role==='cashier') {
+      showWorkspaceScreen('receipts');
     }
   });
   $('show-password-reset').addEventListener('click',()=>{
