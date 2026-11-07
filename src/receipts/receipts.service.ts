@@ -144,7 +144,7 @@ export class ReceiptsService {
           whatsappMessageId = sent.messageId || null;
         } catch (error) {
           console.error('[SWASS] Receipt WhatsApp delivery failed:', error instanceof Error ? error.message : 'WhatsApp provider error');
-          whatsappDelivery.message = 'Receipt issued, but WhatsApp PDF delivery failed. Check WhatsApp Cloud API settings.';
+          whatsappDelivery.message = 'Receipt issued, but WhatsApp PDF delivery failed. Check your WhatsApp provider connection and API key.';
         }
       }
       await this.db.pool.query(
