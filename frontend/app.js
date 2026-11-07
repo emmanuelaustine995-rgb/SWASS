@@ -228,6 +228,12 @@
     try{staffPhotoData=await compressLogo(file);preview.src=staffPhotoData;preview.classList.remove('hidden');}
     catch(err){e.target.value='';preview.classList.add('hidden');$('staff-invite-message').textContent=err.message||'Could not prepare profile photo.';}
   });
+  const staffInviteForm=$('staff-invite-form');
+  const showStaffInvite=$('show-staff-invite-form');
+  const cancelStaffInvite=$('cancel-staff-invite');
+  const setStaffInviteOpen=open=>{staffInviteForm?.classList.toggle('hidden',!open);if(showStaffInvite){showStaffInvite.textContent=open?'Close invitation form':'＋ Send invitation';showStaffInvite.setAttribute('aria-expanded',String(open));}};
+  showStaffInvite?.addEventListener('click',()=>setStaffInviteOpen(staffInviteForm?.classList.contains('hidden')));
+  cancelStaffInvite?.addEventListener('click',()=>{staffInviteForm?.reset();staffPhotoData=null;$('staff-invite-photo-preview')?.classList.add('hidden');setStaffInviteOpen(false);});
   $('staff-invite-form')?.addEventListener('submit',async e=>{
     e.preventDefault();const btn=$('create-staff-invite'),message=$('staff-invite-message');
     btn.disabled=true;btn.textContent='Sending invitation…';message.textContent='Sending a secure invitation email…';
@@ -235,7 +241,7 @@
       const payload={fullName:$('staff-invite-name').value.trim(),email:$('staff-invite-email').value.trim(),phone:$('staff-invite-phone').value.trim(),role:$('staff-invite-role').value,profilePhotoData:staffPhotoData};
       const data=await request('/api/v1/staff/invitations',{method:'POST',body:JSON.stringify(payload)});
       message.textContent='Invitation email sent to '+data.invitation.email+'. The staff member can accept the link and create their own password. The link expires in 7 days.';
-      $('staff-invite-form').reset();staffPhotoData=null;$('staff-invite-photo-preview').classList.add('hidden');await loadStaffInvitations();
+      $('staff-invite-form').reset();staffPhotoData=null;$('staff-invite-photo-preview').classList.add('hidden');setStaffInviteOpen(false);await loadStaffInvitations();
     }catch(err){message.textContent=err.message||'Could not send the staff invitation.';}
     finally{btn.disabled=false;btn.textContent='Send email invitation';}
   });
