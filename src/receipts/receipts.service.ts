@@ -96,6 +96,10 @@ export class ReceiptsService {
       }
       const pdf = await buildReceiptPdf({
         receiptNo: receipt.receiptNo, issuedAt: receipt.issuedAt,
+        verificationUrl: `${(process.env.PUBLIC_APP_URL || 'https://swass-web.onrender.com').replace(/\/$/,'')}/verify.html?token=${encodeURIComponent(receipt.qrToken)}`,
+        recoveryUrl: `${(process.env.PUBLIC_APP_URL || 'https://swass-web.onrender.com').replace(/\/$/,'')}/recover.html`,
+        receiptHeader: receipt.business?.receiptHeader, receiptFooter: receipt.business?.receiptFooter,
+        customerEmail: dto.customer?.email,
         businessName: receipt.business?.name || 'SWASS business',
         businessPhone: receipt.business?.phone, businessEmail: receipt.business?.email,
         storeName: receipt.business?.storeName, storeLocation: receipt.business?.location,
@@ -120,7 +124,7 @@ export class ReceiptsService {
           emailDelivery.sent = true; emailDelivery.message = 'Receipt PDF emailed to the customer.';
         } catch (error) {
           console.error('[SWASS] Receipt email delivery failed:', error instanceof Error ? error.message : 'Email provider error');
-          emailDelivery.message = 'Receipt issued, but the PDF email failed. Check Resend settings.';
+          emailDelivery.message = 'Receipt issued, but the PDF email failed. Check Brevo settings.';
         }
       }
       if (dto.customer?.phone?.trim()) {
