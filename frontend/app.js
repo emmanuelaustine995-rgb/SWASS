@@ -461,6 +461,7 @@
       state.role=claims.role;publishWorkspaceSession();
       if(signupResendTimer)clearInterval(signupResendTimer);
       $('register-form').reset();
+      updateSignupAccountType();
       $('register-fields').classList.remove('hidden');
       $('signup-otp-panel').classList.add('hidden');
       $('register-submit').classList.remove('hidden');
