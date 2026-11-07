@@ -58,9 +58,19 @@ export class MpesaService {
       throw new ServiceUnavailableException('Could not reach Tuma Payments authentication service');
     }
     const data: any = await response.json().catch(() => ({}));
-    const token = data?.data?.token;
+    const token = data?.data?.token ?? data?.token;
     if (!response.ok || data?.success !== true || typeof token !== 'string' || !token) {
-      throw new ServiceUnavailableException(data?.message ?? 'Tuma authentication failed. Check the business email and API key in Render.');
+      // Log only Tuma's status and non-secret diagnostic fields. Never log the API key or token.
+      console.error('[SWASS Tuma auth failed]', {
+        httpStatus: response.status,
+        message: typeof data?.message === 'string' ? data.message : 'No message returned',
+        errorCode: typeof data?.error_code === 'string' ? data.error_code : undefined,
+        success: data?.success,
+      });
+      const message = typeof data?.message === 'string' && data.message
+        ? data.message
+        : 'Tuma authentication failed. Check that the API key and business-profile email belong to the same selected business.';
+      throw new ServiceUnavailableException(`Tuma authentication failed (HTTP ${response.status}): ${message}`);
     }
     this.cachedToken = token;
     // Tuma tokens are short-lived; refresh conservatively after 20 minutes.
