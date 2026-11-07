@@ -192,28 +192,32 @@
     const list=$('staff-invitations-list');if(!list)return;
     list.innerHTML='<div class="empty">Loading invitations…</div>';
     try{
-      const data=await request('/api/v1/staff/invitations');
-      const rows=data.invitations||[];
-      if(!rows.length){list.innerHTML='<div class="empty">No attendant invitations yet.</div>';return;}
+      const data=await request('/api/v1/staff/invitations');const rows=data.invitations||[];
+      if(!rows.length){list.innerHTML='<div class="empty">No staff invitations yet.</div>';return;}
       list.innerHTML=rows.map(i=>{
-        const status=i.accepted?'Used':i.revokedAt?'Revoked':new Date(i.expiresAt)<=new Date()?'Expired':'Waiting for signup';
+        const status=i.accepted?'Joined':i.revokedAt?'Revoked':new Date(i.expiresAt)<=new Date()?'Expired':'Email sent · Awaiting acceptance';
         const canRevoke=!i.accepted&&!i.revokedAt&&new Date(i.expiresAt)>new Date();
-        return '<article class="history-row"><div class="history-row-top"><strong>Shop attendant invitation</strong><strong>'+status+'</strong></div><div class="history-row-meta">Expires: '+escapeHtml(new Date(i.expiresAt).toLocaleString('en-KE'))+(i.acceptedBy?' · Joined by '+escapeHtml(i.acceptedBy):'')+'</div>'+(canRevoke?'<button class="btn btn-light" type="button" data-revoke-invite="'+escapeHtml(i.id)+'">Revoke code</button>':'')+'</article>';
+        return '<article class="history-row"><div class="history-row-top"><strong>'+escapeHtml(i.fullName||'Staff member')+'</strong><strong>'+status+'</strong></div><div class="history-row-meta">'+escapeHtml(i.role||'Shop Attendant')+' · '+escapeHtml(i.email||'')+' · '+escapeHtml(i.phone||'')+'</div><div class="history-row-meta">Invitation expires: '+escapeHtml(new Date(i.expiresAt).toLocaleString('en-KE'))+'</div>'+(canRevoke?'<button class="btn btn-light" type="button" data-revoke-invite="'+escapeHtml(i.id)+'">Revoke invitation</button>':'')+'</article>';
       }).join('');
     }catch(e){list.innerHTML='<div class="empty">'+escapeHtml(e.message||'Could not load invitations.')+'</div>';}
   }
-  $('create-staff-invite')?.addEventListener('click',async()=>{
-    const btn=$('create-staff-invite'),message=$('staff-invite-message');
-    btn.disabled=true;btn.textContent='Creating code…';message.textContent='';
+  let staffPhotoData=null;
+  $('staff-invite-photo')?.addEventListener('change',async e=>{
+    const file=e.target.files?.[0],preview=$('staff-invite-photo-preview');staffPhotoData=null;
+    if(!file){preview.classList.add('hidden');return;}
+    try{staffPhotoData=await compressLogo(file);preview.src=staffPhotoData;preview.classList.remove('hidden');}
+    catch(err){e.target.value='';preview.classList.add('hidden');$('staff-invite-message').textContent=err.message||'Could not prepare profile photo.';}
+  });
+  $('staff-invite-form')?.addEventListener('submit',async e=>{
+    e.preventDefault();const btn=$('create-staff-invite'),message=$('staff-invite-message');
+    btn.disabled=true;btn.textContent='Sending invitation…';message.textContent='Sending a secure invitation email…';
     try{
-      const data=await request('/api/v1/staff/invitations',{method:'POST',body:'{}'});
-      $('staff-invite-code').textContent=data.invitation.code;
-      $('staff-invite-expiry').textContent='Valid until '+new Date(data.invitation.expiresAt).toLocaleString('en-KE')+'. This code is shown only once, so share it securely.';
-      $('staff-invite-code-box').classList.remove('hidden');
-      message.textContent='Invitation created. Give the 8-digit code to your attendant. They use it as their temporary password when joining, then create their own private password.';
-      await loadStaffInvitations();
-    }catch(e){message.textContent=e.message||'Could not create invitation.';}
-    finally{btn.disabled=false;btn.textContent='＋ Invite attendant';}
+      const payload={fullName:$('staff-invite-name').value.trim(),email:$('staff-invite-email').value.trim(),phone:$('staff-invite-phone').value.trim(),role:$('staff-invite-role').value,profilePhotoData:staffPhotoData};
+      const data=await request('/api/v1/staff/invitations',{method:'POST',body:JSON.stringify(payload)});
+      message.textContent='Invitation email sent to '+data.invitation.email+'. The staff member can accept the link and create their own password. The link expires in 7 days.';
+      $('staff-invite-form').reset();staffPhotoData=null;$('staff-invite-photo-preview').classList.add('hidden');await loadStaffInvitations();
+    }catch(err){message.textContent=err.message||'Could not send the staff invitation.';}
+    finally{btn.disabled=false;btn.textContent='Send email invitation';}
   });
   $('staff-invitations-list')?.addEventListener('click',async e=>{
     const btn=e.target.closest('[data-revoke-invite]');if(!btn)return;
