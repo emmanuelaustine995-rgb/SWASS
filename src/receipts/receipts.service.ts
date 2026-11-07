@@ -120,6 +120,13 @@ export class ReceiptsService {
             receiptNo: receipt.receiptNo, totalKes: receipt.totalKes, issuedAt: receipt.issuedAt,
             businessName: receipt.business?.name || 'SWASS business',
             storeName: receipt.business?.storeName || '', items: receipt.items || [], pdf,
+            businessPhone: receipt.business?.phone, businessEmail: receipt.business?.email,
+            storeLocation: receipt.business?.location, logoData: receipt.business?.logoData,
+            receiptHeader: receipt.business?.receiptHeader, receiptFooter: receipt.business?.receiptFooter,
+            cashierName: receipt.cashier?.name, cashierPhone: receipt.cashier?.phone,
+            paymentMethod: dto.paymentMethod, subtotalKes: receipt.subtotalKes, discountKes: receipt.discountKes,
+            verificationUrl: `${(process.env.PUBLIC_APP_URL || 'https://swass-web.onrender.com').replace(/\/$/,'')}/verify.html?token=${encodeURIComponent(receipt.qrToken)}`,
+            recoveryUrl: `${(process.env.PUBLIC_APP_URL || 'https://swass-web.onrender.com').replace(/\/$/,'')}/recover.html`,
           });
           emailDelivery.sent = true; emailDelivery.message = 'Receipt PDF emailed to the customer.';
         } catch (error) {
