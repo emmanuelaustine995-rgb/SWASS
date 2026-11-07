@@ -13,3 +13,7 @@ ALTER TABLE signup_otp_requests ADD COLUMN IF NOT EXISTS floor TEXT;
 ALTER TABLE signup_otp_requests ADD COLUMN IF NOT EXISTS house_number TEXT;
 ALTER TABLE signup_otp_requests ADD COLUMN IF NOT EXISTS website_url TEXT;
 ALTER TABLE signup_otp_requests ADD COLUMN IF NOT EXISTS kra_pin TEXT;
+
+ALTER TABLE signup_otp_requests ADD COLUMN IF NOT EXISTS legal_name TEXT;
+ALTER TABLE signup_otp_requests ADD COLUMN IF NOT EXISTS business_email TEXT;
+ALTER TABLE tenants ADD COLUMN IF NOT EXISTS legal_name TEXT;
