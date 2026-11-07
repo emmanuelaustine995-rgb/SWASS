@@ -458,6 +458,16 @@
     $('register-submit').textContent='Create business · Send verification code';
   }
   updateSignupAccountType();
+  function updateLoginAccountType(){
+    const staffSelected = $('login-account-type').value === 'staff';
+    $('owner-register-entry').classList.toggle('hidden', staffSelected);
+    if(staffSelected && !$('register-form').classList.contains('hidden')){
+      $('register-form').classList.add('hidden');
+      $('login-form').classList.remove('hidden');
+    }
+  }
+  $('login-account-type').addEventListener('change', updateLoginAccountType);
+  updateLoginAccountType();
   let signupResendTimer = null;
   let signupResendSeconds = 0;
   function signupPayload(){
