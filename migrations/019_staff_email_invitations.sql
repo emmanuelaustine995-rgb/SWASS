@@ -20,3 +20,6 @@ CREATE INDEX IF NOT EXISTS idx_staff_email_invites_tenant
   ON staff_email_invitations(tenant_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_staff_email_invites_email
   ON staff_email_invitations(lower(email));
+
+ALTER TABLE users ADD COLUMN IF NOT EXISTS staff_title TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_photo_data TEXT;
