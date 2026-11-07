@@ -58,6 +58,10 @@ services:
         sync: false
       - key: BREVO_FROM_EMAIL
         sync: false
+      - key: WHATSAPP_PROVIDER
+        value: cloud
+      - key: FLARESEND_API_KEY
+        sync: false
       - key: WHATSAPP_ACCESS_TOKEN
         sync: false
       - key: WHATSAPP_PHONE_NUMBER_ID
