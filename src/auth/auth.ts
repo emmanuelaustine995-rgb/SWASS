@@ -201,26 +201,6 @@ export class AuthController {
     const fullName = body?.fullName?.trim();
     const email = body?.email?.trim().toLowerCase() || null;
     const password = body?.password || '';
-    let cashierAccessCode = '';
-    if (role === 'cashier') {
-      const code = String(body?.inviteCode || '').trim();
-      if (!/^\d{8}$/.test(code)) throw new BadRequestException('Enter the 8-digit access code from your business owner.');
-      cashierAccessCode = code;
-      const secret = process.env.SWASS_ID_SECRET;
-      if (!secret) throw new Error('SWASS_ID_SECRET is required');
-      const codeHash = createHmac('sha256', secret).update('staff-invite:' + code).digest('hex');
-      const invite = await this.db.pool.query(
-        `SELECT i.id,t.name AS business_name,s.name AS store_name,s.location AS store_location
-           FROM staff_invitations i JOIN tenants t ON t.id=i.tenant_id JOIN stores s ON s.id=i.store_id
-          WHERE i.code_hash=$1 AND i.accepted_by IS NULL AND i.revoked_at IS NULL AND i.expires_at>now()
-            AND t.status='active' LIMIT 1`, [codeHash],
-      );
-      if (!invite.rowCount) throw new BadRequestException('That invitation code is invalid, expired or already used.');
-      invitationId = invite.rows[0].id;
-      businessName = invite.rows[0].business_name;
-      storeName = invite.rows[0].store_name;
-      storeLocation = invite.rows[0].store_location;
-    }
     if (!businessName || businessName.length > 120 || !storeName || storeName.length > 120 || !fullName || fullName.length > 120) {
       throw new BadRequestException('Enter your business name, store name and full name (maximum 120 characters each)');
     }
