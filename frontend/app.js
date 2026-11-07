@@ -121,7 +121,8 @@
     profile?.classList.add('hidden');
     $('dashboard-business-card')?.classList.toggle('hidden',screen!=='dashboard');
     owner.classList.add('hidden');
-    owner.classList.remove('workspace-dashboard','workspace-accounting','workspace-console');
+    owner.classList.remove('workspace-dashboard','workspace-accounting','workspace-console','workspace-staff-reports');
+    document.getElementById('owner-staff-reports-page')?.classList.add('hidden');
     pos.classList.remove('workspace-logistics','workspace-issue-mode');
     posGrid?.classList.add('hidden');
     products?.classList.remove('hidden');
@@ -132,6 +133,13 @@
       owner.classList.add('workspace-dashboard');
       renderDashboardBusinessProfile();
       owner.querySelector('#owner-period-comparison')?.scrollIntoView({block:'start'});
+    }else if(screen==='staff-reports'&&['owner','manager'].includes(state.role)){
+      pos.classList.add('hidden');
+      owner.classList.remove('hidden');
+      owner.classList.add('workspace-staff-reports');
+      document.getElementById('owner-staff-reports-page')?.classList.remove('hidden');
+      if(window.refreshStaffReports)window.refreshStaffReports();
+      document.getElementById('owner-staff-reports-page')?.scrollIntoView({block:'start'});
     }else if(screen==='operations'){
       pos.classList.remove('hidden');
       posGrid?.classList.remove('hidden');
