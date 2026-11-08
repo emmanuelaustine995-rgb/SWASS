@@ -108,3 +108,14 @@ body.workspace-active #pos-view .page-heading{margin-bottom:8px}
 body.workspace-active #pos-view .page-heading p{margin-bottom:0}
 body.workspace-active .bottom-nav{position:fixed;left:0;right:0;bottom:0}
 @media(max-width:760px){body.workspace-active .shell{height:calc(100dvh - 64px - 74px);padding:8px 12px 6px;margin:0 auto}body.workspace-active #pos-view .cart-list{max-height:calc(100dvh - 350px)}body.workspace-active #workspace-nav{gap:5px}body.workspace-active #workspace-nav button{padding:8px 10px;font-size:12px}}
+
+/* Keep the app viewport stationary. The Profile tab owns both account and shop details. */
+html,body{overscroll-behavior:none}
+body.workspace-active{position:fixed;inset:0;width:100%;height:100dvh;overflow:hidden;touch-action:pan-x}
+body.workspace-active .shell{width:100%;max-width:980px}
+body.workspace-active #account-profile-menu{display:none!important}
+body.workspace-active #profile-panel{overflow-y:auto;overscroll-behavior:contain}
+body.workspace-active .profile-account-summary{padding:14px 16px;margin-bottom:14px;border:1px solid #e5e7eb;border-radius:14px;background:#f8fafc}
+body.workspace-active .profile-account-summary .account-profile-details{grid-template-columns:repeat(2,minmax(0,1fr))}
+body.workspace-active #owner-dashboard-view{display:none!important}
+@media(max-width:520px){body.workspace-active .profile-account-summary{padding:10px}.profile-account-summary .account-profile-details{gap:7px}}
