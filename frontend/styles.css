@@ -117,5 +117,5 @@ body.workspace-active #account-profile-menu{display:none!important}
 body.workspace-active #profile-panel{overflow-y:auto;overscroll-behavior:contain}
 body.workspace-active .profile-account-summary{padding:14px 16px;margin-bottom:14px;border:1px solid #e5e7eb;border-radius:14px;background:#f8fafc}
 body.workspace-active .profile-account-summary .account-profile-details{grid-template-columns:repeat(2,minmax(0,1fr))}
-body.workspace-active #owner-dashboard-view{display:none!important}
+
 @media(max-width:520px){body.workspace-active .profile-account-summary{padding:10px}.profile-account-summary .account-profile-details{gap:7px}}
