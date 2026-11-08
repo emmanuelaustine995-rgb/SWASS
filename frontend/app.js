@@ -3,6 +3,7 @@
   const $ = (id) => document.getElementById(id);
   const state = { token: null, role: null, userName: '', staffTitle: '', userPhotoData: '', userPhone: '', userEmail: '', products: [], cart: new Map(), lastReceipt: null, profileLogoData: undefined, businessProfile: {} };
   const SESSION_KEY = 'swass-auth-session-v1';
+  const referralCodeFromUrl = new URLSearchParams(window.location.search).get('ref') || '';
   const SESSION_IDLE_MS = 3 * 60 * 60 * 1000;
   let lastSessionWrite = 0;
   function saveSession(){ if(!state.token)return; const now=Date.now(); localStorage.setItem(SESSION_KEY,JSON.stringify({token:state.token,role:state.role,userName:state.userName,staffTitle:state.staffTitle,userPhotoData:state.userPhotoData,userPhone:state.userPhone,userEmail:state.userEmail,lastActivity:now})); lastSessionWrite=now; }
@@ -133,8 +134,38 @@
     }
   }
 
+  async function loadOwnerReferralSummary(){
+    if(!$('referral-card')||state.role!=='owner')return;
+    try{
+      const data=await request('/api/v1/referrals/summary');
+      $('referral-total').textContent=Number(data.totalReferrals||0).toLocaleString('en-KE');
+      $('referral-active').textContent=Number(data.activeReferrals||0).toLocaleString('en-KE');
+      $('referral-earned').textContent=money(data.earnedKes);
+      $('referral-available').textContent=money(data.availableKes);
+      $('referral-link').value=data.referralLink||'';
+      $('referral-payout-phone').value=data.payoutPhone||'';
+      $('referral-message').textContent='50% of a friend’s first successful subscription is credited automatically.';
+    }catch(error){$('referral-message').textContent=error.message||'Referral details could not be loaded.';}
+  }
+  $('referral-share')?.addEventListener('click',async()=>{
+    const link=$('referral-link')?.value;if(!link)return;
+    try{
+      if(navigator.share)await navigator.share({title:'Join AURORA E-RECEIPT',text:'Register with my referral link and manage your business receipts.',url:link});
+      else{await navigator.clipboard.writeText(link);$('referral-message').textContent='Referral link copied. Share it with your friends.';}
+    }catch(error){if(error.name!=='AbortError')$('referral-message').textContent='Could not share the link. Copy it from the box above.';}
+  });
+  $('referral-withdraw')?.addEventListener('click',async()=>{
+    const button=$('referral-withdraw');button.disabled=true;$('referral-message').textContent='Submitting payout request…';
+    try{
+      const result=await request('/api/v1/referrals/withdraw',{method:'POST',body:JSON.stringify({phone:$('referral-payout-phone').value.trim()})});
+      $('referral-message').textContent=`Payout request received for ${money(result.amountKes)}. Awaiting processing.`;
+      await loadOwnerReferralSummary();
+    }catch(error){$('referral-message').textContent=error.message||'Could not submit payout request.';}
+    finally{button.disabled=false;}
+  });
   async function loadOwnerHomeSummary(){
     if(!['owner','manager'].includes(state.role))return;
+    void loadOwnerReferralSummary();
     $('owner-home-title').textContent=state.businessProfile?.businessName||'Business overview';
     $('owner-home-subtitle').textContent=state.businessProfile?.storeName||'Your business workspace at a glance.';
     try{
@@ -568,7 +599,8 @@
       fullName:$('reg-name').value.trim(),
       phone:$('reg-phone').value.trim(),
       email:$('reg-email').value.trim(),
-      password:$('reg-password').value
+      password:$('reg-password').value,
+      referralCode:referralCodeFromUrl
     };
   }
   function startSignupResendCountdown(){
