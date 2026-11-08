@@ -313,7 +313,7 @@
     }).join(''):'<div class="empty">Your sale is empty. Add the first item to begin.</div>';
     const t=totals(); $('subtotal').textContent=money(t.subtotal);$('total').textContent=money(t.total);$('checkout-open').disabled=!rows.length||t.total<0;
   }
-  function openCheckout(){const items=[...state.cart.values()];const needsBuyer=items.some(r=>r.product.requiresBuyerId);$('buyer-id-wrap').classList.toggle('hidden',!needsBuyer);$('buyer-id-note').classList.toggle('hidden',!needsBuyer);$('checkout-total').textContent=money(totals().total);$('checkout-error').textContent='';$('checkout-modal').classList.remove('hidden');}
+  function openCheckout(){const items=[...state.cart.values()];if(!items.length){showNotice('Add at least one product before customer details.',true);return;}const needsBuyer=items.some(r=>r.product.requiresBuyerId);$('buyer-id-wrap').classList.toggle('hidden',!needsBuyer);$('buyer-id-note').classList.toggle('hidden',!needsBuyer);$('checkout-total').textContent=money(totals().total);$('checkout-error').textContent='';const modal=$('checkout-modal');modal.classList.remove('hidden');modal.setAttribute('aria-hidden','false');const card=modal.querySelector('.modal-card');if(card)card.scrollTop=0;}
   function makeReceiptMarkup(receipt, sale, customer){
     const business=receipt.business||{};
     const lines=sale.items.map(i=>`<div class="receipt-line"><span><strong>${escapeHtml(i.name)}</strong> × ${i.qty}<br><small>Unit price: ${money(i.price)}${i.serialNo?`<br>IMEI / Serial: ${escapeHtml(i.serialNo)}<br><span id="imei-qr-${sale.items.indexOf(i)}" class="imei-qr"></span>`:''}</small></span><strong>${money(i.price*i.qty)}</strong></div>`).join('');
@@ -472,7 +472,7 @@
   $('imei-scanner-close')?.addEventListener('click',stopImeiScanner);
   $('imei-scanner-modal')?.addEventListener('click',e=>{if(e.target.id==='imei-scanner-modal')stopImeiScanner();});
   $('imei-scanner-use')?.addEventListener('click',()=>applyScannedImei($('imei-scanner-manual').value));
-  $('product-form')?.addEventListener('click',e=>{const b=e.target.closest('[data-scan-field]');if(b)openImeiScanner(b.dataset.scanField);});
+  $('product-form')?.addEventListener('click',e=>{const add=e.target.closest('#add-product-imei');if(add){const next=[1,2,3].find(n=>$('product-imei-row-'+n)?.classList.contains('hidden'));if(next){$('product-imei-row-'+next).classList.remove('hidden');$('product-serial-'+next).focus();}if(![1,2,3].some(n=>$('product-imei-row-'+n)?.classList.contains('hidden')))add.disabled=true;return;}const scan=e.target.closest('[data-scan-field]');if(scan){$('product-imei-row-1')?.classList.remove('hidden');openImeiScanner(scan.dataset.scanField);}});
 
   $('customer-lookup-form').addEventListener('submit',lookupCustomer);
   $('customer-lookup-result').addEventListener('click',e=>{
@@ -486,7 +486,7 @@
       openSaleItemForm();
     }
   });
-  function openSaleItemForm(){ $('product-form').reset(); $('product-stock').value='1'; $('product-reorder').value='1'; $('product-date').value=new Date().toLocaleString('en-KE'); $('product-error').textContent=''; $('product-modal').classList.remove('hidden'); $('product-name').focus(); }
+  function openSaleItemForm(){ $('product-form').reset(); $('product-stock').value='1'; $('product-reorder').value='1'; $('product-date').value=new Date().toLocaleString('en-KE'); $('product-error').textContent='';[1,2,3].forEach(n=>{$('product-serial-'+n).value='';$('product-imei-row-'+n).classList.add('hidden');});$('add-product-imei').disabled=false;$('product-modal').classList.remove('hidden'); $('product-name').focus(); }
   $('add-product-btn')?.addEventListener('click',openSaleItemForm);
   $('add-another-item')?.addEventListener('click',openSaleItemForm);
   $('product-close').addEventListener('click',()=> $('product-modal').classList.add('hidden'));
@@ -499,7 +499,7 @@
     if(serials.length>qty){$('product-error').textContent='The number of serial numbers cannot exceed the quantity being sold.';btn.disabled=false;btn.textContent='Add product to sale';return;}if($('product-buyer-id').checked&&serials.length!==qty){$('product-error').textContent='For identified goods, enter one serial / IMEI for every unit (up to three).';btn.disabled=false;btn.textContent='Add product to sale';return;}
     const id='direct-'+uuid(),product={id,name:$('product-name').value.trim(),priceKes:price,costKes:0,stockQty:qty,reorderLevel:0,requiresBuyerId:$('product-buyer-id').checked};
     state.cart.set(id,{product,qty,unitPriceKes:price,serials,imei:serials[0]||'',directSale:true});
-    $('product-modal').classList.add('hidden');$('product-form').reset();$('product-stock').value='1';$('product-reorder').value='1';[1,2,3].forEach(n=>$('product-serial-'+n).value='');
+    $('product-modal').classList.add('hidden');$('product-form').reset();$('product-stock').value='1';$('product-reorder').value='1';[1,2,3].forEach(n=>{$('product-serial-'+n).value='';$('product-imei-row-'+n).classList.add('hidden');});$('add-product-imei').disabled=false;
     renderCart();showNotice('Item added to this receipt. Add another good or continue to customer details.');
     btn.disabled=false;btn.textContent='Add product to sale';
   });
