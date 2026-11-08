@@ -15,7 +15,7 @@
     state.token=saved.token;state.role=saved.role||'owner';state.userName=saved.userName||'';state.staffTitle=saved.staffTitle||'';state.userPhotoData=saved.userPhotoData||'';state.userPhone=saved.userPhone||'';state.userEmail=saved.userEmail||'';lastSessionWrite=Number(saved.lastActivity)||Date.now();
     showPOS();publishWorkspaceSession();
     let subscriptionRequired=false;
-    try{if(['owner','manager'].includes(state.role))await loadBusinessProfile();await loadProducts();}
+    try{if(['owner','manager'].includes(state.role))await loadBusinessProfile();}
     catch(error){
       if(error.status===402) subscriptionRequired=true;
       else showNotice('You are signed in, but some business data could not load. '+(error.message||''),true);
@@ -461,15 +461,13 @@
   $('customer-lookup-form').addEventListener('submit',lookupCustomer);
   $('customer-lookup-result').addEventListener('click',e=>{
     if(e.target.id==='add-customer-package'){
-      $('products-panel')?.scrollIntoView({behavior:'smooth',block:'start'});
-      $('product-search').focus();
-      showNotice('Select the registered goods the customer is buying. They will be added to a new receipt.');
+      openSaleItemForm();
+      showNotice('Enter the next item manually. It will be added only to this receipt.');
     }
     if(e.target.id==='register-lookup-customer'){
       $('buyer-name').value='';$('buyer-phone').value=$('lookup-phone').value.trim();$('buyer-email').value='';$('buyer-id').value=$('lookup-national-id').value.trim();
-      showNotice('New customer details will be saved when you issue their first receipt. Select the goods below, then enter the customer name at checkout.');
-      $('products-panel').scrollIntoView({behavior:'smooth',block:'start'});
-      $('product-search').focus();
+      showNotice('New customer details will be saved when you issue their first receipt. Enter the goods manually, then continue to customer details.');
+      openSaleItemForm();
     }
   });
   function openSaleItemForm(){ $('product-form').reset(); $('product-stock').value='1'; $('product-reorder').value='1'; $('product-date').value=new Date().toLocaleString('en-KE'); $('product-error').textContent=''; $('product-modal').classList.remove('hidden'); $('product-name').focus(); }
@@ -663,13 +661,8 @@
         }
       }));
     }
-    backgroundLoads.push(loadProducts().catch(err => {
-      if(err.status === 402){
-        showWorkspaceScreen('profile');
-        showNotice('SWASS is locked until you subscribe. Open Wallet & Subscription in your profile to continue.');
-      } else {
-        showNotice('You are signed in, but the product list could not load. Refresh the page to try again.', true);
-      }
+    backgroundLoads.push(Promise.resolve().catch(err => {
+      if(err.status === 402){ showWorkspaceScreen('profile'); }
     }));
     void Promise.allSettled(backgroundLoads);
   });
@@ -765,12 +758,11 @@
   $('business-logo').addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file)return;const img=$('logo-preview');img.classList.remove('hidden');img.alt='Preparing selected business logo…';$('profile-error').textContent='Preparing logo…';try{state.profileLogoData=await compressLogo(file);img.src=state.profileLogoData;img.alt='Selected business logo preview';$('profile-error').textContent='Logo preview ready. Tap Save business profile to keep it.';}catch(err){state.profileLogoData=undefined;e.target.value='';img.removeAttribute('src');img.classList.add('hidden');$('profile-error').textContent=err.message;}});
   $('profile-form').addEventListener('submit',async e=>{e.preventDefault();const btn=$('profile-form').querySelector('button[type="submit"]');btn.disabled=true;btn.textContent='Saving…';$('profile-error').textContent='';const payload={businessName:$('profile-business-name').value.trim(),businessPhone:$('profile-business-phone').value.trim(),businessEmail:$('profile-business-email').value.trim()||null,legalName:$('profile-legal-name').value.trim()||null,storeName:$('profile-store-name').value.trim(),storeLocation:$('profile-store-location').value.trim(),houseName:$('profile-house-name').value.trim()||null,floor:$('profile-floor').value.trim()||null,houseNumber:$('profile-house-number').value.trim()||null,websiteUrl:$('profile-website').value.trim()||null,kraPin:$('profile-kra-pin').value.trim()||null,registrationCode:$('profile-registration-code').value.trim()||null,outletId:$('profile-outlet-id').value.trim()||null,terminalNumber:$('profile-terminal-number').value.trim()||null,receiptHeader:$('profile-receipt-header').value.trim()||null,receiptFooter:$('profile-receipt-footer').value.trim()||null};if(state.profileLogoData!==undefined)payload.logoData=state.profileLogoData;try{await request('/api/v1/business/profile',{method:'PATCH',body:JSON.stringify(payload)});state.businessProfile={...state.businessProfile,...payload};renderDashboardBusinessProfile();$('profile-panel').classList.add('hidden');showNotice('Business profile saved. Your logo and details will appear on new receipts.');}catch(err){$('profile-error').textContent=err.message||'Could not save business profile.';}finally{btn.disabled=false;btn.textContent='Save business profile';}});
   $('logout-btn').addEventListener('click',()=>{clearSession();window.dispatchEvent(new Event('swass:logout'));state.cart.clear();renderCart();$('profile-panel').classList.add('hidden');showLogin();});
-  $('product-list').addEventListener('click',e=>{const b=e.target.closest('[data-add]');if(b)addToCart(b.dataset.add);});
+  // No saved shop products are available in the receipt workflow.
   $('cart-list').addEventListener('click',e=>{const scan=e.target.closest('[data-scan-imei]');if(scan){openImeiScanner(scan.dataset.scanImei);return;}const b=e.target.closest('[data-qty]');if(b)changeQty(b.dataset.qty,Number(b.dataset.delta));});
   $('cart-list').addEventListener('input',e=>{const price=e.target.closest('[data-price]');if(price){const row=state.cart.get(price.dataset.price);const value=Number(price.value);if(!row||!Number.isSafeInteger(value)||value<1||value>100000000000){$('checkout-open').disabled=true;return;}if(row&&Number.isSafeInteger(value)&&value>=1&&value<=100000000000){row.unitPriceKes=value;const line=price.closest('.cart-row')?.querySelector('.cart-line-total');if(line)line.textContent='Line subtotal: '+money(value*row.qty);const t=totals();$('subtotal').textContent=money(t.subtotal);$('total').textContent=money(t.total);$('checkout-open').disabled=!state.cart.size||t.total<0||[...$('cart-list').querySelectorAll('[data-price]')].some(input=>!Number.isSafeInteger(Number(input.value))||Number(input.value)<1||Number(input.value)>100000000000);}return;}const field=e.target.closest('[data-imei]');if(field){const row=state.cart.get(field.dataset.imei);if(row)row.imei=field.value;}});
   let productSearchTimer;
-  $('product-search').addEventListener('input',()=>{clearTimeout(productSearchTimer);productSearchTimer=setTimeout(loadProducts,300);});
-  $('low-stock').addEventListener('change',()=>loadProducts());$('refresh-btn').addEventListener('click',loadProducts);
+  // Sales are manual-entry only. No product catalogue is loaded or searched.
   $('discount').addEventListener('input',renderCart);$('clear-cart').addEventListener('click',()=>{state.cart.clear();$('discount').value='0';renderCart();});
   $('checkout-open').addEventListener('click',openCheckout);$('checkout-close').addEventListener('click',()=>$('checkout-modal').classList.add('hidden'));$('checkout-form').addEventListener('submit',completeSale);
   $('receipt-close').addEventListener('click',()=>$('receipt-modal').classList.add('hidden'));$('new-sale').addEventListener('click',()=>$('receipt-modal').classList.add('hidden'));$('print-receipt').addEventListener('click',()=>window.print());
