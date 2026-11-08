@@ -17,6 +17,30 @@ services:
         generateValue: true
       - key: AURORA_CORS_ORIGINS
         sync: false
+      - key: TALKSASA_API_TOKEN
+        sync: false
+      - key: TALKSASA_SENDER_ID
+        value: TALK-SASA
+      - key: TALKSASA_API_URL
+        value: https://bulksms.talksasa.com/api/v3/sms/send
+      - key: BREVO_API_KEY
+        sync: false
+      - key: BREVO_FROM_EMAIL
+        sync: false
+      - key: WHATSAPP_PROVIDER
+        value: cloud
+      - key: WHATSAPP_ACCESS_TOKEN
+        sync: false
+      - key: WHATSAPP_PHONE_NUMBER_ID
+        sync: false
+      - key: WHATSAPP_GRAPH_VERSION
+        value: v22.0
+      - key: FLARESEND_API_KEY
+        sync: false
+      - key: TUMA_API_KEY
+        sync: false
+      - key: TUMA_BUSINESS_EMAIL
+        value: Kenyavat93@gmail.com
   - type: web
     name: e-receipt-aurora-web
     runtime: static
