@@ -15,7 +15,7 @@ export interface CreateReceiptDto {
   issuedAt?: string;                  // ISO time at the till (offline sales)
   paymentMethod: 'cash' | 'mpesa' | 'card';
   discountKes?: number;
-  items: { productId: string; qty: number; unitPriceKes?: number; serialNo?: string }[];
+  items: { productId?: string; name?: string; qty: number; unitPriceKes?: number; serialNo?: string; requiresBuyerId?: boolean }[];
   customer?: { fullName: string; phone: string; email?: string; nationalId?: string };
 }
 
@@ -230,27 +230,23 @@ export class ReceiptsService {
     }
 
     // 4. Lock the products and price the sale from the database, never from the client.
-    const ids = dto.items.map((i) => i.productId);
-    const pr = await c.query(
+    const ids = dto.items.map((i) => i.productId).filter((id): id is string => !!id);
+    const pr = ids.length ? await c.query(
       `SELECT id, name, price_kes, cost_kes, requires_buyer_id FROM products
         WHERE id = ANY($1::uuid[]) AND tenant_id = $2 AND store_id = $3 FOR UPDATE`,
       [ids, tenantId, user.storeId],
-    );
+    ) : { rows: [] as any[] };
     const byId = new Map(pr.rows.map((p) => [p.id, p]));
     if (byId.size !== new Set(ids).size) throw new BadRequestException('Unknown product in this store');
-
     const lines = dto.items.map((i) => {
-      const p = byId.get(i.productId);
-      const unit = i.unitPriceKes === undefined ? Number(p.price_kes) : i.unitPriceKes;
+      const p = i.productId ? byId.get(i.productId) : null;
+      const unit = i.unitPriceKes === undefined ? Number(p?.price_kes) : i.unitPriceKes;
+      const name = p?.name || String(i.name || '').trim();
+      if (!name || name.length > 160) throw new BadRequestException('Every sale item needs a product name');
       if (!Number.isSafeInteger(unit) || unit < 1 || unit > 100000000000) throw new BadRequestException('Customer selling price must be a positive whole KSh amount');
       const total = i.qty * unit;
-      if (!Number.isSafeInteger(unit) || !Number.isSafeInteger(total)) {
-        throw new BadRequestException('Product price or line total exceeds the supported amount');
-      }
-      return {
-        productId: i.productId, name: p.name as string, serialNo: i.serialNo ?? null,
-        qty: i.qty, unit, costUnit: Number(p.cost_kes ?? 0), total,
-      };
+      if (!Number.isSafeInteger(total)) throw new BadRequestException('Product price or line total exceeds the supported amount');
+      return { productId: i.productId || null, name, serialNo: i.serialNo ?? null, qty: i.qty, unit, costUnit: Number(p?.cost_kes ?? 0), total, requiresBuyerId: p ? !!p.requires_buyer_id : !!i.requiresBuyerId };
     });
     const subtotal = lines.reduce((s, l) => s + l.total, 0);
     if (!Number.isSafeInteger(subtotal)) throw new BadRequestException('Sale total exceeds the supported amount');
@@ -262,7 +258,7 @@ export class ReceiptsService {
     const total = subtotal - discount;
 
     // 5. High-value items need the buyer's details.
-    const needsBuyer = lines.some((l) => byId.get(l.productId).requires_buyer_id);
+    const needsBuyer = lines.some((l) => l.requiresBuyerId);
     if (needsBuyer && !(dto.customer?.fullName && dto.customer.phone && dto.customer.nationalId)) {
       throw new BadRequestException('Buyer name, phone and National ID are required for this item');
     }
@@ -286,13 +282,14 @@ export class ReceiptsService {
          VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
         [receipt.id, l.productId, l.name, l.serialNo, l.qty, l.unit, l.total, l.costUnit],
       );
-      // 7. Stock goes down (it may go negative after an offline sale).
-      await c.query(`UPDATE products SET stock_qty = stock_qty - $1 WHERE id = $2`, [l.qty, l.productId]);
-      await c.query(
-        `INSERT INTO stock_movements (product_id, change_qty, reason, receipt_id, user_id)
-         VALUES ($1, $2, 'sale', $3, $4)`,
-        [l.productId, -l.qty, receipt.id, user.sub],
-      );
+      if (l.productId) {
+        await c.query(`UPDATE products SET stock_qty = stock_qty - $1 WHERE id = $2`, [l.qty, l.productId]);
+        await c.query(
+          `INSERT INTO stock_movements (product_id, change_qty, reason, receipt_id, user_id)
+           VALUES ($1, $2, 'sale', $3, $4)`,
+          [l.productId, -l.qty, receipt.id, user.sub],
+        );
+      }
     }
 
     // 8. Charge the KSh 2 fee.
@@ -384,7 +381,7 @@ export class ReceiptsService {
     const canonical = {
       receiptNo: dto.receiptNo, issuedAt: dto.issuedAt ?? null, paymentMethod: dto.paymentMethod,
       discountKes: dto.discountKes ?? 0,
-      items: dto.items.map((i) => ({ productId: i.productId, qty: i.qty, unitPriceKes: i.unitPriceKes ?? null, serialNo: i.serialNo ?? null })),
+      items: dto.items.map((i) => ({ productId: i.productId ?? null, name: i.name?.trim() ?? null, qty: i.qty, unitPriceKes: i.unitPriceKes ?? null, serialNo: i.serialNo ?? null, requiresBuyerId: !!i.requiresBuyerId })),
       customer: dto.customer ? {
         fullName: dto.customer.fullName.trim(), phone: normalisePhone(dto.customer.phone), email: dto.customer.email?.trim().toLowerCase() || null,
         nationalId: dto.customer.nationalId ? hashNationalId(dto.customer.nationalId) : null,
@@ -407,11 +404,10 @@ export class ReceiptsService {
     if (!['cash', 'mpesa', 'card'].includes(dto.paymentMethod)) throw new BadRequestException('Invalid paymentMethod');
     if (!Array.isArray(dto.items) || dto.items.length === 0 || dto.items.length > 100) throw new BadRequestException('A sale must contain between 1 and 100 items');
     for (const i of dto.items) {
-      if (!uuid.test(i.productId ?? '') || !Number.isInteger(i.qty) || i.qty < 1 || i.qty > 1000000) {
-        throw new BadRequestException('Each item needs a productId and a whole qty of 1 or more');
-      }
-      if (i.unitPriceKes !== undefined && (!Number.isSafeInteger(i.unitPriceKes) || i.unitPriceKes < 1 || i.unitPriceKes > 100000000000)) {
-        throw new BadRequestException('Customer selling price must be a positive whole KSh amount');
+      if (!Number.isInteger(i.qty) || i.qty < 1 || i.qty > 1000000) throw new BadRequestException('Each item needs a whole quantity of 1 or more');
+      if (i.productId && !uuid.test(i.productId)) throw new BadRequestException('Invalid catalogue product reference');
+      if (!i.productId && (typeof i.name !== 'string' || !i.name.trim() || i.name.length > 160 || !Number.isSafeInteger(i.unitPriceKes) || Number(i.unitPriceKes) < 1)) {
+        throw new BadRequestException('Direct sale items need a name and a positive whole-KSh selling price');
       }
     }
     const d = dto.discountKes ?? 0;
