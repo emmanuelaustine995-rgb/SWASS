@@ -743,7 +743,7 @@
     document.querySelectorAll('[data-staff-tab]').forEach(b=>{const active=b===tab;b.classList.toggle('active',active);b.setAttribute('aria-selected',String(active));});
   });
   $('workspace-nav').addEventListener('click',e=>{const b=e.target.closest('[data-workspace]');if(b)showWorkspaceScreen(b.dataset.workspace);});
-  $('owner-home-issue')?.addEventListener('click',()=>{showWorkspaceScreen('receipts');$('receipts-home').classList.add('hidden');$('pos-view').classList.remove('hidden');$('pos-view').classList.add('workspace-issue-mode');$('history-panel').classList.add('hidden');$('product-list').classList.add('hidden');openSaleItemForm();});
+  $('owner-home-issue')?.addEventListener('click',()=>{showWorkspaceScreen('receipts');$('receipts-home').classList.add('hidden');$('pos-view').classList.remove('hidden');$('pos-view').classList.add('workspace-issue-mode');$('history-panel').classList.add('hidden');$('products-panel').classList.add('hidden');openSaleItemForm();});
   $('open-issue-receipt')?.addEventListener('click',()=>{ $('receipts-home').classList.add('hidden'); $('pos-view').classList.remove('hidden'); $('pos-view').classList.add('workspace-issue-mode'); document.querySelector('.pos-grid')?.classList.remove('hidden'); $('history-panel').classList.remove('hidden'); $('history-content').classList.add('hidden'); $('history-toggle').textContent='Open history'; document.querySelector('.page-heading')?.scrollIntoView({block:'start'}); });
   $('back-to-receipts').addEventListener('click',()=>{
     $('pos-view').classList.add('hidden');
@@ -752,7 +752,7 @@
   });
   $('open-issue-receipt').addEventListener('click',()=>{
     $('receipts-home').classList.add('hidden');$('pos-view').classList.remove('hidden');$('pos-view').classList.add('workspace-issue-mode');
-    document.querySelector('.pos-grid')?.classList.remove('hidden');$('history-panel').classList.add('hidden');$('product-list').classList.add('hidden');
+    document.querySelector('.pos-grid')?.classList.remove('hidden');$('history-panel').classList.add('hidden');$('products-panel').classList.add('hidden');
     openSaleItemForm();document.querySelector('.page-heading')?.scrollIntoView({block:'start'});
   });
   $('open-recover-receipt').addEventListener('click',()=>{window.location.href='recover.html';});
