@@ -358,3 +358,7 @@ body.workspace-active .shell {
   padding-bottom: 8px !important;
 }
 body.workspace-active #workspace-nav.hidden { display: none !important; }
+
+
+/* Compact optional IMEI controls and a small QR scan shortcut beside Add product. */
+.product-imei-capture{gap:8px;padding:10px 12px}.imei-tools-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.imei-tools-head strong{font-size:12px}.btn-imei-add{background:#16a34a!important;color:#fff!important;border:0!important;padding:7px 11px;min-height:34px}.btn-imei-add:disabled{opacity:.45}.product-submit-actions{display:flex;align-items:center;gap:8px}.product-submit-actions .btn-primary{flex:1}.btn-scan-optional{min-height:38px;padding:7px 11px;font-size:11px;background:#eef5f0;color:#39724e;border:1px solid #d5e8da}.product-imei-capture .imei-entry-row{margin-top:2px}.product-imei-capture .imei-entry-row input{min-height:38px;padding:8px 10px;font-size:12px}.modal#checkout-modal{z-index:20000}.modal#checkout-modal .modal-card{max-height:90dvh;overscroll-behavior:contain}
