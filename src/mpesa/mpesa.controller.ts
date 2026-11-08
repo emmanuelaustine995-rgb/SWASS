@@ -38,7 +38,7 @@ export class MpesaService {
       email,
       apiKey,
       base: 'https://api.tuma.co.ke',
-      callbackUrl: `${(process.env.PUBLIC_API_URL || 'https://swass-api.onrender.com').replace(/\/$/, '')}/api/v1/mpesa/callback/${encodeURIComponent(callbackToken)}`,
+      callbackUrl: `${(process.env.PUBLIC_API_URL || 'https://e-receipt-aurora-api.onrender.com').replace(/\/$/, '')}/api/v1/mpesa/callback/${encodeURIComponent(callbackToken)}`,
     };
   }
 
