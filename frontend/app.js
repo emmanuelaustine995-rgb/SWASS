@@ -9,31 +9,9 @@
   function touchSession(){ if(!state.token)return; const now=Date.now(); if(now-lastSessionWrite<30000)return; try{const saved=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');if(saved?.token===state.token){saved.lastActivity=now;localStorage.setItem(SESSION_KEY,JSON.stringify(saved));lastSessionWrite=now;}}catch{localStorage.removeItem(SESSION_KEY);} }
   function clearSession(){ localStorage.removeItem(SESSION_KEY); state.token=null; state.role=null; state.userName=''; state.staffTitle=''; state.userPhotoData=''; state.userPhone=''; state.userEmail=''; }
   function sessionIsValid(saved){ if(!saved?.token||!Number.isFinite(saved.lastActivity)||Date.now()-saved.lastActivity>SESSION_IDLE_MS)return false; try{const part=saved.token.split('.')[1];const claims=JSON.parse(atob(part.replace(/-/g,'+').replace(/_/g,'/')));return !!claims.exp&&claims.exp*1000>Date.now();}catch{return false;} }
-  async function restoreSession(){
-    let saved;try{saved=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');}catch{}
-    if(!sessionIsValid(saved)){clearSession();showLogin();return;}
-    state.token=saved.token;state.role=saved.role||'owner';state.userName=saved.userName||'';state.staffTitle=saved.staffTitle||'';state.userPhotoData=saved.userPhotoData||'';state.userPhone=saved.userPhone||'';state.userEmail=saved.userEmail||'';lastSessionWrite=Number(saved.lastActivity)||Date.now();
-    showPOS();publishWorkspaceSession();
-    // Reveal the selected workspace immediately. A sleeping or unreachable API
-    // must never leave the signed-in user staring at only the greeting banner.
-    let selected='dashboard';
-    if(['owner','manager'].includes(state.role)){
-      try{const candidate=localStorage.getItem('swass-active-workspace-v1');if(['dashboard','receipts','profile'].includes(candidate))selected=candidate;}catch{}
-    }
-    showWorkspaceScreen(selected);
-    if(['owner','manager'].includes(state.role) && selected!=='profile'){
-      void loadBusinessProfile().catch(error=>{
-        if(error.status===402){
-          showWorkspaceScreen('profile');
-          showNotice('AURORA is locked until you subscribe. Open Wallet & Subscription in your profile to continue.');
-        }else{
-          showNotice('Your workspace is open, but business details could not load. '+(error.message||'Please try again.'),true);
-        }
-      });
-    } else if(state.role==='cashier'){
-      showWorkspaceScreen('dashboard');
-    }
-  }
+  // Always require an explicit sign-in when the app is opened or refreshed.
+  // Do not reveal protected workspaces from a stale browser-cached token.
+  function restoreSession(){ clearSession(); showLogin(); }
   function checkSessionExpiry(){ if(!state.token)return; let saved;try{saved=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');}catch{} if(!sessionIsValid(saved)){clearSession();window.dispatchEvent(new Event('swass:logout'));state.cart.clear();renderCart();showLogin();showNotice('Your session ended after 3 hours without activity. Please sign in again.');} }
   const API = (window.SWASS_API_URL || '').replace(/\/$/, '');
   // Warm the free Render API while the visitor is reading the page. This
@@ -73,7 +51,7 @@
   function publishWorkspaceSession(){saveSession();window.dispatchEvent(new CustomEvent('swass:login',{detail:{token:state.token,role:state.role}}));}
   function showNotice(message, error = false) { const el=$('notice'); el.textContent=message; el.classList.remove('hidden'); el.style.background=error?'#fff0ef':'#fff5e8'; el.style.color=error?'#a12b22':'#8a4b08'; }
   function hideNotice(){ $('notice').classList.add('hidden'); }
-  function showLogin(){ document.body.classList.remove('workspace-active'); $('welcome-back-banner')?.classList.add('hidden'); $('login-view').classList.remove('hidden'); $('pos-view').classList.add('hidden'); $('logout-btn').classList.add('hidden'); $('profile-menu-btn')?.classList.add('hidden'); $('account-profile-menu')?.classList.add('hidden'); $('dashboard-link').classList.add('hidden'); $('workspace-nav').classList.add('hidden'); $('user-label').textContent=''; }
+  function showLogin(){ clearSession(); document.body.classList.remove('workspace-active'); $('welcome-back-banner')?.classList.add('hidden'); $('login-view').classList.remove('hidden'); $('pos-view').classList.add('hidden'); $('owner-home')?.classList.add('hidden'); $('receipts-home')?.classList.add('hidden'); $('owner-dashboard-view')?.classList.add('hidden'); $('staff-profile-panel')?.classList.add('hidden'); $('logout-btn').classList.add('hidden'); $('profile-menu-btn')?.classList.add('hidden'); $('account-profile-menu')?.classList.add('hidden'); $('dashboard-link').classList.add('hidden'); $('workspace-nav').classList.add('hidden'); $('user-label').textContent=''; }
 
   function renderDashboardBusinessProfile(){
     const p=state.businessProfile||{};
@@ -157,6 +135,7 @@
   }
 
   function showWorkspaceScreen(screen){
+    if(!state.token){showLogin();return;}
     if(!['dashboard','receipts','profile'].includes(screen))screen='dashboard';
     try{localStorage.setItem('swass-active-workspace-v1',screen);}catch{}
     const owner=document.getElementById('owner-dashboard-view'),pos=$('pos-view');
@@ -201,7 +180,7 @@
     document.querySelectorAll('#workspace-nav button').forEach(b=>b.classList.toggle('active',b.dataset.workspace===screen));
   }
 
-  function showPOS(){ document.body.classList.add('workspace-active'); $('login-view').classList.add('hidden'); $('pos-view').classList.remove('hidden'); $('welcome-back-banner')?.classList.add('hidden'); $('profile-menu-btn')?.classList.remove('hidden'); $('logout-btn')?.classList.remove('hidden'); const label=$('user-label');label.textContent=state.userName||state.staffTitle||(state.role==='cashier'?'Shop Attendant':state.role?state.role.replace('_',' '):'Staff');if(state.userPhotoData){const avatar=document.createElement('img');avatar.src=state.userPhotoData;avatar.alt='Profile photo';avatar.style.cssText='width:30px;height:30px;object-fit:cover;border-radius:50%;vertical-align:middle;margin-right:8px';label.prepend(avatar);} $('dashboard-link').classList.toggle('hidden', !['owner','manager'].includes(state.role));$('workspace-nav').classList.remove('hidden');  }
+  function showPOS(){ if(!state.token){showLogin();return;} document.body.classList.add('workspace-active'); $('login-view').classList.add('hidden'); $('pos-view').classList.remove('hidden'); $('welcome-back-banner')?.classList.add('hidden'); $('profile-menu-btn')?.classList.remove('hidden'); $('logout-btn')?.classList.remove('hidden'); const label=$('user-label');label.textContent=state.userName||state.staffTitle||(state.role==='cashier'?'Shop Attendant':state.role?state.role.replace('_',' '):'Staff');if(state.userPhotoData){const avatar=document.createElement('img');avatar.src=state.userPhotoData;avatar.alt='Profile photo';avatar.style.cssText='width:30px;height:30px;object-fit:cover;border-radius:50%;vertical-align:middle;margin-right:8px';label.prepend(avatar);} $('dashboard-link').classList.toggle('hidden', !['owner','manager'].includes(state.role));$('workspace-nav').classList.remove('hidden');  }
   async function lookupCustomer(ev){
     ev.preventDefault();
     const phone=$('lookup-phone').value.trim();
