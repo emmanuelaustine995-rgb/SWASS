@@ -85,7 +85,11 @@
     if(shopPhotos)shopPhotos.classList.toggle('hidden',!p.shopInsidePhotoData&&!p.shopOutsidePhotoData);
     button.textContent=complete?'Update business profile':'Complete business profile';
     close.classList.toggle('hidden',!complete);
-    panel.classList.toggle('hidden',complete);
+    // Do not let business completeness hide the profile editor while the Profile tab is open.
+    if(document.body.classList.contains('workspace-active') &&
+       document.getElementById('pos-view')?.classList.contains('profile-workspace-mode')){
+      panel.classList.remove('hidden');
+    }
   }
 
   function renderAccountProfile(){
@@ -135,7 +139,10 @@
   }
 
   async function loadOwnerReferralSummary(){
-    if(!$('referral-card')||state.role!=='owner')return;
+    const card=$('referral-card');
+    if(!card)return;
+    card.classList.toggle('hidden',state.role!=='owner');
+    if(state.role!=='owner')return;
     try{
       const data=await request('/api/v1/referrals/summary');
       $('referral-total').textContent=Number(data.totalReferrals||0).toLocaleString('en-KE');
@@ -147,6 +154,13 @@
       $('referral-message').textContent='50% of a friend’s first successful subscription is credited automatically.';
     }catch(error){$('referral-message').textContent=error.message||'Referral details could not be loaded.';}
   }
+  $('today-sales-toggle')?.addEventListener('click',()=>{
+    const details=$('today-sales-details'),button=$('today-sales-toggle');
+    const opening=details.classList.contains('hidden');
+    details.classList.toggle('hidden',!opening);
+    button.setAttribute('aria-expanded',String(opening));
+    button.classList.toggle('is-open',opening);
+  });
   $('referral-share')?.addEventListener('click',async()=>{
     const link=$('referral-link')?.value;if(!link)return;
     try{
@@ -187,6 +201,7 @@
     const posGrid=document.querySelector('.pos-grid');
     const history=$('history-panel'),crm=$('owner-customers-section'),lookup=document.querySelector('.customer-lookup-panel');
     const profile=$('profile-panel'),receiptHome=$('receipts-home'),ownerHome=$('owner-home');
+    const dashboardBusinessCard=$('dashboard-business-card');
     const staffSummary=$('staff-sales-summary');
     pos?.classList.remove('profile-workspace-mode');
     [history,crm,lookup,receiptHome,ownerHome,profile].forEach(el=>el?.classList.add('hidden'));
@@ -196,6 +211,7 @@
     document.getElementById('staff-profile-panel')?.classList.add('hidden');
     staffSummary?.classList.add('hidden');
     if(screen==='dashboard'){
+      dashboardBusinessCard?.classList.remove('hidden');
       if(['owner','manager'].includes(state.role)){
         ownerHome?.classList.remove('hidden');
         void loadOwnerHomeSummary();
@@ -210,6 +226,7 @@
     }else if(screen==='profile'){
       renderAccountProfile();
       if(['owner','manager'].includes(state.role)){
+        dashboardBusinessCard?.classList.add('hidden');
         // The profile form lives inside #owner-dashboard-view, which itself
         // sits inside #pos-view. Reveal the parent and suppress sale widgets.
         pos?.classList.remove('hidden');
@@ -852,9 +869,9 @@
   $('history-list').addEventListener('click',e=>{const b=e.target.closest('[data-view-pdf]');if(b)openReceiptPdf(b.dataset.viewPdf);});
   $('history-search').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();loadReceiptHistory();}});
   $('dashboard-edit-profile').addEventListener('click',()=>showWorkspaceScreen('profile'));
-  $('profile-close').addEventListener('click',()=>{$('profile-panel').classList.add('hidden');});
+  $('profile-close').addEventListener('click',()=>showWorkspaceScreen('dashboard'));
   $('business-logo').addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file)return;const img=$('logo-preview');img.classList.remove('hidden');img.alt='Preparing selected business logo…';$('profile-error').textContent='Preparing logo…';try{state.profileLogoData=await compressLogo(file);img.src=state.profileLogoData;img.alt='Selected business logo preview';$('profile-error').textContent='Logo preview ready. Tap Save business profile to keep it.';}catch(err){state.profileLogoData=undefined;e.target.value='';img.removeAttribute('src');img.classList.add('hidden');$('profile-error').textContent=err.message;}});
-  $('profile-form').addEventListener('submit',async e=>{e.preventDefault();const btn=$('profile-form').querySelector('button[type="submit"]');btn.disabled=true;btn.textContent='Saving…';$('profile-error').textContent='';const payload={businessName:$('profile-business-name').value.trim(),businessPhone:$('profile-business-phone').value.trim(),businessEmail:$('profile-business-email').value.trim()||null,legalName:$('profile-legal-name').value.trim()||null,storeName:$('profile-store-name').value.trim(),storeLocation:$('profile-store-location').value.trim(),houseName:$('profile-house-name').value.trim()||null,floor:$('profile-floor').value.trim()||null,houseNumber:$('profile-house-number').value.trim()||null,websiteUrl:$('profile-website').value.trim()||null,kraPin:$('profile-kra-pin').value.trim()||null,registrationCode:$('profile-registration-code').value.trim()||null,outletId:$('profile-outlet-id').value.trim()||null,terminalNumber:$('profile-terminal-number').value.trim()||null,receiptHeader:$('profile-receipt-header').value.trim()||null,receiptFooter:$('profile-receipt-footer').value.trim()||null};if(state.profileLogoData!==undefined)payload.logoData=state.profileLogoData;if(state.shopInsidePhotoDraft!==undefined)payload.shopInsidePhotoData=state.shopInsidePhotoDraft;if(state.shopOutsidePhotoDraft!==undefined)payload.shopOutsidePhotoData=state.shopOutsidePhotoDraft;try{await request('/api/v1/business/profile',{method:'PATCH',body:JSON.stringify(payload)});state.businessProfile={...state.businessProfile,...payload};renderDashboardBusinessProfile();$('profile-panel').classList.add('hidden');showNotice('Business profile saved. Your logo, shop photos and details are saved.');}catch(err){$('profile-error').textContent=err.message||'Could not save business profile.';}finally{btn.disabled=false;btn.textContent='Save business profile';}});
+  $('profile-form').addEventListener('submit',async e=>{e.preventDefault();const btn=$('profile-form').querySelector('button[type="submit"]');btn.disabled=true;btn.textContent='Saving…';$('profile-error').textContent='';const payload={businessName:$('profile-business-name').value.trim(),businessPhone:$('profile-business-phone').value.trim(),businessEmail:$('profile-business-email').value.trim()||null,legalName:$('profile-legal-name').value.trim()||null,storeName:$('profile-store-name').value.trim(),storeLocation:$('profile-store-location').value.trim(),houseName:$('profile-house-name').value.trim()||null,floor:$('profile-floor').value.trim()||null,houseNumber:$('profile-house-number').value.trim()||null,websiteUrl:$('profile-website').value.trim()||null,kraPin:$('profile-kra-pin').value.trim()||null,registrationCode:$('profile-registration-code').value.trim()||null,outletId:$('profile-outlet-id').value.trim()||null,terminalNumber:$('profile-terminal-number').value.trim()||null,receiptHeader:$('profile-receipt-header').value.trim()||null,receiptFooter:$('profile-receipt-footer').value.trim()||null};if(state.profileLogoData!==undefined)payload.logoData=state.profileLogoData;if(state.shopInsidePhotoDraft!==undefined)payload.shopInsidePhotoData=state.shopInsidePhotoDraft;if(state.shopOutsidePhotoDraft!==undefined)payload.shopOutsidePhotoData=state.shopOutsidePhotoDraft;try{await request('/api/v1/business/profile',{method:'PATCH',body:JSON.stringify(payload)});state.businessProfile={...state.businessProfile,...payload};renderDashboardBusinessProfile();renderAccountProfile();$('profile-error').textContent='Profile saved successfully. Your business details, logo and shop photos are updated.';$('profile-error').style.color='#16804a';}catch(err){$('profile-error').textContent=err.message||'Could not save business profile.';}finally{btn.disabled=false;btn.textContent='Save business profile';}});
   state.shopInsidePhotoDraft=undefined;state.shopOutsidePhotoDraft=undefined;
   async function prepareShopPhoto(inputId,previewId,key){
     $(inputId)?.addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file)return;const preview=$(previewId);try{const photo=await compressLogo(file);state[key]=photo;preview.src=photo;preview.classList.remove('hidden');}catch(err){state[key]=undefined;e.target.value='';preview.removeAttribute('src');preview.classList.add('hidden');$('profile-error').textContent=err.message||'Could not prepare shop photo.';}});
