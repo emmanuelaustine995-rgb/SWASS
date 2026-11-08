@@ -96,8 +96,8 @@ export class ReceiptsService {
       }
       const pdf = await buildReceiptPdf({
         receiptNo: receipt.receiptNo, issuedAt: receipt.issuedAt,
-        verificationUrl: `${(process.env.PUBLIC_API_URL || 'https://swass-api.onrender.com').replace(/\/$/,'')}/api/v1/receipt-recovery/verify/${encodeURIComponent(receipt.qrToken)}`,
-        recoveryUrl: `${(process.env.PUBLIC_APP_URL || 'https://swass-web.onrender.com').replace(/\/$/,'')}/#receipt-recovery`,
+        verificationUrl: `${(process.env.PUBLIC_API_URL || 'https://e-receipt-aurora-api.onrender.com').replace(/\/$/,'')}/api/v1/receipt-recovery/verify/${encodeURIComponent(receipt.qrToken)}`,
+        recoveryUrl: `${(process.env.PUBLIC_APP_URL || 'https://e-receipt-aurora-web.onrender.com').replace(/\/$/,'')}/#receipt-recovery`,
         receiptHeader: receipt.business?.receiptHeader, receiptFooter: receipt.business?.receiptFooter,
         customerEmail: dto.customer?.email,
         businessName: receipt.business?.name || 'AURORA business',
