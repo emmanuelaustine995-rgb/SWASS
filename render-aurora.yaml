@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: e-receipt-aurora-api
+    runtime: node
+    plan: free
+    region: singapore
+    rootDir: aurora-api
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: AURORA_DATABASE_URL
+        sync: false
+      - key: AURORA_JWT_SECRET
+        generateValue: true
+      - key: AURORA_CORS_ORIGINS
+        sync: false
+  - type: web
+    name: e-receipt-aurora-web
+    runtime: static
+    rootDir: aurora
+    buildCommand: echo "Publishing E-RECEIPT AURORA"
+    staticPublishPath: .
