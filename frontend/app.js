@@ -639,10 +639,14 @@
     e.preventDefault();
     const button=$('login-form').querySelector('button[type="submit"]');
     $('login-error').textContent='';
-    if(button){button.disabled=true;button.textContent='Connecting…';}
-    const loginWait=setTimeout(()=>{if(button&&button.disabled)button.textContent='Waking up AURORA…';},8000);
+    if(button){button.disabled=true;button.textContent='Waking up AURORA…';}
+    const loginWait=setTimeout(()=>{if(button&&button.disabled)button.textContent='Still connecting…';},12000);
     let signedIn=false;
     try{
+      // Finish the health check before login so the sign-in request does not
+      // race the first cold-start request against a sleeping Render instance.
+      await warmApi();
+      if(button)button.textContent='Signing in…';
       const data=await request('/api/v1/auth/login',{
         method:'POST',
         body:JSON.stringify({phone:$('login-phone').value.trim(),password:$('login-password').value,accountType:$('login-account-type').value})
