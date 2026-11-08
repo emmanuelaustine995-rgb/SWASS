@@ -660,9 +660,16 @@
       // Send authentication immediately. The health warm-up runs in the
       // background; waiting for it first doubled the cold-start delay.
       if(button)button.textContent='Signing in…';
+      const loginPhone=$('login-phone').value.trim();
+      const loginDigits=loginPhone.replace(/\D/g,'');
+      if(!/^(?:254\d{9}|0\d{9}|\d{9})$/.test(loginDigits))throw new Error('Enter a valid Kenyan phone number, for example 0712345678.');
+      if(!$('login-password').value)throw new Error('Enter your password to sign in.');
       const data=await request('/api/v1/auth/login',{
         method:'POST',
-        body:JSON.stringify({phone:$('login-phone').value.trim(),password:$('login-password').value,accountType:$('login-account-type').value})
+        // Render free instances can take over 50 seconds to wake. Allow enough
+        // time for the API to start and complete the database-backed login.
+        signal:AbortSignal.timeout(150000),
+        body:JSON.stringify({phone:loginPhone,password:$('login-password').value,accountType:$('login-account-type').value})
       });
       if(!data.accessToken)throw new Error('The server did not return a sign-in token. Please try again.');
       const parts=data.accessToken.split('.')[1];
