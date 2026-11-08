@@ -1,4 +1,4 @@
-name: Build SWASS Android APK
+name: Build AURORA E-RECEIPT Android APK
 
 on:
   workflow_dispatch:
@@ -16,7 +16,7 @@ jobs:
   build-apk:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out SWASS
+      - name: Check out AURORA E-RECEIPT
         uses: actions/checkout@v4
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -33,7 +33,7 @@ jobs:
       - name: Generate Android project
         working-directory: android-app
         run: npx cap add android
-      - name: Sync SWASS web app
+      - name: Sync AURORA E-RECEIPT web app
         working-directory: android-app
         run: npx cap sync android
       - name: Build installable APK
@@ -42,19 +42,19 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleDebug
       - name: Rename APK
-        run: cp android-app/android/app/build/outputs/apk/debug/app-debug.apk SWASS-Android.apk
+        run: cp android-app/android/app/build/outputs/apk/debug/app-debug.apk AURORA E-RECEIPT-Android.apk
       - name: Save APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: SWASS-Android-APK
-          path: SWASS-Android.apk
+          name: AURORA E-RECEIPT-Android-APK
+          path: AURORA E-RECEIPT-Android.apk
           retention-days: 30
       - name: Publish direct APK download
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: swass-android-${{ github.run_number }}
+          TAG: aurora-android-${{ github.run_number }}
         run: |
-          gh release create "$TAG" SWASS-Android.apk \
+          gh release create "$TAG" AURORA E-RECEIPT-Android.apk \
             --repo "$GITHUB_REPOSITORY" \
-            --title "SWASS Android APK ${{ github.run_number }}" \
-            --notes "Installable Android APK for SWASS. Download SWASS-Android.apk below."
+            --title "AURORA E-RECEIPT Android APK ${{ github.run_number }}" \
+            --notes "Installable Android APK for AURORA E-RECEIPT. Download AURORA E-RECEIPT-Android.apk below."
