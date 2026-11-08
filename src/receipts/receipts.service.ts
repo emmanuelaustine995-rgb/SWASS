@@ -1,5 +1,5 @@
 import {
-  BadRequestException, ConflictException, ForbiddenException, HttpException, Injectable,
+  BadRequestException, ConflictException, ForbiddenException, HttpException, Injectable, NotFoundException,
 } from '@nestjs/common';
 import { createHmac, randomBytes } from 'crypto';
 import { PoolClient } from 'pg';
@@ -83,6 +83,46 @@ export class ReceiptsService {
         fullName: r.customer_name, phone: r.customer_phone, email: r.customer_email, nationalIdLast4: r.customer_id_last4,
       } : null, items: r.items,
     })) };
+  }
+
+  async pdf(user: AuthUser, receiptId: string): Promise<{ receiptNo: string; pdf: Buffer }> {
+    if (!user.tenantId || !user.storeId) throw new ForbiddenException('User is not tied to a store');
+    const { rows } = await this.db.pool.query(
+      `SELECT r.id,r.receipt_no,r.issued_at,r.subtotal_kes,r.discount_kes,r.total_kes,r.payment_method,r.qr_token,
+              t.name AS business_name,t.phone AS business_phone,t.email AS business_email,
+              s.name AS store_name,s.location AS store_location,s.receipt_header,s.receipt_footer,s.logo_data,
+              c.full_name AS customer_name,c.phone AS customer_phone,c.email AS customer_email,
+              u.full_name AS cashier_name,u.phone AS cashier_phone,
+              COALESCE(json_agg(json_build_object('name',ri.name,'qty',ri.qty,'unitPriceKes',ri.unit_price_kes,
+                'lineTotalKes',ri.line_total_kes,'serialNo',ri.serial_no) ORDER BY ri.id)
+                FILTER (WHERE ri.id IS NOT NULL),'[]'::json) AS items
+         FROM receipts r
+         JOIN tenants t ON t.id=r.tenant_id
+         JOIN stores s ON s.id=r.store_id
+         LEFT JOIN customers c ON c.id=r.customer_id AND c.tenant_id=r.tenant_id
+         LEFT JOIN users u ON u.id=r.cashier_id AND u.tenant_id=r.tenant_id
+         LEFT JOIN receipt_items ri ON ri.receipt_id=r.id
+        WHERE r.id=$1 AND r.tenant_id=$2 AND r.store_id=$3
+          AND (NOT $4::boolean OR r.cashier_id=$5::uuid)
+        GROUP BY r.id,t.id,s.id,c.id,u.id LIMIT 1`,
+      [receiptId,user.tenantId,user.storeId,user.role === 'cashier',user.sub],
+    );
+    const r=rows[0];
+    if(!r) throw new NotFoundException('Receipt not found');
+    const appBase=(process.env.PUBLIC_APP_URL || 'https://swass-web.onrender.com').replace(/\\/$/,'');
+    const pdf=await buildReceiptPdf({
+      receiptNo:r.receipt_no,issuedAt:r.issued_at,
+      verificationUrl:appBase+'/verify.html?token='+encodeURIComponent(r.qr_token),
+      recoveryUrl:appBase+'/recover.html',
+      businessName:r.business_name || 'AURORA business',businessPhone:r.business_phone,businessEmail:r.business_email,
+      storeName:r.store_name,storeLocation:r.store_location,logoData:r.logo_data,
+      receiptHeader:r.receipt_header,receiptFooter:r.receipt_footer,
+      customerName:r.customer_name,customerPhone:r.customer_phone,customerEmail:r.customer_email,
+      cashierName:r.cashier_name || 'Staff',cashierPhone:r.cashier_phone,
+      paymentMethod:r.payment_method,subtotalKes:Number(r.subtotal_kes),discountKes:Number(r.discount_kes),
+      totalKes:Number(r.total_kes),items:r.items || [],
+    });
+    return {receiptNo:r.receipt_no,pdf};
   }
 
   async create(user: AuthUser, dto: CreateReceiptDto) {
