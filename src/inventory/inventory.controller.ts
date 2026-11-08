@@ -18,6 +18,7 @@ export class InventoryController {
     const { rows } = await this.db.pool.query(
       `SELECT id, sku, barcode, name, price_kes AS "priceKes", cost_kes AS "costKes", stock_qty AS "stockQty", reorder_level AS "reorderLevel", requires_buyer_id AS "requiresBuyerId"
          FROM products WHERE tenant_id = $1 AND store_id = $2
+          AND archived_at IS NULL
           AND ($3 = '' OR name ILIKE '%' || $3 || '%' OR sku ILIKE '%' || $3 || '%' OR barcode ILIKE '%' || $3 || '%')
           AND (NOT $4 OR stock_qty <= reorder_level) ORDER BY name ASC LIMIT 500`,
       [user.tenantId, user.storeId, search, lowStock === 'true'],
@@ -26,7 +27,7 @@ export class InventoryController {
   }
 
   @Post()
-  @Roles('manager', 'owner')
+  @Roles('cashier', 'manager', 'owner')
   async create(@Req() req: any, @Body() body: ProductInput) {
     const user = req.user; this.requireStore(user); const d = this.validate(body, true);
     try {
@@ -41,6 +42,21 @@ export class InventoryController {
         return { product: rows[0] };
       });
     } catch (e: any) { if (e?.code === '23505') throw new ConflictException('That barcode is already in use in this store'); throw e; }
+  }
+
+  @Post('archive-all')
+  @Roles('manager', 'owner')
+  async archiveAll(@Req() req: any) {
+    const user = req.user; this.requireStore(user);
+    return this.db.tx(async c => {
+      const { rows } = await c.query(
+        `UPDATE products p SET archived_at = now()
+          WHERE p.tenant_id = $1 AND p.store_id = $2 AND p.archived_at IS NULL
+          RETURNING p.id`,
+        [user.tenantId, user.storeId],
+      );
+      return { archivedCount: rows.length, message: 'Current catalogue cleared. Previous receipts and sales remain unchanged.' };
+    });
   }
 
   @Patch(':id')
