@@ -6,7 +6,7 @@ services:
     region: singapore
     rootDir: aurora-api
     buildCommand: npm install
-    startCommand: npm start
+    startCommand: npm run migrate && npm start
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV
