@@ -10,6 +10,7 @@ export class ReferralsController {
   constructor(private db: DbService) {}
 
   @Get('summary')
+  @Roles('owner')
   async summary(@Req() req: any) {
     const tenantId = req.user?.tenantId;
     if (!tenantId) throw new BadRequestException('Business owner account required');
@@ -37,6 +38,7 @@ export class ReferralsController {
   }
 
   @Post('withdraw')
+  @Roles('owner')
   async requestWithdrawal(@Req() req:any,@Body() body:{phone?:string}) {
     const tenantId=req.user?.tenantId;
     if(!tenantId) throw new BadRequestException('Business owner account required');
@@ -44,6 +46,7 @@ export class ReferralsController {
     const phone=digits.startsWith('254')&&digits.length===12?digits:digits.startsWith('0')&&digits.length===10?'254'+digits.slice(1):'';
     if(!/^254[17][0-9]{8}$/.test(phone)) throw new BadRequestException('Enter a valid Kenyan M-Pesa payout number.');
     return this.db.tx(async c=>{
+      await c.query('SELECT id FROM tenants WHERE id=$1 FOR UPDATE', [tenantId]);
       const [earned,committed]=await Promise.all([
         c.query('SELECT COALESCE(SUM(amount_kes),0)::bigint AS total FROM referral_rewards WHERE referrer_tenant_id=$1',[tenantId]),
         c.query(`SELECT COALESCE(SUM(amount_kes),0)::bigint AS total FROM referral_withdrawal_requests WHERE tenant_id=$1 AND status IN ('pending','approved','paid')`,[tenantId]),
