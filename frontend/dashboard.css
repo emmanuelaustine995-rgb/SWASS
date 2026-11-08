@@ -439,3 +439,8 @@ body.dashboard-dark #owner-staff-performance table tbody td:first-child strong {
 body.dashboard-dark #owner-staff-performance .muted {
   color: #bfd0dc !important;
 }
+
+
+/* Final mobile workspace layout: keep navigation in the page, never fixed over content. */
+@media(max-width:760px){#workspace-nav{position:relative!important;inset:auto!important;z-index:5!important;display:flex!important;flex-wrap:nowrap!important;overflow-x:auto!important;overflow-y:hidden!important;width:100%!important;margin:0 0 12px!important;padding:6px 0!important;background:transparent!important;box-shadow:none!important;border:0!important}#workspace-nav button{flex:0 0 auto!important;min-height:42px!important;padding:8px 11px!important}#pos-view{padding-bottom:12px!important}}
+#workspace-nav{position:relative!important;bottom:auto!important}
