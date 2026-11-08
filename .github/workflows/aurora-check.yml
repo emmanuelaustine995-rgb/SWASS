@@ -1,0 +1,26 @@
+name: AURORA build checks
+
+on:
+  push:
+    branches:
+      - aurora-fresh-build
+  pull_request:
+    branches:
+      - aurora-fresh-build
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install backend dependencies
+        run: npm install --include=dev
+      - name: Build backend
+        run: npm run build
+      - name: Check AURORA browser JavaScript syntax
+        run: node --check aurora/app.js
