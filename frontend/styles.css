@@ -378,3 +378,40 @@ body.workspace-active #pos-view .cart-panel>.totals,
 body.workspace-active #pos-view .cart-panel>#add-another-item{flex:0 0 auto}
 body.workspace-active #pos-view .cart-panel>.totals{margin-bottom:8px}
 body.workspace-active #pos-view #add-another-item{min-height:40px}
+
+
+/* Reliable receipt progression: keep the next-step action pinned above bottom tabs. */
+body.workspace-active #pos-view .cart-panel{
+  position:relative!important;
+  box-sizing:border-box!important;
+  padding-bottom:76px!important;
+}
+body.workspace-active #pos-view #checkout-open{
+  position:fixed!important;
+  left:12px!important;
+  right:12px!important;
+  bottom:calc(76px + env(safe-area-inset-bottom))!important;
+  width:calc(100% - 24px)!important;
+  max-width:calc(980px - 32px)!important;
+  margin:0 auto!important;
+  min-height:54px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  visibility:visible!important;
+  opacity:1!important;
+  z-index:10001!important;
+  flex:none!important;
+  border-radius:14px!important;
+  box-shadow:0 5px 22px rgba(15,23,42,.22)!important;
+}
+body.workspace-active #pos-view #checkout-open:disabled{
+  opacity:.55!important;
+}
+body.workspace-active #pos-view .cart-panel>.tiny{display:none!important}
+#checkout-modal{position:fixed!important;inset:0!important;z-index:20000!important;overflow-y:auto!important;padding:12px!important}
+#checkout-modal .modal-card{width:min(100%,560px)!important;max-height:calc(100dvh - 24px)!important;overflow-y:auto!important;margin:auto!important}
+#checkout-modal #complete-sale{position:sticky!important;bottom:0!important;z-index:2!important;min-height:52px!important;box-shadow:0 -5px 14px rgba(255,255,255,.95)!important}
+@media(min-width:761px){
+ body.workspace-active #pos-view #checkout-open{left:50%!important;right:auto!important;transform:translateX(-50%)!important;width:min(calc(100% - 32px),948px)!important}
+}
