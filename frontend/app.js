@@ -657,9 +657,8 @@
     const loginWait=setTimeout(()=>{if(button&&button.disabled)button.textContent='Still connecting…';},12000);
     let signedIn=false;
     try{
-      // Finish the health check before login so the sign-in request does not
-      // race the first cold-start request against a sleeping Render instance.
-      await warmApi();
+      // Send authentication immediately. The health warm-up runs in the
+      // background; waiting for it first doubled the cold-start delay.
       if(button)button.textContent='Signing in…';
       const data=await request('/api/v1/auth/login',{
         method:'POST',
