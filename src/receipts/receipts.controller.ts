@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Post, Query, Req, UseGuards, Param, Res } from '@nestjs/common';
 import { AuthGuard, Roles, RolesGuard } from '../auth/auth';
 import { CreateReceiptDto, ReceiptsService } from './receipts.service';
 
@@ -11,6 +11,16 @@ export class ReceiptsController {
   @Roles('cashier', 'manager', 'owner')
   list(@Req() req: any, @Query('q') q?: string, @Query('from') from?: string, @Query('to') to?: string, @Query('limit') limit?: string) {
     return this.receipts.list(req.user, { q, from, to, limit });
+  }
+
+  @Get(':id/pdf')
+  @Roles('cashier', 'manager', 'owner')
+  async pdf(@Req() req: any, @Param('id') id: string, @Res() res: any) {
+    const result = await this.receipts.pdf(req.user, id);
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename="${result.receiptNo}.pdf"`);
+    res.setHeader('Cache-Control', 'private, no-store');
+    return res.send(result.pdf);
   }
 
   @Post()
