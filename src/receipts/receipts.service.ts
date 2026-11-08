@@ -125,8 +125,8 @@ export class ReceiptsService {
             receiptHeader: receipt.business?.receiptHeader, receiptFooter: receipt.business?.receiptFooter,
             cashierName: receipt.cashier?.name, cashierPhone: receipt.cashier?.phone,
             paymentMethod: dto.paymentMethod, subtotalKes: receipt.subtotalKes, discountKes: receipt.discountKes,
-            verificationUrl: `${(process.env.PUBLIC_APP_URL || 'https://swass-web.onrender.com').replace(/\/$/,'')}/verify.html?token=${encodeURIComponent(receipt.qrToken)}`,
-            recoveryUrl: `${(process.env.PUBLIC_APP_URL || 'https://swass-web.onrender.com').replace(/\/$/,'')}/recover.html`,
+            verificationUrl: `${(process.env.PUBLIC_API_URL || 'https://e-receipt-aurora-api.onrender.com').replace(/\/$/,'')}/api/v1/receipt-recovery/verify/${encodeURIComponent(receipt.qrToken)}`,
+            recoveryUrl: `${(process.env.PUBLIC_APP_URL || 'https://e-receipt-aurora-web.onrender.com').replace(/\/$/,'')}/#receipt-recovery`,
           });
           emailDelivery.sent = true; emailDelivery.message = 'Receipt PDF emailed to the customer.';
         } catch (error) {
