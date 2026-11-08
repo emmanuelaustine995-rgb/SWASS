@@ -601,6 +601,12 @@
       $('login-form').classList.remove('hidden');
     }
   }
+  $('show-register')?.addEventListener('click',()=>{
+    $('login-form').classList.add('hidden');$('password-reset-form')?.classList.add('hidden');$('first-password-form')?.classList.add('hidden');$('owner-register-entry').classList.add('hidden');$('register-form').classList.remove('hidden');$('register-error').textContent='';$('signup-otp-message').textContent='';updateSignupAccountType();
+  });
+  $('show-login')?.addEventListener('click',()=>{
+    $('register-form').classList.add('hidden');$('signup-otp-panel').classList.add('hidden');$('register-fields').classList.remove('hidden');$('register-submit').classList.remove('hidden');$('login-form').classList.remove('hidden');$('owner-register-entry').classList.toggle('hidden',$('login-account-type').value==='staff');$('register-error').textContent='';$('login-error').textContent='';
+  });
   $('login-account-type').addEventListener('change', updateLoginAccountType);
   updateLoginAccountType();
   let signupResendTimer = null;
@@ -641,9 +647,9 @@
     const btn=$('register-submit');btn.disabled=true;btn.textContent='Sending code…';
     try{
       $('register-error').textContent='Connecting to AURORA…';
-      await warmApi();
+      void warmApi();
       $('register-error').textContent='';
-      const data=await request('/api/v1/auth/register',{method:'POST',body:JSON.stringify(signupPayload())});
+      const data=await request('/api/v1/auth/register',{method:'POST',signal:AbortSignal.timeout(150000),body:JSON.stringify(signupPayload())});
       $('register-fields').classList.add('hidden');
       $('register-submit').classList.add('hidden');
       $('signup-otp-panel').classList.remove('hidden');
