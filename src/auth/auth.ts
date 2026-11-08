@@ -189,7 +189,7 @@ export class AuthController {
   }
 
   @Post('register')
-  async register(@Body() body: { accountType?: string; businessName?: string; storeName?: string; storeLocation?: string; houseName?: string; floor?: string; houseNumber?: string; websiteUrl?: string; kraPin?: string; legalName?: string; businessEmail?: string; fullName?: string; phone?: string; email?: string; password?: string }, @Req() req: any) {
+  async register(@Body() body: { accountType?: string; businessName?: string; storeName?: string; storeLocation?: string; houseName?: string; floor?: string; houseNumber?: string; websiteUrl?: string; kraPin?: string; legalName?: string; businessEmail?: string; fullName?: string; phone?: string; email?: string; password?: string; referralCode?: string }, @Req() req: any) {
     const registrationStartedAt = Date.now();
     console.info('[SWASS][OTP_DIAG] Signup registration request received');
     if (body?.accountType === 'cashier') throw new BadRequestException('Staff accounts can only be created by accepting an email invitation from the shop owner.');
@@ -213,6 +213,7 @@ export class AuthController {
     if (email && (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254)) throw new BadRequestException('Enter a valid email address');
     if (password.length < 10 || password.length > 128) throw new BadRequestException('Password must be at least 10 characters');
     const phone = this.normalizePhone(body.phone || '');
+    const referralCode = String(body.referralCode || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 20) || null;
     const ip = String(req.ip ?? '').replace(/^::ffff:/, '') || null;
 
     // Run independent database checks and password hashing together to shorten signup time.
@@ -241,11 +242,10 @@ export class AuthController {
     );
     const saved = await this.db.pool.query(
       `INSERT INTO signup_otp_requests
-       (phone,business_name,store_name,store_location,full_name,email,password_hash,code_hash,ip_address,expires_at,role,invitation_id,house_name,floor,house_number,website_url,kra_pin,legal_name,business_email)
-       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9::inet,now()+interval '5 minutes',$10,$11,$12,$13,$14,$15,$16,$17,$18) RETURNING id`,
-      [phone,businessName,storeName,storeLocation,fullName,email,passwordHash,this.signupCodeHash(code),ip,role,invitationId,houseName,floor,houseNumber,websiteUrl,kraPin,legalName,businessEmail],
-    );
-    console.info(`[SWASS][OTP_DIAG] OTP record saved in ${Date.now() - saveOtpStartedAt}ms; starting SMS provider request`);
+       (phone,business_name,store_name,store_location,full_name,email,password_hash,code_hash,ip_address,expires_at,role,invitation_id,house_name,floor,house_number,website_url,kra_pin,legal_name,business_email,referral_code)
+       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9::inet,now()+interval '5 minutes',$10,$11,$12,$13,$14,$15,$16,$17,$18,$19) RETURNING id`,
+      [phone,businessName,storeName,storeLocation,fullName,email,passwordHash,this.signupCodeHash(code),ip,role,invitationId,houseName,floor,houseNumber,websiteUrl,kraPin,legalName,businessEmail,referralCode],
+    );    console.info(`[SWASS][OTP_DIAG] OTP record saved in ${Date.now() - saveOtpStartedAt}ms; starting SMS provider request`);
     try {
       await this.sendSignupSms(phone, `Your SWASS signup verification code is ${code}. It expires in 5 minutes. Do not share this code.`);
       console.info(`[SWASS][OTP_DIAG] SMS provider accepted signup OTP; total registration duration ${Date.now() - registrationStartedAt}ms`);
@@ -325,6 +325,15 @@ export class AuthController {
             [tenantId,storeId,row.full_name,phone,row.email,row.password_hash],
           );
           await c.query('INSERT INTO wallets (tenant_id) VALUES ($1)', [tenantId]);
+          if (row.referral_code) {
+            const referrer = await c.query('SELECT id FROM tenants WHERE referral_code=$1 FOR UPDATE', [row.referral_code]);
+            if (referrer.rowCount && referrer.rows[0].id !== tenantId) {
+              await c.query(
+                'INSERT INTO tenant_referrals(referrer_tenant_id,referred_tenant_id,referral_code) VALUES($1,$2,$3) ON CONFLICT (referred_tenant_id) DO NOTHING',
+                [referrer.rows[0].id, tenantId, row.referral_code],
+              );
+            }
+          }
         }
         // New accounts remain locked until the owner completes a paid subscription.
         await c.query('UPDATE signup_otp_requests SET verified_at=now(),consumed_at=now() WHERE id=$1', [row.id]);
