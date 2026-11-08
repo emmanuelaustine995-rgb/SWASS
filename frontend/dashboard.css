@@ -444,3 +444,15 @@ body.dashboard-dark #owner-staff-performance .muted {
 /* Final mobile workspace layout: keep navigation in the page, never fixed over content. */
 @media(max-width:760px){#workspace-nav{position:relative!important;inset:auto!important;z-index:5!important;display:flex!important;flex-wrap:nowrap!important;overflow-x:auto!important;overflow-y:hidden!important;width:100%!important;margin:0 0 12px!important;padding:6px 0!important;background:transparent!important;box-shadow:none!important;border:0!important}#workspace-nav button{flex:0 0 auto!important;min-height:42px!important;padding:8px 11px!important}#pos-view{padding-bottom:12px!important}}
 #workspace-nav{position:relative!important;bottom:auto!important}
+
+/* Referral cashback card */
+.referral-card{margin:14px 0 16px;border-color:#d9eefa;background:linear-gradient(145deg,#fff 0%,#f3faff 100%)}
+.referral-card h2{margin:4px 0;color:#173b56}
+.referral-card>.muted{margin:5px 0 14px}
+.referral-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:12px 0}
+.referral-stats article{padding:11px;background:#fff;border:1px solid #e1edf5;border-radius:10px;min-width:0}
+.referral-stats span{display:block;font-size:11px;color:#71899a}
+.referral-stats strong{display:block;margin-top:5px;font-size:19px;color:#1676ad;overflow-wrap:anywhere}
+.referral-share-row,.referral-withdraw-row{display:flex;gap:8px;margin-top:9px}
+.referral-share-row input,.referral-withdraw-row input{flex:1;min-width:0;min-height:42px;border:1px solid #d7e0e9;border-radius:9px;padding:9px 11px;font:inherit;background:#fff}
+@media(max-width:520px){.referral-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.referral-share-row,.referral-withdraw-row{flex-direction:column}.referral-share-row button,.referral-withdraw-row button{width:100%}}
