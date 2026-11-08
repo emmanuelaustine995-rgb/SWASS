@@ -82,6 +82,11 @@
     $('dashboard-profile-meta').textContent=complete?[p.storeName,p.businessPhone,p.storeLocation].filter(Boolean).join(' · '):'Add your business name, phone and branch details to set up SWASS.';
     const photo=$('dashboard-profile-image');
     if(p.logoData){photo.src=p.logoData;photo.classList.remove('hidden');}else{photo.removeAttribute('src');photo.classList.add('hidden');}
+    const inside=$('dashboard-shop-inside-photo'),outside=$('dashboard-shop-outside-photo');
+    if(inside){if(p.shopInsidePhotoData){inside.src=p.shopInsidePhotoData;inside.classList.remove('hidden');}else{inside.removeAttribute('src');inside.classList.add('hidden');}}
+    if(outside){if(p.shopOutsidePhotoData){outside.src=p.shopOutsidePhotoData;outside.classList.remove('hidden');}else{outside.removeAttribute('src');outside.classList.add('hidden');}}
+    const shopPhotos=$('dashboard-shop-photos');
+    if(shopPhotos)shopPhotos.classList.toggle('hidden',!p.shopInsidePhotoData&&!p.shopOutsidePhotoData);
     button.textContent=complete?'Update business profile':'Complete business profile';
     close.classList.toggle('hidden',!complete);
     panel.classList.toggle('hidden',complete);
