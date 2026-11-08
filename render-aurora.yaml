@@ -4,21 +4,27 @@ services:
     runtime: node
     plan: free
     region: singapore
-    rootDir: aurora-api
-    buildCommand: npm install
-    startCommand: npm run migrate && npm start
+    rootDir: .
+    buildCommand: npm install --include=dev && npm run build
+    startCommand: npm run migrate:node && npm start
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV
         value: production
-      - key: AURORA_DATABASE_URL
+      - key: DATABASE_URL
         sync: false
-      - key: AURORA_JWT_SECRET
+      - key: JWT_SECRET
         generateValue: true
-      - key: AURORA_CORS_ORIGINS
+      - key: SWASS_ID_SECRET
+        generateValue: true
+      - key: CORS_ORIGINS
         sync: false
       - key: TALKSASA_API_TOKEN
         sync: false
+      - key: TALKSASA_SENDER_ID
+        value: TALK-SASA
+      - key: TALKSASA_API_URL
+        value: https://bulksms.talksasa.com/api/v3/sms/send
       - key: TALKSASA_SENDER_ID
         value: TALK-SASA
       - key: TALKSASA_API_URL
@@ -35,12 +41,28 @@ services:
         sync: false
       - key: WHATSAPP_GRAPH_VERSION
         value: v22.0
+      - key: BREVO_API_KEY
+        sync: false
+      - key: BREVO_FROM_EMAIL
+        sync: false
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_FROM
+        sync: false
       - key: FLARESEND_API_KEY
         sync: false
       - key: TUMA_API_KEY
         sync: false
       - key: TUMA_BUSINESS_EMAIL
         value: Kenyavat93@gmail.com
+      - key: MPESA_CALLBACK_TOKEN
+        generateValue: true
+      - key: MPESA_ENV
+        value: sandbox
+      - key: PUBLIC_APP_URL
+        value: https://e-receipt-aurora-web.onrender.com
   - type: web
     name: e-receipt-aurora-web
     runtime: static
