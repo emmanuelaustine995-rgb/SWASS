@@ -584,7 +584,7 @@
     finally{btn.disabled=false;}
   });
   function updateSignupAccountType(){
-    $('reg-account-type').value='owner';
+    if($('reg-account-type'))$('reg-account-type').value='owner';
     $('owner-signup-fields').classList.remove('hidden');
     $('reg-business').required=true;
     $('reg-store').required=true;
