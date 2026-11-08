@@ -89,6 +89,12 @@
 
   function renderAccountProfile(){
     const role=state.role==='cashier'?'Shop staff / cashier':(state.role||'Account').replace('_',' ');
+    $('profile-user-name').textContent=state.userName||'My profile';
+    $('profile-user-role').textContent=state.staffTitle||role;
+    $('profile-user-fullname').textContent=state.userName||'Name not available';
+    $('profile-user-accounttype').textContent=role;
+    $('profile-user-phone').textContent=state.userPhone||'Not available';
+    $('profile-user-email').textContent=state.userEmail||'Not available';
     $('account-profile-name').textContent=state.userName||'My profile';
     $('account-profile-fullname').textContent=state.userName||'Name not available';
     $('account-profile-role').textContent=state.staffTitle||role;
@@ -169,13 +175,10 @@
       if(state.role==='cashier'){staffSummary?.classList.remove('hidden');void loadStaffSalesSummary();}
       $('open-recover-receipt')?.classList.remove('hidden');
     }else if(screen==='profile'){
-      const menu=$('account-profile-menu');
-      if(menu){renderAccountProfile();menu.classList.remove('hidden');}
+      renderAccountProfile();
       if(['owner','manager'].includes(state.role)){
         profile?.classList.remove('hidden');
-        owner?.classList.remove('hidden');
-        owner?.querySelector('#owner-staff-area')?.classList.remove('hidden');
-        void loadStaffInvitations();
+        void loadBusinessProfile().then(()=>renderAccountProfile()).catch(err=>showNotice('Business details could not be loaded. '+(err.message||''),true));
       }else{
         document.getElementById('staff-profile-panel')?.classList.remove('hidden');
       }
