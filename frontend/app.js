@@ -61,7 +61,7 @@
   const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random()*16|0; return (c==='x'?r:(r&3|8)).toString(16); }));
   async function request(path, options = {}) {
     touchSession();
-    const res = await fetch(`${API}${path}`, { ...options, headers: { 'Content-Type':'application/json', ...(state.token ? { Authorization:`Bearer ${state.token}` } : {}), ...(options.headers || {}) } });
+    const res = await fetch(`${API}${path}`, { ...options, signal: options.signal || AbortSignal.timeout(75000), headers: { 'Content-Type':'application/json', ...(state.token ? { Authorization:`Bearer ${state.token}` } : {}), ...(options.headers || {}) } });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
       const error = new Error(data.message || `Request failed (${res.status})`);
@@ -630,7 +630,8 @@
     e.preventDefault();
     const button=$('login-form').querySelector('button[type="submit"]');
     $('login-error').textContent='';
-    if(button){button.disabled=true;button.textContent='Signing in…';}
+    if(button){button.disabled=true;button.textContent='Connecting…';}
+    const loginWait=setTimeout(()=>{if(button&&button.disabled)button.textContent='Waking up SWASS…';},8000);
     let signedIn=false;
     try{
       const data=await request('/api/v1/auth/login',{
@@ -661,6 +662,7 @@
       state.userName='';state.staffTitle='';state.userPhotoData='';state.userPhone='';state.userEmail='';
       $('login-error').textContent=err.message||'Sign-in failed. Check your phone number and password.';
     }finally{
+      clearTimeout(loginWait);
       if(button){button.disabled=false;button.textContent='Sign in';}
     }
     if(!signedIn)return;
