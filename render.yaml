@@ -34,7 +34,7 @@ services:
         sync: false
       - key: MPESA_CALLBACK_TOKEN
         generateValue: true
-      # Tuma collects SWASS subscription and wallet payments.
+      # Tuma collects AURORA subscription and receipt-wallet payments for the existing application.
       - key: TUMA_BUSINESS_EMAIL
         value: Kenyavat93@gmail.com
       - key: TUMA_API_KEY
@@ -79,5 +79,5 @@ services:
     name: swass-web
     runtime: static
     rootDir: frontend
-    buildCommand: echo "Publishing SWASS frontend"
+    buildCommand: echo "Publishing AURORA E-RECEIPT on the existing web service"
     staticPublishPath: .
