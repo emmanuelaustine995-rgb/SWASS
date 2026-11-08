@@ -292,11 +292,12 @@
       return `<button class="product-card" data-add="${p.id}" type="button" ${unavailable?'disabled aria-disabled="true"':''}><span class="product-name">${escapeHtml(p.name)}</span><span class="product-meta"><span class="price">${money(p.priceKes)}</span><span class="stock ${stockClass}">${stockLabel}</span></span>${p.sku?`<span class="stock">SKU: ${escapeHtml(p.sku)}</span>`:''}</button>`;
     }).join('');
   }
-  function addToCart(id){ const p=state.products.find(x=>x.id===id); if(!p)return; const stock=Math.max(0,Number(p.stockQty)||0); const old=state.cart.get(id); if(stock<=0){showNotice('This product is out of stock.',true);return;} if((old?.qty||0)>=stock){showNotice('Available stock limit reached. Update inventory first.',true);return;} state.cart.set(id,{product:p,qty:(old?.qty||0)+1,unitPriceKes:old?.unitPriceKes??Number(p.priceKes),imei:old?.imei||''});hideNotice();renderCart(); }
-  function changeQty(id,delta){const row=state.cart.get(id);if(!row)return;const next=row.qty+delta;const stock=Math.max(0,Number(row.product.stockQty)||0);if(next>stock){showNotice('Only '+stock+' units are currently in stock.',true);return;}if(next<=0)state.cart.delete(id);else row.qty=next;renderCart();}
+  function addToCart(id){ const p=state.products.find(x=>x.id===id); if(!p)return; const stock=Math.max(0,Number(p.stockQty)||0); const old=state.cart.get(id); if(stock<=0){showNotice('This product is out of stock.',true);return;} if((old?.qty||0)>=stock){showNotice('Available stock limit reached. Update inventory first.',true);return;} state.cart.set(id,{product:p,qty:(old?.qty||0)+1,unitPriceKes:old?.unitPriceKes??Number(p.priceKes),imei:old?.imei||'',directSale:false});hideNotice();renderCart(); }
+  function changeQty(id,delta){const row=state.cart.get(id);if(!row)return;const next=row.qty+delta;if(!row.directSale){const stock=Math.max(0,Number(row.product.stockQty)||0);if(next>stock){showNotice('Only '+stock+' units are currently in stock.',true);return;}}if(next<=0)state.cart.delete(id);else row.qty=next;renderCart();}
   function totals(){const subtotal=[...state.cart.values()].reduce((s,r)=>s+Number(r.unitPriceKes??r.product.priceKes)*r.qty,0);const requested=Math.max(0,Math.floor(Number($('discount').value)||0));const discount=Math.min(subtotal,requested);if(requested>subtotal)$('discount').value=String(discount);return {subtotal,discount,total:subtotal-discount};}
   function renderCart(){
-    const rows=[...state.cart.entries()]; $('cart-list').innerHTML=rows.length?rows.map(([id,r])=>`<div class="cart-row"><div><div class="cart-row-name">${escapeHtml(r.product.name)}</div><div class="cart-row-sub">Shop buying cost: ${money(r.product.costKes)} · Default selling price: ${money(r.product.priceKes)}</div><label class="cart-unit-price">Customer price per item (KSh)<input type="number" min="1" max="100000000000" step="1" inputmode="numeric" data-price="${id}" value="${Number(r.unitPriceKes??r.product.priceKes)}" required></label><div class="cart-row-sub cart-line-total">Line subtotal: ${money(Number(r.unitPriceKes??r.product.priceKes)*r.qty)}</div><label>IMEI / Serial number${r.product.requiresBuyerId?' (required)':' (if applicable)'}<input type="text" maxlength="32" data-imei="${id}" value="${escapeHtml(r.imei||'')}" placeholder="${r.product.requiresBuyerId?'Enter IMEI / serial number':'Enter if applicable'}" ${r.product.requiresBuyerId?'required':''}></label><button type="button" class="btn btn-light btn-small" data-scan-imei="${id}">Scan QR / barcode</button></div><div class="qty-control"><button type="button" data-qty="${id}" data-delta="-1" aria-label="Decrease">−</button><span>${r.qty}</span><button type="button" data-qty="${id}" data-delta="1" aria-label="Increase">+</button></div></div>`).join(''):'<div class="empty">Your cart is empty.</div>';
+    const rows=[...state.cart.entries()];
+    $('cart-list').innerHTML=rows.length?rows.map(([id,r])=>`<div class="cart-row"><div><div class="cart-row-name">${escapeHtml(r.product.name)}</div><div class="cart-row-sub">${r.directSale?'Direct sale item':'Catalogue item'} · Quantity: ${r.qty}</div><label class="cart-unit-price">Selling price per item (KSh)<input type="number" min="1" max="100000000000" step="1" inputmode="numeric" data-price="${id}" value="${Number(r.unitPriceKes??r.product.priceKes)}" required></label><div class="cart-row-sub cart-line-total">Line subtotal: ${money(Number(r.unitPriceKes??r.product.priceKes)*r.qty)}</div><label>IMEI / Serial number${r.product.requiresBuyerId?' (required)':' (optional)'}<input type="text" maxlength="80" data-imei="${id}" value="${escapeHtml(r.imei||'')}" placeholder="${r.product.requiresBuyerId?'Enter IMEI / serial number':'Enter if applicable'}" ${r.product.requiresBuyerId?'required':''}></label><button type="button" class="btn btn-light btn-small" data-scan-imei="${id}">Scan QR / barcode</button></div><div class="qty-control"><button type="button" data-qty="${id}" data-delta="-1" aria-label="Decrease">−</button><span>${r.qty}</span><button type="button" data-qty="${id}" data-delta="1" aria-label="Increase">+</button></div></div>`).join(''):'<div class="empty">Your sale is empty. Add the first item to begin.</div>';
     const t=totals(); $('subtotal').textContent=money(t.subtotal);$('total').textContent=money(t.total);$('checkout-open').disabled=!rows.length||t.total<0;
   }
   function openCheckout(){const items=[...state.cart.values()];const needsBuyer=items.some(r=>r.product.requiresBuyerId);$('buyer-id-wrap').classList.remove('hidden');$('buyer-id-note').classList.toggle('hidden',!needsBuyer);$('checkout-total').textContent=money(totals().total);$('checkout-error').textContent='';$('checkout-modal').classList.remove('hidden');}
@@ -333,11 +334,11 @@
     // the receipt payload can never fall back to an older product price.
     priceInputs.forEach(input=>{const row=state.cart.get(input.dataset.price);if(row)row.unitPriceKes=Number(input.value);});
     const t=totals(); const needsBuyer=items.some(r=>r.product.requiresBuyerId);
-    if(items.some(r=>r.product.requiresBuyerId&&!String(r.imei||'').trim())){$('checkout-error').textContent='Enter the IMEI / serial number for each item that requires buyer identification.';return;}
+    if(items.some(r=>r.product.requiresBuyerId&&!(Array.isArray(r.serials)&&r.serials.length>=r.qty)&&!String(r.imei||'').trim())){$('checkout-error').textContent='Enter the IMEI / serial number for each item that requires buyer identification.';return;}
     const customer={fullName:$('buyer-name').value.trim(),phone:$('buyer-phone').value.trim(),email:$('buyer-email').value.trim(),nationalId:$('buyer-id').value.trim()};
     if(!customer.fullName||!customer.phone||!customer.email||!customer.nationalId){ $('checkout-error').textContent='Enter the customer full name, phone number, email and National ID before issuing the receipt.';return; }
     if(needsBuyer&&(!customer.fullName||!customer.phone||!customer.nationalId)){ $('checkout-error').textContent='Enter the buyer full name, phone number and National ID for this item.';return; }
-    const saleId=uuid();const payload={clientUuid:saleId,receiptNo:`SW-${new Date().toISOString().slice(0,10).replace(/-/g,'')}-${saleId.replace(/-/g,'').slice(0,10).toUpperCase()}`,paymentMethod:$('payment-method').value,issuedAt:new Date().toISOString(),discountKes:t.discount,items:items.flatMap(r=>{const price=Number(r.unitPriceKes??r.product.priceKes);const codes=Array.isArray(r.serials)?r.serials.filter(Boolean):[];if(codes.length)return codes.map(serialNo=>({productId:r.product.id,qty:1,unitPriceKes:price,serialNo}));return [{productId:r.product.id,qty:r.qty,unitPriceKes:price,...(r.imei&&r.imei.trim()?{serialNo:r.imei.trim()}: {})}];})};
+    const saleId=uuid();const payload={clientUuid:saleId,receiptNo:`SW-${new Date().toISOString().slice(0,10).replace(/-/g,'')}-${saleId.replace(/-/g,'').slice(0,10).toUpperCase()}`,paymentMethod:$('payment-method').value,issuedAt:new Date().toISOString(),discountKes:t.discount,items:items.flatMap(r=>{const price=Number(r.unitPriceKes??r.product.priceKes),codes=Array.isArray(r.serials)?r.serials.filter(Boolean):[],base=r.directSale?{name:r.product.name,unitPriceKes:price,requiresBuyerId:!!r.product.requiresBuyerId}:{productId:r.product.id,unitPriceKes:price};if(codes.length)return codes.map(serialNo=>({...base,qty:1,serialNo}));return [{...base,qty:r.qty,...(r.imei&&r.imei.trim()?{serialNo:r.imei.trim()}: {})}];})};
     payload.customer=customer;
     const btn=$('complete-sale');btn.disabled=true;btn.textContent='Issuing receipt…';$('checkout-error').textContent='';
     try{
@@ -471,25 +472,22 @@
       $('product-search').focus();
     }
   });
-  $('add-product-btn').addEventListener('click',()=>{ $('product-form').reset(); $('product-stock').value='1'; $('product-reorder').value='1'; $('product-date').value=new Date().toLocaleString('en-KE'); $('product-error').textContent=''; $('product-modal').classList.remove('hidden'); });
+  function openSaleItemForm(){ $('product-form').reset(); $('product-stock').value='1'; $('product-reorder').value='1'; $('product-date').value=new Date().toLocaleString('en-KE'); $('product-error').textContent=''; $('product-modal').classList.remove('hidden'); $('product-name').focus(); }
+  $('add-product-btn').addEventListener('click',openSaleItemForm);
+  $('add-another-item')?.addEventListener('click',openSaleItemForm);
   $('product-close').addEventListener('click',()=> $('product-modal').classList.add('hidden'));
   $('product-form').addEventListener('submit',async e=>{
     e.preventDefault(); $('product-error').textContent='';
-    const btn=$('product-form').querySelector('button[type="submit"]'); btn.disabled=true; btn.textContent='Adding product…';
+    const btn=$('product-form').querySelector('button[type="submit"]'); btn.disabled=true; btn.textContent='Adding item…';
     const serials=[1,2,3].map(n=>$('product-serial-'+n).value.trim()).filter(Boolean);
-    if(serials.length>3){$('product-error').textContent='You can add up to three serial numbers.';btn.disabled=false;btn.textContent='Add product and continue';return;}
-    const qty=serials.length||Math.max(1,Number($('product-stock').value)||1);
-    const payload={name:$('product-name').value.trim(),sku:$('product-sku').value.trim()||null,barcode:$('product-barcode').value.trim()||null,priceKes:Number($('product-price').value),costKes:$('product-cost').value===''?null:Number($('product-cost').value),stockQty:qty,reorderLevel:Math.min(qty,Math.max(0,Number($('product-reorder').value)||1)),requiresBuyerId:$('product-buyer-id').checked};
-    try{
-      const data=await request('/api/v1/products',{method:'POST',body:JSON.stringify(payload)});
-      const product=data.product;
-      state.cart.set(product.id,{product,qty,unitPriceKes:Number(product.priceKes),serials,imei:serials[0]||''});
-      $('product-modal').classList.add('hidden');$('product-form').reset();$('product-stock').value='1';$('product-reorder').value='1';
-      [1,2,3].forEach(n=>$('product-serial-'+n).value='');
-      renderCart();showNotice('Product added. Next, continue to customer details.');
-      await loadProducts();
-    }catch(err){$('product-error').textContent=err.message||'Could not add product.';}
-    finally{btn.disabled=false;btn.textContent='Add product and continue';}
+    const qty=Math.max(1,Number($('product-stock').value)||1),price=Number($('product-price').value);
+    if(!Number.isSafeInteger(price)||price<1){$('product-error').textContent='Enter a valid selling price.';btn.disabled=false;btn.textContent='Add item to this receipt';return;}
+    if(serials.length&&serials.length!==qty){$('product-error').textContent='If you enter serial numbers, add one for each unit being sold.';btn.disabled=false;btn.textContent='Add item to this receipt';return;}
+    const id='direct-'+uuid(),product={id,name:$('product-name').value.trim(),priceKes:price,costKes:0,stockQty:qty,reorderLevel:0,requiresBuyerId:$('product-buyer-id').checked};
+    state.cart.set(id,{product,qty,unitPriceKes:price,serials,imei:serials[0]||'',directSale:true});
+    $('product-modal').classList.add('hidden');$('product-form').reset();$('product-stock').value='1';$('product-reorder').value='1';[1,2,3].forEach(n=>$('product-serial-'+n).value='');
+    renderCart();showNotice('Item added to this receipt. Add another good or continue to customer details.');
+    btn.disabled=false;btn.textContent='Add item to this receipt';
   });
   $('clear-catalogue-btn')?.addEventListener('click',async()=>{
     if(!window.confirm('Clear all current products from this shop catalogue? Previous sales and receipts will be preserved.'))return;
@@ -745,7 +743,7 @@
     document.querySelectorAll('[data-staff-tab]').forEach(b=>{const active=b===tab;b.classList.toggle('active',active);b.setAttribute('aria-selected',String(active));});
   });
   $('workspace-nav').addEventListener('click',e=>{const b=e.target.closest('[data-workspace]');if(b)showWorkspaceScreen(b.dataset.workspace);});
-  $('owner-home-issue')?.addEventListener('click',()=>showWorkspaceScreen('receipts'));
+  $('owner-home-issue')?.addEventListener('click',()=>{showWorkspaceScreen('receipts');$('receipts-home').classList.add('hidden');$('pos-view').classList.remove('hidden');$('pos-view').classList.add('workspace-issue-mode');$('history-panel').classList.add('hidden');$('product-list').classList.add('hidden');openSaleItemForm();});
   $('open-issue-receipt')?.addEventListener('click',()=>{ $('receipts-home').classList.add('hidden'); $('pos-view').classList.remove('hidden'); $('pos-view').classList.add('workspace-issue-mode'); document.querySelector('.pos-grid')?.classList.remove('hidden'); $('history-panel').classList.remove('hidden'); $('history-content').classList.add('hidden'); $('history-toggle').textContent='Open history'; document.querySelector('.page-heading')?.scrollIntoView({block:'start'}); });
   $('back-to-receipts').addEventListener('click',()=>{
     $('pos-view').classList.add('hidden');
@@ -753,14 +751,9 @@
     $('receipts-home').classList.remove('hidden');
   });
   $('open-issue-receipt').addEventListener('click',()=>{
-    $('receipts-home').classList.add('hidden');
-    $('pos-view').classList.remove('hidden');
-    $('pos-view').classList.add('workspace-issue-mode');
-    document.querySelector('.pos-grid')?.classList.remove('hidden');
-    $('history-panel').classList.remove('hidden');
-    $('history-content').classList.add('hidden');
-    $('history-toggle').textContent='Open history';
-    document.querySelector('.page-heading')?.scrollIntoView({block:'start'});
+    $('receipts-home').classList.add('hidden');$('pos-view').classList.remove('hidden');$('pos-view').classList.add('workspace-issue-mode');
+    document.querySelector('.pos-grid')?.classList.remove('hidden');$('history-panel').classList.add('hidden');$('product-list').classList.add('hidden');
+    openSaleItemForm();document.querySelector('.page-heading')?.scrollIntoView({block:'start'});
   });
   $('open-recover-receipt').addEventListener('click',()=>{window.location.href='recover.html';});
   document.querySelector('.dashboard-sidebar')?.addEventListener('click',e=>{const link=e.target.closest('.sidebar-link');if(!link)return;const screen=link.dataset.screen||(link.getAttribute('href')==='#owner-customers-section'?'customers':link.getAttribute('href')==='#owner-reports-section'?'reports':link.getAttribute('href')==='#owner-payments-section'?'payments':'overview');e.preventDefault();showWorkspaceScreen(screen);});
