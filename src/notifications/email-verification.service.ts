@@ -17,7 +17,7 @@ export class EmailVerificationService {
        VALUES($1,$2,$3,now()+interval '30 minutes')`,
       [userId,email,tokenHash],
     );
-    const verifyUrl = `${(process.env.PUBLIC_APP_URL || 'https://swass-web.onrender.com').replace(/\/$/,'')}/verify-email.html?token=${encodeURIComponent(token)}`;
+    const verifyUrl = `${(process.env.PUBLIC_APP_URL || 'https://e-receipt-aurora-web.onrender.com').replace(/\/$/,'')}/verify-email.html?token=${encodeURIComponent(token)}`;
     const response = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: { 'api-key': apiKey, 'Content-Type': 'application/json', accept: 'application/json' },
