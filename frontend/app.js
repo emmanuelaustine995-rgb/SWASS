@@ -481,13 +481,13 @@
     const btn=$('product-form').querySelector('button[type="submit"]'); btn.disabled=true; btn.textContent='Adding item…';
     const serials=[1,2,3].map(n=>$('product-serial-'+n).value.trim()).filter(Boolean);
     const qty=Math.max(1,Number($('product-stock').value)||1),price=Number($('product-price').value);
-    if(!Number.isSafeInteger(price)||price<1){$('product-error').textContent='Enter a valid selling price.';btn.disabled=false;btn.textContent='Add item to this receipt';return;}
-    if(serials.length>qty){$('product-error').textContent='The number of serial numbers cannot exceed the quantity being sold.';btn.disabled=false;btn.textContent='Add item to this receipt';return;}if($('product-buyer-id').checked&&serials.length!==qty){$('product-error').textContent='For identified goods, enter one serial / IMEI for every unit (up to three).';btn.disabled=false;btn.textContent='Add item to this receipt';return;}
+    if(!Number.isSafeInteger(price)||price<1){$('product-error').textContent='Enter a valid selling price.';btn.disabled=false;btn.textContent='Add product to sale';return;}
+    if(serials.length>qty){$('product-error').textContent='The number of serial numbers cannot exceed the quantity being sold.';btn.disabled=false;btn.textContent='Add product to sale';return;}if($('product-buyer-id').checked&&serials.length!==qty){$('product-error').textContent='For identified goods, enter one serial / IMEI for every unit (up to three).';btn.disabled=false;btn.textContent='Add product to sale';return;}
     const id='direct-'+uuid(),product={id,name:$('product-name').value.trim(),priceKes:price,costKes:0,stockQty:qty,reorderLevel:0,requiresBuyerId:$('product-buyer-id').checked};
     state.cart.set(id,{product,qty,unitPriceKes:price,serials,imei:serials[0]||'',directSale:true});
     $('product-modal').classList.add('hidden');$('product-form').reset();$('product-stock').value='1';$('product-reorder').value='1';[1,2,3].forEach(n=>$('product-serial-'+n).value='');
     renderCart();showNotice('Item added to this receipt. Add another good or continue to customer details.');
-    btn.disabled=false;btn.textContent='Add item to this receipt';
+    btn.disabled=false;btn.textContent='Add product to sale';
   });
   $('clear-catalogue-btn')?.addEventListener('click',async()=>{
     if(!window.confirm('Clear all current products from this shop catalogue? Previous sales and receipts will be preserved.'))return;
