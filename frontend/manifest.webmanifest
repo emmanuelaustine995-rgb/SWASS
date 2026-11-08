@@ -1,8 +1,8 @@
 {
   "id": "/",
-  "name": "SWASS – Smart Business Management",
-  "short_name": "SWASS",
-  "description": "Sales, receipts, stock and customer management by E-Tech.",
+  "name": "AURORA E-RECEIPT",
+  "short_name": "AURORA",
+  "description": "Digital receipts, sales records and customer management by E-Tech.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
