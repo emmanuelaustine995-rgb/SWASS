@@ -161,6 +161,7 @@
     const history=$('history-panel'),crm=$('owner-customers-section'),lookup=document.querySelector('.customer-lookup-panel');
     const profile=$('profile-panel'),receiptHome=$('receipts-home'),ownerHome=$('owner-home');
     const staffSummary=$('staff-sales-summary');
+    pos?.classList.remove('profile-workspace-mode');
     [history,crm,lookup,receiptHome,ownerHome,profile].forEach(el=>el?.classList.add('hidden'));
     owner?.classList.add('hidden');
     pos?.classList.add('hidden');
@@ -182,6 +183,10 @@
     }else if(screen==='profile'){
       renderAccountProfile();
       if(['owner','manager'].includes(state.role)){
+        // The profile form lives inside #owner-dashboard-view, which itself
+        // sits inside #pos-view. Reveal the parent and suppress sale widgets.
+        pos?.classList.remove('hidden');
+        pos?.classList.add('profile-workspace-mode');
         owner?.classList.remove('hidden');
         owner?.querySelector('#owner-staff-area')?.classList.add('hidden');
         profile?.classList.remove('hidden');
