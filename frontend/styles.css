@@ -133,3 +133,8 @@ body.workspace-active .profile-account-summary .account-profile-details{grid-tem
 #pos-view.profile-workspace-mode #owner-dashboard-view{display:block!important;}
 #pos-view.profile-workspace-mode #owner-dashboard-view > :not(#profile-panel){display:none!important;}
 #pos-view.profile-workspace-mode #owner-dashboard-view > #profile-panel{display:block!important;width:100%;max-width:100%;}
+
+/* AURORA wordmark sits above the three fixed navigation buttons. */
+body.workspace-active .bottom-nav{position:fixed;}
+body.workspace-active .bottom-nav::after{content:"AURORA";position:absolute;left:50%;top:-19px;transform:translateX(-50%);font:italic 700 13px/1 Georgia,serif;letter-spacing:.18em;color:#64748b;pointer-events:none;}
+body.workspace-active .footer{display:none!important;}
