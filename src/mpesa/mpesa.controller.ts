@@ -229,6 +229,20 @@ export class MpesaController {
              VALUES ($1,$2,$3,COALESCE((SELECT MAX(ends_at) FROM subscriptions WHERE tenant_id=$1 AND status='active' AND ends_at>now()),now()),COALESCE((SELECT MAX(ends_at) FROM subscriptions WHERE tenant_id=$1 AND status='active' AND ends_at>now()),now())+$4::interval,'active',false)`,
             [p.tenant_id, plan, p.amount_kes, interval],
           );
+          const firstSubscription = await c.query(
+            `SELECT COUNT(*)::int AS paid_count FROM payments
+              WHERE tenant_id=$1 AND purpose='subscription' AND status='success'`, [p.tenant_id],
+          );
+          if (Number(firstSubscription.rows[0].paid_count) === 1) {
+            await c.query(
+              `INSERT INTO referral_rewards(referrer_tenant_id,referred_tenant_id,payment_id,amount_kes)
+               SELECT tr.referrer_tenant_id,tr.referred_tenant_id,$2,FLOOR($3::numeric*0.50)::bigint
+                 FROM tenant_referrals tr
+                WHERE tr.referred_tenant_id=$1 AND tr.referrer_tenant_id<>$1
+               ON CONFLICT (referred_tenant_id) DO NOTHING`,
+              [p.tenant_id,p.id,p.amount_kes],
+            );
+          }
         } else {
           const wallet = await c.query(`UPDATE wallets SET balance_kes=balance_kes+$1 WHERE tenant_id=$2`, [p.amount_kes, p.tenant_id]);
           if (!wallet.rowCount) throw new Error('Wallet not found for successful top-up');
