@@ -177,6 +177,8 @@
     }else if(screen==='profile'){
       renderAccountProfile();
       if(['owner','manager'].includes(state.role)){
+        owner?.classList.remove('hidden');
+        owner?.querySelector('#owner-staff-area')?.classList.add('hidden');
         profile?.classList.remove('hidden');
         void loadBusinessProfile().then(()=>renderAccountProfile()).catch(err=>showNotice('Business details could not be loaded. '+(err.message||''),true));
       }else{
