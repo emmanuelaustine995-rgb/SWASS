@@ -16,7 +16,7 @@ Use the repository's `render-aurora.yaml` blueprint. It creates:
 - `e-receipt-aurora-api`, built from the repository root with the full NestJS API.
 - `e-receipt-aurora-web`, a static site published from `aurora/`.
 
-The API blueprint runs the existing database migration runner before startup. It generates separate JWT and business-ID secrets and sets the AURORA frontend/API public URLs.
+The API blueprint runs every existing SWASS database migration before startup. It uses the same SWASS API code and table structure, but only against a new, empty AURORA PostgreSQL database (`DATABASE_URL`). It generates separate JWT and business-ID secrets and sets the AURORA frontend/API public URLs. This is code/integration reuse, not a shared production database.
 
 ## Credentials and safety
 
@@ -26,7 +26,7 @@ Render does not transfer secret values between services automatically. To activa
 - `WHATSAPP_ACCESS_TOKEN` and `WHATSAPP_PHONE_NUMBER_ID`
 - `TUMA_API_KEY`
 
-Do not put these values in GitHub, frontend JavaScript, screenshots, or chat messages. The code and environment-variable names are prepared, but provider delivery cannot be confirmed until the values are present and tested.
+Do not put these values in GitHub, frontend JavaScript, screenshots, or chat messages. The blueprint now declares the supported provider environment-variable names. The code and configuration are prepared, but provider delivery cannot be confirmed until the values are present and tested. Keep `WHATSAPP_PROVIDER=cloud` for the existing WhatsApp Cloud setup; use FlareSend only if its credentials and account are configured.
 
 ## Remaining acceptance work
 
