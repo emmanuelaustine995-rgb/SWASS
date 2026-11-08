@@ -37,7 +37,7 @@ export async function buildReceiptPdf(input:ReceiptPdfInput):Promise<Buffer>{
   const y=doc.y;doc.roundedRect(l,y,w,27,5).fill('#e8f3ed');doc.fillColor('#145c43').font('Helvetica-Bold').fontSize(10).text('TOTAL PAID  KSh '+m(input.totalKes),l+4,y+8,{width:w-8,align:'center'});doc.y=y+37;
   const sy=doc.y;doc.save().rotate(-7,{origin:[113,sy+43]});doc.circle(113,sy+43,40).lineWidth(2).strokeColor('#a32626').stroke();doc.circle(113,sy+43,35).lineWidth(.7).strokeColor('#a32626').stroke();
   doc.fillColor('#a32626').font('Helvetica-Bold').fontSize(7).text(input.businessName.toUpperCase(),l+15,sy+20,{width:168,align:'center'});
-  doc.fontSize(19).text('ISSUED',l,sy+32,{width:w,align:'center'});doc.fontSize(6).text('DATE: '+new Date(input.issuedAt).toLocaleDateString('en-KE',{timeZone:'Africa/Nairobi'}),l,sy+55,{width:w,align:'center'});doc.restore();doc.y=sy+91;
+  doc.fontSize(19).text('PAID',l,sy+32,{width:w,align:'center'});doc.fontSize(6).text('DATE: '+new Date(input.issuedAt).toLocaleDateString('en-KE',{timeZone:'Africa/Nairobi'}),l,sy+55,{width:w,align:'center'});doc.restore();doc.y=sy+91;
   if(verifyQr){center('SCAN TO VERIFY RECEIPT',8,true);const qy=doc.y;doc.image(verifyQr,88,qy,{width:50,height:50});doc.y=qy+53;}
   center('Thank you for shopping with us!',8,true);if(input.receiptFooter)center(input.receiptFooter,7);
   if(input.recoveryUrl){center('Lost this receipt? Recover it using your phone and OTP.',6);center(input.recoveryUrl,5);}
