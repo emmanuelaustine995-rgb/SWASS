@@ -52,3 +52,41 @@ body:before{content:'';position:fixed;inset:0;z-index:-1;background:linear-gradi
 .account-profile-actions{display:flex;justify-content:space-between;gap:10px;margin-top:16px;padding-top:14px;border-top:1px solid #e5edf2}
 .account-profile-actions #logout-btn{display:inline-flex}
 @media(max-width:520px){.account-profile-menu{top:68px;right:8px;padding:14px}.account-profile-details{grid-template-columns:1fr 1fr}.account-profile-menu .staff-profile-edit{align-items:flex-start}.account-profile-menu .staff-profile-edit label{min-width:0;flex:1}.account-profile-menu .staff-profile-edit .btn{width:100%}}
+
+
+/* Aurora E-Receipt: shared bright three-tab app shell */
+body{background:#f9fafb!important;color:#1f2937!important;padding-bottom:82px}
+body:before{display:none!important}
+.topbar{background:#fff!important;color:#1f2937!important;border-bottom:1px solid #e5e7eb!important;backdrop-filter:none!important}
+.brand,.user-label{color:#1f2937!important}
+.brand small{color:#6b7280!important}
+.brand-mark{background:#3b82f6!important;color:#fff!important}
+.shell{max-width:980px;margin:22px auto;min-height:calc(100vh - 150px)}
+.panel,.login-card{background:#fff!important;color:#1f2937!important;border:1px solid #e5e7eb!important;box-shadow:0 5px 18px rgba(15,23,42,.06)!important;backdrop-filter:none!important;border-radius:16px}
+.panel .muted,.login-card .muted{color:#6b7280!important}
+.panel label,.login-card label{color:#374151!important}
+.eyebrow{color:#3b82f6!important}
+.btn-primary,.auth-shell button{background:#3b82f6!important;color:#fff!important;border-radius:10px}
+.btn-primary:hover{background:#2563eb!important}
+input,select{border-color:#d1d5db!important;border-radius:9px}
+input:focus,select:focus{border-color:#3b82f6!important;box-shadow:0 0 0 3px #3b82f61c!important}
+.bottom-nav{position:fixed;z-index:1000;left:0;right:0;bottom:0;display:flex;justify-content:space-around;align-items:center;gap:8px;padding:8px max(12px,env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));background:rgba(255,255,255,.97);border-top:1px solid #e5e7eb;box-shadow:0 -5px 18px rgba(15,23,42,.06);backdrop-filter:blur(12px)}
+.bottom-nav button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:54px;border:0;background:transparent;color:#9ca3af;font:600 11px system-ui;cursor:pointer;border-radius:12px}
+.bottom-nav .nav-icon{font-size:21px;line-height:1.1}
+.bottom-nav button.active{color:#3b82f6}
+.bottom-nav button.receipt-nav{color:#fff;background:#3b82f6;max-width:116px;min-height:58px;margin-top:-17px;box-shadow:0 6px 16px #3b82f644}
+.bottom-nav button.receipt-nav.active{background:#2563eb;color:#fff}
+.owner-home{display:grid;gap:14px}
+.owner-home-card{padding:22px}
+.owner-home-card h1{color:#1f2937}
+.owner-home-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.owner-home-metrics .panel{padding:18px}
+.owner-home-metrics span{display:block;color:#6b7280;font-size:12px}
+.owner-home-metrics strong{display:block;color:#1f2937;font-size:22px;margin-top:8px}
+#owner-dashboard-view{padding:0}
+#owner-dashboard-view>.page-heading,#owner-dashboard-view>.dashboard-layout,#owner-dashboard-view>.dashboard-sidebar,#owner-dashboard-view>.command-bar{display:none!important}
+#owner-dashboard-view #owner-staff-area{margin:14px 0}
+#account-profile-menu{position:static!important;display:block;width:100%;max-height:none;overflow:visible;padding:18px;margin-bottom:14px;box-shadow:none;border:1px solid #e5e7eb}
+#account-profile-menu.hidden{display:none!important}
+.footer{color:#9ca3af!important}
+@media(max-width:760px){.shell{margin:14px auto;padding:0 12px}.owner-home-metrics{grid-template-columns:1fr 1fr}}
