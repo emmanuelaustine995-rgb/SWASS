@@ -54,7 +54,7 @@ export class AuthGuard implements CanActivate {
       );
       if (!active.rowCount) {
         throw new HttpException(
-          'An active SWASS subscription is required. Pay KSh 100 for a monthly subscription or KSh 900 for a yearly subscription to unlock your business workspace.',
+          'An active AURORA subscription is required. Pay KSh 100 for a monthly subscription or KSh 900 for a yearly subscription to unlock your business workspace.',
           HttpStatus.PAYMENT_REQUIRED,
         );
       }
@@ -247,7 +247,7 @@ export class AuthController {
     );
     console.info(`[SWASS][OTP_DIAG] OTP record saved in ${Date.now() - saveOtpStartedAt}ms; starting SMS provider request`);
     try {
-      await this.sendSignupSms(phone, `Your SWASS signup verification code is ${code}. It expires in 5 minutes. Do not share this code.`);
+      await this.sendSignupSms(phone, `Your AURORA E-RECEIPT signup verification code is ${code}. It expires in 5 minutes. Do not share this code.`);
       console.info(`[SWASS][OTP_DIAG] SMS provider accepted signup OTP; total registration duration ${Date.now() - registrationStartedAt}ms`);
     } catch (error) {
       await this.db.pool.query('UPDATE signup_otp_requests SET expires_at=now() WHERE id=$1', [saved.rows[0].id]);
@@ -418,7 +418,7 @@ export class AuthController {
       [userId, phone, this.passwordResetCodeHash(code)],
     );
     try {
-      await this.sendSignupSms(phone, `Your SWASS password reset code is ${code}. It expires in 5 minutes. Do not share this code.`);
+      await this.sendSignupSms(phone, `Your AURORA E-RECEIPT password reset code is ${code}. It expires in 5 minutes. Do not share this code.`);
     } catch (error) {
       await this.db.pool.query('UPDATE password_reset_requests SET expires_at=now() WHERE id=$1', [saved.rows[0].id]);
       throw new ServiceUnavailableException('We could not send the reset code. Please try again later.');
