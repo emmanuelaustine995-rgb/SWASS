@@ -100,7 +100,7 @@ export class ReceiptsService {
         recoveryUrl: `${(process.env.PUBLIC_APP_URL || 'https://swass-web.onrender.com').replace(/\/$/,'')}/recover.html`,
         receiptHeader: receipt.business?.receiptHeader, receiptFooter: receipt.business?.receiptFooter,
         customerEmail: dto.customer?.email,
-        businessName: receipt.business?.name || 'SWASS business',
+        businessName: receipt.business?.name || 'AURORA business',
         businessPhone: receipt.business?.phone, businessEmail: receipt.business?.email,
         storeName: receipt.business?.storeName, storeLocation: receipt.business?.location,
         logoData: receipt.business?.logoData,
@@ -118,7 +118,7 @@ export class ReceiptsService {
           await this.emailVerification.sendReceipt({
             to: dto.customer.email.trim().toLowerCase(), customerName: dto.customer.fullName,
             receiptNo: receipt.receiptNo, totalKes: receipt.totalKes, issuedAt: receipt.issuedAt,
-            businessName: receipt.business?.name || 'SWASS business',
+            businessName: receipt.business?.name || 'AURORA business',
             storeName: receipt.business?.storeName || '', items: receipt.items || [], pdf,
             businessPhone: receipt.business?.phone, businessEmail: receipt.business?.email,
             storeLocation: receipt.business?.location, logoData: receipt.business?.logoData,
@@ -212,7 +212,7 @@ export class ReceiptsService {
         WHERE tenant_id = $1 AND status = 'active' AND ends_at > now() LIMIT 1`,
       [tenantId],
     );
-    if (!sub.rowCount) throw new HttpException('An active SWASS subscription is required. Pay KSh 100 for one month or KSh 900 for one year.', 402);
+    if (!sub.rowCount) throw new HttpException('An active AURORA subscription is required. Pay KSh 100 for one month or KSh 900 for one year.', 402);
 
     // 3. Receipt wallet is prepaid: KSh 2 must already be available.
     const w = await c.query(
