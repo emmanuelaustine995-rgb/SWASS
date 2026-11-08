@@ -79,6 +79,12 @@ services:
         sync: false
       - key: WHATSAPP_GRAPH_VERSION
         value: v22.0
+      # Optional approved Meta template for sending receipts outside the 24-hour window.
+      # Create a Utility template with a DOCUMENT header and a static BODY, then set its exact name.
+      - key: WHATSAPP_RECEIPT_TEMPLATE_NAME
+        sync: false
+      - key: WHATSAPP_RECEIPT_TEMPLATE_LANGUAGE
+        value: en
       - key: TWILIO_ACCOUNT_SID
         sync: false
       - key: TWILIO_AUTH_TOKEN
