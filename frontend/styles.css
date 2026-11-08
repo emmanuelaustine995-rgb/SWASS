@@ -435,3 +435,16 @@ body:not(.workspace-active) #workspace-nav,
 #owner-signup-fields>label:nth-of-type(3),#register-fields>label:last-of-type{grid-column:1/-1}
 #register-form>p,#register-form>button,#register-form>.error{grid-column:1/-1}
 @media(max-width:420px){#owner-signup-fields,#register-fields{gap:6px}#register-form input{font-size:12px}}
+
+
+/* Header intentionally contains only the E-RECEIPT by E-TECH identity. */
+.topbar{height:58px!important;min-height:58px!important;justify-content:flex-start!important;padding:0 14px!important}
+.topbar .brand{gap:9px!important}
+.topbar .brand-mark{width:32px!important;height:32px!important;border-radius:9px!important;font-size:19px!important}
+.topbar .brand>span:last-child{font-size:14px!important;line-height:1.15!important}
+.topbar .brand small{font-size:8px!important;letter-spacing:.14em!important;margin-top:2px!important}
+.topbar .top-actions{display:none!important}
+#pos-view.profile-workspace-mode #owner-dashboard-view{padding-top:0!important;margin-top:0!important}
+#pos-view.profile-workspace-mode #owner-dashboard-view>#profile-panel{margin:0!important;align-self:start!important;position:relative!important;top:0!important}
+#pos-view.profile-workspace-mode #profile-panel>.profile-account-summary{order:0!important;margin-top:0!important}
+#pos-view.profile-workspace-mode #profile-form{margin-top:0!important;align-content:start!important}
