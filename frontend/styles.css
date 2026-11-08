@@ -126,6 +126,10 @@ body.workspace-active .profile-account-summary .account-profile-details{grid-tem
 .dashboard-shop-photo{display:block;width:100%;height:132px;object-fit:cover;border-radius:12px;border:1px solid var(--border,#dbe3ec);background:var(--surface,#f5f8fc);}
 .dashboard-shop-photos figcaption{margin-top:6px;font-size:.82rem;color:var(--muted,#64748b);}
 
-/* The owner profile is nested in #pos-view; expose only its profile workspace. */
+/* The owner profile is nested in #pos-view and #owner-dashboard-view.
+   Keep the profile screen focused: do not leave dashboard charts/staff sections
+   above or below the actual profile form on small screens. */
 #pos-view.profile-workspace-mode > :not(#owner-dashboard-view){display:none!important;}
 #pos-view.profile-workspace-mode #owner-dashboard-view{display:block!important;}
+#pos-view.profile-workspace-mode #owner-dashboard-view > :not(#profile-panel){display:none!important;}
+#pos-view.profile-workspace-mode #owner-dashboard-view > #profile-panel{display:block!important;width:100%;max-width:100%;}
