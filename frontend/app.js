@@ -25,7 +25,7 @@
       void loadBusinessProfile().catch(error=>{
         if(error.status===402){
           showWorkspaceScreen('profile');
-          showNotice('SWASS is locked until you subscribe. Open Wallet & Subscription in your profile to continue.');
+          showNotice('AURORA is locked until you subscribe. Open Wallet & Subscription in your profile to continue.');
         }else{
           showNotice('Your workspace is open, but business details could not load. '+(error.message||'Please try again.'),true);
         }
@@ -52,7 +52,7 @@
     if (document.visibilityState === 'visible') void warmApi();
   });
   // Render's free service sleeps after inactivity; keep an actively open
-  // SWASS tab warm without sending frequent requests.
+  // AURORA tab warm without sending frequent requests.
   window.setInterval(() => {
     if (document.visibilityState === 'visible') void warmApi();
   }, 10 * 60 * 1000);
@@ -82,7 +82,7 @@
     if(!card||!panel)return;
     card.classList.remove('hidden');
     $('dashboard-profile-name').textContent=complete?p.businessName:'Complete your business profile';
-    $('dashboard-profile-meta').textContent=complete?[p.storeName,p.businessPhone,p.storeLocation].filter(Boolean).join(' · '):'Add your business name, phone and branch details to set up SWASS.';
+    $('dashboard-profile-meta').textContent=complete?[p.storeName,p.businessPhone,p.storeLocation].filter(Boolean).join(' · '):'Add your business name, phone and branch details to set up AURORA.';
     const photo=$('dashboard-profile-image');
     if(p.logoData){photo.src=p.logoData;photo.classList.remove('hidden');}else{photo.removeAttribute('src');photo.classList.add('hidden');}
     const inside=$('dashboard-shop-inside-photo'),outside=$('dashboard-shop-outside-photo');
@@ -225,13 +225,26 @@
       result.innerHTML='<div class="customer-result"><div class="customer-result-head"><strong>'+escapeHtml(c.fullName)+'</strong><span class="customer-match">Verified match</span></div><p>Phone: '+escapeHtml(c.phone)+'</p><p>National ID: •••• '+escapeHtml(c.nationalIdLast4||'')+'</p><p>Previous purchases: '+Number(c.purchaseCount||0)+' · Loyalty points: '+Number(c.loyaltyPoints||0)+'</p><p>Lifetime spend: '+money(c.lifetimeSpendKes)+'</p>'+(history?'<strong>Recent receipts</strong><ul>'+history+'</ul>':'<p class="muted small">No previous receipts in this branch.</p>')+'<button type="button" id="add-customer-package" class="btn btn-primary">Add New Package</button></div>';
     }catch(e){message.textContent=e.message||'Could not find customer.';}
   }
+  async function openReceiptPdf(receiptId){
+    const pdfWindow=window.open('about:blank','_blank');
+    if(!pdfWindow){showNotice('Allow pop-ups to open the receipt PDF.',true);return;}
+    pdfWindow.document.title='AURORA E-RECEIPT';
+    try{
+      const response=await fetch(API+'/api/v1/receipts/'+encodeURIComponent(receiptId)+'/pdf',{
+        method:'GET',headers:{Authorization:'Bearer '+state.token},cache:'no-store'
+      });
+      if(!response.ok){const body=await response.json().catch(()=>({}));throw new Error(body.message||'Could not open the receipt PDF.');}
+      const blob=await response.blob();
+      pdfWindow.location.href=URL.createObjectURL(blob);
+    }catch(error){pdfWindow.close();showNotice(error.message||'Could not open the receipt PDF.',true);}
+  }
   async function loadReceiptHistory(){
     $('history-error').textContent='';$('history-list').innerHTML='<div class="empty">Loading receipts…</div>';
     const p=new URLSearchParams();const q=$('history-search').value.trim();const from=$('history-from').value;const to=$('history-to').value;
     if(q)p.set('q',q);if(from)p.set('from',from);if(to)p.set('to',to);p.set('limit','50');
     try{const d=await request('/api/v1/receipts?'+p.toString());const rows=d.receipts||[];
       if(!rows.length){$('history-list').innerHTML='<div class="empty">No receipts match your search.</div>';return;}
-      $('history-list').innerHTML=rows.map(r=>'<article class="history-row"><div class="history-row-top"><strong>'+escapeHtml(r.receiptNo)+'</strong><strong>'+money(r.totalKes)+'</strong></div><div class="history-row-meta">'+escapeHtml(new Date(r.issuedAt).toLocaleString('en-KE'))+' · '+escapeHtml(r.status)+' · '+escapeHtml(String(r.paymentMethod||'').toUpperCase())+'</div><div class="history-row-meta">Sales agent: '+escapeHtml(r.cashier?.name||'Staff')+'</div><div class="history-row-meta">PDF delivery · Email: '+escapeHtml(r.delivery?.email||'not requested')+' · WhatsApp: '+escapeHtml(r.delivery?.whatsapp||'not requested')+'</div><div class="history-row-meta">'+(r.customer?escapeHtml(r.customer.fullName)+' · '+escapeHtml(r.customer.phone)+(r.customer.nationalIdLast4?' · ID ending '+escapeHtml(r.customer.nationalIdLast4):''):'Walk-in customer')+'</div><div class="history-row-items">'+(r.items||[]).map(i=>escapeHtml(i.name)+' × '+Number(i.qty)+(i.serialNo?' · IMEI: '+escapeHtml(i.serialNo):'')).join(' · ')+'</div></article>').join('');
+      $('history-list').innerHTML=rows.map(r=>'<article class="history-row"><div class="history-row-top"><strong>'+escapeHtml(r.receiptNo)+'</strong><strong>'+money(r.totalKes)+'</strong></div><div class="history-row-meta">'+escapeHtml(new Date(r.issuedAt).toLocaleString('en-KE'))+' · '+escapeHtml(r.status)+' · '+escapeHtml(String(r.paymentMethod||'').toUpperCase())+'</div><div class="history-row-meta">Sales agent: '+escapeHtml(r.cashier?.name||'Staff')+'</div><div class="history-row-meta">PDF delivery · Email: '+escapeHtml(r.delivery?.email||'not requested')+' · WhatsApp: '+escapeHtml(r.delivery?.whatsapp||'not requested')+'</div><div class="history-row-meta">'+(r.customer?escapeHtml(r.customer.fullName)+' · '+escapeHtml(r.customer.phone)+(r.customer.nationalIdLast4?' · ID ending '+escapeHtml(r.customer.nationalIdLast4):''):'Walk-in customer')+'</div><div class="history-row-items">'+(r.items||[]).map(i=>escapeHtml(i.name)+' × '+Number(i.qty)+(i.serialNo?' · IMEI: '+escapeHtml(i.serialNo):'')).join(' · ')+'</div><button type="button" class="btn btn-light btn-small" data-view-pdf="'+escapeHtml(r.id)+'">View / print original PDF</button></article>').join('');
     }catch(e){$('history-list').innerHTML='';$('history-error').textContent=e.message||'Could not load receipt history.';}
   }
   async function loadBusinessProfile(){const d=await request('/api/v1/business/profile');const p=d.profile||{};state.businessProfile=p;state.shopInsidePhotoDraft=undefined;state.shopOutsidePhotoDraft=undefined;if(!state.userName){state.userName=p.ownerFullName||p.ownerName||p.fullName||p.name||'';if(state.userName)saveSession();}$('profile-business-name').value=p.businessName||'';$('profile-business-phone').value=p.businessPhone||'';$('profile-business-email').value=p.businessEmail||'';$('profile-store-name').value=p.storeName||'';$('profile-store-location').value=p.storeLocation||'';$('profile-legal-name').value=p.legalName||'';$('profile-house-name').value=p.houseName||'';$('profile-floor').value=p.floor||'';$('profile-house-number').value=p.houseNumber||'';$('profile-website').value=p.websiteUrl||'';$('profile-kra-pin').value=p.kraPin||'';$('profile-registration-code').value=p.registrationCode||'';$('profile-outlet-id').value=p.outletId||'';$('profile-terminal-number').value=p.terminalNumber||'';$('profile-receipt-header').value=p.receiptHeader||'';$('profile-receipt-footer').value=p.receiptFooter||'';state.profileLogoData=p.logoData||undefined;const img=$('logo-preview');if(state.profileLogoData){img.src=state.profileLogoData;img.classList.remove('hidden');}else{img.removeAttribute('src');img.classList.add('hidden');}const inside=$('profile-shop-inside-preview'),outside=$('profile-shop-outside-preview');if(inside){if(p.shopInsidePhotoData){inside.src=p.shopInsidePhotoData;inside.classList.remove('hidden');}else{inside.removeAttribute('src');inside.classList.add('hidden');}}if(outside){if(p.shopOutsidePhotoData){outside.src=p.shopOutsidePhotoData;outside.classList.remove('hidden');}else{outside.removeAttribute('src');outside.classList.add('hidden');}}renderDashboardBusinessProfile();}
@@ -315,7 +328,10 @@
   function totals(){const subtotal=[...state.cart.values()].reduce((s,r)=>s+Number(r.unitPriceKes??r.product.priceKes)*r.qty,0);const requested=Math.max(0,Math.floor(Number($('discount').value)||0));const discount=Math.min(subtotal,requested);if(requested>subtotal)$('discount').value=String(discount);return {subtotal,discount,total:subtotal-discount};}
   function renderCart(){
     const rows=[...state.cart.entries()];
-    $('cart-list').innerHTML=rows.length?rows.map(([id,r])=>`<div class="cart-row"><div><div class="cart-row-name">${escapeHtml(r.product.name)}</div><div class="cart-row-sub">${r.directSale?'Direct sale item':'Catalogue item'} · Quantity: ${r.qty}</div><label class="cart-unit-price">Selling price per item (KSh)<input type="number" min="1" max="100000000000" step="1" inputmode="numeric" data-price="${id}" value="${Number(r.unitPriceKes??r.product.priceKes)}" required></label><div class="cart-row-sub cart-line-total">Line subtotal: ${money(Number(r.unitPriceKes??r.product.priceKes)*r.qty)}</div><label>IMEI / Serial number${r.product.requiresBuyerId?' (required)':' (optional)'}<input type="text" maxlength="80" data-imei="${id}" value="${escapeHtml(r.imei||'')}" placeholder="${r.product.requiresBuyerId?'Enter IMEI / serial number':'Enter if applicable'}" ${r.product.requiresBuyerId?'required':''}></label><button type="button" class="btn btn-light btn-small" data-scan-imei="${id}">Scan QR / barcode</button></div><div class="qty-control"><button type="button" data-qty="${id}" data-delta="-1" aria-label="Decrease">−</button><span>${r.qty}</span><button type="button" data-qty="${id}" data-delta="1" aria-label="Increase">+</button></div></div>`).join(''):'<div class="empty">Your sale is empty. Add the first item to begin.</div>';
+    $('cart-list').innerHTML=rows.length?rows.map(([id,r])=>{
+      const serials=Array.isArray(r.serials)?r.serials:[r.imei||''];
+      return `<div class="cart-row"><div><div class="cart-row-name">${escapeHtml(r.product.name)}</div><div class="cart-row-sub">${r.directSale?'Direct sale item':'Catalogue item'} · Quantity: ${r.qty}</div><label class="cart-unit-price">Selling price per item (KSh)<input type="number" min="1" max="100000000000" step="1" inputmode="numeric" data-price="${id}" value="${Number(r.unitPriceKes??r.product.priceKes)}" required></label><div class="cart-row-sub cart-line-total">Line subtotal: ${money(Number(r.unitPriceKes??r.product.priceKes)*r.qty)}</div><div class="serial-capture"><strong>QR / Serial / IMEI identifiers (up to 3)</strong>${[0,1,2].map(n=>`<label>Identifier ${n+1} ${r.product.requiresBuyerId&&n===0?'(required)':'(optional)'}<div class="serial-input-row"><input type="text" maxlength="80" data-serial-index="${id}" data-index="${n}" value="${escapeHtml(serials[n]||'')}" placeholder="Scan or enter code" ${r.product.requiresBuyerId&&n===0?'required':''}><button type="button" class="btn btn-light btn-small" data-scan-serial="${id}" data-index="${n}">Scan</button></div></label>`).join('')}</div></div><div class="qty-control"><button type="button" data-qty="${id}" data-delta="-1" aria-label="Decrease">−</button><span>${r.qty}</span><button type="button" data-qty="${id}" data-delta="1" aria-label="Increase">+</button></div></div>`;
+    }).join(''):'<div class="empty">Your sale is empty. Add the first item to begin.</div>';
     const t=totals(); $('subtotal').textContent=money(t.subtotal);$('total').textContent=money(t.total);$('checkout-open').disabled=!rows.length||t.total<0;
   }
   function openCheckout(){const items=[...state.cart.values()];const needsBuyer=items.some(r=>r.product.requiresBuyerId);$('buyer-id-wrap').classList.toggle('hidden',!needsBuyer);$('buyer-id-note').classList.toggle('hidden',!needsBuyer);$('checkout-total').textContent=money(totals().total);$('checkout-error').textContent='';$('checkout-modal').classList.remove('hidden');}
@@ -352,11 +368,11 @@
     // the receipt payload can never fall back to an older product price.
     priceInputs.forEach(input=>{const row=state.cart.get(input.dataset.price);if(row)row.unitPriceKes=Number(input.value);});
     const t=totals(); const needsBuyer=items.some(r=>r.product.requiresBuyerId);
-    if(items.some(r=>r.product.requiresBuyerId&&!(Array.isArray(r.serials)&&r.serials.length===r.qty)&&!(r.qty===1&&String(r.imei||'').trim()))){$('checkout-error').textContent='Enter the IMEI / serial number for each item that requires buyer identification.';return;}
+    if(items.some(r=>r.product.requiresBuyerId&&!((Array.isArray(r.serials)&&r.serials.some(v=>String(v||'').trim()))||String(r.imei||'').trim()))){$('checkout-error').textContent='Enter the IMEI / serial number for each item that requires buyer identification.';return;}
     const customer={fullName:$('buyer-name').value.trim(),phone:$('buyer-phone').value.trim(),...($('buyer-email').value.trim()?{email:$('buyer-email').value.trim()}:{}),...($('buyer-id').value.trim()?{nationalId:$('buyer-id').value.trim()}:{})};
     if(!customer.fullName||!customer.phone){ $('checkout-error').textContent='Enter the customer full name and phone number to continue.';return; }
     if(needsBuyer&&!customer.nationalId){ $('checkout-error').textContent='Enter the buyer National ID for the identified goods in this sale.';return; }
-    const saleId=uuid();const payload={clientUuid:saleId,receiptNo:`SW-${new Date().toISOString().slice(0,10).replace(/-/g,'')}-${saleId.replace(/-/g,'').slice(0,10).toUpperCase()}`,paymentMethod:$('payment-method').value,issuedAt:new Date().toISOString(),discountKes:t.discount,items:items.flatMap(r=>{const price=Number(r.unitPriceKes??r.product.priceKes),codes=Array.isArray(r.serials)?r.serials.filter(Boolean):[],base=r.directSale?{name:r.product.name,unitPriceKes:price,requiresBuyerId:!!r.product.requiresBuyerId}:{productId:r.product.id,unitPriceKes:price};if(codes.length){const serialLines=codes.map(serialNo=>({...base,qty:1,serialNo}));if(r.qty>codes.length)serialLines.push({...base,qty:r.qty-codes.length});return serialLines;}return [{...base,qty:r.qty,...(r.imei&&r.imei.trim()?{serialNo:r.imei.trim()}: {})}];})};
+    const saleId=uuid();const payload={clientUuid:saleId,receiptNo:`AR-${new Date().toISOString().slice(0,10).replace(/-/g,'')}-${saleId.replace(/-/g,'').slice(0,10).toUpperCase()}`,paymentMethod:$('payment-method').value,issuedAt:new Date().toISOString(),discountKes:t.discount,items:items.flatMap(r=>{const price=Number(r.unitPriceKes??r.product.priceKes),codes=Array.isArray(r.serials)?r.serials.filter(Boolean):[],base=r.directSale?{name:r.product.name,unitPriceKes:price,requiresBuyerId:!!r.product.requiresBuyerId}:{productId:r.product.id,unitPriceKes:price};if(codes.length){const serialLines=codes.map(serialNo=>({...base,qty:1,serialNo}));if(r.qty>codes.length)serialLines.push({...base,qty:r.qty-codes.length});return serialLines;}return [{...base,qty:r.qty,...(r.imei&&r.imei.trim()?{serialNo:r.imei.trim()}: {})}];})};
     payload.customer=customer;
     const btn=$('complete-sale');btn.disabled=true;btn.textContent='Issuing receipt…';$('checkout-error').textContent='';
     try{
@@ -400,7 +416,7 @@
         await new Promise(resolve => setTimeout(resolve, 3000));
         const current = await request('/api/v1/mpesa/payments/' + encodeURIComponent(started.paymentId));
         if (current.status === 'success') {
-          message.textContent = 'Payment confirmed successfully' + (current.receiptNumber ? ' · M-Pesa receipt: ' + current.receiptNumber : '') + '. Your SWASS subscription or wallet has been updated.';
+          message.textContent = 'Payment confirmed successfully' + (current.receiptNumber ? ' · M-Pesa receipt: ' + current.receiptNumber : '') + '. Your AURORA subscription or wallet has been updated.';
           showNotice('Tuma payment confirmed successfully.');
           return;
         }
@@ -441,8 +457,11 @@
     }
     const row=state.cart.get(imeiScannerTarget);
     if(!row){$('imei-scanner-message').textContent='This sale item is no longer in the cart.';return;}
-    row.imei=code;
-    const field=$('cart-list').querySelector('[data-imei="'+CSS.escape(imeiScannerTarget)+'"]');
+    row.serials=Array.isArray(row.serials)?row.serials:['','',''];
+    const slot=Number(window.auroraSerialIndex)||row.serials.findIndex(v=>!String(v||'').trim());
+    row.serials[Math.max(0,Math.min(2,slot<0?0:slot))]=code;
+    row.imei=row.serials[0]||'';
+    const field=$('cart-list').querySelector('[data-serial-index="'+CSS.escape(imeiScannerTarget)+'"][data-index="'+Math.max(0,Math.min(2,slot<0?0:slot))+'"]');
     if(field)field.value=code;
     stopImeiScanner();
     showNotice('Scanned code added to '+row.product.name+'.');
@@ -568,7 +587,7 @@
     $('register-error').textContent='';$('signup-otp-message').textContent='';
     const btn=$('register-submit');btn.disabled=true;btn.textContent='Sending code…';
     try{
-      $('register-error').textContent='Connecting to SWASS server…';
+      $('register-error').textContent='Connecting to AURORA…';
       await warmApi();
       $('register-error').textContent='';
       const data=await request('/api/v1/auth/register',{method:'POST',body:JSON.stringify(signupPayload())});
@@ -631,7 +650,7 @@
     const button=$('login-form').querySelector('button[type="submit"]');
     $('login-error').textContent='';
     if(button){button.disabled=true;button.textContent='Connecting…';}
-    const loginWait=setTimeout(()=>{if(button&&button.disabled)button.textContent='Waking up SWASS…';},8000);
+    const loginWait=setTimeout(()=>{if(button&&button.disabled)button.textContent='Waking up AURORA…';},8000);
     let signedIn=false;
     try{
       const data=await request('/api/v1/auth/login',{
@@ -674,7 +693,7 @@
       backgroundLoads.push(loadBusinessProfile().catch(err => {
         if(err.status === 402){
           showWorkspaceScreen('profile');
-          showNotice('SWASS is locked until you subscribe. Open Wallet & Subscription in your profile to continue.');
+          showNotice('AURORA is locked until you subscribe. Open Wallet & Subscription in your profile to continue.');
         } else {
           showNotice('You are signed in, but the business profile could not be loaded. '+(err.message||''),true);
         }
@@ -784,6 +803,7 @@
   document.querySelector('.dashboard-sidebar')?.addEventListener('click',e=>{const link=e.target.closest('.sidebar-link');if(!link)return;const screen=link.dataset.screen||(link.getAttribute('href')==='#owner-customers-section'?'customers':link.getAttribute('href')==='#owner-reports-section'?'reports':link.getAttribute('href')==='#owner-payments-section'?'payments':'overview');e.preventDefault();showWorkspaceScreen(screen);});
   $('history-toggle').addEventListener('click',async()=>{const box=$('history-content');const opening=box.classList.contains('hidden');box.classList.toggle('hidden');$('history-toggle').textContent=opening?'Close history':'Open history';if(opening)await loadReceiptHistory();});
   $('history-search-btn').addEventListener('click',loadReceiptHistory);
+  $('history-list').addEventListener('click',e=>{const b=e.target.closest('[data-view-pdf]');if(b)openReceiptPdf(b.dataset.viewPdf);});
   $('history-search').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();loadReceiptHistory();}});
   $('dashboard-edit-profile').addEventListener('click',()=>showWorkspaceScreen('profile'));
   $('profile-close').addEventListener('click',()=>{$('profile-panel').classList.add('hidden');});
@@ -797,14 +817,14 @@
   prepareShopPhoto('profile-shop-outside','profile-shop-outside-preview','shopOutsidePhotoDraft');
   $('logout-btn').addEventListener('click',()=>{clearSession();window.dispatchEvent(new Event('swass:logout'));state.cart.clear();renderCart();$('profile-panel').classList.add('hidden');showLogin();});
   // No saved shop products are available in the receipt workflow.
-  $('cart-list').addEventListener('click',e=>{const scan=e.target.closest('[data-scan-imei]');if(scan){openImeiScanner(scan.dataset.scanImei);return;}const b=e.target.closest('[data-qty]');if(b)changeQty(b.dataset.qty,Number(b.dataset.delta));});
-  $('cart-list').addEventListener('input',e=>{const price=e.target.closest('[data-price]');if(price){const row=state.cart.get(price.dataset.price);const value=Number(price.value);if(!row||!Number.isSafeInteger(value)||value<1||value>100000000000){$('checkout-open').disabled=true;return;}if(row&&Number.isSafeInteger(value)&&value>=1&&value<=100000000000){row.unitPriceKes=value;const line=price.closest('.cart-row')?.querySelector('.cart-line-total');if(line)line.textContent='Line subtotal: '+money(value*row.qty);const t=totals();$('subtotal').textContent=money(t.subtotal);$('total').textContent=money(t.total);$('checkout-open').disabled=!state.cart.size||t.total<0||[...$('cart-list').querySelectorAll('[data-price]')].some(input=>!Number.isSafeInteger(Number(input.value))||Number(input.value)<1||Number(input.value)>100000000000);}return;}const field=e.target.closest('[data-imei]');if(field){const row=state.cart.get(field.dataset.imei);if(row)row.imei=field.value;}});
+  $('cart-list').addEventListener('click',e=>{const scan=e.target.closest('[data-scan-serial]');if(scan){imeiScannerTarget=scan.dataset.scanSerial;window.auroraSerialIndex=Number(scan.dataset.index)||0;openImeiScanner(scan.dataset.scanSerial);return;}const b=e.target.closest('[data-qty]');if(b)changeQty(b.dataset.qty,Number(b.dataset.delta));});
+  $('cart-list').addEventListener('input',e=>{const price=e.target.closest('[data-price]');if(price){const row=state.cart.get(price.dataset.price);const value=Number(price.value);if(!row||!Number.isSafeInteger(value)||value<1||value>100000000000){$('checkout-open').disabled=true;return;}if(row&&Number.isSafeInteger(value)&&value>=1&&value<=100000000000){row.unitPriceKes=value;const line=price.closest('.cart-row')?.querySelector('.cart-line-total');if(line)line.textContent='Line subtotal: '+money(value*row.qty);const t=totals();$('subtotal').textContent=money(t.subtotal);$('total').textContent=money(t.total);$('checkout-open').disabled=!state.cart.size||t.total<0||[...$('cart-list').querySelectorAll('[data-price]')].some(input=>!Number.isSafeInteger(Number(input.value))||Number(input.value)<1||Number(input.value)>100000000000);}return;}const field=e.target.closest('[data-serial-index]');if(field){const row=state.cart.get(field.dataset.serialIndex);if(row){row.serials=Array.isArray(row.serials)?row.serials:['','',''];row.serials[Number(field.dataset.index)||0]=field.value;row.imei=row.serials[0]||'';}}});
   let productSearchTimer;
   // Sales are manual-entry only. No product catalogue is loaded or searched.
   $('discount').addEventListener('input',renderCart);$('clear-cart').addEventListener('click',()=>{state.cart.clear();$('discount').value='0';renderCart();});
   $('checkout-open').addEventListener('click',openCheckout);$('checkout-close').addEventListener('click',()=>$('checkout-modal').classList.add('hidden'));$('checkout-form').addEventListener('submit',completeSale);
-  $('receipt-close').addEventListener('click',()=>$('receipt-modal').classList.add('hidden'));$('new-sale').addEventListener('click',()=>$('receipt-modal').classList.add('hidden'));$('print-receipt').addEventListener('click',()=>window.print());
-  const shareBtn=$('share-receipt'); if(shareBtn) shareBtn.addEventListener('click', async()=>{ if(!state.lastReceipt)return; const verifyUrl=new URL('verify.html',window.location.href).href+'?token='+encodeURIComponent(state.lastReceipt.qrToken); const text=`SWASS receipt ${state.lastReceipt.receiptNo} · KSh ${Number(state.lastReceipt.totalKes).toLocaleString('en-KE')} · Verify: ${verifyUrl}`; try { if(navigator.share) await navigator.share({title:'SWASS receipt',text}); else if(navigator.clipboard) { await navigator.clipboard.writeText(text); alert('Receipt summary copied.'); } } catch {} });
+  $('receipt-close').addEventListener('click',()=>$('receipt-modal').classList.add('hidden'));$('new-sale').addEventListener('click',()=>$('receipt-modal').classList.add('hidden'));$('print-receipt').addEventListener('click',()=>{if(state.lastReceipt?.id)openReceiptPdf(state.lastReceipt.id);else window.print();});
+  const shareBtn=$('share-receipt'); if(shareBtn) shareBtn.addEventListener('click', async()=>{ if(!state.lastReceipt)return; const verifyUrl=new URL('verify.html',window.location.href).href+'?token='+encodeURIComponent(state.lastReceipt.qrToken); const text=`AURORA E-RECEIPT ${state.lastReceipt.receiptNo} · KSh ${Number(state.lastReceipt.totalKes).toLocaleString('en-KE')} · Verify: ${verifyUrl}`; try { if(navigator.share) await navigator.share({title:'AURORA E-RECEIPT',text}); else if(navigator.clipboard) { await navigator.clipboard.writeText(text); alert('Receipt summary copied.'); } } catch {} });
   // Installable Android experience: this adds the app without replacing the website.
   let deferredInstallPrompt = null;
   const installAppButton = $('install-app-btn');
@@ -825,14 +845,14 @@
     if (installAppButton) installAppButton.classList.add('hidden');
   });
   if ('serviceWorker' in navigator && window.isSecureContext) {
-    window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(error => console.warn('[SWASS] App installation support unavailable:', error?.message || 'registration failed')));
+    window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(error => console.warn('[AURORA] App installation support unavailable:', error?.message || 'registration failed')));
   }
   // Keep the signed-in session across refreshes; expire it after 3 idle hours.
   ['pointerdown','keydown','touchstart','click','scroll'].forEach(type=>window.addEventListener(type,touchSession,{passive:true}));
   window.addEventListener('focus',checkSessionExpiry);
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkSessionExpiry();});
   window.setInterval(checkSessionExpiry,30000);
-  // API URL is configurable without rebuilding: set window.SWASS_API_URL before app.js.
-  if(!API){ showNotice('API address is not configured yet. Set SWASS_API_URL in frontend/config.js to your running API URL.',true); }
+  // API URL is configurable without rebuilding: set the existing API URL in frontend/config.js before app.js.
+  if(!API){ showNotice('API address is not configured yet. Check the existing API URL in frontend/config.js.',true); }
   renderCart();void restoreSession();
 })();

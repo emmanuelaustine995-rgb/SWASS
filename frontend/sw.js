@@ -1,4 +1,4 @@
-const CACHE_NAME = 'swass-shell-v4';
+const CACHE_NAME = 'aurora-shell-v5';
 const SHELL = ['./', './index.html', './styles.css', './dashboard.css', './app.js', './dashboard.js', './config.js', './swass-icon.svg'];
 
 self.addEventListener('install', event => {
@@ -6,7 +6,7 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('activate', event => {
-  event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key.startsWith('swass-shell-') && key !== CACHE_NAME).map(key => caches.delete(key)))).then(() => self.clients.claim()));
+  event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => (key.startsWith('swass-shell-') || key.startsWith('aurora-shell-')) && key !== CACHE_NAME).map(key => caches.delete(key)))).then(() => self.clients.claim()));
 });
 
 self.addEventListener('fetch', event => {
