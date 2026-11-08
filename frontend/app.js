@@ -311,9 +311,9 @@
       const serials=Array.isArray(r.serials)?r.serials:[r.imei||''];
       return `<div class="cart-row"><div><div class="cart-row-name">${escapeHtml(r.product.name)}</div><div class="cart-row-sub">${r.directSale?'Direct sale item':'Catalogue item'} · Quantity: ${r.qty}</div><label class="cart-unit-price">Selling price per item (KSh)<input type="number" min="1" max="100000000000" step="1" inputmode="numeric" data-price="${id}" value="${Number(r.unitPriceKes??r.product.priceKes)}" required></label><div class="cart-row-sub cart-line-total">Line subtotal: ${money(Number(r.unitPriceKes??r.product.priceKes)*r.qty)}</div><div class="serial-capture cart-serial-capture"><div class="imei-tools-head"><strong>IMEI / serial (optional · up to 3)</strong><button type="button" class="btn btn-imei-add btn-small cart-add-imei" data-add-imei="${id}">＋ Add IMEI</button></div>${[0,1,2].map(n=>`<div class="serial-input-row cart-imei-row ${serials[n]?"":"hidden"}" data-cart-imei-row="${id}" data-index="${n}"><input type="text" maxlength="80" data-serial-index="${id}" data-index="${n}" value="${escapeHtml(serials[n]||"")}" placeholder="IMEI / serial ${n+1}" ${r.product.requiresBuyerId&&n===0?"required":""}><button type="button" class="btn btn-light btn-small" data-scan-serial="${id}" data-index="${n}">Scan</button></div>`).join("")}</div></div><div class="qty-control"><button type="button" data-qty="${id}" data-delta="-1" aria-label="Decrease">−</button><span>${r.qty}</span><button type="button" data-qty="${id}" data-delta="1" aria-label="Increase">+</button></div></div>`;
     }).join(''):'<div class="empty">Your sale is empty. Add the first item to begin.</div>';
-    const t=totals(); $('subtotal').textContent=money(t.subtotal);$('total').textContent=money(t.total);$('checkout-open').disabled=!rows.length||t.total<0;
+    const t=totals(); $('subtotal').textContent=money(t.subtotal);$('total').textContent=money(t.total);$('checkout-open').disabled=!rows.length||t.total<0;$('checkout-open').textContent='Continue to customer details';$('checkout-open').classList.remove('hidden');
   }
-  function openCheckout(){const items=[...state.cart.values()];if(!items.length){showNotice('Add at least one product before customer details.',true);return;}const needsBuyer=items.some(r=>r.product.requiresBuyerId);$('buyer-id-wrap').classList.toggle('hidden',!needsBuyer);$('buyer-id-note').classList.toggle('hidden',!needsBuyer);$('checkout-total').textContent=money(totals().total);$('checkout-error').textContent='';const modal=$('checkout-modal');modal.classList.remove('hidden');modal.setAttribute('aria-hidden','false');const card=modal.querySelector('.modal-card');if(card)card.scrollTop=0;}
+  function openCheckout(){const items=[...state.cart.values()];if(!items.length){showNotice('Add at least one product before customer details.',true);return;}const invalid=[...$('cart-list').querySelectorAll('[data-price]')].some(input=>!Number.isSafeInteger(Number(input.value))||Number(input.value)<1);if(invalid){showNotice('Enter a valid price for each product before continuing.',true);return;}const needsBuyer=items.some(r=>r.product.requiresBuyerId);$('buyer-id-wrap').classList.toggle('hidden',!needsBuyer);$('buyer-id-note').classList.toggle('hidden',!needsBuyer);$('checkout-total').textContent=money(totals().total);$('checkout-error').textContent='';const modal=$('checkout-modal');modal.classList.remove('hidden');modal.setAttribute('aria-hidden','false');const card=modal.querySelector('.modal-card');if(card)card.scrollTop=0;}
   function makeReceiptMarkup(receipt, sale, customer){
     const business=receipt.business||{};
     const lines=sale.items.map(i=>`<div class="receipt-line"><span><strong>${escapeHtml(i.name)}</strong> × ${i.qty}<br><small>Unit price: ${money(i.price)}${i.serialNo?`<br>IMEI / Serial: ${escapeHtml(i.serialNo)}<br><span id="imei-qr-${sale.items.indexOf(i)}" class="imei-qr"></span>`:''}</small></span><strong>${money(i.price*i.qty)}</strong></div>`).join('');
@@ -430,8 +430,19 @@
     if(directField && directField.tagName==='INPUT'){
       directField.value=code;
       directField.dispatchEvent(new Event('input',{bubbles:true}));
+      // A QR payload may carry a product name or catalogue identifier. A plain
+      // IMEI is matched only against products already saved in this business.
+      let payload={};try{payload=JSON.parse(code);}catch{}
+      const payloadName=payload.productName||payload.product_name||payload.name||payload.model||'';
+      const payloadId=payload.productId||payload.product_id||payload.sku||payload.barcode||'';
+      const match=state.products.find(p=>{
+        const ids=[p.id,p.sku,p.barcode,p.imei,p.serialNumber,p.serialNo,p.serial_number,...(Array.isArray(p.identifiers)?p.identifiers:[])].map(v=>String(v||'').trim().toLowerCase());
+        return ids.includes(code.toLowerCase())||(payloadId&&ids.includes(String(payloadId).trim().toLowerCase()));
+      });
+      const detectedName=String(payloadName||match?.name||match?.productName||'').trim();
+      if(detectedName){$('product-name').value=detectedName;if(match?.priceKes&&!$('product-price').value)$('product-price').value=match.priceKes;}
       stopImeiScanner();
-      showNotice('Code scanned successfully.');
+      showNotice(detectedName?'Scanned successfully. Product detected: '+detectedName+'.':'IMEI captured. No matching saved product or product name was found in this QR code; enter the product name to continue.',!detectedName);
       return;
     }
     const row=state.cart.get(imeiScannerTarget);
