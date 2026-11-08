@@ -51,7 +51,21 @@
   function publishWorkspaceSession(){saveSession();window.dispatchEvent(new CustomEvent('swass:login',{detail:{token:state.token,role:state.role}}));}
   function showNotice(message, error = false) { const el=$('notice'); el.textContent=message; el.classList.remove('hidden'); el.style.background=error?'#fff0ef':'#fff5e8'; el.style.color=error?'#a12b22':'#8a4b08'; }
   function hideNotice(){ $('notice').classList.add('hidden'); }
-  function showLogin(){ clearSession(); document.body.classList.remove('workspace-active'); $('welcome-back-banner')?.classList.add('hidden'); $('login-view').classList.remove('hidden'); $('pos-view').classList.add('hidden'); $('owner-home')?.classList.add('hidden'); $('receipts-home')?.classList.add('hidden'); $('owner-dashboard-view')?.classList.add('hidden'); $('staff-profile-panel')?.classList.add('hidden'); $('logout-btn').classList.add('hidden'); $('profile-menu-btn')?.classList.add('hidden'); $('account-profile-menu')?.classList.add('hidden'); $('dashboard-link').classList.add('hidden'); $('workspace-nav').classList.add('hidden'); $('user-label').textContent=''; }
+  function showLogin(){
+    clearSession();
+    document.body.classList.remove('workspace-active');
+    // A signed-out visitor must see only the login/registration area.
+    const protectedScreens=[
+      'welcome-back-banner','pos-view','owner-home','receipts-home','owner-dashboard-view',
+      'staff-profile-panel','profile-panel','history-panel','owner-customers-section',
+      'account-profile-menu','receipt-modal','receipt-recovery-modal','workspace-nav'
+    ];
+    protectedScreens.forEach(id=>$(id)?.classList.add('hidden'));
+    $('login-view')?.classList.remove('hidden');
+    ['logout-btn','profile-menu-btn','dashboard-link','workspace-nav'].forEach(id=>$(id)?.classList.add('hidden'));
+    $('user-label').textContent='';
+    document.querySelectorAll('#workspace-nav button').forEach(button=>button.classList.remove('active'));
+  }
 
   function renderDashboardBusinessProfile(){
     const p=state.businessProfile||{};
