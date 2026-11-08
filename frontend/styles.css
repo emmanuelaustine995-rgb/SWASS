@@ -415,3 +415,7 @@ body.workspace-active #pos-view .cart-panel>.tiny{display:none!important}
 @media(min-width:761px){
  body.workspace-active #pos-view #checkout-open{left:50%!important;right:auto!important;transform:translateX(-50%)!important;width:min(calc(100% - 32px),948px)!important}
 }
+
+/* Keep app navigation out of the signed-out/login screen. */
+body:not(.workspace-active) #workspace-nav,
+.bottom-nav.hidden{display:none!important}
