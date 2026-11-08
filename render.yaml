@@ -69,8 +69,9 @@ services:
         sync: false
       - key: BREVO_FROM_EMAIL
         sync: false
+      # FlareSend is the active WhatsApp receipt provider.
       - key: WHATSAPP_PROVIDER
-        value: cloud
+        value: flaresend
       - key: FLARESEND_API_KEY
         sync: false
       - key: WHATSAPP_ACCESS_TOKEN
