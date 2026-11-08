@@ -26,22 +26,52 @@ export class WhatsAppReceiptService {
     });
     const uploaded = await upload.json() as { id?: string; error?: { message?: string } };
     if (!upload.ok || !uploaded.id) throw new Error(uploaded.error?.message || `WhatsApp media upload failed (${upload.status})`);
+    // A receipt is commonly the first message sent to a customer. Outside the
+    // 24-hour customer-service window, Meta requires an approved template.
+    // Configure WHATSAPP_RECEIPT_TEMPLATE_NAME to use a template with a DOCUMENT
+    // header and a static BODY. The PDF uploaded above is attached as that header.
+    const templateName = process.env.WHATSAPP_RECEIPT_TEMPLATE_NAME?.trim();
+    const language = process.env.WHATSAPP_RECEIPT_TEMPLATE_LANGUAGE?.trim() || 'en';
+    const messageBody = templateName
+      ? {
+          messaging_product: 'whatsapp',
+          recipient_type: 'individual',
+          to: normalised,
+          type: 'template',
+          template: {
+            name: templateName,
+            language: { code: language },
+            components: [{
+              type: 'header',
+              parameters: [{ type: 'document', document: { id: uploaded.id, filename: `${input.receiptNo}.pdf` } }],
+            }],
+          },
+        }
+      : {
+          messaging_product: 'whatsapp',
+          recipient_type: 'individual',
+          to: normalised,
+          type: 'document',
+          document: {
+            id: uploaded.id, filename: `${input.receiptNo}.pdf`,
+            caption: `Thank you for shopping with ${input.businessName}. Your receipt ${input.receiptNo} is attached.`,
+          },
+        };
     const sent = await fetch(`${base}/messages`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        messaging_product: 'whatsapp', recipient_type: 'individual', to: normalised,
-        type: 'document',
-        document: {
-          id: uploaded.id, filename: `${input.receiptNo}.pdf`,
-          caption: `Thank you for shopping with ${input.businessName}. Your receipt ${input.receiptNo} is attached.`,
-        },
-      }),
+      body: JSON.stringify(messageBody),
       signal: AbortSignal.timeout(20000),
     });
-    const result = await sent.json() as { messages?: { id?: string }[]; error?: { message?: string } };
-    if (!sent.ok || !result.messages?.[0]?.id) throw new Error(result.error?.message || `WhatsApp message failed (${sent.status})`);
-    return { sent: true, messageId: result.messages[0].id, provider: 'cloud' };
+    const result = await sent.json() as { messages?: { id?: string }[]; error?: { message?: string; code?: number; error_subcode?: number } };
+    if (!sent.ok || !result.messages?.[0]?.id) {
+      const reason = result.error?.message || `WhatsApp message failed (${sent.status})`;
+      if (!templateName && (result.error?.code === 131047 || /24.hour|outside.*window|re.engagement/i.test(reason))) {
+        throw new Error('WhatsApp requires an approved receipt template for first-time or out-of-window messages. Configure WHATSAPP_RECEIPT_TEMPLATE_NAME and WHATSAPP_RECEIPT_TEMPLATE_LANGUAGE in Render.');
+      }
+      throw new Error(reason);
+    }
+    return { sent: true, messageId: result.messages[0].id, provider: 'cloud', mode: templateName ? 'template' : 'session' };
   }
 
   private async sendWithFlareSend(input: { to: string; receiptNo: string; businessName: string; pdf: Buffer; phone: string }) {
