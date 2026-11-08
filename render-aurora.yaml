@@ -39,6 +39,12 @@ services:
         value: TALK-SASA
       - key: TALKSASA_API_URL
         value: https://bulksms.talksasa.com/api/v3/sms/send
+      - key: AT_USERNAME
+        sync: false
+      - key: AT_API_KEY
+        sync: false
+      - key: AT_SENDER_ID
+        sync: false
       - key: BREVO_API_KEY
         sync: false
       - key: BREVO_FROM_EMAIL
@@ -52,6 +58,8 @@ services:
       - key: WHATSAPP_GRAPH_VERSION
         value: v22.0
       - key: FLARESEND_API_KEY
+        sync: false
+      - key: TWILIO_FROM_NUMBER
         sync: false
       - key: TWILIO_ACCOUNT_SID
         sync: false
