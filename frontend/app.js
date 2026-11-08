@@ -25,7 +25,7 @@
       void loadBusinessProfile().catch(error=>{
         if(error.status===402){
           showWorkspaceScreen('profile');
-          showNotice('SWASS is locked until you subscribe. Open Wallet & Subscription in your profile to continue.');
+          showNotice('AURORA is locked until you subscribe. Open Wallet & Subscription in your profile to continue.');
         }else{
           showNotice('Your workspace is open, but business details could not load. '+(error.message||'Please try again.'),true);
         }
@@ -52,7 +52,7 @@
     if (document.visibilityState === 'visible') void warmApi();
   });
   // Render's free service sleeps after inactivity; keep an actively open
-  // SWASS tab warm without sending frequent requests.
+  // AURORA tab warm without sending frequent requests.
   window.setInterval(() => {
     if (document.visibilityState === 'visible') void warmApi();
   }, 10 * 60 * 1000);
@@ -82,7 +82,7 @@
     if(!card||!panel)return;
     card.classList.remove('hidden');
     $('dashboard-profile-name').textContent=complete?p.businessName:'Complete your business profile';
-    $('dashboard-profile-meta').textContent=complete?[p.storeName,p.businessPhone,p.storeLocation].filter(Boolean).join(' · '):'Add your business name, phone and branch details to set up SWASS.';
+    $('dashboard-profile-meta').textContent=complete?[p.storeName,p.businessPhone,p.storeLocation].filter(Boolean).join(' · '):'Add your business name, phone and branch details to set up AURORA.';
     const photo=$('dashboard-profile-image');
     if(p.logoData){photo.src=p.logoData;photo.classList.remove('hidden');}else{photo.removeAttribute('src');photo.classList.add('hidden');}
     const inside=$('dashboard-shop-inside-photo'),outside=$('dashboard-shop-outside-photo');
@@ -400,7 +400,7 @@
         await new Promise(resolve => setTimeout(resolve, 3000));
         const current = await request('/api/v1/mpesa/payments/' + encodeURIComponent(started.paymentId));
         if (current.status === 'success') {
-          message.textContent = 'Payment confirmed successfully' + (current.receiptNumber ? ' · M-Pesa receipt: ' + current.receiptNumber : '') + '. Your SWASS subscription or wallet has been updated.';
+          message.textContent = 'Payment confirmed successfully' + (current.receiptNumber ? ' · M-Pesa receipt: ' + current.receiptNumber : '') + '. Your AURORA subscription or wallet has been updated.';
           showNotice('Tuma payment confirmed successfully.');
           return;
         }
@@ -568,7 +568,7 @@
     $('register-error').textContent='';$('signup-otp-message').textContent='';
     const btn=$('register-submit');btn.disabled=true;btn.textContent='Sending code…';
     try{
-      $('register-error').textContent='Connecting to SWASS server…';
+      $('register-error').textContent='Connecting to AURORA…';
       await warmApi();
       $('register-error').textContent='';
       const data=await request('/api/v1/auth/register',{method:'POST',body:JSON.stringify(signupPayload())});
@@ -631,7 +631,7 @@
     const button=$('login-form').querySelector('button[type="submit"]');
     $('login-error').textContent='';
     if(button){button.disabled=true;button.textContent='Connecting…';}
-    const loginWait=setTimeout(()=>{if(button&&button.disabled)button.textContent='Waking up SWASS…';},8000);
+    const loginWait=setTimeout(()=>{if(button&&button.disabled)button.textContent='Waking up AURORA…';},8000);
     let signedIn=false;
     try{
       const data=await request('/api/v1/auth/login',{
@@ -674,7 +674,7 @@
       backgroundLoads.push(loadBusinessProfile().catch(err => {
         if(err.status === 402){
           showWorkspaceScreen('profile');
-          showNotice('SWASS is locked until you subscribe. Open Wallet & Subscription in your profile to continue.');
+          showNotice('AURORA is locked until you subscribe. Open Wallet & Subscription in your profile to continue.');
         } else {
           showNotice('You are signed in, but the business profile could not be loaded. '+(err.message||''),true);
         }
@@ -804,7 +804,7 @@
   $('discount').addEventListener('input',renderCart);$('clear-cart').addEventListener('click',()=>{state.cart.clear();$('discount').value='0';renderCart();});
   $('checkout-open').addEventListener('click',openCheckout);$('checkout-close').addEventListener('click',()=>$('checkout-modal').classList.add('hidden'));$('checkout-form').addEventListener('submit',completeSale);
   $('receipt-close').addEventListener('click',()=>$('receipt-modal').classList.add('hidden'));$('new-sale').addEventListener('click',()=>$('receipt-modal').classList.add('hidden'));$('print-receipt').addEventListener('click',()=>window.print());
-  const shareBtn=$('share-receipt'); if(shareBtn) shareBtn.addEventListener('click', async()=>{ if(!state.lastReceipt)return; const verifyUrl=new URL('verify.html',window.location.href).href+'?token='+encodeURIComponent(state.lastReceipt.qrToken); const text=`SWASS receipt ${state.lastReceipt.receiptNo} · KSh ${Number(state.lastReceipt.totalKes).toLocaleString('en-KE')} · Verify: ${verifyUrl}`; try { if(navigator.share) await navigator.share({title:'SWASS receipt',text}); else if(navigator.clipboard) { await navigator.clipboard.writeText(text); alert('Receipt summary copied.'); } } catch {} });
+  const shareBtn=$('share-receipt'); if(shareBtn) shareBtn.addEventListener('click', async()=>{ if(!state.lastReceipt)return; const verifyUrl=new URL('verify.html',window.location.href).href+'?token='+encodeURIComponent(state.lastReceipt.qrToken); const text=`AURORA E-RECEIPT ${state.lastReceipt.receiptNo} · KSh ${Number(state.lastReceipt.totalKes).toLocaleString('en-KE')} · Verify: ${verifyUrl}`; try { if(navigator.share) await navigator.share({title:'AURORA E-RECEIPT',text}); else if(navigator.clipboard) { await navigator.clipboard.writeText(text); alert('Receipt summary copied.'); } } catch {} });
   // Installable Android experience: this adds the app without replacing the website.
   let deferredInstallPrompt = null;
   const installAppButton = $('install-app-btn');
@@ -825,14 +825,14 @@
     if (installAppButton) installAppButton.classList.add('hidden');
   });
   if ('serviceWorker' in navigator && window.isSecureContext) {
-    window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(error => console.warn('[SWASS] App installation support unavailable:', error?.message || 'registration failed')));
+    window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(error => console.warn('[AURORA] App installation support unavailable:', error?.message || 'registration failed')));
   }
   // Keep the signed-in session across refreshes; expire it after 3 idle hours.
   ['pointerdown','keydown','touchstart','click','scroll'].forEach(type=>window.addEventListener(type,touchSession,{passive:true}));
   window.addEventListener('focus',checkSessionExpiry);
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkSessionExpiry();});
   window.setInterval(checkSessionExpiry,30000);
-  // API URL is configurable without rebuilding: set window.SWASS_API_URL before app.js.
-  if(!API){ showNotice('API address is not configured yet. Set SWASS_API_URL in frontend/config.js to your running API URL.',true); }
+  // API URL is configurable without rebuilding: set the existing API URL in frontend/config.js before app.js.
+  if(!API){ showNotice('API address is not configured yet. Check the existing API URL in frontend/config.js.',true); }
   renderCart();void restoreSession();
 })();
