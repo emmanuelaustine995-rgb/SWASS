@@ -479,7 +479,7 @@
     const serials=[1,2,3].map(n=>$('product-serial-'+n).value.trim()).filter(Boolean);
     if(serials.length>3){$('product-error').textContent='You can add up to three serial numbers.';btn.disabled=false;btn.textContent='Add product and continue';return;}
     const qty=serials.length||Math.max(1,Number($('product-stock').value)||1);
-    const payload={name:$('product-name').value.trim(),sku:$('product-sku').value.trim()||null,barcode:$('product-barcode').value.trim()||serials[0]||null,priceKes:Number($('product-price').value),costKes:$('product-cost').value===''?null:Number($('product-cost').value),stockQty:qty,reorderLevel:Math.min(qty,Math.max(0,Number($('product-reorder').value)||1)),requiresBuyerId:$('product-buyer-id').checked};
+    const payload={name:$('product-name').value.trim(),sku:$('product-sku').value.trim()||null,barcode:$('product-barcode').value.trim()||null,priceKes:Number($('product-price').value),costKes:$('product-cost').value===''?null:Number($('product-cost').value),stockQty:qty,reorderLevel:Math.min(qty,Math.max(0,Number($('product-reorder').value)||1)),requiresBuyerId:$('product-buyer-id').checked};
     try{
       const data=await request('/api/v1/products',{method:'POST',body:JSON.stringify(payload)});
       const product=data.product;
