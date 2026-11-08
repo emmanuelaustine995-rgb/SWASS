@@ -183,7 +183,7 @@
     document.querySelectorAll('#workspace-nav button').forEach(b=>b.classList.toggle('active',b.dataset.workspace===screen));
   }
 
-  function showPOS(){ $('login-view').classList.add('hidden'); $('pos-view').classList.remove('hidden'); const welcome=$('welcome-back-banner'); if(welcome){const hour=new Date().getHours();const greeting=hour<12?'Good morning':hour<17?'Good afternoon':'Good evening';welcome.textContent=`${greeting}, welcome back${state.userName?' '+state.userName:''}!`;welcome.classList.remove('hidden');} $('profile-menu-btn')?.classList.add('hidden'); const label=$('user-label');label.textContent=state.userName||state.staffTitle||(state.role==='cashier'?'Shop Attendant':state.role?state.role.replace('_',' '):'Staff');if(state.userPhotoData){const avatar=document.createElement('img');avatar.src=state.userPhotoData;avatar.alt='Profile photo';avatar.style.cssText='width:30px;height:30px;object-fit:cover;border-radius:50%;vertical-align:middle;margin-right:8px';label.prepend(avatar);} $('add-product-btn').classList.toggle('hidden', !['owner','manager'].includes(state.role)); $('dashboard-link').classList.toggle('hidden', !['owner','manager'].includes(state.role));$('workspace-nav').classList.remove('hidden');  }
+  function showPOS(){ $('login-view').classList.add('hidden'); $('pos-view').classList.remove('hidden'); const welcome=$('welcome-back-banner'); if(welcome){const hour=new Date().getHours();const greeting=hour<12?'Good morning':hour<17?'Good afternoon':'Good evening';welcome.textContent=`${greeting}, welcome back${state.userName?' '+state.userName:''}!`;welcome.classList.remove('hidden');} $('profile-menu-btn')?.classList.add('hidden'); const label=$('user-label');label.textContent=state.userName||state.staffTitle||(state.role==='cashier'?'Shop Attendant':state.role?state.role.replace('_',' '):'Staff');if(state.userPhotoData){const avatar=document.createElement('img');avatar.src=state.userPhotoData;avatar.alt='Profile photo';avatar.style.cssText='width:30px;height:30px;object-fit:cover;border-radius:50%;vertical-align:middle;margin-right:8px';label.prepend(avatar);} $('add-product-btn').classList.toggle('hidden', !['cashier','owner','manager'].includes(state.role)); $('clear-catalogue-btn')?.classList.toggle('hidden', !['owner','manager'].includes(state.role)); $('dashboard-link').classList.toggle('hidden', !['owner','manager'].includes(state.role));$('workspace-nav').classList.remove('hidden');  }
   async function lookupCustomer(ev){
     ev.preventDefault();
     const phone=$('lookup-phone').value.trim();
@@ -410,8 +410,16 @@
     $('imei-scanner-modal')?.classList.add('hidden');
   }
   function applyScannedImei(value){
-    const code=String(value||'').trim().slice(0,32);
+    const code=String(value||'').trim().slice(0,80);
     if(!code){$('imei-scanner-message').textContent='Enter or scan a valid code.';return;}
+    const directField=$(imeiScannerTarget);
+    if(directField && directField.tagName==='INPUT'){
+      directField.value=code;
+      directField.dispatchEvent(new Event('input',{bubbles:true}));
+      stopImeiScanner();
+      showNotice('Code scanned successfully.');
+      return;
+    }
     const row=state.cart.get(imeiScannerTarget);
     if(!row){$('imei-scanner-message').textContent='This sale item is no longer in the cart.';return;}
     row.imei=code;
@@ -447,6 +455,7 @@
   $('imei-scanner-close')?.addEventListener('click',stopImeiScanner);
   $('imei-scanner-modal')?.addEventListener('click',e=>{if(e.target.id==='imei-scanner-modal')stopImeiScanner();});
   $('imei-scanner-use')?.addEventListener('click',()=>applyScannedImei($('imei-scanner-manual').value));
+  $('product-form')?.addEventListener('click',e=>{const b=e.target.closest('[data-scan-field]');if(b)openImeiScanner(b.dataset.scanField);});
 
   $('customer-lookup-form').addEventListener('submit',lookupCustomer);
   $('customer-lookup-result').addEventListener('click',e=>{
@@ -466,11 +475,28 @@
   $('product-close').addEventListener('click',()=> $('product-modal').classList.add('hidden'));
   $('product-form').addEventListener('submit',async e=>{
     e.preventDefault(); $('product-error').textContent='';
-    const btn=$('product-form').querySelector('button[type="submit"]'); btn.disabled=true; btn.textContent='Saving goods…';
-    const payload={name:$('product-name').value.trim(),sku:$('product-sku').value.trim()||null,barcode:$('product-barcode').value.trim()||null,priceKes:Number($('product-price').value),costKes:$('product-cost').value===''?null:Number($('product-cost').value),stockQty:Number($('product-stock').value),reorderLevel:Number($('product-reorder').value),requiresBuyerId:$('product-buyer-id').checked};
-    try{ await request('/api/v1/products',{method:'POST',body:JSON.stringify(payload)}); $('product-modal').classList.add('hidden'); showNotice('Goods saved to your shop inventory.'); await loadProducts(); }
-    catch(err){$('product-error').textContent=err.message||'Could not save goods.';}
-    finally{btn.disabled=false;btn.textContent='Save goods to inventory';}
+    const btn=$('product-form').querySelector('button[type="submit"]'); btn.disabled=true; btn.textContent='Adding product…';
+    const serials=[1,2,3].map(n=>$('product-serial-'+n).value.trim()).filter(Boolean);
+    if(serials.length>3){$('product-error').textContent='You can add up to three serial numbers.';btn.disabled=false;btn.textContent='Add product and continue';return;}
+    const qty=serials.length||Math.max(1,Number($('product-stock').value)||1);
+    const payload={name:$('product-name').value.trim(),sku:$('product-sku').value.trim()||null,barcode:$('product-barcode').value.trim()||serials[0]||null,priceKes:Number($('product-price').value),costKes:$('product-cost').value===''?null:Number($('product-cost').value),stockQty:qty,reorderLevel:Math.min(qty,Math.max(0,Number($('product-reorder').value)||1)),requiresBuyerId:$('product-buyer-id').checked};
+    try{
+      const data=await request('/api/v1/products',{method:'POST',body:JSON.stringify(payload)});
+      const product=data.product;
+      state.cart.set(product.id,{product,qty,unitPriceKes:Number(product.priceKes),serials,imei:serials[0]||''});
+      $('product-modal').classList.add('hidden');$('product-form').reset();$('product-stock').value='1';$('product-reorder').value='1';
+      [1,2,3].forEach(n=>$('product-serial-'+n).value='');
+      renderCart();showNotice('Product added. Next, continue to customer details.');
+      await loadProducts();
+    }catch(err){$('product-error').textContent=err.message||'Could not add product.';}
+    finally{btn.disabled=false;btn.textContent='Add product and continue';}
+  });
+  $('clear-catalogue-btn')?.addEventListener('click',async()=>{
+    if(!window.confirm('Clear all current products from this shop catalogue? Previous sales and receipts will be preserved.'))return;
+    const btn=$('clear-catalogue-btn');btn.disabled=true;
+    try{const result=await request('/api/v1/products/archive-all',{method:'POST',body:JSON.stringify({})});state.products=[];state.cart.clear();renderProducts();renderCart();showNotice(result.message||'Old catalogue cleared. Previous receipts are safe.');}
+    catch(err){showNotice(err.message||'Could not clear catalogue.',true);}
+    finally{btn.disabled=false;}
   });
   function updateSignupAccountType(){
     $('reg-account-type').value='owner';
