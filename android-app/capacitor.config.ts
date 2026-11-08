@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'ke.co.etech.swass',
-  appName: 'SWASS',
+  appName: 'AURORA E-RECEIPT',
   webDir: '../frontend',
   server: {
     url: 'https://swass-web.onrender.com',
