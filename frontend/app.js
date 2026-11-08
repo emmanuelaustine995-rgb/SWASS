@@ -22,9 +22,9 @@
     }
     if(['owner','manager'].includes(state.role)){
       let selected='dashboard';try{const candidate=localStorage.getItem('swass-active-workspace-v1');if(['dashboard','receipts','profile'].includes(candidate))selected=candidate;}catch{}
-      if(subscriptionRequired) selected='accounting';
+      if(subscriptionRequired) selected='profile';
       showWorkspaceScreen(selected);
-      if(subscriptionRequired) showNotice('SWASS is locked until you subscribe. Pay KSh 100 for one month or KSh 900 for one year, then add receipt credits at KSh 2 each.');
+      if(subscriptionRequired){showWorkspaceScreen('profile');showNotice('SWASS is locked until you subscribe. Open Wallet & Subscription in your profile to continue.');}
     } else if(state.role === 'cashier') {
       showWorkspaceScreen('dashboard');
     } else {
@@ -580,7 +580,7 @@
       $('register-submit').classList.remove('hidden');
       showPOS();
       publishWorkspaceSession();
-      showWorkspaceScreen('accounting');
+      showWorkspaceScreen('dashboard');
       showNotice('Your business account is ready. Subscribe for KSh 100 per month (or KSh 900 per year), then top up your receipt wallet.');
     }catch(err){
       $('signup-otp-message').textContent=err.message||'Verification failed. Check the code and try again.';
@@ -640,8 +640,8 @@
       }
     }
     if(subscriptionRequired){
-      showWorkspaceScreen('accounting');
-      showNotice('SWASS is locked until you subscribe. Pay KSh 100 for one month or KSh 900 for one year, then add receipt credits at KSh 2 each.');
+      showWorkspaceScreen('profile');
+      showNotice('SWASS is locked until you subscribe. Open Wallet & Subscription in your profile to continue.');
     } else if(state.role==='cashier') {
       showWorkspaceScreen('receipts');
     } else {
