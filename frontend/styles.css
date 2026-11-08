@@ -92,3 +92,19 @@ input:focus,select:focus{border-color:#3b82f6!important;box-shadow:0 0 0 3px #3b
 @media(max-width:760px){.shell{margin:14px auto;padding:0 12px}.owner-home-metrics{grid-template-columns:1fr 1fr}}
 
 .serial-capture{display:grid;gap:9px;padding:12px;border:1px solid var(--line);border-radius:12px;background:#f8fbf9}.serial-input-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}.serial-input-row .btn{min-width:72px}.btn-small{min-height:38px;padding:8px 12px;font-size:12px}
+
+
+/* Fixed, single-screen workspace: navigation stays in place and panels scroll internally only when needed. */
+body.workspace-active{height:100dvh;min-height:100dvh;overflow:hidden;padding-bottom:0}
+body.workspace-active .shell{height:calc(100dvh - 72px - 78px);min-height:0;margin:0 auto;padding:12px 20px 8px;overflow:hidden;display:flex;flex-direction:column;gap:8px}
+body.workspace-active #welcome-back-banner{flex:0 0 auto;margin:0;padding:8px 13px;border-radius:10px;font-size:13px;line-height:1.25;box-shadow:none}
+body.workspace-active #workspace-nav{flex:0 0 auto;margin:0;padding:5px 0;position:relative;top:auto;overflow-x:auto}
+body.workspace-active #owner-home,body.workspace-active #receipts-home,body.workspace-active #pos-view,body.workspace-active #owner-dashboard-view,body.workspace-active #profile-panel,body.workspace-active #staff-profile-panel{flex:1 1 auto;min-height:0;max-height:100%;overflow-y:auto;overscroll-behavior:contain;margin:0;padding-bottom:8px}
+body.workspace-active #pos-view .pos-grid{display:block;min-height:0}
+body.workspace-active #pos-view .cart-panel{max-height:100%;padding:14px}
+body.workspace-active #pos-view .cart-list{max-height:calc(100dvh - 390px);min-height:50px;overflow-y:auto;overscroll-behavior:contain}
+body.workspace-active #pos-view #history-panel,body.workspace-active #pos-view #owner-customers-section,body.workspace-active #pos-view .customer-lookup-panel{display:none!important}
+body.workspace-active #pos-view .page-heading{margin-bottom:8px}
+body.workspace-active #pos-view .page-heading p{margin-bottom:0}
+body.workspace-active .bottom-nav{position:fixed;left:0;right:0;bottom:0}
+@media(max-width:760px){body.workspace-active .shell{height:calc(100dvh - 64px - 74px);padding:8px 12px 6px;margin:0 auto}body.workspace-active #pos-view .cart-list{max-height:calc(100dvh - 350px)}body.workspace-active #workspace-nav{gap:5px}body.workspace-active #workspace-nav button{padding:8px 10px;font-size:12px}}
