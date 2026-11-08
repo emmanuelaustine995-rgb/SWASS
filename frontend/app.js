@@ -14,20 +14,23 @@
     if(!sessionIsValid(saved)){clearSession();showLogin();return;}
     state.token=saved.token;state.role=saved.role||'owner';state.userName=saved.userName||'';state.staffTitle=saved.staffTitle||'';state.userPhotoData=saved.userPhotoData||'';state.userPhone=saved.userPhone||'';state.userEmail=saved.userEmail||'';lastSessionWrite=Number(saved.lastActivity)||Date.now();
     showPOS();publishWorkspaceSession();
-    let subscriptionRequired=false;
-    try{if(['owner','manager'].includes(state.role))await loadBusinessProfile();}
-    catch(error){
-      if(error.status===402) subscriptionRequired=true;
-      else showNotice('You are signed in, but some business data could not load. '+(error.message||''),true);
-    }
+    // Reveal the selected workspace immediately. A sleeping or unreachable API
+    // must never leave the signed-in user staring at only the greeting banner.
+    let selected='dashboard';
     if(['owner','manager'].includes(state.role)){
-      let selected='dashboard';try{const candidate=localStorage.getItem('swass-active-workspace-v1');if(['dashboard','receipts','profile'].includes(candidate))selected=candidate;}catch{}
-      if(subscriptionRequired) selected='profile';
-      showWorkspaceScreen(selected);
-      if(subscriptionRequired){showWorkspaceScreen('profile');showNotice('SWASS is locked until you subscribe. Open Wallet & Subscription in your profile to continue.');}
-    } else if(state.role === 'cashier') {
-      showWorkspaceScreen('dashboard');
-    } else {
+      try{const candidate=localStorage.getItem('swass-active-workspace-v1');if(['dashboard','receipts','profile'].includes(candidate))selected=candidate;}catch{}
+    }
+    showWorkspaceScreen(selected);
+    if(['owner','manager'].includes(state.role) && selected!=='profile'){
+      void loadBusinessProfile().catch(error=>{
+        if(error.status===402){
+          showWorkspaceScreen('profile');
+          showNotice('SWASS is locked until you subscribe. Open Wallet & Subscription in your profile to continue.');
+        }else{
+          showNotice('Your workspace is open, but business details could not load. '+(error.message||'Please try again.'),true);
+        }
+      });
+    } else if(state.role==='cashier'){
       showWorkspaceScreen('dashboard');
     }
   }
