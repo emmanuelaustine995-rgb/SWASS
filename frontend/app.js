@@ -624,29 +624,30 @@
       if(button){button.disabled=false;button.textContent='Sign in';}
     }
     if(!signedIn)return;
-    let subscriptionRequired = false;
+    // Open the workspace immediately after authentication. Load business data
+    // in parallel so profile + catalogue requests do not block the first screen.
+    const landingScreen = state.role === 'cashier' ? 'receipts' : 'dashboard';
+    showWorkspaceScreen(landingScreen);
+    const backgroundLoads = [];
     if(['owner','manager'].includes(state.role)){
-      try{await loadBusinessProfile();}
-      catch(err){
-        if(err.status === 402) subscriptionRequired = true;
-        else showNotice('You are signed in, but the business profile could not be loaded. '+(err.message||''),true);
+      backgroundLoads.push(loadBusinessProfile().catch(err => {
+        if(err.status === 402){
+          showWorkspaceScreen('profile');
+          showNotice('SWASS is locked until you subscribe. Open Wallet & Subscription in your profile to continue.');
+        } else {
+          showNotice('You are signed in, but the business profile could not be loaded. '+(err.message||''),true);
+        }
+      }));
+    }
+    backgroundLoads.push(loadProducts().catch(err => {
+      if(err.status === 402){
+        showWorkspaceScreen('profile');
+        showNotice('SWASS is locked until you subscribe. Open Wallet & Subscription in your profile to continue.');
+      } else {
+        showNotice('You are signed in, but the product list could not load. Refresh the page to try again.', true);
       }
-    }
-    if(!subscriptionRequired){
-      try { await loadProducts(); }
-      catch (loadError) {
-        if(loadError.status === 402) subscriptionRequired = true;
-        else showNotice('You are signed in, but the product list could not load. Refresh the page to try again.', true);
-      }
-    }
-    if(subscriptionRequired){
-      showWorkspaceScreen('profile');
-      showNotice('SWASS is locked until you subscribe. Open Wallet & Subscription in your profile to continue.');
-    } else if(state.role==='cashier') {
-      showWorkspaceScreen('receipts');
-    } else {
-      showWorkspaceScreen('dashboard');
-    }
+    }));
+    void Promise.allSettled(backgroundLoads);
   });
   $('first-password-form').addEventListener('submit',async e=>{
     e.preventDefault();
