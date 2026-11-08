@@ -334,7 +334,7 @@
     // the receipt payload can never fall back to an older product price.
     priceInputs.forEach(input=>{const row=state.cart.get(input.dataset.price);if(row)row.unitPriceKes=Number(input.value);});
     const t=totals(); const needsBuyer=items.some(r=>r.product.requiresBuyerId);
-    if(items.some(r=>r.product.requiresBuyerId&&!(Array.isArray(r.serials)&&r.serials.length===r.qty)&&!String(r.imei||'').trim())){$('checkout-error').textContent='Enter the IMEI / serial number for each item that requires buyer identification.';return;}
+    if(items.some(r=>r.product.requiresBuyerId&&!(Array.isArray(r.serials)&&r.serials.length===r.qty)&&!(r.qty===1&&String(r.imei||'').trim()))){$('checkout-error').textContent='Enter the IMEI / serial number for each item that requires buyer identification.';return;}
     const customer={fullName:$('buyer-name').value.trim(),phone:$('buyer-phone').value.trim(),...($('buyer-email').value.trim()?{email:$('buyer-email').value.trim()}:{}),...($('buyer-id').value.trim()?{nationalId:$('buyer-id').value.trim()}:{})};
     if(!customer.fullName||!customer.phone){ $('checkout-error').textContent='Enter the customer full name and phone number to continue.';return; }
     if(needsBuyer&&!customer.nationalId){ $('checkout-error').textContent='Enter the buyer National ID for the identified goods in this sale.';return; }
