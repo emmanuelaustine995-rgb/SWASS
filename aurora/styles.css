@@ -5,3 +5,5 @@
 .app-shell:has(#loginView.active) .bottom-nav,.app-shell:has(#loginView.active) .footer-brand{display:none}
 
 .history-heading{margin-top:16px}.history-item{display:flex;align-items:center;justify-content:space-between;text-align:left;width:100%;border:1px solid var(--line);border-radius:11px;background:#fff;padding:11px;gap:10px;color:var(--ink)}.history-item span{min-width:0}.history-item strong,.history-item small{display:block}.history-item strong{font-size:10px}.history-item small{font-size:9px;color:var(--muted);margin-top:4px}.history-item b{font-size:11px;white-space:nowrap}
+
+.business-photo-preview{display:block;max-width:100%;max-height:140px;object-fit:contain;border:1px solid var(--line);border-radius:12px;padding:6px;background:#fff;margin:8px 0 14px}.profile-panel h3{margin:18px 0 8px;font-size:13px;color:var(--navy)}.profile-panel textarea{width:100%;min-height:58px;resize:vertical;border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit;color:var(--ink);background:#fff}.profile-panel input[type=file]{font-size:11px;padding:8px}
