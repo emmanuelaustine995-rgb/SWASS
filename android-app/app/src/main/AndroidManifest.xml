@@ -3,7 +3,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <application
         android:allowBackup="false"
-        android:label="SWASS"
+        android:label="AURORA E-RECEIPT"
         android:icon="@drawable/swass_icon"
         android:roundIcon="@drawable/swass_icon"
         android:supportsRtl="true"
