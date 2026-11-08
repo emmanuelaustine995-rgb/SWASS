@@ -22,8 +22,8 @@ export class EmailVerificationService {
       method: 'POST',
       headers: { 'api-key': apiKey, 'Content-Type': 'application/json', accept: 'application/json' },
       body: JSON.stringify({
-        sender: { email: from, name: 'SWASS' }, to: [{ email }], subject: 'Verify your SWASS business email',
-        htmlContent: `<div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;color:#17251f"><h2>Welcome to SWASS, ${this.escape(fullName)}</h2><p>Confirm your email address to keep your business account details up to date.</p><p><a href="${verifyUrl}" style="display:inline-block;padding:13px 20px;background:#176b4a;color:#fff;text-decoration:none;border-radius:8px">Verify email address</a></p><p>This link expires in 30 minutes. If you did not create this account, ignore this message.</p></div>`,
+        sender: { email: from, name: 'E-RECEIPT AURORA' }, to: [{ email }], subject: 'Verify your AURORA business email',
+        htmlContent: `<div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;color:#17251f"><h2>Welcome to E-RECEIPT AURORA, ${this.escape(fullName)}</h2><p>Confirm your email address to keep your business account details up to date.</p><p><a href="${verifyUrl}" style="display:inline-block;padding:13px 20px;background:#176b4a;color:#fff;text-decoration:none;border-radius:8px">Verify email address</a></p><p>This link expires in 30 minutes. If you did not create this account, ignore this message.</p></div>`,
       }),
     });
     if (!response.ok) throw new Error('Email verification message could not be sent');
