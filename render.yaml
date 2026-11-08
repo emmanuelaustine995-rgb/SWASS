@@ -7,6 +7,17 @@ services:
     buildCommand: npm install --include=dev && npm run build
     startCommand: npm run migrate:node && npm start
     healthCheckPath: /health
+    # Frontend-only commits must not restart the API service.
+    buildFilter:
+      paths:
+        - src/**
+        - migrations/**
+        - scripts/**
+        - package.json
+        - package-lock.json
+        - tsconfig.json
+        - nest-cli.json
+        - render.yaml
     envVars:
       - key: NODE_ENV
         value: production
@@ -81,3 +92,8 @@ services:
     rootDir: frontend
     buildCommand: echo "Publishing AURORA E-RECEIPT on the existing web service"
     staticPublishPath: .
+    # Publish the website only when its own frontend files change.
+    buildFilter:
+      paths:
+        - frontend/**
+        - render.yaml
