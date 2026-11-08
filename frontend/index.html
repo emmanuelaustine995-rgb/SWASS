@@ -89,13 +89,10 @@
 </section>
 <section id="pos-view" class="hidden">
       
-      <div class="page-heading"><div><button id="back-to-receipts" class="btn btn-light" type="button">← Back to Receipts</button><p class="eyebrow">ISSUE RECEIPT</p><h1>New sale</h1><p class="muted">Enter each good being sold, add more items, then continue to customer details for one combined receipt.</p></div><div class="inventory-actions"><button id="refresh-btn" class="btn btn-light">↻ Refresh products</button></div></div>
+      <div class="page-heading"><div><button id="back-to-receipts" class="btn btn-light" type="button">← Back to Receipts</button><p class="eyebrow">ISSUE RECEIPT</p><h1>New sale</h1><p class="muted">Manually enter each good being sold. Add as many different items as needed, then continue to customer details for one combined receipt.</p></div></div>
       <div id="notice" class="notice hidden" role="status"></div>
       <div class="pos-grid">
-        <section id="products-panel" class="panel products-panel"><div class="section-head"><div><h2>Products</h2><p class="muted small">Add each product being sold to this receipt</p></div><div class="inventory-actions"><span id="product-count" class="count-pill">0 items</span><button id="clear-catalogue-btn" class="btn btn-light hidden" type="button">Clear old products</button><button id="add-product-btn" class="btn btn-primary hidden" type="button">+ Add sale item</button></div></div>
-          <div class="search-row"><input id="product-search" type="search" placeholder="Search name, SKU or barcode…" aria-label="Search products"><label class="check-label"><input id="low-stock" type="checkbox"> Low stock</label></div>
-          <div id="product-list" class="product-list"><div class="empty">Sign in to load your products.</div></div>
-        </section>
+        <section id="products-panel" class="hidden" aria-hidden="true"><span id="product-count">0 items</span><input id="product-search" type="search"><input id="low-stock" type="checkbox"><div id="product-list"></div><button id="refresh-btn" type="button"></button><button id="clear-catalogue-btn" type="button"></button></section>
         <section class="panel cart-panel"><div class="section-head"><div><h2>Current sale</h2><p class="muted small">Add every item before moving to customer details</p></div><button id="clear-cart" class="text-btn">Clear</button></div>
           <div id="cart-list" class="cart-list"><div class="empty">Your sale is empty. Add the first item to begin.</div></div>
           <button id="add-another-item" class="btn btn-light full" type="button">＋ Add next product</button>
