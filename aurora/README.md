@@ -20,13 +20,18 @@ The API blueprint runs every existing SWASS database migration before startup. I
 
 ## Credentials and safety
 
-Render does not transfer secret values between services automatically. To activate existing providers, the private values must be copied securely into the AURORA API service's Render environment settings:
-- `TALKSASA_API_TOKEN`
-- `BREVO_API_KEY` and `BREVO_FROM_EMAIL`
-- `WHATSAPP_ACCESS_TOKEN` and `WHATSAPP_PHONE_NUMBER_ID`
-- `TUMA_API_KEY`
+Render does not transfer secret values between services automatically. To activate the existing SWASS provider accounts on AURORA, the following values must be added securely to the AURORA API service's environment settings:
 
-Do not put these values in GitHub, frontend JavaScript, screenshots, or chat messages. The blueprint now declares the supported provider environment-variable names. The code and configuration are prepared, but provider delivery cannot be confirmed until the values are present and tested. Keep `WHATSAPP_PROVIDER=cloud` for the existing WhatsApp Cloud setup; use FlareSend only if its credentials and account are configured.
+- TalkSasa primary SMS/OTP: `TALKSASA_API_TOKEN`, `TALKSASA_SENDER_ID`, `TALKSASA_API_URL`
+- Africa's Talking SMS fallback: `AT_USERNAME`, `AT_API_KEY`, optional `AT_SENDER_ID`
+- Twilio SMS fallback: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, and `TWILIO_FROM` (or `TWILIO_FROM_NUMBER`)
+- Brevo email verification and receipt PDF: `BREVO_API_KEY`, `BREVO_FROM_EMAIL`
+- WhatsApp Cloud PDF delivery: `WHATSAPP_PROVIDER=cloud`, `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_GRAPH_VERSION=v22.0`
+- Optional FlareSend alternative: `WHATSAPP_PROVIDER=flaresend`, `FLARESEND_API_KEY`
+- Tuma M-Pesa STK push and payment callbacks: `TUMA_API_KEY`, `TUMA_BUSINESS_EMAIL`, `MPESA_CALLBACK_TOKEN`
+
+The blueprint declares these environment-variable names and supplies non-secret defaults where appropriate. Secret values are not accessible to GitHub and are not copied automatically from SWASS. Do not put them in GitHub, frontend JavaScript, screenshots, or chat messages. Provider delivery remains unverified until the values are present on the AURORA service and live test messages/payments succeed. Keep the existing SWASS service and its secrets unchanged.
+
 
 ## Remaining acceptance work
 
