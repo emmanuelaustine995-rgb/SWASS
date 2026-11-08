@@ -99,7 +99,7 @@ export class MpesaService {
           amount: input.amount,
           phone: input.phone,
           callback_url: cfg.callbackUrl,
-          description: input.purpose === 'subscription' ? `SWASS subscription ${input.paymentId}` : input.purpose === 'recovery' ? `SWASS receipt recovery ${input.paymentId}` : `SWASS wallet top-up ${input.paymentId}`,
+          description: input.purpose === 'subscription' ? `AURORA subscription ${input.paymentId}` : input.purpose === 'recovery' ? `AURORA receipt recovery ${input.paymentId}` : `AURORA wallet top-up ${input.paymentId}`,
         }),
         signal: AbortSignal.timeout(25000),
       });
