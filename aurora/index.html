@@ -9,7 +9,13 @@
 <div class="app-shell">
   <header class="topbar"><div class="brand-mark"><span class="brand-icon">E</span><div><strong>E-RECEIPT</strong><small>SMART SALES & RECEIPTS</small></div></div><button class="avatar" id="avatarBtn" aria-label="Open profile">A</button></header>
   <main class="screen">
-    <section class="view active" id="dashboardView">
+    <section class="view active login-view" id="loginView">
+      <div class="login-brand"><div class="login-logo">E</div><div><strong>E-RECEIPT</strong><small>SMART SALES & RECEIPTS</small></div></div>
+      <div class="login-copy"><p class="eyebrow">WELCOME TO YOUR DIGITAL TILL</p><h1>Every sale.<br><span>One smart receipt.</span></h1><p class="muted">Create, send and recover customer receipts with ease.</p></div>
+      <div class="panel login-panel"><h2>Sign in to your business</h2><label>Phone number or email<input id="loginIdentity" placeholder="Enter phone or email" autocomplete="username"></label><label>Password<input id="loginPassword" type="password" placeholder="Enter password" autocomplete="current-password"></label><button class="primary wide" id="previewLogin">Continue to preview →</button><p class="hint">Preview mode only. Secure account login will be connected to the new empty database before launch.</p></div>
+      <p class="login-foot">A simpler way to manage every sale.</p>
+    </section>
+    <section class="view" id="dashboardView">
       <div class="greeting"><div><p class="eyebrow">YOUR BUSINESS AT A GLANCE</p><h1>Good day<span id="ownerName"></span></h1><p class="muted">Everything you need to serve your customers.</p></div><span class="live-dot">● Ready</span></div>
       <div class="stats-grid"><article class="stat-card dark"><span>Today's sales</span><strong id="todaySales">KSh 0.00</strong><small>Sales recorded today</small></article><article class="stat-card"><span>Receipts issued</span><strong id="receiptCount">0</strong><small>Today's transactions</small></article></div>
       <div class="section-heading"><div><p class="eyebrow">QUICK ACTION</p><h2>Start a checkout</h2></div></div>
