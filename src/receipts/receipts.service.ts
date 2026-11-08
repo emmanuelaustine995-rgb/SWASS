@@ -109,7 +109,7 @@ export class ReceiptsService {
     );
     const r=rows[0];
     if(!r) throw new NotFoundException('Receipt not found');
-    const appBase=(process.env.PUBLIC_APP_URL || 'https://swass-web.onrender.com').replace(/\\/$/,'');
+    const appBase=(process.env.PUBLIC_APP_URL || 'https://swass-web.onrender.com').replace(/\/$/,'');
     const pdf=await buildReceiptPdf({
       receiptNo:r.receipt_no,issuedAt:r.issued_at,
       verificationUrl:appBase+'/verify.html?token='+encodeURIComponent(r.qr_token),
