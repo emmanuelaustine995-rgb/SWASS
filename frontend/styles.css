@@ -320,3 +320,41 @@ body.workspace-active #owner-dashboard-view {
   }
   body.workspace-active #pos-view .page-heading h1 { font-size: 22px; }
 }
+
+
+/* Main Dashboard / Receipt / Profile controls stay in a permanent bottom bar. */
+body.workspace-active #workspace-nav.bottom-nav {
+  position: fixed !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  top: auto !important;
+  z-index: 10000 !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  justify-content: space-around !important;
+  align-items: center !important;
+  padding: 7px max(12px, env(safe-area-inset-right)) calc(7px + env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)) !important;
+  min-height: calc(66px + env(safe-area-inset-bottom)) !important;
+  background: rgba(255,255,255,.98) !important;
+  border-top: 1px solid #e5e7eb !important;
+  box-shadow: 0 -5px 18px rgba(15,23,42,.08) !important;
+}
+body.workspace-active #workspace-nav.bottom-nav button {
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  min-height: 50px !important;
+  margin: 0 !important;
+}
+body.workspace-active #workspace-nav.bottom-nav button.receipt-nav {
+  max-width: 116px !important;
+  min-height: 56px !important;
+  margin-top: -10px !important;
+}
+body.workspace-active .shell {
+  height: calc(100dvh - 66px - env(safe-area-inset-bottom)) !important;
+  padding-bottom: 8px !important;
+}
+body.workspace-active #workspace-nav.hidden { display: none !important; }
