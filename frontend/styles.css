@@ -737,3 +737,20 @@ body.workspace-active #shop-home.shop-home.hidden{display:none!important}
 }
 @media(prefers-reduced-motion:reduce){.shop-directory-card{animation:none!important}}
 @media(max-width:420px){.shop-directory-card{padding:12px;gap:11px}.shop-directory-heading h1{font-size:18px}.shop-search-toggle{padding:7px 9px}.shop-product-fields{gap:7px}}
+
+/* Compact Shop workspace card leaves room for additional Shop tabs. */
+.shop-directory-card{gap:8px;padding:10px 12px;border-radius:14px;box-shadow:0 4px 14px rgba(71,154,219,.12),0 0 12px rgba(114,194,255,.15),inset 0 0 12px rgba(255,255,255,.58)}
+.shop-directory-heading{gap:7px;align-items:center}
+.shop-directory-heading .eyebrow{font-size:9px;letter-spacing:.08em;margin-bottom:2px}
+.shop-directory-heading h1{font-size:16px;line-height:1.2}
+.shop-directory-heading .muted{font-size:10px;line-height:1.25;margin-top:3px}
+.shop-search-toggle{padding:6px 9px;font-size:10px}
+.shop-add-products,.shop-product-search-form{gap:6px}
+.shop-add-products label,.shop-product-search-form label{gap:3px;font-size:10px}
+.shop-add-products input,.shop-product-search-form input{min-height:34px;padding:6px 9px;border-radius:8px;font-size:12px}
+.shop-product-fields{gap:7px}
+.shop-directory-card .btn-primary{min-height:34px;padding:7px 10px;font-size:11px;border-radius:9px}
+.shop-directory-message{min-height:11px;font-size:10px}
+.shop-owner-note{font-size:10px;margin:0}
+.shop-product-results{gap:7px;margin:8px 0 14px}
+@media(max-width:420px){.shop-directory-card{padding:9px 10px;gap:7px}.shop-directory-heading h1{font-size:15px}.shop-search-toggle{padding:6px 8px}.shop-add-products input,.shop-product-search-form input{min-height:33px}}
