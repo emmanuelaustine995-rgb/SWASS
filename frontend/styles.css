@@ -874,3 +874,8 @@ body.workspace-active #today-sales-details.hidden{display:none!important}
 @media(min-width:481px){
   body.workspace-active #owner-home{padding-bottom:26px!important}
 }
+
+body.workspace-active #owner-home>.hidden,
+body.workspace-active #owner-home #referral-card.hidden,
+body.workspace-active #owner-home #dashboard-payment-panel.hidden,
+body.workspace-active #owner-home #today-sales-details.hidden{display:none!important}
