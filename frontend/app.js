@@ -294,7 +294,7 @@
   });
   function showWorkspaceScreen(screen){
     if(!state.token){showLogin();return;}
-    if(!['dashboard','receipts','profile'].includes(screen))screen='dashboard';
+    if(!['dashboard','receipts','profile','shop'].includes(screen))screen='dashboard';
     try{localStorage.setItem('swass-active-workspace-v1',screen);}catch{}
     const owner=document.getElementById('owner-dashboard-view'),pos=$('pos-view');
     const posGrid=document.querySelector('.pos-grid');
@@ -304,7 +304,7 @@
     const staffSummary=$('staff-sales-summary');
     pos?.classList.remove('profile-workspace-mode');
     owner?.classList.remove('profile-workspace-mode');
-    [history,crm,lookup,receiptHome,ownerHome,profile,$('platform-referral-admin')].forEach(el=>el?.classList.add('hidden'));
+    [history,crm,lookup,receiptHome,ownerHome,profile,$('platform-referral-admin'),$('shop-home')].forEach(el=>el?.classList.add('hidden'));
     owner?.classList.add('hidden');
     pos?.classList.add('hidden');
     document.getElementById('account-profile-menu')?.classList.add('hidden');
@@ -327,6 +327,8 @@
       receiptHome?.classList.remove('hidden');
       if(state.role==='cashier'){staffSummary?.classList.remove('hidden');void loadStaffSalesSummary();}
       $('open-recover-receipt')?.classList.remove('hidden');
+    }else if(screen==='shop'){
+      $('shop-home')?.classList.remove('hidden');
     }else if(screen==='profile'){
       renderAccountProfile();
       if(['owner','manager','vendor','freelancer'].includes(state.role)){
