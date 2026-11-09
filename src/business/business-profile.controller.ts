@@ -25,6 +25,7 @@ export class BusinessProfileController {
   @Roles('owner')
   async updateProfile(@Req() req:any,@Body() b:any) {
     const u=req.user;
+    if (u?.role !== 'owner' && u?.role !== 'manager') throw new (require('@nestjs/common').ForbiddenException)('Only the shop owner can edit business profile details.');
     if (!u?.tenantId || !u?.storeId) throw new BadRequestException('Business account required');
     const clean=(v:any,max:number,label:string,nullable=false) => {
       if(v===undefined)return undefined;
