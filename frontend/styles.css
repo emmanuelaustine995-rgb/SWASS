@@ -754,3 +754,9 @@ body.workspace-active #shop-home.shop-home.hidden{display:none!important}
 .shop-owner-note{font-size:10px;margin:0}
 .shop-product-results{gap:7px;margin:8px 0 14px}
 @media(max-width:420px){.shop-directory-card{padding:9px 10px;gap:7px}.shop-directory-heading h1{font-size:15px}.shop-search-toggle{padding:6px 8px}.shop-add-products input,.shop-product-search-form input{min-height:33px}}
+
+.referral-redemption-panel{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:12px 0;padding:12px 14px;border:1px solid rgba(70,151,211,.24);border-radius:14px;background:linear-gradient(115deg,rgba(224,244,255,.82),rgba(242,249,255,.96))}
+.referral-redemption-panel>div{display:grid;gap:2px;color:#315d7a;font-size:11px}
+.referral-redemption-panel>div strong{font-size:22px;line-height:1.1;color:#176b9e}
+.referral-redemption-panel .btn{flex:0 0 auto}
+@media(max-width:420px){.referral-redemption-panel{align-items:stretch;flex-direction:column}.referral-redemption-panel .btn{width:100%}}
