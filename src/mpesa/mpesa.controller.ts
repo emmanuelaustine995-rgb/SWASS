@@ -10,7 +10,7 @@ import { AuthGuard, Roles, RolesGuard } from '../auth/auth';
 const MONTHLY_KES = 100;
 const YEARLY_KES = 900;
 const MAX_TOPUP_KES = 150000;
-type Purpose = 'subscription' | 'wallet_topup' | 'recovery' | 'vendor_fee';
+type Purpose = 'subscription' | 'wallet_topup' | 'recovery' | 'vendor_fee' | 'receipt_sale';
 
 @Injectable()
 export class MpesaService {
@@ -132,7 +132,7 @@ export class MpesaController {
     const tenantId = req.user?.tenantId;
     if (!tenantId) throw new ForbiddenException();
     const purpose: Purpose = body?.purpose;
-    if (!['subscription', 'wallet_topup', 'vendor_fee'].includes(purpose)) throw new BadRequestException('Invalid payment purpose');
+    if (!['subscription', 'wallet_topup', 'vendor_fee', 'receipt_sale'].includes(purpose)) throw new BadRequestException('Invalid payment purpose');
     const phone = this.mpesa.normalizePhone(body?.phone);
     let amount: number;
     if (purpose === 'vendor_fee') {
@@ -146,8 +146,11 @@ export class MpesaController {
       amount = body.plan === 'monthly' ? MONTHLY_KES : YEARLY_KES;
     } else {
       amount = Number(body?.amountKes);
-      if (!Number.isSafeInteger(amount) || amount < 4 || amount > MAX_TOPUP_KES) {
-        throw new BadRequestException(`Wallet top-up must be between KSh 4 and KSh ${MAX_TOPUP_KES.toLocaleString('en-KE')}`);
+      const minimum = purpose === 'receipt_sale' ? 1 : 4;
+      if (!Number.isSafeInteger(amount) || amount < minimum || amount > MAX_TOPUP_KES) {
+        throw new BadRequestException(purpose === 'receipt_sale'
+          ? `Receipt payment must be between KSh 1 and KSh ${MAX_TOPUP_KES.toLocaleString('en-KE')}`
+          : `Wallet top-up must be between KSh 4 and KSh ${MAX_TOPUP_KES.toLocaleString('en-KE')}`);
       }
     }
 
