@@ -563,3 +563,49 @@ body.workspace-active #owner-dashboard-view.profile-workspace-mode .profile-invi
     max-width: 100%;
   }
 }
+
+
+/* Final desktop navigation override: keep all three working tabs inside the
+   same centered 520px workspace frame (the earlier full-width rule used !important). */
+@media (min-width: 761px) {
+  body.workspace-active #workspace-nav.bottom-nav {
+    left: 50% !important;
+    right: auto !important;
+    width: min(100%, 520px) !important;
+    max-width: 520px !important;
+    transform: translateX(-50%) !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    justify-content: space-around !important;
+    gap: 12px !important;
+    padding-left: 18px !important;
+    padding-right: 18px !important;
+  }
+  body.workspace-active #workspace-nav.bottom-nav button {
+    flex: 1 1 0 !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    margin: 0 !important;
+  }
+  body.workspace-active #workspace-nav.bottom-nav button.receipt-nav {
+    flex: 1 1 0 !important;
+    max-width: none !important;
+    margin-top: -10px !important;
+  }
+}
+body.workspace-active #workspace-nav.bottom-nav button {
+  cursor: pointer !important;
+  -webkit-tap-highlight-color: transparent;
+  transition: color .18s ease, background .18s ease, transform .18s ease, box-shadow .18s ease;
+}
+body.workspace-active #workspace-nav.bottom-nav button.active {
+  color: #155e75 !important;
+  background: linear-gradient(135deg, rgba(207,250,254,.95), rgba(224,231,255,.92)) !important;
+  box-shadow: inset 0 0 0 1px rgba(14,116,144,.16), 0 3px 12px rgba(14,116,144,.10) !important;
+}
+body.workspace-active #workspace-nav.bottom-nav button.receipt-nav.active {
+  color: #fff !important;
+  background: linear-gradient(135deg,#087f8c,#3156a5) !important;
+  box-shadow: 0 5px 16px rgba(8,127,140,.30) !important;
+}
