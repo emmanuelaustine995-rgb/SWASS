@@ -518,8 +518,8 @@ export class AuthController {
     }
     const tenantIsUsable = !u?.tenant_id || u.tenant_status === 'active';
     const ok = u && u.is_active && tenantIsUsable && passwordOk;
-    const requestedType = body.accountType === 'staff' ? 'staff' : 'owner';
-    const roleMatches = requestedType === 'staff' ? ['cashier','vendor','freelancer'].includes(u?.role) : ['owner','manager','super_admin'].includes(u?.role);
+    const requestedType = body.accountType === 'freelancer' ? 'freelancer' : body.accountType === 'staff' ? 'staff' : 'owner';
+    const roleMatches = requestedType === 'freelancer' ? u?.role === 'freelancer' : requestedType === 'staff' ? ['cashier','vendor','freelancer'].includes(u?.role) : ['owner','manager','super_admin'].includes(u?.role);
     if (!ok || !roleMatches) throw new UnauthorizedException('Invalid phone or password for this sign-in type');
 
     const payload: AuthUser = { sub: u.id, tenantId: u.tenant_id, storeId: u.store_id, role: u.role, mustChangePassword: !!u.must_change_password, fullName: u.full_name };
