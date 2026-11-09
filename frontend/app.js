@@ -259,21 +259,34 @@
     const posVisible=!$('pos-view')?.classList.contains('hidden');
     const profileVisible=$('owner-dashboard-view')?.classList.contains('profile-workspace-mode');
     const receiptsVisible=!$('receipts-home')?.classList.contains('hidden');
+    const shopVisible=!$('shop-home')?.classList.contains('hidden');
+    const secondhandVisible=!$('secondhand-panel')?.classList.contains('hidden');
     const modalOpen=['checkout-modal','receipt-modal','receipt-recovery-modal'].some(id=>$(id)&&!$(id).classList.contains('hidden'));
-    const hasBack=!!state.token&&(posVisible||profileVisible||receiptsVisible||modalOpen);
+    const workspaceOpen=!!$('workspace-nav')&&!$('workspace-nav').classList.contains('hidden');
+    const hasBack=!!state.token&&workspaceOpen&&(posVisible||profileVisible||receiptsVisible||shopVisible||modalOpen);
     button.classList.toggle('hidden',!hasBack);
-    button.textContent=modalOpen?'← Back':posVisible?'← Receipts':'← Dashboard';
+    button.textContent=modalOpen?'← Back':secondhandVisible?'← Shop':posVisible?'← Receipts':shopVisible?'← Dashboard':profileVisible||receiptsVisible?'← Dashboard':'← Back';
+    button.setAttribute('aria-label',button.textContent.replace('← ','Go back to '));
   }
   $('global-back-btn')?.addEventListener('click',()=>{
-    const checkout=$('checkout-modal');
-    if(checkout&&!checkout.classList.contains('hidden')){checkout.classList.add('hidden');checkout.setAttribute('aria-hidden','true');syncGlobalBackButton();return;}
-    const receiptModal=$('receipt-modal');
-    if(receiptModal&&!receiptModal.classList.contains('hidden')){receiptModal.classList.add('hidden');receiptModal.setAttribute('aria-hidden','true');syncGlobalBackButton();return;}
+    const modalIds=['checkout-modal','receipt-modal','receipt-recovery-modal'];
+    const openModal=modalIds.map(id=>$(id)).find(el=>el&&!el.classList.contains('hidden'));
+    if(openModal){openModal.classList.add('hidden');openModal.setAttribute('aria-hidden','true');syncGlobalBackButton();return;}
+    const secondhand=$('secondhand-panel');
+    if(secondhand&&!secondhand.classList.contains('hidden')){
+      secondhand.classList.add('hidden');
+      document.querySelector('#shop-home > .shop-directory-card')?.classList.remove('hidden');
+      $('secondhand-open-card')?.classList.remove('hidden');
+      $('secondhand-history')?.classList.add('hidden');
+      $('secondhand-saved-record')?.classList.add('hidden');
+      syncGlobalBackButton();return;
+    }
     if(!$('pos-view')?.classList.contains('hidden')){
       if($('pos-view')?.classList.contains('workspace-issue-mode')){$('pos-view').classList.add('hidden');$('pos-view').classList.remove('workspace-issue-mode');$('receipts-home')?.classList.remove('hidden');syncGlobalBackButton();}
       else showWorkspaceScreen('receipts');
       return;
     }
+    if(!$('shop-home')?.classList.contains('hidden')){showWorkspaceScreen('dashboard');return;}
     if($('owner-dashboard-view')?.classList.contains('profile-workspace-mode')||!$('receipts-home')?.classList.contains('hidden')){showWorkspaceScreen('dashboard');return;}
     showWorkspaceScreen('dashboard');
   });
