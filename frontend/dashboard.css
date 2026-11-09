@@ -590,3 +590,14 @@ body.dashboard-dark #owner-staff-performance .muted {
 .brand{font-size:clamp(20px,3vw,25px);font-weight:900;letter-spacing:.09em;text-shadow:0 0 16px rgba(139,255,244,.45),0 0 25px rgba(174,142,255,.32)}
 .global-back-btn{margin-left:auto;min-height:40px;padding:8px 14px;border:1px solid rgba(255,255,255,.48);border-radius:999px;background:rgba(255,255,255,.16);color:#fff;font:700 13px system-ui,sans-serif;backdrop-filter:blur(10px)}
 @media(prefers-reduced-motion:reduce){.topbar{animation:none}}
+
+
+/* Compact green subscription shortcuts on the home dashboard. */
+.dashboard-payment-tabs{display:flex;gap:8px;align-items:center;margin:10px 0 12px}
+.dashboard-payment-tab{appearance:none;border:1px solid rgba(35,132,83,.25);border-radius:999px;background:linear-gradient(135deg,#e5f8eb,#c9efd7);color:#17663c;padding:7px 13px;font:700 11px/1.2 system-ui,sans-serif;box-shadow:0 3px 10px rgba(25,120,70,.09);cursor:pointer}
+.dashboard-payment-tab.active,.dashboard-payment-tab:focus-visible{background:linear-gradient(135deg,#16864e,#2caf6b);color:#fff;outline:none}
+.dashboard-payment-panel{position:relative;margin:0 0 14px;padding:12px;border:1px solid #ccebd6;border-radius:16px;background:linear-gradient(145deg,#f4fff7,#fff);box-shadow:0 8px 24px rgba(31,115,69,.1)}
+.dashboard-payment-panel .panel{margin:0;box-shadow:none;border:0;background:transparent;padding:4px}
+.dashboard-payment-panel .panel-heading h2{font-size:16px}
+.dashboard-payment-close{display:block;margin:0 0 8px auto;border:0;border-radius:999px;background:#e4f5e9;color:#17663c;padding:5px 10px;font-size:11px;font-weight:700}
+@media(max-width:520px){.dashboard-payment-tabs{gap:6px}.dashboard-payment-tab{padding:7px 11px;font-size:10px}}
