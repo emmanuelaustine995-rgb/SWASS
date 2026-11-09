@@ -1291,6 +1291,22 @@
     }catch(err){message.textContent=err.message||'Could not save the declaration. Please check the details and try again.';message.style.color='#a12b22';}
     finally{button.disabled=false;button.textContent='Save Seller Declaration & Record Product';}
   });
+  $('secondhand-clear')?.addEventListener('click',()=>{
+    const form=$('secondhand-form');if(!form)return;
+    form.reset();
+    syncSecondhandReceiptMode();
+    ['sh-signature','sh-thumbprint'].forEach(clearSecondhandPad);
+    ['sh-id-preview','sh-seller-preview','sh-phone-preview','sh-receipt-preview'].forEach(id=>{
+      const preview=$(id);if(preview){if(preview.src&&preview.src.startsWith('blob:'))URL.revokeObjectURL(preview.src);preview.removeAttribute('src');preview.classList.add('hidden');}
+    });
+    $('secondhand-message').textContent='';
+    $('secondhand-message').style.color='';
+    $('secondhand-saved-record').innerHTML='';
+    $('secondhand-saved-record').classList.add('hidden');
+    $('secondhand-history').classList.add('hidden');
+    $('secondhand-history').innerHTML='';
+    $('secondhand-form').scrollIntoView({behavior:'smooth',block:'start'});
+  });
   $('secondhand-history-toggle')?.addEventListener('click',async()=>{
     const panel=$('secondhand-history');if(!panel)return;
     if(!panel.classList.contains('hidden')){panel.classList.add('hidden');return;}
