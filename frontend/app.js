@@ -200,9 +200,10 @@
       $('referral-active').textContent=Number(data.activeReferrals||0).toLocaleString('en-KE');
       $('referral-earned').textContent=money(data.earnedKes);
       $('referral-available').textContent=money(data.availableKes);
+      if($('referral-remainder'))$('referral-remainder').textContent=money(data.rewardRemainderKes);
       $('referral-receipts-available').textContent=Number(data.availableReceipts||0).toLocaleString('en-KE');
       $('referral-link').value=data.referralLink||'';
-      $('referral-message').textContent='Earn 50% after a referred shop owner’s first successful subscription and 50% of each paid KSh 50 vendor activation. Rewards can only be redeemed into receipt credits at KSh 4 per receipt.';
+      $('referral-message').textContent='Earn 50% after a referred shop owner’s first successful subscription and 50% of each paid KSh 50 vendor activation. Every full KSh 4 redeems one receipt; any smaller balance stays in your reward balance.';
       const history=await request('/api/v1/referrals/transactions');
       const earningsList=$('referral-earning-history');
       if(earningsList){
@@ -246,7 +247,7 @@
     const button=$('referral-redeem');button.disabled=true;$('referral-message').textContent='Redeeming your referral rewards…';
     try{
       const result=await request('/api/v1/referrals/redeem',{method:'POST',body:JSON.stringify({})});
-      $('referral-message').textContent=`${money(result.amountKes)} added to your receipt wallet. It can pay for ${Number(result.receiptCreditsAdded||0).toLocaleString('en-KE')} receipts at KSh 4 each.`;
+      $('referral-message').textContent=`${Number(result.receiptCreditsAdded||0).toLocaleString('en-KE')} receipts redeemed (${money(result.amountKes)}). ${money(result.remainingRewardBalanceKes)} remains in your referral reward balance.`;
       await loadOwnerReferralSummary();
       await loadOwnerHomeSummary();
     }catch(error){$('referral-message').textContent=error.message||'Could not redeem referral rewards.';}
