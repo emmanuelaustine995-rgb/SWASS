@@ -229,13 +229,6 @@
       }
     }catch(error){$('referral-message').textContent=error.message||'Referral details could not be loaded.';}
   }
-  $('today-sales-toggle')?.addEventListener('click',()=>{
-    const details=$('today-sales-details'),button=$('today-sales-toggle');
-    const opening=details.classList.contains('hidden');
-    details.classList.toggle('hidden',!opening);
-    button.setAttribute('aria-expanded',String(opening));
-    button.classList.toggle('is-open',opening);
-  });
   $('referral-share')?.addEventListener('click',async()=>{
     const link=$('referral-link')?.value;if(!link)return;
     try{
@@ -258,15 +251,7 @@
     void loadOwnerReferralSummary();
     $('owner-home-title').textContent=state.businessProfile?.businessName||'Business overview';
     $('owner-home-subtitle').textContent=state.businessProfile?.storeName||'Your business workspace at a glance.';
-    try{
-      const data=await request('/api/v1/dashboard/summary');
-      const sales=data.sales||{};
-      $('owner-home-sales').textContent=money(sales.salesKes);
-      $('owner-home-receipts').textContent=Number(sales.transactions||0).toLocaleString('en-KE');
-    }catch(error){
-      $('owner-home-sales').textContent='Unavailable';
-      $('owner-home-receipts').textContent='Unavailable';
-    }
+
   }
 
   function syncGlobalBackButton(){
@@ -1042,7 +1027,7 @@
   });
   $('open-recover-receipt').addEventListener('click',()=>{window.location.href='recover.html';});
   document.querySelector('.dashboard-sidebar')?.addEventListener('click',e=>{const link=e.target.closest('.sidebar-link');if(!link)return;const screen=link.dataset.screen||(link.getAttribute('href')==='#owner-customers-section'?'customers':link.getAttribute('href')==='#owner-reports-section'?'reports':link.getAttribute('href')==='#owner-payments-section'?'payments':'overview');e.preventDefault();showWorkspaceScreen(screen);});
-  $('history-toggle').addEventListener('click',async()=>{const box=$('history-content');const opening=box.classList.contains('hidden');box.classList.toggle('hidden');$('history-toggle').textContent=opening?'Close history':'Open history';if(opening)await loadReceiptHistory();});
+  $('history-toggle').addEventListener('click',async()=>{const box=$('history-content');const opening=box.classList.contains('hidden');box.classList.toggle('hidden');$('history-toggle').textContent=opening?'Close receipt history':'My receipt history';$('history-toggle').setAttribute('aria-expanded',String(opening));if(opening)await loadReceiptHistory();});
   $('history-search-btn').addEventListener('click',loadReceiptHistory);
   $('history-list').addEventListener('click',e=>{const b=e.target.closest('[data-view-pdf]');if(b)openReceiptPdf(b.dataset.viewPdf);});
   $('history-search').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();loadReceiptHistory();}});
