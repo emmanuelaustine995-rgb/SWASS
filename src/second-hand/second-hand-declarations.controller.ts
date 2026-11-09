@@ -147,6 +147,72 @@ export class SecondHandPhoneDeclarationsController {
     return { declaration: { ...rows[0], shopRepresentativeName: user.fullName || 'Shop owner' } };
   }
 
+
+  @Get(':id/amendments')
+  @Roles('owner')
+  async listAmendments(@Req() req: any, @Param('id') id: string) {
+    const user = req.user;
+    this.requireStore(user);
+    const rows = await this.db.pool.query(
+      `SELECT a.id, a.version_no AS "versionNo", a.reason, a.changes,
+              a.created_at AS "createdAt", a.amended_by AS "amendedBy"
+         FROM second_hand_declaration_amendments a
+         JOIN second_hand_phone_declarations d ON d.id=a.declaration_id
+        WHERE a.declaration_id=$1 AND d.tenant_id=$2 AND d.store_id=$3
+        ORDER BY a.version_no DESC`,
+      [id, user.tenantId, user.storeId],
+    );
+    return { amendments: rows.rows };
+  }
+
+  @Post(':id/amendments')
+  @Roles('owner')
+  async amend(@Req() req: any, @Param('id') id: string, @Body() body: any) {
+    const user = req.user;
+    this.requireStore(user);
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+      throw new BadRequestException('Invalid Special Receipt reference.');
+    }
+    const reason = typeof body?.reason === 'string' ? body.reason.trim() : '';
+    const changes = body?.changes;
+    if (!reason || reason.length > 1000) throw new BadRequestException('Explain why this declaration is being amended.');
+    if (!changes || typeof changes !== 'object' || Array.isArray(changes) || !Object.keys(changes).length) {
+      throw new BadRequestException('Enter at least one amendment.');
+    }
+    const allowed = new Set(['sellerName','nationalId','sellerPhone','alternativePhone','residentialAddress','productName','imei1','imei2','serialNumber','condition','purchasePriceKes','receiptStatus','witnessName','witnessPhone']);
+    const clean: Record<string, string | number | null> = {};
+    for (const [key, value] of Object.entries(changes)) {
+      if (!allowed.has(key)) throw new BadRequestException('This field cannot be amended.');
+      if (value !== null && typeof value !== 'string' && typeof value !== 'number') throw new BadRequestException('Invalid amendment value.');
+      if (typeof value === 'string' && value.length > 1000) throw new BadRequestException('Amendment value is too long.');
+      if (key === 'purchasePriceKes' && (!Number.isSafeInteger(value) || Number(value) < 1)) throw new BadRequestException('Enter a valid purchase price.');
+      if (key === 'condition' && !['New','Excellent','Good','Fair','Faulty'].includes(String(value))) throw new BadRequestException('Select a valid product condition.');
+      clean[key] = value as string | number | null;
+    }
+    const saved = await this.db.tx(async (client) => {
+      const declaration = await client.query(
+        `SELECT id FROM second_hand_phone_declarations
+          WHERE id=$1 AND tenant_id=$2 AND store_id=$3 FOR UPDATE`,
+        [id, user.tenantId, user.storeId],
+      );
+      if (!declaration.rowCount) throw new BadRequestException('Special Receipt not found in this shop.');
+      const version = await client.query(
+        `SELECT COALESCE(MAX(version_no),1)+1 AS next_version
+           FROM second_hand_declaration_amendments WHERE declaration_id=$1`,
+        [id],
+      );
+      const inserted = await client.query(
+        `INSERT INTO second_hand_declaration_amendments
+         (declaration_id,tenant_id,store_id,amended_by,version_no,reason,changes)
+         VALUES($1,$2,$3,$4,$5,$6,$7::jsonb)
+         RETURNING id, version_no AS "versionNo", reason, changes, created_at AS "createdAt"`,
+        [id,user.tenantId,user.storeId,user.sub,Number(version.rows[0].next_version),reason,JSON.stringify(clean)],
+      );
+      return inserted.rows[0];
+    });
+    return { amendment: saved, originalPreserved: true };
+  }
+
   private requireStore(user: any) {
     if (!user?.tenantId || !user?.storeId) throw new BadRequestException('This account is not linked to a shop.');
     if (user.role !== 'owner') throw new BadRequestException('Only the shop owner can record second-hand phone purchases.');
