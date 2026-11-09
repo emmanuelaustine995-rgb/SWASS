@@ -744,7 +744,6 @@
   });
   function openSaleItemForm(){ $('product-form').reset(); $('product-stock').value='1'; $('product-reorder').value='1'; $('product-date').value=new Date().toLocaleString('en-KE'); $('product-error').textContent='';$('product-form').scrollIntoView({behavior:'smooth',block:'center'}); $('product-name').focus({preventScroll:true}); }
   $('add-product-btn')?.addEventListener('click',openSaleItemForm);
-  $('add-another-item')?.addEventListener('click',openSaleItemForm);
   $('product-form').addEventListener('submit',async e=>{
     e.preventDefault(); $('product-error').textContent='';
     const btn=$('product-form').querySelector('button[type="submit"]'); btn.disabled=true; btn.textContent='Adding item…';
