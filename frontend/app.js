@@ -1110,6 +1110,117 @@
     }catch(err){message.textContent=err.message||'Could not add this product.';message.style.color='#a12b22';}
     finally{btn.disabled=false;btn.textContent='＋ Add Products';}
   });
+
+  // Second-hand phone seller declaration workspace.
+  const secondhandPadState = { 'sh-signature': false, 'sh-thumbprint': false };
+  function setupSecondhandPad(id) {
+    const canvas = $(id); if (!canvas || canvas.dataset.ready === '1') return;
+    canvas.dataset.ready = '1';
+    const ctx = canvas.getContext('2d');
+    ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#172b45';
+    let drawing = false;
+    const point = ev => { const r=canvas.getBoundingClientRect(); return {x:(ev.clientX-r.left)*canvas.width/r.width,y:(ev.clientY-r.top)*canvas.height/r.height}; };
+    canvas.addEventListener('pointerdown',ev=>{ev.preventDefault();drawing=true;canvas.setPointerCapture?.(ev.pointerId);const p=point(ev);ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p.x+.1,p.y+.1);ctx.stroke();secondhandPadState[id]=true;});
+    canvas.addEventListener('pointermove',ev=>{if(!drawing)return;ev.preventDefault();const p=point(ev);ctx.lineTo(p.x,p.y);ctx.stroke();});
+    const stop=()=>{drawing=false;};canvas.addEventListener('pointerup',stop);canvas.addEventListener('pointercancel',stop);canvas.addEventListener('lostpointercapture',stop);
+  }
+  function clearSecondhandPad(id) {
+    const canvas=$(id);if(!canvas)return;canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);secondhandPadState[id]=false;
+  }
+  setupSecondhandPad('sh-signature');setupSecondhandPad('sh-thumbprint');
+  document.querySelectorAll('[data-clear-pad]').forEach(btn=>btn.addEventListener('click',()=>clearSecondhandPad(btn.dataset.clearPad)));
+  function watchSecondhandPhoto(inputId,previewId) {
+    const input=$(inputId),preview=$(previewId);if(!input||!preview)return;
+    input.addEventListener('change',()=>{const file=input.files?.[0];if(!file){preview.classList.add('hidden');return;}preview.src=URL.createObjectURL(file);preview.classList.remove('hidden');});
+  }
+  watchSecondhandPhoto('sh-id-photo','sh-id-preview');watchSecondhandPhoto('sh-seller-photo','sh-seller-preview');watchSecondhandPhoto('sh-phone-photo','sh-phone-preview');
+  async function secondhandImageData(inputId,required=false) {
+    const file=$(inputId)?.files?.[0];if(!file){if(required)throw new Error('Please attach the required seller ID and phone photos.');return null;}
+    if(!file.type.startsWith('image/'))throw new Error('Choose an image file for '+inputId.replace('sh-','').replaceAll('-',' ')+'.');
+    return await new Promise((resolve,reject)=>{
+      const reader=new FileReader();reader.onerror=()=>reject(new Error('Could not read an uploaded photo.'));
+      reader.onload=()=>{const img=new Image();img.onerror=()=>reject(new Error('This photo format is not supported. Please use JPG or PNG.'));
+        img.onload=()=>{const scale=Math.min(1,700/Math.max(img.width,img.height));const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(img.width*scale));canvas.height=Math.max(1,Math.round(img.height*scale));const ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);let data=canvas.toDataURL('image/jpeg',.48);if(data.length>56000){const s=.72;canvas.width=Math.max(1,Math.round(canvas.width*s));canvas.height=Math.max(1,Math.round(canvas.height*s));ctx.drawImage(img,0,0,canvas.width,canvas.height);data=canvas.toDataURL('image/jpeg',.36);}if(data.length>85000)reject(new Error('Photo is too large. Please take a clearer, closer photo with less background.'));else resolve(data);};
+        img.src=String(reader.result||'');};reader.readAsDataURL(file);
+    });
+  }
+  async function checkSecondhandBiometricSupport() {
+    const status=$('sh-biometric-status');if(!status)return;
+    try{
+      const supported=!!(window.PublicKeyCredential&&window.isSecureContext&&await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable());
+      status.textContent=supported?'This device reports a built-in secure authenticator (it may use fingerprint, face recognition or device PIN). This check does not capture or identify a fingerprint.':'No built-in platform biometric authenticator was detected. Continue with the seller signature and finger-drawn thumbprint mark.';
+      status.classList.toggle('available',supported);
+    }catch{status.textContent='Device biometric availability could not be checked. Use the signature and finger-drawn thumbprint mark.';}
+  }
+  checkSecondhandBiometricSupport();
+  $('secondhand-open-card')?.addEventListener('click',()=>{
+    if(state.role!=='owner'){showNotice('Only the shop owner can record second-hand phone purchases.',true);return;}
+    $('shop-directory-card')?.classList.add('hidden');
+    document.querySelector('#shop-home > .shop-directory-card')?.classList.add('hidden');
+    $('shop-product-results')?.classList.add('hidden');
+    $('secondhand-open-card')?.classList.add('hidden');
+    $('secondhand-panel')?.classList.remove('hidden');
+    checkSecondhandBiometricSupport();
+  });
+  $('secondhand-back')?.addEventListener('click',()=>{
+    $('secondhand-panel')?.classList.add('hidden');
+    document.querySelector('#shop-home > .shop-directory-card')?.classList.remove('hidden');
+    $('secondhand-open-card')?.classList.remove('hidden');
+    $('secondhand-history')?.classList.add('hidden');
+    $('secondhand-saved-record')?.classList.add('hidden');
+  });
+  function renderSecondhandRecord(d) {
+    const target=$('secondhand-saved-record');if(!target)return;
+    const safe=v=>escapeHtml(v??'—');
+    const date=d.createdAt?new Date(d.createdAt).toLocaleString():'Recorded by AURORA';
+    target.innerHTML=`<div class="secondhand-record-print"><div class="secondhand-record-head"><div><p class="eyebrow">AURORA · SHOP RECORD</p><h2>SECOND-HAND PHONE SALE DECLARATION</h2><p>Declaration reference: <strong>${safe(d.declarationRef)}</strong></p></div><span class="secondhand-record-stamp">DECLARED</span></div>
+      <p><strong>Recorded:</strong> ${safe(date)}</p><h3>Seller identification</h3><p><strong>Name:</strong> ${safe(d.sellerName)} · <strong>National ID:</strong> ${safe(d.nationalId)}</p><p><strong>Phone:</strong> ${safe(d.sellerPhone)} · <strong>Alternative:</strong> ${safe(d.alternativePhone)}</p><p><strong>Address:</strong> ${safe(d.residentialAddress)}</p>
+      <h3>Phone details</h3><p><strong>Make/model:</strong> ${safe(d.phoneMakeModel)} · <strong>Condition:</strong> ${safe(d.condition)}</p><p><strong>IMEI 1:</strong> ${safe(d.imei1)} · <strong>IMEI 2:</strong> ${safe(d.imei2)} · <strong>Serial:</strong> ${safe(d.serialNumber)}</p><p><strong>Purchase price:</strong> KSh ${safe(Number(d.purchasePriceKes).toLocaleString())}</p><p><strong>Reason receipt unavailable:</strong> ${safe(d.noReceiptReason)}</p>
+      <h3>Seller's declaration</h3><p>I declare that I am the lawful owner of this phone or have full legal authority to sell it; that, to the best of my knowledge, it is not stolen, unlawfully obtained, fraudulently acquired or subject to an ownership dispute; and that the IMEI and serial details I have supplied are true and have not knowingly been altered. I have explained why I cannot provide the original purchase receipt. I accept responsibility for false statements, fraudulent representation or an unlawful ownership claim connected with this sale, and I agree to cooperate with lawful investigations and provide further information when lawfully required.</p>
+      <div class="secondhand-record-images">${d.idPhotoData?`<figure><img src="${d.idPhotoData}" alt="Seller ID"><figcaption>Seller ID</figcaption></figure>`:''}${d.sellerPhotoData?`<figure><img src="${d.sellerPhotoData}" alt="Seller photo"><figcaption>Seller photo</figcaption></figure>`:''}${d.phonePhotoData?`<figure><img src="${d.phonePhotoData}" alt="Phone photo"><figcaption>Phone and identifying details</figcaption></figure>`:''}</div>
+      <div class="secondhand-record-signatures"><figure><strong>Seller signature</strong><img src="${d.signatureData}" alt="Seller signature"></figure><figure><strong>Seller thumbprint mark (drawn)</strong><img src="${d.thumbprintData}" alt="Drawn thumbprint mark"></figure></div>
+      <p><strong>Witness:</strong> ${safe(d.witnessName)} · ${safe(d.witnessPhone)}</p><p class="tiny">The seller confirmed the declaration electronically. This record supports shop record-keeping; it does not itself determine legal ownership or guarantee a court outcome.</p></div><button id="secondhand-print-button" class="btn btn-primary full" type="button">Print / Save as PDF</button>`;
+    target.classList.remove('hidden');
+    $('secondhand-print-button')?.addEventListener('click',()=>window.print());
+    target.scrollIntoView({behavior:'smooth',block:'start'});
+  }
+  $('secondhand-form')?.addEventListener('submit',async ev=>{
+    ev.preventDefault();const message=$('secondhand-message'),button=$('secondhand-submit');
+    if(!secondhandPadState['sh-signature']||!secondhandPadState['sh-thumbprint']){message.textContent='The seller must complete both the signature and thumbprint mark on the screen.';message.style.color='#a12b22';return;}
+    if(!$('sh-declaration-accepted').checked){message.textContent='The seller must confirm the declaration before submission.';message.style.color='#a12b22';return;}
+    const imei1=$('sh-imei1').value.replace(/\s+/g,''),imei2=$('sh-imei2').value.replace(/\s+/g,'');
+    if(!/^\d{14,16}$/.test(imei1)|| (imei2&&!/^\d{14,16}$/.test(imei2))){message.textContent='Check that the IMEI number contains 14 to 16 digits.';message.style.color='#a12b22';return;}
+    button.disabled=true;button.textContent='Saving protected declaration…';message.textContent='Preparing evidence and saving the seller declaration…';message.style.color='';
+    try{
+      const [idPhotoData,phonePhotoData,sellerPhotoData]=await Promise.all([secondhandImageData('sh-id-photo',true),secondhandImageData('sh-phone-photo',true),secondhandImageData('sh-seller-photo',false)]);
+      const payload={sellerName:$('sh-seller-name').value.trim(),nationalId:$('sh-national-id').value.trim(),sellerPhone:$('sh-seller-phone').value.trim(),alternativePhone:$('sh-alt-phone').value.trim(),residentialAddress:$('sh-address').value.trim(),phoneMakeModel:$('sh-model').value.trim(),imei1,imei2,serialNumber:$('sh-serial').value.trim(),condition:$('sh-condition').value,purchasePriceKes:Number($('sh-price').value),noReceiptReason:$('sh-no-receipt').value.trim(),sellerPhotoData,idPhotoData,phonePhotoData,signatureData:$('sh-signature').toDataURL('image/png'),thumbprintData:$('sh-thumbprint').toDataURL('image/png'),witnessName:$('sh-witness-name').value.trim(),witnessPhone:$('sh-witness-phone').value.trim(),declarationAccepted:true};
+      const result=await request('/api/v1/second-hand-phone-declarations',{method:'POST',body:JSON.stringify(payload)});
+      message.textContent='Declaration saved successfully. Reference: '+(result.declaration?.declarationRef||'saved');message.style.color='#176b52';
+      renderSecondhandRecord(result.declaration);
+      $('secondhand-form').reset();['sh-signature','sh-thumbprint'].forEach(clearSecondhandPad);
+      ['sh-id-preview','sh-seller-preview','sh-phone-preview'].forEach(id=>$(id)?.classList.add('hidden'));
+      $('secondhand-history')?.classList.add('hidden');
+    }catch(err){message.textContent=err.message||'Could not save the declaration. Please check the details and try again.';message.style.color='#a12b22';}
+    finally{button.disabled=false;button.textContent='Save Seller Declaration & Record Phone';}
+  });
+  $('secondhand-history-toggle')?.addEventListener('click',async()=>{
+    const panel=$('secondhand-history');if(!panel)return;
+    if(!panel.classList.contains('hidden')){panel.classList.add('hidden');return;}
+    panel.classList.remove('hidden');panel.innerHTML='<p class="muted">Loading saved declarations…</p>';
+    try{
+      const data=await request('/api/v1/second-hand-phone-declarations');
+      const rows=data.declarations||[];
+      if(!rows.length){panel.innerHTML='<p class="muted">No second-hand phone declarations have been saved for this shop yet.</p>';return;}
+      panel.innerHTML='<h3>Saved seller declarations</h3>'+rows.map(d=>`<button type="button" class="secondhand-history-row" data-declaration-id="${escapeHtml(d.id)}"><strong>${escapeHtml(d.sellerName)}</strong><span>${escapeHtml(d.phoneMakeModel)} · IMEI ${escapeHtml(d.imei1)}</span><small>${escapeHtml(d.declarationRef)} · ${escapeHtml(d.createdAt?new Date(d.createdAt).toLocaleString():'')}</small></button>`).join('');
+    }catch(err){panel.innerHTML='<p class="error">'+escapeHtml(err.message||'Could not load declarations.')+'</p>';}
+  });
+  $('secondhand-history')?.addEventListener('click',async ev=>{
+    const btn=ev.target.closest('[data-declaration-id]');if(!btn)return;
+    btn.disabled=true;btn.textContent='Loading signed record…';
+    try{const result=await request('/api/v1/second-hand-phone-declarations/'+encodeURIComponent(btn.dataset.declarationId));renderSecondhandRecord(result.declaration);}
+    catch(err){btn.disabled=false;btn.textContent=err.message||'Could not open this record.';}
+  });
+
   $('shop-product-search-form')?.addEventListener('submit',async e=>{
     e.preventDefault();
     const query=$('shop-product-search').value.trim(),results=$('shop-product-results');
