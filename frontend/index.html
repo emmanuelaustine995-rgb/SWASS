@@ -104,14 +104,20 @@
           <div><p class="eyebrow">AURORA · SHOP PROTECTION</p><h2>Second-Hand Phone Declaration</h2><p class="muted small">Complete this with the seller before accepting the phone.</p></div>
           <button id="secondhand-back" class="btn btn-light" type="button">← Back to Shop</button>
         </div>
-        <div class="secondhand-warning"><strong>Important:</strong> Do not accept a phone until the seller's identity, IMEI, ownership explanation and signed declaration have been recorded and checked.</div>
+        <div class="secondhand-warning"><strong>Important:</strong> Do not accept a phone until the seller's identity, IMEI, ownership and signed record have been checked.</div>
         <form id="secondhand-form" class="secondhand-form">
+          <fieldset><legend>Choose receipt status</legend>
+            <label>Does the seller have the original purchase receipt?
+              <select id="sh-sale-type" required><option value="without_receipt">No original receipt — ownership declaration required</option><option value="with_receipt">Yes — attach original receipt photograph</option></select>
+            </label>
+            <p class="tiny muted">Both options use the same protected shop record. The receipt photograph is saved with the seller's ID, photo, phone details and electronic signature.</p>
+          </fieldset>
           <fieldset><legend>1 · Seller identification</legend>
             <label>Full legal name<input id="sh-seller-name" maxlength="160" autocomplete="name" required placeholder="Name as shown on ID"></label>
             <div class="secondhand-fields"><label>National ID / Passport number<input id="sh-national-id" maxlength="40" required></label><label>Seller phone number<input id="sh-seller-phone" type="tel" maxlength="30" autocomplete="tel" required placeholder="07XX XXX XXX"></label></div>
             <div class="secondhand-fields"><label>Alternative phone (optional)<input id="sh-alt-phone" type="tel" maxlength="30"></label><label>Residential address / area<input id="sh-address" maxlength="300" required placeholder="Estate, town, county"></label></div>
             <label>Seller ID photo (front) <input id="sh-id-photo" type="file" accept="image/*" capture="environment" required></label><img id="sh-id-preview" class="secondhand-photo-preview hidden" alt="Seller ID preview">
-            <label>Seller photo (optional, with consent)<input id="sh-seller-photo" type="file" accept="image/*" capture="user"></label><img id="sh-seller-preview" class="secondhand-photo-preview hidden" alt="Seller photo preview">
+            <label>Seller photo (required, with consent)<input id="sh-seller-photo" type="file" accept="image/*" capture="user" required></label><img id="sh-seller-preview" class="secondhand-photo-preview hidden" alt="Seller photo preview">
           </fieldset>
           <fieldset><legend>2 · Phone being sold</legend>
             <label>Phone make and model<input id="sh-model" maxlength="160" required placeholder="e.g. Samsung Galaxy A32"></label>
@@ -119,7 +125,7 @@
             <label>Serial number (if available)<input id="sh-serial" maxlength="100"></label>
             <div class="secondhand-fields"><label>Phone condition<select id="sh-condition" required><option value="">Choose condition</option><option>New</option><option>Excellent</option><option>Good</option><option>Fair</option><option>Faulty</option></select></label><label>Agreed purchase price (KSh)<input id="sh-price" type="number" min="1" step="1" inputmode="numeric" required></label></div>
             <label>Photo of the phone and its IMEI screen / box<input id="sh-phone-photo" type="file" accept="image/*" capture="environment" required></label><img id="sh-phone-preview" class="secondhand-photo-preview hidden" alt="Phone photo preview">
-            <label>Why is the original purchase receipt unavailable?<textarea id="sh-no-receipt" rows="3" maxlength="1000" required placeholder="Seller must explain clearly…"></textarea></label>
+            <div id="sh-no-receipt-wrap"><label>Why is the original purchase receipt unavailable?<textarea id="sh-no-receipt" rows="3" maxlength="1000" required placeholder="Seller must explain clearly…"></textarea></label></div><div id="sh-receipt-photo-wrap" class="hidden"><label>Photograph of original purchase receipt<input id="sh-receipt-photo" type="file" accept="image/*" capture="environment"></label><img id="sh-receipt-preview" class="secondhand-photo-preview hidden" alt="Original receipt photo preview"></div>
           </fieldset>
           <fieldset><legend>3 · Seller's ownership and responsibility declaration</legend>
             <div class="secondhand-legal-copy">I declare that I am the lawful owner of this phone or have full legal authority to sell it; that, to the best of my knowledge, it is not stolen, unlawfully obtained, fraudulently acquired or subject to an ownership dispute; and that the IMEI and serial details I have supplied are true and have not knowingly been altered. I have explained why I cannot provide the original purchase receipt. I accept responsibility for false statements, fraudulent representation or an unlawful ownership claim connected with this sale, and I agree to cooperate with lawful investigations and provide further information when lawfully required. I understand that this declaration may be retained and disclosed to lawful authorities when required.</div>
