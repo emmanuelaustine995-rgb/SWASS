@@ -855,3 +855,18 @@ html body.workspace-active #shop-home.shop-home:not(.hidden){overflow-y:auto!imp
 #dashboard-payment-panel .stack{max-width:520px;margin:0 auto}
 #dashboard-payment-panel input[readonly]{font-weight:800;font-size:18px;color:#075bd8;background:#f2f7ff;border:1px solid #cbdcf7}
 #dashboard-payment-panel input[type=tel],#dashboard-payment-panel input[type=number]{min-height:44px}
+
+/* Compact, isolated Issue Receipt flow: only its own screen is visible. */
+html body.workspace-active #pos-view.workspace-issue-mode > :not(.page-heading):not(#notice):not(.pos-grid){display:none!important;visibility:hidden!important;pointer-events:none!important}
+html body.workspace-active #pos-view.workspace-issue-mode .pos-grid > :not(.cart-panel){display:none!important}
+html body.workspace-active #pos-view.workspace-issue-mode .cart-panel{display:block!important;width:100%!important;max-width:680px!important;margin:0 auto!important}
+.simple-sale-item-form{display:grid;gap:10px}
+.simple-serial-row,.simple-cart-serial{display:flex;gap:7px;align-items:center}
+.simple-serial-row input,.simple-cart-serial input{flex:1;min-width:0}
+.add-sale-product-btn{justify-self:start;min-height:34px;padding:6px 14px!important;font-size:12px!important}
+.simple-cart-row{padding:10px 0!important}
+.simple-cart-serial{margin-top:7px}
+.simple-cart-serial input{min-height:34px;font-size:12px}
+#add-another-item{min-height:34px!important;padding:6px 10px!important;font-size:12px!important}
+#checkout-open{margin-top:10px}
+#product-modal .modal-card{max-width:440px!important}
