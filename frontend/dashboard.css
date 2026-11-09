@@ -736,3 +736,11 @@ html body.workspace-active #owner-dashboard-view.profile-workspace-mode > #profi
 html body.workspace-active #owner-dashboard-view.profile-workspace-mode > #owner-staff-area.hidden {
   display: none !important;
 }
+
+
+/* Compact receipt-history shortcut beneath Issue / Recover actions. */
+.receipt-history-panel{margin:12px 0 0}
+.receipt-history-toggle{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:8px 15px;border:0;border-radius:10px;background:linear-gradient(110deg,#ec4899,#f472b6,#fb7185);color:#fff;font:inherit;font-size:12px;font-weight:800;box-shadow:0 5px 14px #ec489933;cursor:pointer}
+.receipt-history-toggle:active{transform:scale(.985)}
+#history-content.history-panel{margin-top:10px}
+#history-content.history-panel.hidden{display:none!important}
