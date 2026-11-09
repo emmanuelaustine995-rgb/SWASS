@@ -292,7 +292,7 @@
   });
   function showWorkspaceScreen(screen){
     if(!state.token){showLogin();return;}
-    if(!['dashboard','receipts','profile','shop'].includes(screen))screen='dashboard';
+    if(!['dashboard','receipts','profile','shop','subscription'].includes(screen))screen='dashboard';
     try{localStorage.setItem('swass-active-workspace-v1',screen);}catch{}
     const owner=document.getElementById('owner-dashboard-view'),pos=$('pos-view');
     const posGrid=document.querySelector('.pos-grid');
@@ -301,14 +301,15 @@
     [history,crm,lookup].forEach(el=>el?.classList.add('hidden'));
     const profile=$('profile-panel'),receiptHome=$('receipts-home'),ownerHome=$('owner-home');
     const dashboardBusinessCard=$('dashboard-business-card');
+    const subscriptionHome=$('subscription-home');
     const staffSummary=$('staff-sales-summary');
     // Hide every workspace root before opening exactly one destination.
     // This also prevents content retained by a previous tab from remaining visible.
-    [dashboardBusinessCard,ownerHome,receiptHome,pos,owner,$('platform-referral-admin'),$('shop-home'),staffSummary,$('staff-profile-panel'),$('account-profile-menu')].forEach(el=>el?.classList.add('hidden'));
+    [dashboardBusinessCard,ownerHome,receiptHome,pos,owner,$('platform-referral-admin'),$('shop-home'),subscriptionHome,staffSummary,$('staff-profile-panel'),$('account-profile-menu')].forEach(el=>el?.classList.add('hidden'));
     dashboardBusinessCard?.classList.add('hidden');
     pos?.classList.remove('profile-workspace-mode');
     owner?.classList.remove('profile-workspace-mode');
-    [history,crm,lookup,receiptHome,ownerHome,profile,$('platform-referral-admin'),$('shop-home')].forEach(el=>el?.classList.add('hidden'));
+    [history,crm,lookup,receiptHome,ownerHome,profile,$('platform-referral-admin'),$('shop-home'),subscriptionHome].forEach(el=>el?.classList.add('hidden'));
     owner?.classList.add('hidden');
     pos?.classList.add('hidden');
     document.getElementById('account-profile-menu')?.classList.add('hidden');
@@ -326,6 +327,16 @@
       }else{
         staffSummary?.classList.remove('hidden');
         void loadStaffSalesSummary();
+      }
+    }else if(screen==='subscription'){
+      if(!['owner','manager'].includes(state.role)){
+        showNotice('Subscription and payment management is available to the business owner or manager.',true);
+        screen='dashboard';
+        ownerHome?.classList.remove('hidden');
+        void loadOwnerHomeSummary();
+      }else{
+        subscriptionHome?.classList.remove('hidden');
+        syncTumaFields();
       }
     }else if(screen==='receipts'){
       receiptHome?.classList.remove('hidden');
