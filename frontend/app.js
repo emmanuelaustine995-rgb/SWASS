@@ -1072,6 +1072,7 @@
     if(performance)void loadOwnerStaffPerformance();
   });
   $('workspace-nav').addEventListener('click',e=>{const b=e.target.closest('[data-workspace]');if(b)showWorkspaceScreen(b.dataset.workspace);});
+  $('owner-home-subscription')?.addEventListener('click',()=>showWorkspaceScreen('subscription'));
   $('owner-home-issue')?.addEventListener('click',()=>{showWorkspaceScreen('receipts');$('receipts-home').classList.add('hidden');$('pos-view').classList.remove('hidden');$('pos-view').classList.add('workspace-issue-mode');$('history-panel').classList.add('hidden');$('owner-customers-section')?.classList.add('hidden');document.querySelector('.customer-lookup-panel')?.classList.add('hidden');$('products-panel').classList.add('hidden');closeSaleItemForm();});
   $('back-to-receipts').addEventListener('click',()=>{
     $('pos-view').classList.add('hidden');
