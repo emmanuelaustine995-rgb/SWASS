@@ -826,8 +826,19 @@
   }
   updateSignupAccountType();
   function updateLoginAccountType(){
-    const staffSelected = $('login-account-type').value === 'staff';
+    const selected = $('login-account-type').value;
+    const staffSelected = selected !== 'owner';
     $('owner-register-entry').classList.toggle('hidden', staffSelected);
+    document.querySelectorAll('[data-login-role]').forEach(tab=>{
+      const active=tab.dataset.loginRole===selected;
+      tab.classList.toggle('active',active);
+      tab.setAttribute('aria-pressed',String(active));
+    });
+    if(selected==='customer'){
+      $('login-error').textContent='Customer sign-in is not available yet. Customer accounts do not have passwords enabled.';
+    }else if($('login-error').textContent.startsWith('Customer sign-in')){
+      $('login-error').textContent='';
+    }
     if(staffSelected && !$('register-form').classList.contains('hidden')){
       $('register-form').classList.add('hidden');
       $('login-form').classList.remove('hidden');
@@ -840,6 +851,7 @@
     $('register-form').classList.add('hidden');$('signup-otp-panel').classList.add('hidden');$('register-fields').classList.remove('hidden');$('register-submit').classList.remove('hidden');$('login-form').classList.remove('hidden');$('owner-register-entry').classList.toggle('hidden',$('login-account-type').value==='staff');$('register-error').textContent='';$('login-error').textContent='';
   });
   $('login-account-type').addEventListener('change', updateLoginAccountType);
+  document.querySelectorAll('[data-login-role]').forEach(tab=>tab.addEventListener('click',()=>{ $('login-account-type').value=tab.dataset.loginRole; updateLoginAccountType(); }));
   updateLoginAccountType();
   let signupResendTimer = null;
   let signupResendSeconds = 0;
@@ -951,6 +963,7 @@
       const loginDigits=loginPhone.replace(/\D/g,'');
       if(!/^(?:254\d{9}|0\d{9}|\d{9})$/.test(loginDigits))throw new Error('Enter a valid Kenyan phone number, for example 0712345678.');
       if(!$('login-password').value)throw new Error('Enter your password to sign in.');
+      if($('login-account-type').value==='customer')throw new Error('Customer sign-in is not available yet. Please use the shop owner or freelancer account tab.');
       const data=await request('/api/v1/auth/login',{
         method:'POST',
         // Render free instances can take over 50 seconds to wake. Allow enough
