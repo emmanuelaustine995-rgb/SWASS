@@ -329,6 +329,11 @@
       $('open-recover-receipt')?.classList.remove('hidden');
     }else if(screen==='shop'){
       $('shop-home')?.classList.remove('hidden');
+      const isShopOwner = state.role === 'owner';
+      $('shop-add-products')?.classList.toggle('hidden', !isShopOwner);
+      $('shop-owner-note')?.classList.toggle('hidden', isShopOwner);
+      if($('shop-directory-title'))$('shop-directory-title').textContent=isShopOwner?'Add Products':'Search Products';
+      if($('shop-product-results'))$('shop-product-results').classList.add('hidden');
     }else if(screen==='profile'){
       renderAccountProfile();
       if(['owner','manager','vendor','freelancer'].includes(state.role)){
@@ -1082,5 +1087,56 @@
   window.setInterval(checkSessionExpiry,30000);
   // API URL is configurable without rebuilding: set the existing API URL in frontend/config.js before app.js.
   if(!API){ showNotice('API address is not configured yet. Check the existing API URL in frontend/config.js.',true); }
+
+  // AURORA public shop directory: only shop owners may publish listings;
+  // all signed-in platform account types may search and contact a listed shop.
+  $('shop-search-toggle')?.addEventListener('click',()=>{
+    const panel=$('shop-product-search-form');
+    const opening=panel?.classList.contains('hidden');
+    panel?.classList.toggle('hidden',!opening);
+    if(opening)$('shop-product-search')?.focus();
+  });
+  $('shop-add-products')?.addEventListener('submit',async e=>{
+    e.preventDefault();
+    if(state.role!=='owner'){ $('shop-product-message').textContent='Only the shop owner can add public products.';return; }
+    const btn=$('shop-product-submit'),message=$('shop-product-message');
+    const payload={
+      name:$('shop-product-name').value.trim(),
+      priceKes:Number($('shop-product-price').value),
+      stockQty:Number($('shop-product-quantity').value)
+    };
+    if(!payload.name||!Number.isSafeInteger(payload.priceKes)||payload.priceKes<1||!Number.isSafeInteger(payload.stockQty)||payload.stockQty<1){
+      message.textContent='Enter the product name, a valid price and available quantity.';return;
+    }
+    btn.disabled=true;btn.textContent='Adding product…';message.textContent='';
+    try{
+      const result=await request('/api/v1/products/directory',{method:'POST',body:JSON.stringify(payload)});
+      $('shop-add-products').reset();$('shop-product-quantity').value='1';
+      message.textContent=(result.product?.name||payload.name)+' has been listed for customers across AURORA.';
+      message.style.color='#176b52';
+    }catch(err){message.textContent=err.message||'Could not add this product.';message.style.color='#a12b22';}
+    finally{btn.disabled=false;btn.textContent='＋ Add Products';}
+  });
+  $('shop-product-search-form')?.addEventListener('submit',async e=>{
+    e.preventDefault();
+    const query=$('shop-product-search').value.trim(),results=$('shop-product-results');
+    if(query.length<2){results.classList.remove('hidden');results.innerHTML='<p class="empty">Enter at least two letters to search for a product.</p>';return;}
+    results.classList.remove('hidden');results.innerHTML='<p class="empty">Searching shops…</p>';
+    try{
+      const data=await request('/api/v1/products/directory/search?q='+encodeURIComponent(query));
+      const products=data.products||[];
+      if(!products.length){results.innerHTML='<p class="empty">No shop has listed “'+escapeHtml(query)+'” yet. Try another product name.</p>';return;}
+      results.innerHTML='<h2>Shops with this product</h2>'+products.map(p=>{
+        const phone=String(p.shopPhone||'').trim();
+        const tel=phone.replace(/[^0-9+]/g,'');
+        return '<article class="shop-product-result-card"><div class="shop-product-result-top"><strong>'+escapeHtml(p.name)+'</strong><b>'+money(p.priceKes)+'</b></div>'+
+          '<p class="shop-result-business">'+escapeHtml(p.businessName||'Registered shop')+(p.storeName?' · '+escapeHtml(p.storeName):'')+'</p>'+
+          (p.storeLocation?'<p class="shop-result-location">'+escapeHtml(p.storeLocation)+'</p>':'')+
+          '<div class="shop-result-contact"><span>Shop number: <strong>'+escapeHtml(phone||'Not registered')+'</strong></span>'+
+          (tel?'<a class="shop-enquiry-link" href="tel:'+escapeHtml(tel)+'">Enquire</a>':'')+'</div></article>';
+      }).join('');
+    }catch(err){results.innerHTML='<p class="empty">'+escapeHtml(err.message||'Product search failed. Please try again.')+'</p>';}
+  });
+
   renderCart();void restoreSession();
 })();
