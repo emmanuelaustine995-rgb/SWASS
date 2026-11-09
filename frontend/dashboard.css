@@ -701,3 +701,38 @@ body.workspace-active #owner-dashboard-view.profile-workspace-mode:not(.hidden) 
   visibility:visible!important;
   pointer-events:auto!important;
 }
+
+
+/* HARD PAGE ISOLATION: prevent layout-specific display rules from leaking other tabs.
+   Profile is nested in the legacy dashboard container; POS also contains legacy CRM/history panels. */
+html body.workspace-active .shell > #owner-home.hidden,
+html body.workspace-active .shell > #receipts-home.hidden,
+html body.workspace-active .shell > #shop-home.hidden,
+html body.workspace-active .shell > #platform-referral-admin.hidden,
+html body.workspace-active .shell > #dashboard-business-card.hidden,
+html body.workspace-active .shell > #pos-view.hidden,
+html body.workspace-active .shell > #owner-dashboard-view.hidden,
+html body.workspace-active .shell > #staff-profile-panel.hidden,
+html body.workspace-active .shell > #account-profile-menu.hidden {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* The issue-receipt screen must not append history, CRM or customer-lookup pages underneath it. */
+html body.workspace-active #pos-view.workspace-issue-mode > #history-panel,
+html body.workspace-active #pos-view.workspace-issue-mode > #owner-customers-section,
+html body.workspace-active #pos-view.workspace-issue-mode > .customer-lookup-panel {
+  display: none !important;
+}
+
+/* Profile mode contains only the three profile cards, never the analytics dashboard below them. */
+html body.workspace-active #owner-dashboard-view.profile-workspace-mode > :not(#profile-panel):not(#owner-staff-area) {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+html body.workspace-active #owner-dashboard-view.profile-workspace-mode > #profile-panel.hidden,
+html body.workspace-active #owner-dashboard-view.profile-workspace-mode > #owner-staff-area.hidden {
+  display: none !important;
+}
