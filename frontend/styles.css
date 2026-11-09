@@ -685,3 +685,5 @@ body.workspace-active #shop-home.shop-home{
   body.workspace-active #workspace-nav.bottom-nav{gap:5px!important;padding-inline:7px!important}
   body.workspace-active #workspace-nav.bottom-nav button{border-radius:12px!important;min-height:50px!important}
 }
+
+body.workspace-active #shop-home.shop-home.hidden{display:none!important}
