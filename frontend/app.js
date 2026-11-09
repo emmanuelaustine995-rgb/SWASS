@@ -585,10 +585,14 @@
   document.querySelectorAll('[data-payment-purpose]').forEach(tab => tab.addEventListener('click', () => {
     const purpose = tab.dataset.paymentPurpose;
     const selector = $('owner-mpesa-purpose');
-    if (selector) { selector.value = purpose; selector.dispatchEvent(new Event('change')); }
+    if (selector) selector.value = purpose;
+    if (purpose === 'subscription' && $('owner-subscription-plan')) $('owner-subscription-plan').value = tab.dataset.subscriptionPlan || 'monthly';
+    syncTumaFields();
+    $('dashboard-payment-intro').textContent = purpose === 'subscription' ? 'Subscription payment: confirm your plan and amount, enter the M-Pesa number, then approve the STK prompt on your phone.' : 'Receipt wallet top-up: enter an amount of at least KSh 4, add your M-Pesa number, then approve the STK prompt on your phone.';
     dashboardPaymentPanel?.classList.remove('hidden');
     document.querySelectorAll('[data-payment-purpose]').forEach(item => item.classList.toggle('active', item === tab));
     dashboardPaymentPanel?.scrollIntoView({behavior:'smooth',block:'nearest'});
+    $('owner-mpesa-phone')?.focus({preventScroll:true});
   }));
   $('dashboard-payment-close')?.addEventListener('click', () => {
     dashboardPaymentPanel?.classList.add('hidden');
@@ -601,9 +605,17 @@
     const isSubscription = tumaPurpose?.value === 'subscription';
     $('owner-topup-amount-wrap')?.classList.toggle('hidden', isSubscription);
     $('owner-plan-wrap')?.classList.toggle('hidden', !isSubscription);
+    $('owner-payment-amount-wrap')?.classList.toggle('hidden', !isSubscription);
+    const plan = $('owner-subscription-plan')?.value || 'monthly';
+    const fixedAmount = plan === 'yearly' ? 900 : 100;
+    if ($('owner-payment-amount-display')) $('owner-payment-amount-display').value = fixedAmount.toLocaleString('en-KE');
+    const topup = Number($('owner-topup-amount')?.value || 0);
+    if (!isSubscription && $('owner-payment-amount-display')) $('owner-payment-amount-display').value = topup.toLocaleString('en-KE');
   };
   if (tumaPurpose) {
     tumaPurpose.addEventListener('change', syncTumaFields);
+    $('owner-subscription-plan')?.addEventListener('change', syncTumaFields);
+    $('owner-topup-amount')?.addEventListener('input', syncTumaFields);
     syncTumaFields();
   }
   if (tumaForm) tumaForm.addEventListener('submit', async (event) => {
