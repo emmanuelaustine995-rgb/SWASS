@@ -463,28 +463,16 @@ body:not(.workspace-active) #workspace-nav,
 @media(max-width:600px){#pos-view.profile-workspace-mode #owner-dashboard-view{padding:0 0 22px!important;overflow-y:auto!important;}#pos-view.profile-workspace-mode #profile-panel{overflow:visible!important;padding:7px!important;}#pos-view.profile-workspace-mode #profile-panel>#profile-form{overflow:visible!important;}}
 
 
-/* PROFILE WORKSPACE REBUILD: independent screen directly under the E-RECEIPT header.
-   Do not route Profile through the receipt/POS container. */
-body.workspace-active #owner-dashboard-view.profile-workspace-mode{
-  order:-10!important;display:flex!important;flex:1 1 auto!important;
-  flex-direction:column!important;align-items:stretch!important;justify-content:flex-start!important;
-  width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;
-  margin:0!important;padding:0 0 18px!important;gap:8px!important;
-  overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior:contain!important;
-}
-body.workspace-active #owner-dashboard-view.profile-workspace-mode> :not(#profile-panel):not(#owner-staff-area){display:none!important}
-body.workspace-active #owner-dashboard-view.profile-workspace-mode>#profile-panel{
-  display:flex!important;order:1!important;flex:0 0 auto!important;flex-direction:column!important;
-  width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;
-  margin:0!important;padding:8px!important;overflow:visible!important;
-}
-body.workspace-active #owner-dashboard-view.profile-workspace-mode>#profile-panel>.section-head{order:1!important;margin:0!important}
-body.workspace-active #owner-dashboard-view.profile-workspace-mode>#profile-panel>#profile-form{order:2!important;display:grid!important;flex:0 0 auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;margin:0!important;align-content:start!important}
-body.workspace-active #owner-dashboard-view.profile-workspace-mode>#profile-panel>.profile-account-summary{order:3!important;flex:0 0 auto!important;margin:0!important}
-body.workspace-active #owner-dashboard-view.profile-workspace-mode>#owner-staff-area:not(.hidden){display:block!important;order:4!important;flex:0 0 auto!important;width:100%!important;max-width:100%!important;height:auto!important;max-height:none!important;overflow:visible!important;margin:0!important;padding:8px!important}
+
+/* Profile layout: directly under the E-RECEIPT header, with three distinct cards. */
+body.workspace-active .shell{gap:0!important;padding-top:0!important}
+body.workspace-active .shell>#owner-dashboard-view.profile-workspace-mode{order:-20!important;display:flex!important;flex:1 1 auto!important;flex-direction:column!important;justify-content:flex-start!important;align-items:stretch!important;gap:9px!important;width:100%!important;min-height:0!important;max-height:100%!important;margin:0!important;padding:0 0 12px!important;overflow-x:hidden!important;overflow-y:auto!important}
+body.workspace-active .shell>#workspace-nav{order:20!important}
+body.workspace-active #owner-dashboard-view.profile-workspace-mode>#profile-panel{display:flex!important;flex:0 0 auto!important;flex-direction:column!important;gap:9px!important;width:100%!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;overflow:visible!important}
+body.workspace-active #owner-dashboard-view.profile-workspace-mode .profile-shop-card{order:1!important;display:block!important;margin:0!important;padding:14px!important;border:1px solid rgba(119,161,174,.22)!important;border-radius:16px!important;background:linear-gradient(125deg,rgba(255,248,232,.97),rgba(233,249,245,.95),rgba(244,238,255,.95))!important;box-shadow:0 7px 22px rgba(44,62,80,.07)!important;animation:aurora-profile-glow 13s ease-in-out infinite alternate}
+body.workspace-active #owner-dashboard-view.profile-workspace-mode .profile-account-summary{order:2!important;display:block!important;flex:0 0 auto!important;margin:0!important;padding:14px!important;border:1px solid rgba(119,161,174,.22)!important;border-radius:16px!important;background:linear-gradient(120deg,rgba(231,244,255,.97),rgba(244,239,255,.95),rgba(255,248,234,.95))!important;box-shadow:0 7px 22px rgba(44,62,80,.06)!important;animation:aurora-profile-glow 15s ease-in-out infinite alternate}
+body.workspace-active #owner-dashboard-view.profile-workspace-mode #profile-form{display:grid!important;gap:8px!important;margin:8px 0 0!important;align-content:start!important}
+body.workspace-active #owner-dashboard-view.profile-workspace-mode>#owner-staff-area:not(.hidden){order:3!important;display:block!important;flex:0 0 auto!important;width:100%!important;margin:0!important;padding:12px!important;border:1px solid rgba(224,157,92,.25)!important;border-radius:16px!important;background:linear-gradient(120deg,rgba(255,239,218,.97),rgba(255,248,232,.95),rgba(246,239,255,.95))!important;box-shadow:0 7px 22px rgba(128,86,45,.06)!important;animation:aurora-invite-glow 11s ease-in-out infinite alternate}
 body.workspace-active #owner-dashboard-view.profile-workspace-mode>#owner-staff-area.hidden{display:none!important}
-@media(max-width:600px){
- body.workspace-active #owner-dashboard-view.profile-workspace-mode{padding:0 0 22px!important;overflow-y:auto!important}
- body.workspace-active #owner-dashboard-view.profile-workspace-mode>#profile-panel{overflow:visible!important;padding:7px!important}
- body.workspace-active #owner-dashboard-view.profile-workspace-mode>#profile-panel>#profile-form{overflow:visible!important}
-}
+@media(prefers-reduced-motion:reduce){body.workspace-active #owner-dashboard-view.profile-workspace-mode .profile-shop-card,body.workspace-active #owner-dashboard-view.profile-workspace-mode .profile-account-summary,body.workspace-active #owner-dashboard-view.profile-workspace-mode>#owner-staff-area{animation:none!important}}
+@media(max-width:600px){body.workspace-active .shell>#owner-dashboard-view.profile-workspace-mode{padding-bottom:18px!important}body.workspace-active #owner-dashboard-view.profile-workspace-mode .profile-shop-card,body.workspace-active #owner-dashboard-view.profile-workspace-mode .profile-account-summary,body.workspace-active #owner-dashboard-view.profile-workspace-mode>#owner-staff-area:not(.hidden){padding:10px!important}}
