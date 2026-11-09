@@ -57,7 +57,7 @@
     document.body.classList.remove('workspace-active');
     // A signed-out visitor must see only the login/registration area.
     const protectedScreens=[
-      'welcome-back-banner','pos-view','owner-home','receipts-home','owner-dashboard-view',
+      'welcome-back-banner','pos-view','owner-home','receipts-home','shop-home','owner-dashboard-view',
       'staff-profile-panel','profile-panel','history-panel','owner-customers-section',
       'account-profile-menu','receipt-modal','receipt-recovery-modal','workspace-nav'
     ];
