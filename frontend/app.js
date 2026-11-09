@@ -301,8 +301,9 @@
     const profile=$('profile-panel'),receiptHome=$('receipts-home'),ownerHome=$('owner-home');
     const dashboardBusinessCard=$('dashboard-business-card');
     const staffSummary=$('staff-sales-summary');
-    // Every tab starts from a clean slate: no dashboard summary may leak into
-    // Receipts, Profile or Shop.
+    // Hide every workspace root before opening exactly one destination.
+    // This also prevents content retained by a previous tab from remaining visible.
+    [dashboardBusinessCard,ownerHome,receiptHome,pos,owner,$('platform-referral-admin'),$('shop-home'),staffSummary,$('staff-profile-panel'),$('account-profile-menu')].forEach(el=>el?.classList.add('hidden'));
     dashboardBusinessCard?.classList.add('hidden');
     pos?.classList.remove('profile-workspace-mode');
     owner?.classList.remove('profile-workspace-mode');
