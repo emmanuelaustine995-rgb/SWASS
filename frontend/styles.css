@@ -131,8 +131,8 @@ body.workspace-active .profile-account-summary .account-profile-details{grid-tem
    above or below the actual profile form on small screens. */
 #pos-view.profile-workspace-mode > :not(#owner-dashboard-view){display:none!important;}
 #pos-view.profile-workspace-mode #owner-dashboard-view{display:block!important;}
-#pos-view.profile-workspace-mode #owner-dashboard-view > :not(#profile-panel){display:none!important;}
-#pos-view.profile-workspace-mode #owner-dashboard-view > #profile-panel{display:block!important;width:100%;max-width:100%;}
+#pos-view.profile-workspace-mode #owner-dashboard-view > :not(#profile-panel):not(#owner-staff-area){display:none!important;}
+#pos-view.profile-workspace-mode #owner-dashboard-view > #profile-panel{display:block!important;width:100%;max-width:100%;}#pos-view.profile-workspace-mode #owner-dashboard-view > #owner-staff-area{display:block!important;width:100%;max-width:100%;}
 
 /* AURORA wordmark sits above the three fixed navigation buttons. */
 body.workspace-active .bottom-nav{position:fixed;}
