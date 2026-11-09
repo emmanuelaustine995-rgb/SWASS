@@ -204,6 +204,7 @@
     const dashboardBusinessCard=$('dashboard-business-card');
     const staffSummary=$('staff-sales-summary');
     pos?.classList.remove('profile-workspace-mode');
+    owner?.classList.remove('profile-workspace-mode');
     [history,crm,lookup,receiptHome,ownerHome,profile].forEach(el=>el?.classList.add('hidden'));
     owner?.classList.add('hidden');
     pos?.classList.add('hidden');
@@ -227,11 +228,12 @@
       renderAccountProfile();
       if(['owner','manager','vendor','freelancer'].includes(state.role)){
         dashboardBusinessCard?.classList.add('hidden');
-        // The profile form lives inside #owner-dashboard-view, which itself
-        // sits inside #pos-view. Reveal the parent and suppress sale widgets.
-        pos?.classList.remove('hidden');
-        pos?.classList.add('profile-workspace-mode');
+        // Profile is a separate workspace, not part of the receipt/POS screen.
+        // Show its own container directly below the E-RECEIPT header.
+        pos?.classList.add('hidden');
+        pos?.classList.remove('profile-workspace-mode');
         owner?.classList.remove('hidden');
+        owner?.classList.add('profile-workspace-mode');
         owner?.querySelector('#owner-staff-area')?.classList.toggle('hidden',state.role!=='owner');
         profile?.classList.remove('hidden');
         // The dashboard and profile share this scroll container. Always reset
@@ -239,11 +241,9 @@
         // the top instead of inheriting the dashboard's previous scroll.
         if(owner) owner.scrollTop=0;
         if(profile) profile.scrollTop=0;
-        if(pos) pos.scrollTop=0;
         requestAnimationFrame(()=>{
           if(owner) owner.scrollTop=0;
           if(profile) profile.scrollTop=0;
-          if(pos) pos.scrollTop=0;
           window.scrollTo(0,0);
         });
         void loadBusinessProfile().then(()=>renderAccountProfile()).catch(err=>showNotice('Business details could not be loaded. '+(err.message||''),true));
