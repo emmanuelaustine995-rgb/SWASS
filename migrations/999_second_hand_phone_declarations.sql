@@ -24,6 +24,8 @@ CREATE TABLE IF NOT EXISTS second_hand_phone_declarations (
   witness_name TEXT,
   witness_phone TEXT,
   declaration_accepted BOOLEAN NOT NULL DEFAULT false,
+  shop_acknowledged BOOLEAN NOT NULL DEFAULT false,
+  shop_acknowledged_at TIMESTAMPTZ,
   declaration_version TEXT NOT NULL,
   accepted_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
