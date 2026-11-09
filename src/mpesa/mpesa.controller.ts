@@ -10,7 +10,7 @@ import { AuthGuard, Roles, RolesGuard } from '../auth/auth';
 const MONTHLY_KES = 100;
 const YEARLY_KES = 900;
 const MAX_TOPUP_KES = 150000;
-type Purpose = 'subscription' | 'wallet_topup' | 'recovery';
+type Purpose = 'subscription' | 'wallet_topup' | 'recovery' | 'vendor_fee';
 
 @Injectable()
 export class MpesaService {
@@ -99,7 +99,7 @@ export class MpesaService {
           amount: input.amount,
           phone: input.phone,
           callback_url: cfg.callbackUrl,
-          description: input.purpose === 'subscription' ? `SWASS subscription ${input.paymentId}` : input.purpose === 'recovery' ? `SWASS receipt recovery ${input.paymentId}` : `SWASS wallet top-up ${input.paymentId}`,
+          description: input.purpose === 'subscription' ? `SWASS subscription ${input.paymentId}` : input.purpose === 'recovery' ? `SWASS receipt recovery ${input.paymentId}` : input.purpose === 'vendor_fee' ? `AURORA vendor activation ${input.paymentId}` : `SWASS wallet top-up ${input.paymentId}`,
         }),
         signal: AbortSignal.timeout(25000),
       });
@@ -132,10 +132,16 @@ export class MpesaController {
     const tenantId = req.user?.tenantId;
     if (!tenantId) throw new ForbiddenException();
     const purpose: Purpose = body?.purpose;
-    if (!['subscription', 'wallet_topup'].includes(purpose)) throw new BadRequestException('purpose must be subscription or wallet_topup');
+    if (!['subscription', 'wallet_topup', 'vendor_fee'].includes(purpose)) throw new BadRequestException('Invalid payment purpose');
     const phone = this.mpesa.normalizePhone(body?.phone);
     let amount: number;
-    if (purpose === 'subscription') {
+    if (purpose === 'vendor_fee') {
+      const invite = await this.db.pool.query(`SELECT id FROM staff_email_invitations WHERE id=$1 AND tenant_id=$2 AND store_id=$3 AND job_title='Vendor' AND accepted_at IS NULL AND revoked_at IS NULL AND expires_at>now()`, [String(body?.invitationId||''), tenantId, req.user.storeId]);
+      if (!invite.rowCount) throw new BadRequestException('Active vendor invitation not found.');
+      const old = await this.db.pool.query(`SELECT status FROM vendor_invitation_fees WHERE invitation_id=$1`, [String(body.invitationId)]);
+      if (old.rows[0]?.status === 'paid') throw new BadRequestException('Vendor activation fee already paid.');
+      amount = 50;
+    } else if (purpose === 'subscription') {
       if (!['monthly', 'yearly'].includes(body?.plan)) throw new BadRequestException('Choose monthly or yearly subscription');
       amount = body.plan === 'monthly' ? MONTHLY_KES : YEARLY_KES;
     } else {
@@ -150,6 +156,7 @@ export class MpesaController {
       [tenantId, purpose, amount, phone],
     );
     const paymentId: string = inserted.rows[0].id;
+    if (purpose === 'vendor_fee') await this.db.pool.query(`INSERT INTO vendor_invitation_fees(tenant_id,invitation_id,payment_id,status) VALUES($1,$2,$3,'pending') ON CONFLICT(invitation_id) DO UPDATE SET payment_id=EXCLUDED.payment_id,status='pending',paid_at=NULL`, [tenantId,String(body.invitationId),paymentId]);
     try {
       const checkoutId = await this.mpesa.initiate({ phone, amount, purpose, paymentId });
       await this.db.pool.query(`UPDATE payments SET checkout_request_id=$1 WHERE id=$2 AND tenant_id=$3`, [checkoutId, paymentId, tenantId]);
@@ -216,7 +223,9 @@ export class MpesaController {
         if (callbackPhone && callbackPhone !== p.phone) return;
 
         await c.query(`UPDATE payments SET status='success', mpesa_receipt_no=$1 WHERE id=$2 AND status='pending'`, [receipt, p.id]);
-        if (p.purpose === 'subscription') {
+        if (p.purpose === 'vendor_fee') {
+          await c.query(`UPDATE vendor_invitation_fees SET status='paid',paid_at=now() WHERE payment_id=$1 AND status='pending'`, [p.id]);
+        } else if (p.purpose === 'subscription') {
           await c.query(
             `INSERT INTO platform_financial_ledger (tenant_id, payment_id, entry_type, amount_kes, external_reference)
              VALUES ($1, $2, 'subscription_revenue', $3, $4)`,
@@ -243,7 +252,7 @@ export class MpesaController {
               [p.tenant_id,p.id,p.amount_kes],
             );
           }
-        } else {
+        } else if (p.purpose === 'wallet_topup') {
           const wallet = await c.query(`UPDATE wallets SET balance_kes=balance_kes+$1 WHERE tenant_id=$2`, [p.amount_kes, p.tenant_id]);
           if (!wallet.rowCount) throw new Error('Wallet not found for successful top-up');
           await c.query(`INSERT INTO wallet_transactions (tenant_id, change_kes, reason, payment_id) VALUES ($1,$2,'topup',$3)`, [p.tenant_id, p.amount_kes, p.id]);
