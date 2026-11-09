@@ -146,8 +146,8 @@ export class MpesaController {
       amount = body.plan === 'monthly' ? MONTHLY_KES : YEARLY_KES;
     } else {
       amount = Number(body?.amountKes);
-      if (!Number.isSafeInteger(amount) || amount < 2 || amount > MAX_TOPUP_KES) {
-        throw new BadRequestException(`Wallet top-up must be between KSh 2 and KSh ${MAX_TOPUP_KES.toLocaleString('en-KE')}`);
+      if (!Number.isSafeInteger(amount) || amount < 4 || amount > MAX_TOPUP_KES) {
+        throw new BadRequestException(`Wallet top-up must be between KSh 4 and KSh ${MAX_TOPUP_KES.toLocaleString('en-KE')}`);
       }
     }
 
