@@ -493,3 +493,15 @@ body.workspace-active #owner-dashboard-view.profile-workspace-mode .profile-acco
 body.workspace-active #owner-dashboard-view.profile-workspace-mode .profile-invite-card{background:linear-gradient(120deg,rgba(255,239,218,.98),rgba(255,248,232,.97),rgba(246,239,255,.97))!important}
 body.workspace-active #owner-dashboard-view.profile-workspace-mode .profile-invite-card .panel{background:transparent!important;border:0!important;box-shadow:none!important;padding:4px 0!important}
 @media(prefers-reduced-motion:reduce){body.workspace-active #owner-dashboard-view.profile-workspace-mode .profile-card-chevron{transition:none!important}}
+
+
+/* AURORA E-RECEIPT: fixed glowing header and always-available in-app back control */
+.topbar{position:sticky;top:0;z-index:1200;min-height:68px;height:auto;background:linear-gradient(115deg,#071d38,#075b74,#493b80,#087c79,#071d38);background-size:320% 320%;animation:auroraHeaderFlow 13s ease-in-out infinite;box-shadow:0 5px 26px rgba(42,220,208,.24),0 2px 18px rgba(132,102,255,.2);border-bottom:1px solid rgba(255,255,255,.24)}
+.brand{font-size:clamp(20px,3vw,25px);font-weight:900;letter-spacing:.09em;text-shadow:0 0 16px rgba(139,255,244,.45),0 0 25px rgba(174,142,255,.32)}
+.global-back-btn{margin-left:auto;min-height:40px;padding:8px 14px;border:1px solid rgba(255,255,255,.48);border-radius:999px;background:rgba(255,255,255,.16);color:#fff;font:700 13px system-ui,sans-serif;backdrop-filter:blur(10px);box-shadow:0 0 18px rgba(119,238,231,.18)}
+.global-back-btn:active{transform:translateY(1px)}
+@keyframes auroraHeaderFlow{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@media(prefers-reduced-motion:reduce){.topbar{animation:none}}
+.profile-readonly-note{margin:0 0 10px;padding:10px 12px;border:1px solid rgba(88,156,192,.3);border-radius:12px;background:rgba(220,241,250,.72);color:#254a61;font-size:12px;font-weight:650}
+.profile-readonly .profile-card-body input:disabled,.profile-readonly .profile-card-body select:disabled,.profile-readonly .profile-card-body textarea:disabled{opacity:.88;color:#30445a;background:#f1f5f8;cursor:not-allowed}
+.profile-readonly .profile-card-body label{opacity:.92}
