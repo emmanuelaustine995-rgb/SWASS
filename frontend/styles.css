@@ -448,3 +448,16 @@ body:not(.workspace-active) #workspace-nav,
 #pos-view.profile-workspace-mode #owner-dashboard-view>#profile-panel{margin:0!important;align-self:start!important;position:relative!important;top:0!important}
 #pos-view.profile-workspace-mode #profile-panel>.profile-account-summary{order:2!important;margin-top:0!important}
 #pos-view.profile-workspace-mode #profile-form{margin-top:0!important;align-content:start!important}
+
+
+/* PROFILE FIX: keep the first section at the top and never clip the lower cards.
+   The app shell stays fixed; only the profile content area scrolls when needed. */
+#pos-view.profile-workspace-mode{display:flex!important;flex-direction:column!important;min-height:0!important;overflow:hidden!important;padding:0!important;}
+#pos-view.profile-workspace-mode #owner-dashboard-view{display:flex!important;flex:1 1 auto!important;flex-direction:column!important;align-items:stretch!important;justify-content:flex-start!important;gap:8px!important;width:100%!important;height:100%!important;min-height:0!important;max-height:100%!important;margin:0!important;padding:0 0 18px!important;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior:contain!important;}
+#pos-view.profile-workspace-mode #profile-panel{display:flex!important;flex:0 0 auto!important;flex-direction:column!important;order:1!important;width:100%!important;max-width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;margin:0!important;padding:8px!important;overflow:visible!important;}
+#pos-view.profile-workspace-mode #profile-panel>.section-head{order:1!important;position:relative!important;top:auto!important;margin:0!important;}
+#pos-view.profile-workspace-mode #profile-panel>#profile-form{order:2!important;display:grid!important;flex:0 0 auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;margin:0!important;align-content:start!important;}
+#pos-view.profile-workspace-mode #profile-panel>.profile-account-summary{order:3!important;flex:0 0 auto!important;margin:0!important;}
+#pos-view.profile-workspace-mode #owner-staff-area:not(.hidden){display:block!important;flex:0 0 auto!important;order:4!important;width:100%!important;max-width:100%!important;height:auto!important;max-height:none!important;overflow:visible!important;margin:0!important;padding:8px!important;}
+#pos-view.profile-workspace-mode #owner-staff-area.hidden{display:none!important;}
+@media(max-width:600px){#pos-view.profile-workspace-mode #owner-dashboard-view{padding:0 0 22px!important;overflow-y:auto!important;}#pos-view.profile-workspace-mode #profile-panel{overflow:visible!important;padding:7px!important;}#pos-view.profile-workspace-mode #profile-panel>#profile-form{overflow:visible!important;}}
