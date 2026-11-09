@@ -178,7 +178,7 @@
     finally{button.disabled=false;}
   });
   async function loadOwnerHomeSummary(){
-    if(!['owner','manager'].includes(state.role))return;
+    if(!['owner','manager','vendor','freelancer'].includes(state.role))return;
     void loadOwnerReferralSummary();
     $('owner-home-title').textContent=state.businessProfile?.businessName||'Business overview';
     $('owner-home-subtitle').textContent=state.businessProfile?.storeName||'Your business workspace at a glance.';
@@ -232,7 +232,7 @@
         pos?.classList.remove('hidden');
         pos?.classList.add('profile-workspace-mode');
         owner?.classList.remove('hidden');
-        owner?.querySelector('#owner-staff-area')?.classList.add('hidden');
+        owner?.querySelector('#owner-staff-area')?.classList.toggle('hidden',state.role!=='owner');
         profile?.classList.remove('hidden');
         void loadBusinessProfile().then(()=>renderAccountProfile()).catch(err=>showNotice('Business details could not be loaded. '+(err.message||''),true));
       }else{
