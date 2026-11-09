@@ -583,3 +583,10 @@ body.dashboard-dark #owner-staff-performance .muted {
 #owner-dashboard-view.profile-workspace-mode .profile-card{margin:0!important}
 #owner-dashboard-view.profile-workspace-mode .profile-card-summary{list-style:none;cursor:pointer}
 #owner-dashboard-view.profile-workspace-mode .profile-card-summary::-webkit-details-marker{display:none}
+
+
+/* Keep the AURORA header visually consistent on dashboard and nested pages. */
+.topbar{position:sticky;top:0;z-index:1200;min-height:68px;height:auto;background:linear-gradient(115deg,#071d38,#075b74,#493b80,#087c79,#071d38);background-size:320% 320%;animation:auroraHeaderFlow 13s ease-in-out infinite;box-shadow:0 5px 26px rgba(42,220,208,.24),0 2px 18px rgba(132,102,255,.2);border-bottom:1px solid rgba(255,255,255,.24)}
+.brand{font-size:clamp(20px,3vw,25px);font-weight:900;letter-spacing:.09em;text-shadow:0 0 16px rgba(139,255,244,.45),0 0 25px rgba(174,142,255,.32)}
+.global-back-btn{margin-left:auto;min-height:40px;padding:8px 14px;border:1px solid rgba(255,255,255,.48);border-radius:999px;background:rgba(255,255,255,.16);color:#fff;font:700 13px system-ui,sans-serif;backdrop-filter:blur(10px)}
+@media(prefers-reduced-motion:reduce){.topbar{animation:none}}
