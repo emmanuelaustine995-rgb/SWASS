@@ -144,6 +144,51 @@
     }
   }
 
+  async function loadPlatformReferralAdmin(){
+    const list=$('platform-referral-admin-list'),message=$('platform-referral-admin-message');
+    if(!list||state.role!=='super_admin')return;
+    message.textContent='Loading withdrawal requests…';
+    try{
+      const data=await request('/api/v1/platform-finance/referral-withdrawals');
+      list.replaceChildren();
+      if(!data.withdrawals?.length){message.textContent='There are no referral withdrawal requests yet.';return;}
+      message.textContent=data.withdrawals.length+' withdrawal request(s).';
+      data.withdrawals.forEach(item=>{
+        const card=document.createElement('article');card.className='platform-referral-request';
+        const title=document.createElement('div');title.className='platform-referral-request-title';
+        const name=document.createElement('strong');name.textContent=item.businessName||'Referrer';
+        const amount=document.createElement('strong');amount.textContent=money(item.amountKes);
+        title.append(name,amount);card.append(title);
+        const meta=document.createElement('p');meta.className='muted small';
+        meta.textContent='M-Pesa: '+item.payoutPhone+' · '+new Date(item.createdAt).toLocaleString('en-KE')+' · '+item.status;
+        card.append(meta);
+        if(item.payoutReference){const ref=document.createElement('p');ref.className='muted small';ref.textContent='Transfer reference: '+item.payoutReference;card.append(ref);}
+        const actions=document.createElement('div');actions.className='platform-referral-actions';
+        if(item.status==='pending'){
+          const approve=document.createElement('button');approve.className='btn btn-primary';approve.textContent='Approve';approve.addEventListener('click',()=>updatePlatformWithdrawal(item.id,'approved'));
+          const reject=document.createElement('button');reject.className='btn btn-light';reject.textContent='Reject';reject.addEventListener('click',()=>updatePlatformWithdrawal(item.id,'rejected'));
+          actions.append(approve,reject);
+        }else if(item.status==='approved'){
+          const reference=document.createElement('input');reference.type='text';reference.maxLength=120;reference.placeholder='M-Pesa / bank transfer reference';reference.setAttribute('aria-label','Transfer reference');
+          const paid=document.createElement('button');paid.className='btn btn-primary';paid.textContent='Mark paid';paid.addEventListener('click',()=>updatePlatformWithdrawal(item.id,'paid',reference.value));
+          actions.append(reference,paid);
+        }
+        if(actions.childElementCount)card.append(actions);
+        list.append(card);
+      });
+    }catch(error){message.textContent=error.message||'Could not load referral withdrawals.';}
+  }
+  async function updatePlatformWithdrawal(id,status,payoutReference=''){
+    const message=$('platform-referral-admin-message');
+    try{
+      const result=await request('/api/v1/platform-finance/referral-withdrawals/'+encodeURIComponent(id),{
+        method:'PATCH',body:JSON.stringify({status,payoutReference})
+      });
+      message.textContent=result.note||'Withdrawal updated.';
+      await loadPlatformReferralAdmin();
+    }catch(error){message.textContent=error.message||'Could not update withdrawal.';}
+  }
+  $('platform-referral-refresh')?.addEventListener('click',()=>void loadPlatformReferralAdmin());
   async function loadOwnerReferralSummary(){
     const card=$('referral-card');
     if(!card)return;
@@ -248,7 +293,7 @@
     const staffSummary=$('staff-sales-summary');
     pos?.classList.remove('profile-workspace-mode');
     owner?.classList.remove('profile-workspace-mode');
-    [history,crm,lookup,receiptHome,ownerHome,profile].forEach(el=>el?.classList.add('hidden'));
+    [history,crm,lookup,receiptHome,ownerHome,profile,$('platform-referral-admin')].forEach(el=>el?.classList.add('hidden'));
     owner?.classList.add('hidden');
     pos?.classList.add('hidden');
     document.getElementById('account-profile-menu')?.classList.add('hidden');
@@ -256,7 +301,11 @@
     staffSummary?.classList.add('hidden');
     if(screen==='dashboard'){
       dashboardBusinessCard?.classList.remove('hidden');
-      if(['owner','manager','vendor','freelancer'].includes(state.role)){
+      if(state.role==='super_admin'){
+        dashboardBusinessCard?.classList.add('hidden');
+        $('platform-referral-admin')?.classList.remove('hidden');
+        void loadPlatformReferralAdmin();
+      }else if(['owner','manager','vendor','freelancer'].includes(state.role)){
         ownerHome?.classList.remove('hidden');
         void loadOwnerHomeSummary();
       }else{
