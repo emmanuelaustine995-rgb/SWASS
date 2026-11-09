@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Controller, Get, Body, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Controller, Get, Body, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard, Roles, RolesGuard } from '../auth/auth';
 import { DbService } from '../db/db.service';
 
@@ -39,6 +39,7 @@ export class InventoryController {
   @Roles('owner')
   async addDirectoryProduct(@Req() req: any, @Body() body: { name?: string; priceKes?: number; stockQty?: number }) {
     const user = req.user;
+    if (user?.role !== 'owner') throw new ForbiddenException('Only the registered shop owner can add products to the public directory.');
     this.requireStore(user);
     const name = typeof body?.name === 'string' ? body.name.trim() : '';
     const priceKes = body?.priceKes;
