@@ -234,6 +234,18 @@
         owner?.classList.remove('hidden');
         owner?.querySelector('#owner-staff-area')?.classList.toggle('hidden',state.role!=='owner');
         profile?.classList.remove('hidden');
+        // The dashboard and profile share this scroll container. Always reset
+        // every nested scroll position when opening Profile so it starts at
+        // the top instead of inheriting the dashboard's previous scroll.
+        if(owner) owner.scrollTop=0;
+        if(profile) profile.scrollTop=0;
+        if(pos) pos.scrollTop=0;
+        requestAnimationFrame(()=>{
+          if(owner) owner.scrollTop=0;
+          if(profile) profile.scrollTop=0;
+          if(pos) pos.scrollTop=0;
+          window.scrollTo(0,0);
+        });
         void loadBusinessProfile().then(()=>renderAccountProfile()).catch(err=>showNotice('Business details could not be loaded. '+(err.message||''),true));
       }else{
         document.getElementById('staff-profile-panel')?.classList.remove('hidden');
