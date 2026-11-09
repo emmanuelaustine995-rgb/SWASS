@@ -886,3 +886,11 @@ html body.workspace-active #subscription-home:not(.hidden){display:block!importa
 #subscription-home .dashboard-payment-tab{min-width:0;min-height:62px;padding:11px;text-align:left;border-radius:12px}
 #subscription-home #dashboard-payment-panel{margin-top:10px}
 @media(max-width:390px){#subscription-home .dashboard-payment-tab{padding:9px;font-size:11px}}
+
+
+/* Receipt builder: product entry opens from a compact Add Product tab. */
+html body.workspace-active #pos-view.workspace-issue-mode .receipt-add-product-tab{display:inline-flex!important;align-items:center;justify-content:center;width:auto!important;min-height:40px!important;max-width:max-content!important;margin:2px 0 12px!important;padding:9px 15px!important;border:1px solid #c9d8eb!important;border-radius:11px!important;background:#f4f8ff!important;color:#174b83!important;font-weight:700!important}
+html body.workspace-active #pos-view.workspace-issue-mode #product-form.hidden{display:none!important}
+html body.workspace-active #pos-view.workspace-issue-mode #product-form:not(.hidden){display:grid!important;padding:13px!important;margin:0 0 14px!important;border:1px solid #dce6f4!important;border-radius:14px!important;background:#f8fbff!important}
+html body.workspace-active #pos-view.workspace-issue-mode #cart-list{margin-top:8px!important}
+html body.workspace-active #pos-view.workspace-issue-mode #checkout-open{margin-top:14px!important}
