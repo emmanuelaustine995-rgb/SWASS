@@ -28,6 +28,7 @@ export class StaffController {
       );
       const invite = found.rows[0];
       if (!invite) throw new BadRequestException('This invitation link is invalid, expired or already used. Ask the shop owner to send another invitation.');
+      if (invite.job_title === 'Vendor') { const fee = await c.query(`SELECT status FROM vendor_invitation_fees WHERE invitation_id=$1 AND tenant_id=$2 FOR UPDATE`, [invite.id, invite.tenant_id]); if (!fee.rowCount || fee.rows[0].status !== 'paid') throw new BadRequestException('The shop owner must pay the one-time KSh 50 vendor activation fee before this invitation can be accepted.'); }
       const phoneDigits = String(invite.phone).replace(/\D/g, '');
       const phone = phoneDigits.startsWith('0') ? '254' + phoneDigits.slice(1) : phoneDigits.startsWith('254') ? phoneDigits : '254' + phoneDigits;
       const duplicate = await c.query(
