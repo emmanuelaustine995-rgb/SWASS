@@ -4,7 +4,7 @@ import { DbService } from '../db/db.service';
 
 type DeclarationInput = {
   sellerName?: string; nationalId?: string; sellerPhone?: string; alternativePhone?: string;
-  residentialAddress?: string; phoneMakeModel?: string; imei1?: string; imei2?: string;
+  residentialAddress?: string; phoneMakeModel?: string; productName?: string; imei1?: string; imei2?: string;
   serialNumber?: string; condition?: string; purchasePriceKes?: number; receivedAt?: string;
   noReceiptReason?: string; saleType?: string; receiptPhotoData?: string; sellerPhotoData?: string; idPhotoData?: string; phonePhotoData?: string;
   signatureData?: string; thumbprintData?: string; witnessName?: string; witnessPhone?: string;
@@ -68,11 +68,11 @@ export class SecondHandPhoneDeclarationsController {
     const sellerPhone = text(body.sellerPhone, 'Seller phone', 30)!;
     const alternativePhone = text(body.alternativePhone, 'Alternative phone', 30, false);
     const residentialAddress = text(body.residentialAddress, 'Residential address', 300)!;
-    const phoneMakeModel = text(body.phoneMakeModel, 'Phone make and model', 160)!;
-    const imei1 = text(body.imei1, 'IMEI 1', 20)!;
-    const imei2 = text(body.imei2, 'IMEI 2', 20, false);
+    const phoneMakeModel = text(body.productName ?? body.phoneMakeModel, 'Product name / make and model', 160)!;
+    const imei1 = text(body.imei1, 'Product identifier / IMEI', 40, false) ?? '';
+    const imei2 = text(body.imei2, 'Second product identifier', 40, false);
     const serialNumber = text(body.serialNumber, 'Serial number', 100, false);
-    const condition = text(body.condition, 'Phone condition', 40)!;
+    const condition = text(body.condition, 'Product condition', 40)!;
     const saleType = body.saleType === 'with_receipt' ? 'with_receipt' : body.saleType === 'without_receipt' ? 'without_receipt' : null;
     if (!saleType) throw new BadRequestException('Choose whether the seller has the original purchase receipt.');
     const noReceiptReason = text(body.noReceiptReason, 'Receipt status / missing receipt explanation', 1000)!;
@@ -92,7 +92,7 @@ export class SecondHandPhoneDeclarationsController {
     const idPhotoData = image(body.idPhotoData, 'Seller ID photo', true);
     const phonePhotoData = image(body.phonePhotoData, 'Phone photo', true);
     const signatureData = image(body.signatureData, 'Seller signature', true);
-    const thumbprintData = image(body.thumbprintData, 'Electronic thumbprint mark', true);
+    const thumbprintData = image(body.thumbprintData, 'Electronic thumbprint mark', saleType === 'without_receipt');
 
     const declarationRef = 'AUR-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2, 7).toUpperCase();
     const { rows } = await this.db.pool.query(
