@@ -894,3 +894,18 @@ html body.workspace-active #pos-view.workspace-issue-mode #product-form.hidden{d
 html body.workspace-active #pos-view.workspace-issue-mode #product-form:not(.hidden){display:grid!important;padding:13px!important;margin:0 0 14px!important;border:1px solid #dce6f4!important;border-radius:14px!important;background:#f8fbff!important}
 html body.workspace-active #pos-view.workspace-issue-mode #cart-list{margin-top:8px!important}
 html body.workspace-active #pos-view.workspace-issue-mode #checkout-open{margin-top:14px!important}
+
+
+/* Subscription shortcut lives with the business heading, not in the main tab strip. */
+.owner-home-topline{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:5px}
+.owner-home-topline .eyebrow{margin:0}
+.owner-subscription-tab{display:inline-flex;align-items:center;justify-content:center;gap:7px;flex:0 0 auto;min-height:34px;padding:7px 12px;border:1px solid rgba(72,151,205,.38);border-radius:999px;background:linear-gradient(115deg,#eaf6ff,#f3edff,#e8fbf6);color:#185783;font:inherit;font-size:12px;font-weight:800;box-shadow:0 3px 12px rgba(51,117,166,.12);cursor:pointer;transition:filter .25s ease,transform .25s ease}
+.owner-subscription-tab>span:first-child{font-size:14px;color:#7c63c8}
+.owner-subscription-tab:hover{filter:saturate(1.2);transform:translateY(-1px)}
+.owner-subscription-arrow{font-size:13px;opacity:.75}
+@media(max-width:420px){.owner-home-topline{gap:7px}.owner-subscription-tab{min-height:32px;padding:6px 10px;font-size:11px}}
+/* Keep the last card/action clear of navigation and phone safe-area edges. */
+@media(max-width:760px){
+  #owner-home,#subscription-home,#receipts-home,#shop-home,#owner-dashboard-view,#pos-view{box-sizing:border-box;padding-bottom:calc(24px + env(safe-area-inset-bottom))}
+  #workspace-nav{margin-bottom:14px!important}
+}
