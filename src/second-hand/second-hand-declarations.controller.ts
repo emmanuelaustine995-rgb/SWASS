@@ -8,7 +8,7 @@ type DeclarationInput = {
   serialNumber?: string; condition?: string; purchasePriceKes?: number; receivedAt?: string;
   noReceiptReason?: string; sellerPhotoData?: string; idPhotoData?: string; phonePhotoData?: string;
   signatureData?: string; thumbprintData?: string; witnessName?: string; witnessPhone?: string;
-  declarationAccepted?: boolean;
+  declarationAccepted?: boolean; shopAcknowledged?: boolean;
 };
 
 @Controller('api/v1/second-hand-phone-declarations')
@@ -83,6 +83,7 @@ export class SecondHandPhoneDeclarationsController {
       throw new BadRequestException('Enter a valid agreed purchase price in KSh.');
     }
     if (body.declarationAccepted !== true) throw new BadRequestException('The seller must accept the ownership and responsibility declaration.');
+    if (body.shopAcknowledged !== true) throw new BadRequestException('The shop representative must confirm the seller and phone checks.');
     const sellerPhotoData = image(body.sellerPhotoData, 'Seller photo');
     const idPhotoData = image(body.idPhotoData, 'Seller ID photo', true);
     const phonePhotoData = image(body.phonePhotoData, 'Phone photo', true);
@@ -96,8 +97,8 @@ export class SecondHandPhoneDeclarationsController {
         alternative_phone, residential_address, phone_make_model, imei1, imei2, serial_number,
         phone_condition, purchase_price_kes, no_receipt_reason, seller_photo_data, id_photo_data,
         phone_photo_data, signature_data, thumbprint_data, witness_name, witness_phone,
-        declaration_accepted, declaration_version, accepted_at)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,true,'2026-11-v1',now())
+        declaration_accepted, shop_acknowledged, shop_acknowledged_at, declaration_version, accepted_at)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,true,true,now(),'2026-11-v1',now())
        RETURNING id, declaration_ref AS "declarationRef", seller_name AS "sellerName",
         national_id AS "nationalId", seller_phone AS "sellerPhone", alternative_phone AS "alternativePhone",
         residential_address AS "residentialAddress", phone_make_model AS "phoneMakeModel",
@@ -106,14 +107,14 @@ export class SecondHandPhoneDeclarationsController {
         seller_photo_data AS "sellerPhotoData", id_photo_data AS "idPhotoData",
         phone_photo_data AS "phonePhotoData", signature_data AS "signatureData",
         thumbprint_data AS "thumbprintData", witness_name AS "witnessName",
-        witness_phone AS "witnessPhone", declaration_accepted AS "declarationAccepted",
+        witness_phone AS "witnessPhone", declaration_accepted AS "declarationAccepted", shop_acknowledged AS "shopAcknowledged",
         accepted_at AS "acceptedAt", created_at AS "createdAt"`,
       [user.tenantId, user.storeId, user.sub, declarationRef, sellerName, nationalId, sellerPhone,
        alternativePhone, residentialAddress, phoneMakeModel, imei1.replace(/\s+/g, ''), imei2?.replace(/\s+/g, '') ?? null,
        serialNumber, condition, body.purchasePriceKes, noReceiptReason, sellerPhotoData, idPhotoData,
        phonePhotoData, signatureData, thumbprintData, witnessName, witnessPhone],
     );
-    return { declaration: rows[0] };
+    return { declaration: { ...rows[0], shopRepresentativeName: user.fullName || 'Shop owner' } };
   }
 
   @Get(':id')
