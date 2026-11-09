@@ -609,3 +609,79 @@ body.workspace-active #workspace-nav.bottom-nav button.receipt-nav.active {
   background: linear-gradient(135deg,#087f8c,#3156a5) !important;
   box-shadow: 0 5px 16px rgba(8,127,140,.30) !important;
 }
+
+
+/* AURORA four-tab navigation: distinct soft colour pulses with a bright glow. */
+body.workspace-active #workspace-nav.bottom-nav{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  align-items:center!important;
+  gap:7px!important;
+  padding:8px 10px!important;
+}
+body.workspace-active #workspace-nav.bottom-nav button,
+body.workspace-active #workspace-nav.bottom-nav button.receipt-nav{
+  display:flex!important;
+  flex:1 1 0!important;
+  width:auto!important;
+  max-width:none!important;
+  min-width:0!important;
+  min-height:54px!important;
+  margin:0!important;
+  padding:7px 3px!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:3px!important;
+  border:1px solid rgba(255,255,255,.56)!important;
+  border-radius:15px!important;
+  font-weight:750!important;
+  font-size:clamp(9px,2.6vw,12px)!important;
+  background-size:220% 220%!important;
+  animation:auroraTabPulse 7s ease-in-out infinite!important;
+  transition:transform .22s ease,filter .22s ease,box-shadow .22s ease!important;
+}
+body.workspace-active #workspace-nav.bottom-nav button:nth-child(1){color:#174f91!important;background:linear-gradient(135deg,#d8efff,#a8d5ff,#e8f5ff)!important;box-shadow:0 0 13px rgba(76,164,255,.24)!important;animation-delay:0s!important}
+body.workspace-active #workspace-nav.bottom-nav button:nth-child(2){color:#08766d!important;background:linear-gradient(135deg,#d8fff1,#8ee6d1,#e8fff8)!important;box-shadow:0 0 13px rgba(42,210,171,.24)!important;animation-delay:-1.4s!important}
+body.workspace-active #workspace-nav.bottom-nav button:nth-child(3){color:#67449a!important;background:linear-gradient(135deg,#f0e3ff,#d1b6ff,#fbf2ff)!important;box-shadow:0 0 13px rgba(171,119,255,.24)!important;animation-delay:-2.8s!important}
+body.workspace-active #workspace-nav.bottom-nav button:nth-child(4){color:#9a5a18!important;background:linear-gradient(135deg,#fff0d4,#ffd18c,#fff8e9)!important;box-shadow:0 0 13px rgba(255,174,75,.24)!important;animation-delay:-4.2s!important}
+body.workspace-active #workspace-nav.bottom-nav button.active{
+  filter:saturate(1.22) brightness(1.035)!important;
+  transform:translateY(-3px)!important;
+  box-shadow:0 0 0 1px rgba(255,255,255,.9),0 0 20px currentColor,0 5px 18px rgba(28,65,100,.18)!important;
+}
+body.workspace-active #workspace-nav.bottom-nav button.receipt-nav.active{
+  color:#08766d!important;
+  background:linear-gradient(135deg,#d8fff1,#8ee6d1,#e8fff8)!important;
+}
+body.workspace-active #workspace-nav.bottom-nav .nav-icon{font-size:19px!important;line-height:1.1!important}
+@keyframes auroraTabPulse{
+  0%,100%{background-position:0% 50%;filter:brightness(.94);box-shadow:0 0 7px rgba(117,180,255,.13)}
+  50%{background-position:100% 50%;filter:brightness(1.12);box-shadow:0 0 20px rgba(115,208,255,.38),0 0 30px rgba(173,137,255,.16)}
+}
+/* The Shop area intentionally has no controls or text yet—only its living aurora backdrop. */
+body.workspace-active #shop-home.shop-home{
+  display:block!important;
+  flex:1 1 auto!important;
+  width:100%!important;
+  min-height:min(64vh,560px)!important;
+  margin:8px 0 14px!important;
+  border:1px solid rgba(154,210,255,.48)!important;
+  border-radius:23px!important;
+  background:linear-gradient(125deg,#071d38,#075b74,#274b86,#7652a2,#087c79,#071d38)!important;
+  background-size:360% 360%!important;
+  animation:auroraShopGlow 12s ease-in-out infinite!important;
+  box-shadow:0 0 22px rgba(40,195,219,.32),0 0 48px rgba(125,91,210,.2),inset 0 0 28px rgba(255,255,255,.09)!important;
+}
+@keyframes auroraShopGlow{
+  0%,100%{background-position:0% 50%;filter:brightness(.82);box-shadow:0 0 14px rgba(40,195,219,.22),0 0 30px rgba(125,91,210,.14),inset 0 0 20px rgba(255,255,255,.06)}
+  50%{background-position:100% 50%;filter:brightness(1.22);box-shadow:0 0 30px rgba(40,235,219,.48),0 0 62px rgba(165,116,255,.32),inset 0 0 38px rgba(255,255,255,.16)}
+}
+@media(prefers-reduced-motion:reduce){
+  body.workspace-active #workspace-nav.bottom-nav button,
+  body.workspace-active #shop-home.shop-home{animation:none!important}
+}
+@media(max-width:420px){
+  body.workspace-active #workspace-nav.bottom-nav{gap:5px!important;padding-inline:7px!important}
+  body.workspace-active #workspace-nav.bottom-nav button{border-radius:12px!important;min-height:50px!important}
+}
