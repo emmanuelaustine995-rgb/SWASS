@@ -461,3 +461,30 @@ body:not(.workspace-active) #workspace-nav,
 #pos-view.profile-workspace-mode #owner-staff-area:not(.hidden){display:block!important;flex:0 0 auto!important;order:4!important;width:100%!important;max-width:100%!important;height:auto!important;max-height:none!important;overflow:visible!important;margin:0!important;padding:8px!important;}
 #pos-view.profile-workspace-mode #owner-staff-area.hidden{display:none!important;}
 @media(max-width:600px){#pos-view.profile-workspace-mode #owner-dashboard-view{padding:0 0 22px!important;overflow-y:auto!important;}#pos-view.profile-workspace-mode #profile-panel{overflow:visible!important;padding:7px!important;}#pos-view.profile-workspace-mode #profile-panel>#profile-form{overflow:visible!important;}}
+
+
+/* PROFILE WORKSPACE REBUILD: independent screen directly under the E-RECEIPT header.
+   Do not route Profile through the receipt/POS container. */
+body.workspace-active #owner-dashboard-view.profile-workspace-mode{
+  order:-10!important;display:flex!important;flex:1 1 auto!important;
+  flex-direction:column!important;align-items:stretch!important;justify-content:flex-start!important;
+  width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;
+  margin:0!important;padding:0 0 18px!important;gap:8px!important;
+  overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior:contain!important;
+}
+body.workspace-active #owner-dashboard-view.profile-workspace-mode> :not(#profile-panel):not(#owner-staff-area){display:none!important}
+body.workspace-active #owner-dashboard-view.profile-workspace-mode>#profile-panel{
+  display:flex!important;order:1!important;flex:0 0 auto!important;flex-direction:column!important;
+  width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;
+  margin:0!important;padding:8px!important;overflow:visible!important;
+}
+body.workspace-active #owner-dashboard-view.profile-workspace-mode>#profile-panel>.section-head{order:1!important;margin:0!important}
+body.workspace-active #owner-dashboard-view.profile-workspace-mode>#profile-panel>#profile-form{order:2!important;display:grid!important;flex:0 0 auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;margin:0!important;align-content:start!important}
+body.workspace-active #owner-dashboard-view.profile-workspace-mode>#profile-panel>.profile-account-summary{order:3!important;flex:0 0 auto!important;margin:0!important}
+body.workspace-active #owner-dashboard-view.profile-workspace-mode>#owner-staff-area:not(.hidden){display:block!important;order:4!important;flex:0 0 auto!important;width:100%!important;max-width:100%!important;height:auto!important;max-height:none!important;overflow:visible!important;margin:0!important;padding:8px!important}
+body.workspace-active #owner-dashboard-view.profile-workspace-mode>#owner-staff-area.hidden{display:none!important}
+@media(max-width:600px){
+ body.workspace-active #owner-dashboard-view.profile-workspace-mode{padding:0 0 22px!important;overflow-y:auto!important}
+ body.workspace-active #owner-dashboard-view.profile-workspace-mode>#profile-panel{overflow:visible!important;padding:7px!important}
+ body.workspace-active #owner-dashboard-view.profile-workspace-mode>#profile-panel>#profile-form{overflow:visible!important}
+}
