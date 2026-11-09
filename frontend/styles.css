@@ -687,3 +687,53 @@ body.workspace-active #shop-home.shop-home{
 }
 
 body.workspace-active #shop-home.shop-home.hidden{display:none!important}
+
+/* SHOP DIRECTORY: first card uses a soft, fading sky-blue aurora. */
+body.workspace-active #shop-home.shop-home{
+  display:block!important;flex:1 1 auto!important;width:100%!important;min-height:0!important;
+  margin:8px 0 14px!important;padding:0!important;border:0!important;border-radius:0!important;
+  background:transparent!important;box-shadow:none!important;animation:none!important;overflow:visible!important;
+}
+body.workspace-active #shop-home.shop-home.hidden{display:none!important}
+.shop-directory-card{
+  display:grid;gap:13px;padding:16px;border:1px solid rgba(93,169,224,.42);border-radius:20px;
+  background:linear-gradient(125deg,rgba(224,244,255,.98),rgba(184,222,255,.96),rgba(235,248,255,.98),rgba(196,229,255,.97));
+  background-size:260% 260%;animation:shopSkyBluePulse 10s ease-in-out infinite;
+  box-shadow:0 8px 25px rgba(71,154,219,.14),0 0 23px rgba(114,194,255,.22),inset 0 0 18px rgba(255,255,255,.62);
+}
+.shop-directory-heading{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.shop-directory-heading>div{min-width:0}
+.shop-directory-heading .eyebrow{margin:0 0 4px;color:#3277a8}
+.shop-directory-heading h1{margin:0;color:#174b73;font-size:21px;letter-spacing:-.025em}
+.shop-directory-heading .muted{margin:5px 0 0;color:#456b86}
+.shop-search-toggle{
+  flex:0 0 auto;border:1px solid rgba(49,123,178,.35);border-radius:999px;padding:7px 11px;
+  background:rgba(255,255,255,.72);color:#145b8b;font-size:11px;font-weight:800;
+  box-shadow:0 3px 12px rgba(48,126,185,.12);cursor:pointer
+}
+.shop-add-products,.shop-product-search-form{display:grid;gap:9px}
+.shop-add-products label,.shop-product-search-form label{display:grid;gap:5px;color:#245777;font-size:12px;font-weight:700}
+.shop-add-products input,.shop-product-search-form input{
+  width:100%;min-height:42px;padding:9px 11px;border:1px solid rgba(67,139,190,.3);
+  border-radius:11px;background:rgba(255,255,255,.9);color:#173e5b;font-size:14px
+}
+.shop-product-fields{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.shop-directory-card .btn-primary{background:linear-gradient(120deg,#1677b8,#315fbd);box-shadow:0 5px 14px rgba(38,111,177,.22)}
+.shop-directory-message{min-height:15px;margin:0;color:#245777;font-size:11px}
+.shop-product-results{display:grid;gap:9px;margin:12px 0 20px}
+.shop-product-results h2{margin:4px 2px;color:#214b6c;font-size:16px}
+.shop-product-result-card{padding:12px;border:1px solid rgba(93,169,224,.28);border-radius:14px;background:linear-gradient(125deg,#fff,#f1f8ff);box-shadow:0 4px 14px rgba(38,101,153,.07)}
+.shop-product-result-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;color:#183f5e}
+.shop-product-result-top strong{font-size:14px;overflow-wrap:anywhere}
+.shop-product-result-top b{flex:0 0 auto;color:#176b9e;font-size:13px}
+.shop-result-business{margin:7px 0 2px;color:#315d7a;font-size:12px;font-weight:750}
+.shop-result-location{margin:2px 0;color:#627f94;font-size:11px}
+.shop-result-contact{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:9px;padding-top:8px;border-top:1px solid #e3eff8;color:#456b86;font-size:11px}
+.shop-result-contact strong{color:#204d70}
+.shop-enquiry-link{display:inline-flex;align-items:center;justify-content:center;padding:7px 12px;border-radius:999px;background:#176eaa;color:#fff;text-decoration:none;font-size:11px;font-weight:800}
+@keyframes shopSkyBluePulse{
+  0%,100%{background-position:0% 50%;filter:brightness(.96);box-shadow:0 7px 18px rgba(71,154,219,.12),0 0 12px rgba(114,194,255,.16),inset 0 0 14px rgba(255,255,255,.52)}
+  50%{background-position:100% 50%;filter:brightness(1.08);box-shadow:0 9px 27px rgba(71,154,219,.2),0 0 28px rgba(83,174,245,.34),inset 0 0 24px rgba(255,255,255,.78)}
+}
+@media(prefers-reduced-motion:reduce){.shop-directory-card{animation:none!important}}
+@media(max-width:420px){.shop-directory-card{padding:12px;gap:11px}.shop-directory-heading h1{font-size:18px}.shop-search-toggle{padding:7px 9px}.shop-product-fields{gap:7px}}
