@@ -834,3 +834,7 @@ html body.workspace-active #receipts-home .receipt-history-toggle{display:inline
   #secondhand-saved-record .secondhand-record-print{border:0!important;box-shadow:none!important;padding:0!important}
   #secondhand-saved-record #secondhand-print-button{display:none!important}
 }
+
+
+/* The seller declaration is a long, guided form inside the Shop workspace; keep it scrollable on phones. */
+html body.workspace-active #shop-home.shop-home:not(.hidden){overflow-y:auto!important;overflow-x:hidden!important;max-height:100%!important;min-height:0!important;padding-bottom:20px!important;overscroll-behavior:contain}
