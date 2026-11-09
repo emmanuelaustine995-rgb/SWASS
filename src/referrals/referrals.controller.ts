@@ -84,8 +84,8 @@ export class ReferralsController {
       if (!Number.isSafeInteger(available) || available < RECEIPT_FEE_KES) {
         throw new BadRequestException(`You need at least KSh ${RECEIPT_FEE_KES} in confirmed referral rewards to redeem a receipt credit.`);
       }
-      const requested = body?.amountKes === undefined ? available : Number(body.amountKes);
-      if (!Number.isSafeInteger(requested) || requested < RECEIPT_FEE_KES || requested > available) {
+      const requested = body?.amountKes === undefined ? Math.floor(available / RECEIPT_FEE_KES) * RECEIPT_FEE_KES : Number(body.amountKes);
+      if (!Number.isSafeInteger(requested) || requested < RECEIPT_FEE_KES || requested > available || requested % RECEIPT_FEE_KES !== 0) {
         throw new BadRequestException('Enter a valid redemption amount within your available referral reward balance.');
       }
       await c.query('INSERT INTO wallets(tenant_id,balance_kes) VALUES($1,0) ON CONFLICT(tenant_id) DO NOTHING', [tenantId]);
