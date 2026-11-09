@@ -147,8 +147,8 @@
   async function loadOwnerReferralSummary(){
     const card=$('referral-card');
     if(!card)return;
-    card.classList.toggle('hidden',!['owner','vendor','freelancer'].includes(state.role));
-    if(!['owner','vendor','freelancer'].includes(state.role))return;
+    card.classList.toggle('hidden',state.role!=='owner');
+    if(state.role!=='owner')return;
     try{
       const data=await request('/api/v1/referrals/summary');
       $('referral-total').textContent=Number(data.totalReferrals||0).toLocaleString('en-KE');
@@ -157,7 +157,21 @@
       $('referral-available').textContent=money(data.availableKes);
       $('referral-link').value=data.referralLink||'';
       $('referral-payout-phone').value=data.payoutPhone||'';
-      $('referral-message').textContent='50% of a friend’s first successful subscription is credited automatically.';
+      $('referral-message').textContent='Earn 50% of your friend’s first successful subscription and each paid KSh 50 vendor activation. Withdrawals are processed by the SWASS administrator.';
+      const history=await request('/api/v1/referrals/transactions');
+      const list=$('referral-withdrawal-history');
+      if(list){
+        list.replaceChildren();
+        if(!history.withdrawals?.length){const empty=document.createElement('p');empty.className='muted small';empty.textContent='No withdrawal requests yet.';list.append(empty);}
+        else history.withdrawals.forEach(item=>{
+          const row=document.createElement('div');row.className='referral-history-row';
+          const detail=document.createElement('span');detail.textContent=new Date(item.createdAt).toLocaleDateString('en-KE')+' · '+String(item.status||'pending').replace('_',' ');
+          const amount=document.createElement('strong');amount.textContent=money(item.amountKes);
+          row.append(detail,amount);
+          if(item.payoutReference){const ref=document.createElement('small');ref.textContent='Reference: '+item.payoutReference;row.append(ref);}
+          list.append(row);
+        });
+      }
     }catch(error){$('referral-message').textContent=error.message||'Referral details could not be loaded.';}
   }
   $('today-sales-toggle')?.addEventListener('click',()=>{
