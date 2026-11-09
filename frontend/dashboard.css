@@ -744,3 +744,9 @@ html body.workspace-active #owner-dashboard-view.profile-workspace-mode > #owner
 .receipt-history-toggle:active{transform:scale(.985)}
 #history-content.history-panel{margin-top:10px}
 #history-content.history-panel.hidden{display:none!important}
+
+
+/* Keep the Receipt workspace scrollable so the history shortcut below the two action cards is reachable on phones. */
+html body.workspace-active #receipts-home:not(.hidden){overflow-y:auto!important;overflow-x:hidden!important;max-height:100%!important;min-height:0!important;padding-bottom:18px!important}
+html body.workspace-active #receipts-home .receipt-history-panel{display:block!important;position:relative!important;z-index:5!important;margin:12px 0 8px!important;visibility:visible!important}
+html body.workspace-active #receipts-home .receipt-history-toggle{display:inline-flex!important;visibility:visible!important;min-height:40px!important;padding:9px 15px!important;font-size:12px!important}
