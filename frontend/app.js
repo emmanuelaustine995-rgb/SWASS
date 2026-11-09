@@ -200,32 +200,30 @@
       $('referral-active').textContent=Number(data.activeReferrals||0).toLocaleString('en-KE');
       $('referral-earned').textContent=money(data.earnedKes);
       $('referral-available').textContent=money(data.availableKes);
+      $('referral-receipts-available').textContent=Number(data.availableReceipts||0).toLocaleString('en-KE');
       $('referral-link').value=data.referralLink||'';
-      $('referral-payout-phone').value=data.payoutPhone||'';
-      $('referral-message').textContent='Earn 50% of your friend’s first successful subscription and each paid KSh 50 vendor activation. Withdrawals are processed by the SWASS administrator.';
+      $('referral-message').textContent='Earn 50% after a referred shop owner’s first successful subscription and 50% of each paid KSh 50 vendor activation. Rewards can only be redeemed into receipt credits at KSh 4 per receipt.';
       const history=await request('/api/v1/referrals/transactions');
       const earningsList=$('referral-earning-history');
       if(earningsList){
         earningsList.replaceChildren();
-        if(!history.earnings?.length){const empty=document.createElement('p');empty.className='muted small';empty.textContent='No referral commissions yet.';earningsList.append(empty);}
+        if(!history.earnings?.length){const empty=document.createElement('p');empty.className='muted small';empty.textContent='No referral rewards yet.';earningsList.append(empty);}
         else history.earnings.forEach(item=>{
           const row=document.createElement('div');row.className='referral-history-row';
-          const detail=document.createElement('span');detail.textContent=(item.description||'Referral commission')+' · '+new Date(item.createdAt).toLocaleDateString('en-KE');
+          const detail=document.createElement('span');detail.textContent=(item.description||'Referral reward')+' · '+new Date(item.createdAt).toLocaleDateString('en-KE');
           const amount=document.createElement('strong');amount.textContent='+'+money(item.amountKes);
           row.append(detail,amount);earningsList.append(row);
         });
       }
-      const list=$('referral-withdrawal-history');
+      const list=$('referral-redemption-history');
       if(list){
         list.replaceChildren();
-        if(!history.withdrawals?.length){const empty=document.createElement('p');empty.className='muted small';empty.textContent='No withdrawal requests yet.';list.append(empty);}
-        else history.withdrawals.forEach(item=>{
+        if(!history.redemptions?.length){const empty=document.createElement('p');empty.className='muted small';empty.textContent='No receipt-credit redemptions yet.';list.append(empty);}
+        else history.redemptions.forEach(item=>{
           const row=document.createElement('div');row.className='referral-history-row';
-          const detail=document.createElement('span');detail.textContent=new Date(item.createdAt).toLocaleDateString('en-KE')+' · '+String(item.status||'pending').replace('_',' ');
+          const detail=document.createElement('span');detail.textContent='Redeemed to receipt wallet · '+new Date(item.createdAt).toLocaleDateString('en-KE');
           const amount=document.createElement('strong');amount.textContent=money(item.amountKes);
-          row.append(detail,amount);
-          if(item.payoutReference){const ref=document.createElement('small');ref.textContent='Reference: '+item.payoutReference;row.append(ref);}
-          list.append(row);
+          row.append(detail,amount);list.append(row);
         });
       }
     }catch(error){$('referral-message').textContent=error.message||'Referral details could not be loaded.';}
@@ -244,13 +242,14 @@
       else{await navigator.clipboard.writeText(link);$('referral-message').textContent='Referral link copied. Share it with your friends.';}
     }catch(error){if(error.name!=='AbortError')$('referral-message').textContent='Could not share the link. Copy it from the box above.';}
   });
-  $('referral-withdraw')?.addEventListener('click',async()=>{
-    const button=$('referral-withdraw');button.disabled=true;$('referral-message').textContent='Submitting payout request…';
+  $('referral-redeem')?.addEventListener('click',async()=>{
+    const button=$('referral-redeem');button.disabled=true;$('referral-message').textContent='Redeeming your referral rewards…';
     try{
-      const result=await request('/api/v1/referrals/withdraw',{method:'POST',body:JSON.stringify({phone:$('referral-payout-phone').value.trim()})});
-      $('referral-message').textContent=`Payout request received for ${money(result.amountKes)}. Awaiting processing.`;
+      const result=await request('/api/v1/referrals/redeem',{method:'POST',body:JSON.stringify({})});
+      $('referral-message').textContent=`${money(result.amountKes)} added to your receipt wallet. It can pay for ${Number(result.receiptCreditsAdded||0).toLocaleString('en-KE')} receipts at KSh 4 each.`;
       await loadOwnerReferralSummary();
-    }catch(error){$('referral-message').textContent=error.message||'Could not submit payout request.';}
+      await loadDashboard();
+    }catch(error){$('referral-message').textContent=error.message||'Could not redeem referral rewards.';}
     finally{button.disabled=false;}
   });
   async function loadOwnerHomeSummary(){
