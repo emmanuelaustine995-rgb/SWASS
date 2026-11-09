@@ -505,3 +505,6 @@ body.workspace-active #owner-dashboard-view.profile-workspace-mode .profile-invi
 .profile-readonly-note{margin:0 0 10px;padding:10px 12px;border:1px solid rgba(88,156,192,.3);border-radius:12px;background:rgba(220,241,250,.72);color:#254a61;font-size:12px;font-weight:650}
 .profile-readonly .profile-card-body input:disabled,.profile-readonly .profile-card-body select:disabled,.profile-readonly .profile-card-body textarea:disabled{opacity:.88;color:#30445a;background:#f1f5f8;cursor:not-allowed}
 .profile-readonly .profile-card-body label{opacity:.92}
+
+.page-back-row{position:sticky;top:8px;z-index:1100;display:flex;justify-content:flex-start;margin:0 0 14px;padding:4px 0;background:transparent}
+.page-back-link{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;box-shadow:0 5px 18px rgba(15,42,67,.14)}
