@@ -1177,7 +1177,7 @@
     finally{btn.disabled=false;btn.textContent='＋ Add Products';}
   });
 
-  // Second-hand phone seller declaration workspace.
+  // Second-hand product seller declaration workspace.
   const secondhandPadState = { 'sh-signature': false, 'sh-thumbprint': false };
   function setupSecondhandPad(id) {
     const canvas = $(id); if (!canvas || canvas.dataset.ready === '1') return;
@@ -1203,7 +1203,7 @@
   function syncSecondhandReceiptMode(){const selected=document.querySelector('input[name="sh-receipt-choice"]:checked')?.value||'without_receipt';$('sh-sale-type').value=selected;const withReceipt=selected==='with_receipt';$('sh-no-receipt-wrap')?.classList.toggle('hidden',withReceipt);$('sh-receipt-photo-wrap')?.classList.toggle('hidden',!withReceipt);$('sh-no-receipt').required=!withReceipt;$('sh-receipt-photo').required=withReceipt;$('sh-thumbprint-wrap')?.classList.toggle('hidden',withReceipt);$('sh-declaration-with-receipt')?.classList.toggle('hidden',!withReceipt);$('sh-declaration-without-receipt')?.classList.toggle('hidden',withReceipt);document.querySelectorAll('.secondhand-receipt-option').forEach(el=>el.classList.toggle('selected',el.querySelector('input')?.checked));}
   document.querySelectorAll('input[name="sh-receipt-choice"]').forEach(el=>el.addEventListener('change',syncSecondhandReceiptMode));syncSecondhandReceiptMode();
   async function secondhandImageData(inputId,required=false) {
-    const file=$(inputId)?.files?.[0];if(!file){if(required)throw new Error('Please attach the required seller ID and phone photos.');return null;}
+    const file=$(inputId)?.files?.[0];if(!file){if(required)throw new Error('Please attach the required seller ID and product photos.');return null;}
     if(!file.type.startsWith('image/'))throw new Error('Choose an image file for '+inputId.replace('sh-','').replaceAll('-',' ')+'.');
     return await new Promise((resolve,reject)=>{
       const reader=new FileReader();reader.onerror=()=>reject(new Error('Could not read an uploaded photo.'));
@@ -1222,7 +1222,7 @@
   }
   checkSecondhandBiometricSupport();
   $('secondhand-open-card')?.addEventListener('click',()=>{
-    if(state.role!=='owner'){showNotice('Only the shop owner can record second-hand phone purchases.',true);return;}
+    if(state.role!=='owner'){showNotice('Only the shop owner can record second-hand product purchases.',true);return;}
     $('shop-directory-card')?.classList.add('hidden');
     document.querySelector('#shop-home > .shop-directory-card')?.classList.add('hidden');
     $('shop-product-results')?.classList.add('hidden');
@@ -1246,9 +1246,9 @@
       <h3>Product details</h3><p><strong>Receipt status:</strong> ${safe(d.saleType==='with_receipt'?'Original receipt provided':'No original receipt — seller declaration')} </p><p><strong>Product name:</strong> ${safe(d.productName||d.phoneMakeModel)} · <strong>Condition:</strong> ${safe(d.condition)}</p><p><strong>Product identifier / IMEI:</strong> ${safe(d.imei1||'Not provided')} · <strong>Second identifier:</strong> ${safe(d.imei2)} · <strong>Serial:</strong> ${safe(d.serialNumber)}</p><p><strong>Purchase price:</strong> KSh ${safe(Number(d.purchasePriceKes).toLocaleString())}</p>${d.saleType==='with_receipt'?'':`<p><strong>Reason receipt unavailable:</strong> ${safe(d.noReceiptReason)}</p>`}
       <h3>Seller's declaration</h3><p>I declare that I am the lawful owner of this product or have full legal authority to sell it; that, to the best of my knowledge, it is not stolen, unlawfully obtained, fraudulently acquired or subject to an ownership dispute; and that the product identifiers and serial details I have supplied are true and have not knowingly been altered. I have disclosed the receipt status recorded above. I accept responsibility for false statements, fraudulent representation or an unlawful ownership claim connected with this sale, and I agree to cooperate with lawful investigations and provide further information when lawfully required.</p>
       <p class="secondhand-receipt-notice"><strong>SELLER LIABILITY NOTICE:</strong> I confirm that I am the lawful owner of the product recorded above or legally authorised to sell it. If the product is found to be stolen, fraudulently obtained, unlawfully possessed, or subject to a false ownership claim, I accept responsibility for any false information or unlawful sale attributable to me and agree to cooperate with lawful investigations. I understand that I may be held liable under applicable Kenyan law.</p>
-      <div class="secondhand-record-images">${d.idPhotoData?`<figure><img src="${d.idPhotoData}" alt="Seller ID"><figcaption>Seller ID</figcaption></figure>`:''}${d.sellerPhotoData?`<figure><img src="${d.sellerPhotoData}" alt="Seller photo"><figcaption>Seller photo</figcaption></figure>`:''}${d.phonePhotoData?`<figure><img src="${d.phonePhotoData}" alt="Phone photo"><figcaption>Phone and identifying details</figcaption></figure>`:''}${d.receiptPhotoData?`<figure><img src="${d.receiptPhotoData}" alt="Original purchase receipt"><figcaption>Original purchase receipt</figcaption></figure>`:''}</div>
+      <div class="secondhand-record-images">${d.idPhotoData?`<figure><img src="${d.idPhotoData}" alt="Seller ID"><figcaption>Seller ID</figcaption></figure>`:''}${d.sellerPhotoData?`<figure><img src="${d.sellerPhotoData}" alt="Seller photo"><figcaption>Seller photo</figcaption></figure>`:''}${d.phonePhotoData?`<figure><img src="${d.phonePhotoData}" alt="Phone photo"><figcaption>Product and identifying details</figcaption></figure>`:''}${d.receiptPhotoData?`<figure><img src="${d.receiptPhotoData}" alt="Original purchase receipt"><figcaption>Original purchase receipt</figcaption></figure>`:''}</div>
       <div class="secondhand-record-signatures"><figure><strong>Seller signature</strong><img src="${d.signatureData}" alt="Seller signature"></figure>${d.thumbprintData?`<figure><strong>Seller thumbprint mark (drawn)</strong><img src="${d.thumbprintData}" alt="Drawn thumbprint mark"></figure>`:''}</div>
-      <p><strong>Witness:</strong> ${safe(d.witnessName)} · ${safe(d.witnessPhone)}</p><p><strong>Shop representative:</strong> ${safe(d.shopRepresentativeName||'Recorded shop owner')} · Seller and phone checks acknowledged</p><p class="tiny">The seller confirmed the declaration electronically. This record supports shop record-keeping; it does not itself determine legal ownership or guarantee a court outcome.</p></div><button id="secondhand-print-button" class="btn btn-primary full" type="button">Print / Save as PDF</button>`;
+      <p><strong>Witness:</strong> ${safe(d.witnessName)} · ${safe(d.witnessPhone)}</p><p><strong>Shop representative:</strong> ${safe(d.shopRepresentativeName||'Recorded shop owner')} · Seller and product checks acknowledged</p><p class="tiny">The seller confirmed the declaration electronically. This record supports shop record-keeping; it does not itself determine legal ownership or guarantee a court outcome.</p></div><button id="secondhand-print-button" class="btn btn-primary full" type="button">Print / Save as PDF</button>`;
     target.classList.remove('hidden');
     $('secondhand-print-button')?.addEventListener('click',()=>window.print());
     target.scrollIntoView({behavior:'smooth',block:'start'});
@@ -1257,9 +1257,8 @@
     ev.preventDefault();const message=$('secondhand-message'),button=$('secondhand-submit');
     const selectedSaleType=$('sh-sale-type').value;if(!secondhandPadState['sh-signature']||(selectedSaleType==='without_receipt'&&!secondhandPadState['sh-thumbprint'])){message.textContent=selectedSaleType==='without_receipt'?'The seller must complete both the signature and thumbprint mark on the screen.':'The seller must complete the electronic signature.';message.style.color='#a12b22';return;}
     if(!$('sh-declaration-accepted').checked){message.textContent='The seller must confirm the declaration before submission.';message.style.color='#a12b22';return;}
-    if(!$('sh-shop-acknowledged').checked){message.textContent='The shop representative must confirm that the seller and phone details were checked.';message.style.color='#a12b22';return;}
-    const imei1=$('sh-imei1').value.replace(/\s+/g,''),imei2=$('sh-imei2').value.replace(/\s+/g,'');
-    if(!/^\d{14,16}$/.test(imei1)|| (imei2&&!/^\d{14,16}$/.test(imei2))){message.textContent='Check that the IMEI number contains 14 to 16 digits.';message.style.color='#a12b22';return;}
+    if(!$('sh-shop-acknowledged').checked){message.textContent='The shop representative must confirm that the seller and product details were checked.';message.style.color='#a12b22';return;}
+    const imei1=$('sh-imei1').value.trim(),imei2=$('sh-imei2').value.trim();
     button.disabled=true;button.textContent='Saving protected declaration…';message.textContent='Preparing evidence and saving the seller declaration…';message.style.color='';
     try{
       const saleType=$('sh-sale-type').value;const [idPhotoData,phonePhotoData,sellerPhotoData,receiptPhotoData]=await Promise.all([secondhandImageData('sh-id-photo',true),secondhandImageData('sh-phone-photo',true),secondhandImageData('sh-seller-photo',true),secondhandImageData('sh-receipt-photo',saleType==='with_receipt')]);
@@ -1271,7 +1270,7 @@
       ['sh-id-preview','sh-seller-preview','sh-phone-preview','sh-receipt-preview'].forEach(id=>$(id)?.classList.add('hidden'));
       $('secondhand-history')?.classList.add('hidden');
     }catch(err){message.textContent=err.message||'Could not save the declaration. Please check the details and try again.';message.style.color='#a12b22';}
-    finally{button.disabled=false;button.textContent='Save Seller Declaration & Record Phone';}
+    finally{button.disabled=false;button.textContent='Save Seller Declaration & Record Product';}
   });
   $('secondhand-history-toggle')?.addEventListener('click',async()=>{
     const panel=$('secondhand-history');if(!panel)return;
@@ -1280,7 +1279,7 @@
     try{
       const data=await request('/api/v1/second-hand-phone-declarations');
       const rows=data.declarations||[];
-      if(!rows.length){panel.innerHTML='<p class="muted">No second-hand phone declarations have been saved for this shop yet.</p>';return;}
+      if(!rows.length){panel.innerHTML='<p class="muted">No second-hand product declarations have been saved for this shop yet.</p>';return;}
       panel.innerHTML='<h3>Saved seller declarations</h3>'+rows.map(d=>`<button type="button" class="secondhand-history-row" data-declaration-id="${escapeHtml(d.id)}"><strong>${escapeHtml(d.sellerName)}</strong><span>${escapeHtml(d.phoneMakeModel)} · IMEI ${escapeHtml(d.imei1)}</span><small>${escapeHtml(d.declarationRef)} · ${escapeHtml(d.createdAt?new Date(d.createdAt).toLocaleString():'')}</small></button>`).join('');
     }catch(err){panel.innerHTML='<p class="error">'+escapeHtml(err.message||'Could not load declarations.')+'</p>';}
   });
