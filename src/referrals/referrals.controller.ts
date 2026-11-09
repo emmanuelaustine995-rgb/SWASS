@@ -30,7 +30,7 @@ export class ReferralsController {
       this.db.pool.query(`SELECT
         (SELECT COALESCE(SUM(amount_kes),0) FROM referral_rewards WHERE referrer_tenant_id=$1) +
         (SELECT COALESCE(SUM(amount_kes),0) FROM referral_commissions WHERE referrer_tenant_id=$1) AS total`, [tenantId]),
-      this.db.pool.query('SELECT COALESCE(SUM(amount_kes),0)::bigint AS total FROM referral_redemptions WHERE tenant_id=$1', [tenantId]),
+      this.db.pool.query(`SELECT (SELECT COALESCE(SUM(amount_kes),0) FROM referral_redemptions WHERE tenant_id=$1) + (SELECT COALESCE(SUM(amount_kes),0) FROM referral_withdrawal_requests WHERE tenant_id=$1 AND status IN ('pending','approved','paid')) AS total`, [tenantId]),
     ]);
     const earnedKes = Number(earned.rows[0].total || 0);
     const redeemedKes = Number(redeemed.rows[0].total || 0);
@@ -78,7 +78,7 @@ export class ReferralsController {
         c.query(`SELECT
           (SELECT COALESCE(SUM(amount_kes),0) FROM referral_rewards WHERE referrer_tenant_id=$1) +
           (SELECT COALESCE(SUM(amount_kes),0) FROM referral_commissions WHERE referrer_tenant_id=$1) AS total`, [tenantId]),
-        c.query('SELECT COALESCE(SUM(amount_kes),0) AS total FROM referral_redemptions WHERE tenant_id=$1', [tenantId]),
+        c.query(`SELECT (SELECT COALESCE(SUM(amount_kes),0) FROM referral_redemptions WHERE tenant_id=$1) + (SELECT COALESCE(SUM(amount_kes),0) FROM referral_withdrawal_requests WHERE tenant_id=$1 AND status IN ('pending','approved','paid')) AS total`, [tenantId]),
       ]);
       const available = Number(earned.rows[0].total || 0) - Number(redeemed.rows[0].total || 0);
       if (!Number.isSafeInteger(available) || available < RECEIPT_FEE_KES) {
