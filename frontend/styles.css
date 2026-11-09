@@ -446,5 +446,5 @@ body:not(.workspace-active) #workspace-nav,
 .topbar .top-actions{display:none!important}
 #pos-view.profile-workspace-mode #owner-dashboard-view{padding-top:0!important;margin-top:0!important}
 #pos-view.profile-workspace-mode #owner-dashboard-view>#profile-panel{margin:0!important;align-self:start!important;position:relative!important;top:0!important}
-#pos-view.profile-workspace-mode #profile-panel>.profile-account-summary{order:0!important;margin-top:0!important}
+#pos-view.profile-workspace-mode #profile-panel>.profile-account-summary{order:2!important;margin-top:0!important}
 #pos-view.profile-workspace-mode #profile-form{margin-top:0!important;align-content:start!important}
