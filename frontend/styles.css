@@ -904,3 +904,16 @@ body.workspace-active #owner-home #today-sales-details.hidden{display:none!impor
 .login-forgot-btn{display:inline-flex;align-items:center;justify-content:center;min-height:32px;padding:6px 13px;border-radius:8px;background:#c62828;color:#fff!important;font-size:11px;font-weight:800;letter-spacing:.035em;text-decoration:none}
 .login-forgot-btn:hover{background:#a91f1f}
 @media(max-width:380px){.login-role-tabs{gap:4px}.login-role-tab{font-size:11px;padding:7px 3px}}
+
+/* Clean login landing: keep attention on the logo area and sign-in controls. */
+body:not(.workspace-active) .topbar{display:none!important}
+body:not(.workspace-active) .shell{max-width:520px;margin:12px auto;min-height:calc(100vh - 24px);display:flex;align-items:center;justify-content:center}
+body:not(.workspace-active) #login-view{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;width:100%;min-height:0;padding:8px 0}
+body:not(.workspace-active) #login-view .login-card{width:100%;max-width:460px;padding:18px 20px;margin:0;border-radius:18px}
+body:not(.workspace-active) #login-form{display:grid;gap:10px}
+body:not(.workspace-active) #login-form>label{display:grid;gap:5px;margin:0;font-size:12px;font-weight:700}
+body:not(.workspace-active) #login-form input{min-height:42px}
+body:not(.workspace-active) .login-role-tabs{margin:0 0 8px}
+body:not(.workspace-active) .login-forgot-wrap{margin-top:6px}
+body:not(.workspace-active) #owner-register-entry{margin:10px 0 0}
+@media(max-width:480px){body:not(.workspace-active) .shell{margin:0 auto;padding:10px 14px;min-height:100dvh}body:not(.workspace-active) #login-view .login-card{padding:16px 14px}}
