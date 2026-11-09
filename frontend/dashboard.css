@@ -569,7 +569,7 @@ body.dashboard-dark #owner-staff-performance .muted {
 }
 
 /* AURORA profile: three compact, softly animated sections */
-#owner-dashboard-view{display:flex;flex-direction:column;gap:7px}
+#owner-dashboard-view:not(.hidden){display:flex;flex-direction:column;gap:7px}
 #profile-panel{order:1;border:1px solid rgba(150,170,190,.3);background:linear-gradient(125deg,rgba(255,248,232,.92),rgba(237,250,247,.88),rgba(246,239,255,.88));box-shadow:0 8px 24px rgba(44,62,80,.07);animation:aurora-profile-glow 13s ease-in-out infinite alternate}
 #profile-panel>.profile-account-summary{order:2;background:linear-gradient(115deg,rgba(230,245,255,.88),rgba(245,239,255,.86),rgba(255,248,234,.84));border:1px solid rgba(150,170,190,.24);box-shadow:0 4px 15px rgba(44,62,80,.05)}
 #profile-panel>.section-head,#profile-panel>#profile-form{order:1}
