@@ -248,7 +248,7 @@
       const result=await request('/api/v1/referrals/redeem',{method:'POST',body:JSON.stringify({})});
       $('referral-message').textContent=`${money(result.amountKes)} added to your receipt wallet. It can pay for ${Number(result.receiptCreditsAdded||0).toLocaleString('en-KE')} receipts at KSh 4 each.`;
       await loadOwnerReferralSummary();
-      await loadDashboard();
+      await loadOwnerHomeSummary();
     }catch(error){$('referral-message').textContent=error.message||'Could not redeem referral rewards.';}
     finally{button.disabled=false;}
   });
