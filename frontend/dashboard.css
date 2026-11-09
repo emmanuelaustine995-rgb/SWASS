@@ -671,3 +671,33 @@ body.workspace-active #dashboard-payment-panel.hidden{display:none!important}
  body.workspace-active #referral-card .referral-redemption-panel{flex-wrap:nowrap!important}
  body.workspace-active #referral-card #referral-redeem{font-size:9px!important;padding:5px 7px!important}
 }
+
+
+/* Strict tab isolation. Several workspace roots use display:...!important;
+   so a plain .hidden class alone cannot override their layout declarations. */
+body.workspace-active #owner-home.hidden,
+body.workspace-active #receipts-home.hidden,
+body.workspace-active #pos-view.hidden,
+body.workspace-active #owner-dashboard-view.hidden,
+body.workspace-active #shop-home.hidden,
+body.workspace-active #dashboard-business-card.hidden,
+body.workspace-active #platform-referral-admin.hidden,
+body.workspace-active #staff-sales-summary.hidden,
+body.workspace-active #staff-profile-panel.hidden,
+body.workspace-active #profile-panel.hidden,
+body.workspace-active #history-panel.hidden,
+body.workspace-active #owner-customers-section.hidden,
+body.workspace-active .customer-lookup-panel.hidden,
+body.workspace-active #account-profile-menu.hidden {
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+body.workspace-active #owner-home:not(.hidden),
+body.workspace-active #receipts-home:not(.hidden),
+body.workspace-active #pos-view:not(.hidden),
+body.workspace-active #shop-home:not(.hidden),
+body.workspace-active #owner-dashboard-view.profile-workspace-mode:not(.hidden) {
+  visibility:visible!important;
+  pointer-events:auto!important;
+}
