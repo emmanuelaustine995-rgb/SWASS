@@ -742,10 +742,9 @@
       openSaleItemForm();
     }
   });
-  function openSaleItemForm(){ $('product-form').reset(); $('product-stock').value='1'; $('product-reorder').value='1'; $('product-date').value=new Date().toLocaleString('en-KE'); $('product-error').textContent='';$('product-modal').classList.remove('hidden'); $('product-name').focus(); }
+  function openSaleItemForm(){ $('product-form').reset(); $('product-stock').value='1'; $('product-reorder').value='1'; $('product-date').value=new Date().toLocaleString('en-KE'); $('product-error').textContent='';$('product-form').scrollIntoView({behavior:'smooth',block:'center'}); $('product-name').focus({preventScroll:true}); }
   $('add-product-btn')?.addEventListener('click',openSaleItemForm);
   $('add-another-item')?.addEventListener('click',openSaleItemForm);
-  $('product-close').addEventListener('click',()=> $('product-modal').classList.add('hidden'));
   $('product-form').addEventListener('submit',async e=>{
     e.preventDefault(); $('product-error').textContent='';
     const btn=$('product-form').querySelector('button[type="submit"]'); btn.disabled=true; btn.textContent='Adding item…';
@@ -755,7 +754,7 @@
     if(!Number.isSafeInteger(price)||price<1){$('product-error').textContent='Enter a valid selling price.';btn.disabled=false;btn.textContent='Add product to sale';return;}
     const id='direct-'+uuid(),product={id,name:$('product-name').value.trim(),priceKes:price,costKes:0,stockQty:qty,reorderLevel:0,requiresBuyerId:$('product-buyer-id').checked};
     state.cart.set(id,{product,qty,unitPriceKes:price,serials,imei:serials[0]||'',directSale:true});
-    $('product-modal').classList.add('hidden');$('product-form').reset();$('product-stock').value='1';$('product-reorder').value='1';
+    $('product-form').reset();$('product-stock').value='1';$('product-reorder').value='1';
     renderCart();showNotice('Item added to this receipt. Add another good or continue to customer details.');
     btn.disabled=false;btn.textContent='Add product to sale';
   });
