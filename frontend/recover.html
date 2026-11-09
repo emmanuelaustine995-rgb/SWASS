@@ -4,6 +4,17 @@
 <p class="page-back-row"><a class="btn btn-light page-back-link" href="index.html">← Back to AURORA</a></p>
 <h1>Recover lost receipts</h1>
 <p>Enter the National ID and phone number used when purchasing. Pay a one-time KSh 10 recovery fee to unlock <strong>all receipts</strong> linked to those details.</p>
+<section class="panel" id="special-recovery-panel">
+<h2>Recover a Second-Hand Goods Special Receipt</h2>
+<p>Enter the seller's National ID and phone number. A KSh 50 M-Pesa payment unlocks the saved Special Receipt.</p>
+<form id="special-request-form">
+<label>Seller National ID<input id="special-national-id" type="text" autocomplete="off" maxlength="40" placeholder="Seller National ID" required></label>
+<label>Seller phone number<input id="special-phone" type="tel" autocomplete="tel" placeholder="07XXXXXXXX or 2547XXXXXXXX" required></label>
+<button id="special-request-button" type="submit">Pay KSh 50 and recover Special Receipt</button>
+</form>
+<p id="special-message" role="status" aria-live="polite"></p>
+<div id="special-receipt-list"></div>
+</section>
 <form id="request-form">
 <label>National ID number<input id="national-id" type="text" autocomplete="off" maxlength="30" placeholder="Enter National ID number" required></label>
 <label>Phone number<input id="phone" type="tel" autocomplete="tel" placeholder="07XXXXXXXX or 2547XXXXXXXX" required></label>
