@@ -909,3 +909,51 @@ html body.workspace-active #pos-view.workspace-issue-mode #checkout-open{margin-
   #owner-home,#subscription-home,#receipts-home,#shop-home,#owner-dashboard-view,#pos-view{box-sizing:border-box;padding-bottom:calc(24px + env(safe-area-inset-bottom))}
   #workspace-nav{margin-bottom:14px!important}
 }
+
+
+/* AURORA receipt workflow: compact paired actions below Product Details. */
+html body.workspace-active #pos-view.workspace-issue-mode .receipt-product-actions{display:flex!important;align-items:center!important;gap:8px!important;flex-wrap:wrap!important;margin:2px 0 12px!important}
+html body.workspace-active #pos-view.workspace-issue-mode .receipt-product-actions #checkout-open,
+html body.workspace-active #pos-view.workspace-issue-mode .receipt-product-actions #receipt-add-product-toggle{display:inline-flex!important;align-items:center!important;justify-content:center!important;flex:0 0 auto!important;width:auto!important;min-width:0!important;max-width:100%!important;min-height:36px!important;margin:0!important;padding:8px 12px!important;border-radius:10px!important;font-size:12px!important;line-height:1.2!important}
+html body.workspace-active #pos-view.workspace-issue-mode .receipt-product-actions #receipt-add-product-toggle{border:1px solid #c9d8eb!important;background:#f4f8ff!important;color:#174b83!important;font-weight:750!important}
+html body.workspace-active #pos-view.workspace-issue-mode .cart-panel .section-head{margin-bottom:10px!important}
+html body.workspace-active #pos-view.workspace-issue-mode .cart-panel .section-head h2{font-size:19px!important;margin:0!important}
+html body.workspace-active #pos-view.workspace-issue-mode .cart-panel .section-head .eyebrow{font-size:9px!important;margin:0 0 3px!important}
+html body.workspace-active #pos-view.workspace-issue-mode .cart-panel .cart-list{min-height:44px!important;max-height:min(27vh,220px)!important;overflow-y:auto!important}
+html body.workspace-active #pos-view.workspace-issue-mode #product-form:not(.hidden){max-height:42vh!important;overflow-y:auto!important}
+html body.workspace-active #pos-view.workspace-issue-mode .page-heading{margin:0 0 8px!important}
+html body.workspace-active #pos-view.workspace-issue-mode .page-heading h1{font-size:20px!important;margin:3px 0!important}
+html body.workspace-active #pos-view.workspace-issue-mode .page-heading .muted{font-size:11px!important;margin:3px 0!important}
+html body.workspace-active #pos-view.workspace-issue-mode .pos-grid{display:block!important;min-height:0!important}
+html body.workspace-active #pos-view.workspace-issue-mode .cart-panel{padding:12px!important}
+html body.workspace-active #pos-view.workspace-issue-mode .totals{margin:8px 0 10px!important;padding-top:7px!important}
+html body.workspace-active #pos-view.workspace-issue-mode .totals>div,
+html body.workspace-active #pos-view.workspace-issue-mode .totals .discount-line{margin:5px 0!important}
+html body.workspace-active #pos-view.workspace-issue-mode .tiny{margin-top:5px!important}
+
+/* Dashboard keeps its Issue Receipt action visible in the available screen height. */
+body.workspace-active #owner-home{grid-template-rows:auto minmax(0,1fr) auto!important;gap:7px!important}
+body.workspace-active #owner-home>#owner-home-issue{display:flex!important;visibility:visible!important;position:relative!important;z-index:2!important;align-self:end!important;width:100%!important}
+body.workspace-active #owner-home>#referral-card{min-height:0!important;height:auto!important;max-height:100%!important}
+body.workspace-active .shell{padding-bottom:0!important}
+body.workspace-active #workspace-nav{flex:0 0 auto!important;position:relative!important;top:auto!important;max-height:58px!important;overflow:hidden!important}
+body.workspace-active .shell>.bottom-nav{display:none!important}
+html body.workspace-active #owner-home:not(.hidden),
+html body.workspace-active #receipts-home:not(.hidden),
+html body.workspace-active #pos-view:not(.hidden),
+html body.workspace-active #shop-home:not(.hidden),
+html body.workspace-active #subscription-home:not(.hidden),
+html body.workspace-active #owner-dashboard-view.profile-workspace-mode:not(.hidden){
+  flex:1 1 auto!important;min-height:0!important;max-height:100%!important;overflow-y:auto!important;overflow-x:hidden!important;
+  overscroll-behavior:contain!important;padding-bottom:calc(18px + env(safe-area-inset-bottom))!important;
+}
+html body.workspace-active #pos-view.workspace-issue-mode{display:block!important}
+@media(max-width:760px){
+ html body.workspace-active .shell{height:calc(100dvh - 64px - 70px)!important;min-height:0!important;padding:8px 10px 0!important;gap:5px!important}
+ html body.workspace-active #workspace-nav{margin:0!important;padding:4px 0!important}
+ html body.workspace-active #pos-view.workspace-issue-mode .page-heading>div{display:grid!important;grid-template-columns:auto 1fr;align-items:center;column-gap:9px!important}
+ html body.workspace-active #pos-view.workspace-issue-mode .page-heading>div #back-to-receipts{grid-row:1 / span 3!important;grid-column:1!important;min-height:34px!important;padding:6px 9px!important;font-size:10px!important}
+ html body.workspace-active #pos-view.workspace-issue-mode .page-heading .eyebrow,
+ html body.workspace-active #pos-view.workspace-issue-mode .page-heading h1,
+ html body.workspace-active #pos-view.workspace-issue-mode .page-heading .muted{grid-column:2!important}
+}
