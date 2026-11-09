@@ -166,3 +166,38 @@ body.workspace-active .profile-account-summary .account-profile-details{grid-tem
 @media (prefers-reduced-motion: reduce) {
   .ereceipt-aura-title { animation: none; opacity: 1; color: #a7f7ed; text-shadow: none; }
 }
+
+
+/* Desktop/laptop: keep the signed-in app in a compact phone-style frame. */
+@media (min-width: 761px) {
+  body.workspace-active .topbar {
+    width: min(100%, 520px);
+    margin-inline: auto;
+    padding-inline: 14px;
+  }
+  body.workspace-active .shell {
+    width: min(100%, 520px);
+    max-width: 520px;
+    height: calc(100dvh - 72px - 78px);
+    padding: 10px 12px 8px;
+    border-left: 1px solid rgba(255,255,255,.14);
+    border-right: 1px solid rgba(255,255,255,.14);
+    background: rgba(255,255,255,.96);
+    box-shadow: 0 0 42px rgba(0,0,0,.18);
+  }
+  body.workspace-active .bottom-nav {
+    left: 50%;
+    right: auto;
+    width: min(100%, 520px);
+    transform: translateX(-50%);
+  }
+}
+/* On phones, retain the full available width. */
+@media (max-width: 760px) {
+  body.workspace-active .topbar,
+  body.workspace-active .shell,
+  body.workspace-active .bottom-nav {
+    width: 100%;
+    max-width: 100%;
+  }
+}
