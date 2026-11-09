@@ -10,7 +10,7 @@ import { AuthGuard, Roles, RolesGuard } from '../auth/auth';
 const MONTHLY_KES = 100;
 const YEARLY_KES = 900;
 const MAX_TOPUP_KES = 150000;
-type Purpose = 'subscription' | 'wallet_topup' | 'recovery' | 'vendor_fee' | 'receipt_sale';
+type Purpose = 'subscription' | 'wallet_topup' | 'recovery' | 'vendor_fee' | 'receipt_sale' | 'second_hand_recovery';
 
 @Injectable()
 export class MpesaService {
@@ -99,7 +99,7 @@ export class MpesaService {
           amount: input.amount,
           phone: input.phone,
           callback_url: cfg.callbackUrl,
-          description: input.purpose === 'subscription' ? `SWASS subscription ${input.paymentId}` : input.purpose === 'recovery' ? `SWASS receipt recovery ${input.paymentId}` : input.purpose === 'vendor_fee' ? `AURORA vendor activation ${input.paymentId}` : `SWASS wallet top-up ${input.paymentId}`,
+          description: input.purpose === 'subscription' ? `SWASS subscription ${input.paymentId}` : input.purpose === 'recovery' ? `SWASS receipt recovery ${input.paymentId}` : input.purpose === 'vendor_fee' ? `AURORA vendor activation ${input.paymentId}` : input.purpose === 'second_hand_recovery' ? `AURORA Special Receipt recovery ${input.paymentId}` : `SWASS wallet top-up ${input.paymentId}`,
         }),
         signal: AbortSignal.timeout(25000),
       });
@@ -196,6 +196,22 @@ export class MpesaController {
     if (typeof checkoutId !== 'string' || !checkoutId) return { ResultCode: 0, ResultDesc: 'Accepted' };
     try {
       await this.db.tx(async (c) => {
+        const special = await c.query(`SELECT * FROM second_hand_special_receipt_recoveries WHERE checkout_request_id=$1 FOR UPDATE`, [checkoutId]);
+        if (special.rowCount) {
+          const sp = special.rows[0];
+          if (sp.status !== 'pending') return;
+          if (status !== 'completed' || Number(body?.result_code) !== 0) {
+            if (status === 'failed') await c.query(`UPDATE second_hand_special_receipt_recoveries SET status='failed' WHERE id=$1 AND status='pending'`, [sp.id]);
+            return;
+          }
+          const specialReceipt = typeof body?.mpesa_receipt_number === 'string' ? body.mpesa_receipt_number.trim() : '';
+          const specialAmount = Number(body?.amount);
+          const specialPhone = typeof body?.phone === 'string' ? body.phone.replace(/^\\+/, '') : '';
+          if (!specialReceipt || !Number.isSafeInteger(specialAmount) || specialAmount !== 50) return;
+          if (specialPhone && specialPhone !== sp.phone) return;
+          await c.query(`UPDATE second_hand_special_receipt_recoveries SET status='success',mpesa_receipt_no=$1,paid_at=now() WHERE id=$2 AND status='pending'`, [specialReceipt, sp.id]);
+          return;
+        }
         const recovery = await c.query(`SELECT * FROM receipt_recovery_payments WHERE checkout_request_id=$1 FOR UPDATE`, [checkoutId]);
         if (recovery.rowCount) {
           const rp = recovery.rows[0];
