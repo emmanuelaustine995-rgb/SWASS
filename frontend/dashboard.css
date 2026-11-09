@@ -578,3 +578,8 @@ body.dashboard-dark #owner-staff-performance .muted {
 #owner-dashboard-view.profile-workspace-mode>#profile-panel{display:flex;flex-direction:column;gap:9px}
 #owner-dashboard-view.profile-workspace-mode .profile-shop-card,#owner-dashboard-view.profile-workspace-mode .profile-account-summary{color:#243044}
 #owner-dashboard-view.profile-workspace-mode>#owner-staff-area .panel{background:transparent;border:0;box-shadow:none;padding:4px}
+
+/* Independent profile disclosure cards. */
+#owner-dashboard-view.profile-workspace-mode .profile-card{margin:0!important}
+#owner-dashboard-view.profile-workspace-mode .profile-card-summary{list-style:none;cursor:pointer}
+#owner-dashboard-view.profile-workspace-mode .profile-card-summary::-webkit-details-marker{display:none}
