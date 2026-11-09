@@ -1,4 +1,4 @@
-import { BadRequestException, Controller, Get, Post, Body, Req, UseGuards } from '@nestjs/common';
+import { BadRequestException, Controller, Get, Post, Body, Req, Param, UseGuards } from '@nestjs/common';
 import { AuthGuard, Roles, RolesGuard } from '../auth/auth';
 import { DbService } from '../db/db.service';
 
@@ -113,6 +113,33 @@ export class SecondHandPhoneDeclarationsController {
        serialNumber, condition, body.purchasePriceKes, noReceiptReason, sellerPhotoData, idPhotoData,
        phonePhotoData, signatureData, thumbprintData, witnessName, witnessPhone],
     );
+    return { declaration: rows[0] };
+  }
+
+  @Get(':id')
+  @Roles('owner')
+  async getOne(@Req() req: any, @Param('id') id: string) {
+    const user = req.user;
+    this.requireStore(user);
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+      throw new BadRequestException('Invalid declaration reference.');
+    }
+    const { rows } = await this.db.pool.query(
+      `SELECT id, declaration_ref AS "declarationRef", seller_name AS "sellerName",
+        national_id AS "nationalId", seller_phone AS "sellerPhone", alternative_phone AS "alternativePhone",
+        residential_address AS "residentialAddress", phone_make_model AS "phoneMakeModel",
+        imei1, imei2, serial_number AS "serialNumber", phone_condition AS "condition",
+        purchase_price_kes AS "purchasePriceKes", no_receipt_reason AS "noReceiptReason",
+        seller_photo_data AS "sellerPhotoData", id_photo_data AS "idPhotoData",
+        phone_photo_data AS "phonePhotoData", signature_data AS "signatureData",
+        thumbprint_data AS "thumbprintData", witness_name AS "witnessName",
+        witness_phone AS "witnessPhone", declaration_accepted AS "declarationAccepted",
+        accepted_at AS "acceptedAt", created_at AS "createdAt"
+       FROM second_hand_phone_declarations
+       WHERE id=$1 AND tenant_id=$2 AND store_id=$3 LIMIT 1`,
+      [id, user.tenantId, user.storeId],
+    );
+    if (!rows[0]) throw new BadRequestException('Declaration not found in this shop.');
     return { declaration: rows[0] };
   }
 
