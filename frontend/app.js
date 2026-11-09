@@ -468,7 +468,7 @@
   // Put the existing M-Pesa subscription/top-up form behind compact dashboard tabs.
   const dashboardPaymentSlot = $('dashboard-payment-form-slot');
   const dashboardPaymentPanel = $('dashboard-payment-panel');
-  const existingPaymentCard = $('owner-payments-section')?.querySelector(':scope > section:first-child');
+  const existingPaymentCard = $('owner-mpesa-form')?.closest('section') || $('owner-payments-section')?.querySelector(':scope > section:first-child');
   if (dashboardPaymentSlot && existingPaymentCard) dashboardPaymentSlot.appendChild(existingPaymentCard);
   document.querySelectorAll('[data-payment-purpose]').forEach(tab => tab.addEventListener('click', () => {
     const purpose = tab.dataset.paymentPurpose;
