@@ -594,7 +594,7 @@ body.dashboard-dark #owner-staff-performance .muted {
 
 /* Compact green subscription shortcuts on the home dashboard. */
 .dashboard-payment-tabs{display:flex;gap:8px;align-items:center;margin:10px 0 12px}
-.dashboard-payment-tab{appearance:none;border:1px solid rgba(35,132,83,.25);border-radius:999px;background:linear-gradient(135deg,#e5f8eb,#c9efd7);color:#17663c;padding:7px 13px;font:700 11px/1.2 system-ui,sans-serif;box-shadow:0 3px 10px rgba(25,120,70,.09);cursor:pointer}
+.dashboard-payment-tab{appearance:none;display:flex;flex-direction:column;align-items:flex-start;gap:3px;border:1px solid rgba(35,132,83,.25);border-radius:13px;background:linear-gradient(135deg,#e5f8eb,#c9efd7);color:#17663c;padding:8px 12px;font:700 11px/1.2 system-ui,sans-serif;box-shadow:0 3px 10px rgba(25,120,70,.09);cursor:pointer}.dashboard-payment-tab small{font-size:9px;font-weight:600;opacity:.85}.dashboard-payment-intro{margin:0 0 10px;color:#37634a;font-size:11px;line-height:1.45}
 .dashboard-payment-tab.active,.dashboard-payment-tab:focus-visible{background:linear-gradient(135deg,#16864e,#2caf6b);color:#fff;outline:none}
 .dashboard-payment-panel{position:relative;margin:0 0 14px;padding:12px;border:1px solid #ccebd6;border-radius:16px;background:linear-gradient(145deg,#f4fff7,#fff);box-shadow:0 8px 24px rgba(31,115,69,.1)}
 .dashboard-payment-panel .panel{margin:0;box-shadow:none;border:0;background:transparent;padding:4px}
