@@ -198,7 +198,7 @@
       const data=await request('/api/v1/referrals/summary');
       $('referral-total').textContent=Number(data.totalReferrals||0).toLocaleString('en-KE');
       $('referral-active').textContent=Number(data.activeReferrals||0).toLocaleString('en-KE');
-      $('referral-earned').textContent=Number(data.availableReceipts||0).toLocaleString('en-KE')+' receipts';
+      $('referral-earned').textContent=money(data.earnedKes);
       $('referral-available').textContent=money(data.availableKes);
       if($('referral-remainder'))$('referral-remainder').textContent=money(data.rewardRemainderKes);
       $('referral-receipts-available').textContent=Number(data.availableReceipts||0).toLocaleString('en-KE');
