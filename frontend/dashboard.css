@@ -569,14 +569,12 @@ body.dashboard-dark #owner-staff-performance .muted {
 }
 
 /* AURORA profile: three compact, softly animated sections */
-#owner-dashboard-view:not(.hidden){display:flex;flex-direction:column;gap:7px}
-#profile-panel{order:1;border:1px solid rgba(150,170,190,.3);background:linear-gradient(125deg,rgba(255,248,232,.92),rgba(237,250,247,.88),rgba(246,239,255,.88));box-shadow:0 8px 24px rgba(44,62,80,.07);animation:aurora-profile-glow 13s ease-in-out infinite alternate}
-#profile-panel>.profile-account-summary{order:2;background:linear-gradient(115deg,rgba(230,245,255,.88),rgba(245,239,255,.86),rgba(255,248,234,.84));border:1px solid rgba(150,170,190,.24);box-shadow:0 4px 15px rgba(44,62,80,.05)}
-#profile-panel>.section-head,#profile-panel>#profile-form{order:1}
-#owner-dashboard-view>#owner-staff-area{order:3;margin:0;padding:8px;border-radius:13px;border:1px solid rgba(226,147,74,.24);background:linear-gradient(120deg,rgba(255,237,215,.9),rgba(255,247,232,.86),rgba(248,239,255,.82));box-shadow:0 5px 18px rgba(128,86,45,.06);animation:aurora-invite-glow 11s ease-in-out infinite alternate}
-#owner-dashboard-view>#owner-staff-area .panel{background:transparent;border:0;box-shadow:none;padding:4px}
-#owner-dashboard-view>#owner-staff-area .owner-staff-tabs{margin:0 0 5px}
-#owner-dashboard-view>#owner-staff-area .section-head h2{font-size:13px}
 @keyframes aurora-profile-glow{0%{background-position:0% 50%;filter:saturate(.9)}100%{background-position:100% 50%;filter:saturate(1.12)}}
 @keyframes aurora-invite-glow{0%{background-position:0% 50%}100%{background-position:100% 50%}}
 @media(prefers-reduced-motion:reduce){#profile-panel,#owner-dashboard-view>#owner-staff-area{animation:none}}
+
+/* The three profile cards are separate siblings inside the profile workspace. */
+#owner-dashboard-view.profile-workspace-mode{display:flex;flex-direction:column;gap:9px}
+#owner-dashboard-view.profile-workspace-mode>#profile-panel{display:flex;flex-direction:column;gap:9px}
+#owner-dashboard-view.profile-workspace-mode .profile-shop-card,#owner-dashboard-view.profile-workspace-mode .profile-account-summary{color:#243044}
+#owner-dashboard-view.profile-workspace-mode>#owner-staff-area .panel{background:transparent;border:0;box-shadow:none;padding:4px}
