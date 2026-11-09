@@ -524,3 +524,5 @@ body.workspace-active #owner-dashboard-view.profile-workspace-mode .profile-invi
 .platform-referral-request-title{display:flex;justify-content:space-between;gap:12px;color:#173b56}
 .platform-referral-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
 .platform-referral-actions input{flex:1;min-width:170px}
+
+.referral-subheading{margin-top:12px;padding-top:8px;border-top:1px solid #eadcf2}

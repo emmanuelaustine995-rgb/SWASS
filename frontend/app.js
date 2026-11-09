@@ -204,6 +204,17 @@
       $('referral-payout-phone').value=data.payoutPhone||'';
       $('referral-message').textContent='Earn 50% of your friend’s first successful subscription and each paid KSh 50 vendor activation. Withdrawals are processed by the SWASS administrator.';
       const history=await request('/api/v1/referrals/transactions');
+      const earningsList=$('referral-earning-history');
+      if(earningsList){
+        earningsList.replaceChildren();
+        if(!history.earnings?.length){const empty=document.createElement('p');empty.className='muted small';empty.textContent='No referral commissions yet.';earningsList.append(empty);}
+        else history.earnings.forEach(item=>{
+          const row=document.createElement('div');row.className='referral-history-row';
+          const detail=document.createElement('span');detail.textContent=(item.description||'Referral commission')+' · '+new Date(item.createdAt).toLocaleDateString('en-KE');
+          const amount=document.createElement('strong');amount.textContent='+'+money(item.amountKes);
+          row.append(detail,amount);earningsList.append(row);
+        });
+      }
       const list=$('referral-withdrawal-history');
       if(list){
         list.replaceChildren();
