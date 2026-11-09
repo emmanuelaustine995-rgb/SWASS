@@ -10,6 +10,58 @@ type ProductInput = { name?: string; sku?: string | null; barcode?: string | nul
 export class InventoryController {
   constructor(private db: DbService) {}
 
+  @Get('directory/search')
+  @Roles('owner', 'manager', 'cashier', 'vendor', 'freelancer')
+  async searchDirectory(@Query('q') q?: string) {
+    const search = typeof q === 'string' ? q.trim().slice(0, 100) : '';
+    if (search.length < 2) return { products: [] };
+    const { rows } = await this.db.pool.query(
+      `SELECT p.id, p.name, p.price_kes AS "priceKes",
+              t.name AS "businessName", t.phone AS "shopPhone",
+              s.name AS "storeName", s.location AS "storeLocation"
+         FROM products p
+         JOIN tenants t ON t.id = p.tenant_id
+         JOIN stores s ON s.id = p.store_id AND s.tenant_id = p.tenant_id
+        WHERE p.public_listing = true
+          AND p.archived_at IS NULL
+          AND p.stock_qty > 0
+          AND (p.name ILIKE '%' || $1 || '%' OR similarity(p.name, $1) > 0.25)
+        ORDER BY CASE WHEN lower(p.name) = lower($1) THEN 0
+                      WHEN lower(p.name) LIKE lower($1) || '%' THEN 1 ELSE 2 END,
+                 p.name ASC
+        LIMIT 50`,
+      [search],
+    );
+    return { products: rows };
+  }
+
+  @Post('directory')
+  @Roles('owner')
+  async addDirectoryProduct(@Req() req: any, @Body() body: { name?: string; priceKes?: number; stockQty?: number }) {
+    const user = req.user;
+    this.requireStore(user);
+    const name = typeof body?.name === 'string' ? body.name.trim() : '';
+    const priceKes = body?.priceKes;
+    const stockQty = body?.stockQty;
+    if (!name || name.length > 160) throw new BadRequestException('Enter a product name (up to 160 characters).');
+    if (!Number.isSafeInteger(priceKes) || priceKes! < 1 || priceKes! > 100000000000) throw new BadRequestException('Enter a valid selling price in KSh.');
+    if (!Number.isSafeInteger(stockQty) || stockQty! < 1 || stockQty! > 1000000) throw new BadRequestException('Available quantity must be at least 1.');
+    return this.db.tx(async c => {
+      const { rows } = await c.query(
+        `INSERT INTO products (tenant_id, store_id, name, price_kes, cost_kes, stock_qty, reorder_level, requires_buyer_id, public_listing)
+         VALUES ($1,$2,$3,$4,NULL,$5,0,false,true)
+         RETURNING id, name, price_kes AS "priceKes", stock_qty AS "stockQty"`,
+        [user.tenantId, user.storeId, name, priceKes, stockQty],
+      );
+      await c.query(
+        `INSERT INTO stock_movements (product_id, change_qty, reason, user_id)
+         VALUES ($1,$2,'restock',$3)`,
+        [rows[0].id, stockQty, user.sub],
+      );
+      return { product: rows[0], listed: true };
+    });
+  }
+
   @Get()
   @Roles('cashier', 'manager', 'owner')
   async list(@Req() req: any, @Query('q') q?: string, @Query('lowStock') lowStock?: string) {
