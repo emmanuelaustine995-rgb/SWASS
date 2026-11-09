@@ -1267,9 +1267,28 @@
       <p class="secondhand-receipt-notice"><strong>SELLER LIABILITY NOTICE:</strong> I confirm that I am the lawful owner of the product recorded above or legally authorised to sell it. If the product is found to be stolen, fraudulently obtained, unlawfully possessed, or subject to a false ownership claim, I accept responsibility for any false information or unlawful sale attributable to me and agree to cooperate with lawful investigations. I understand that I may be held liable under applicable Kenyan law.</p>
       <div class="secondhand-record-images">${d.idPhotoData?`<figure><img src="${d.idPhotoData}" alt="Seller ID"><figcaption>Seller ID</figcaption></figure>`:''}${d.sellerPhotoData?`<figure><img src="${d.sellerPhotoData}" alt="Seller photo"><figcaption>Seller photo</figcaption></figure>`:''}${d.phonePhotoData?`<figure><img src="${d.phonePhotoData}" alt="Phone photo"><figcaption>Product and identifying details</figcaption></figure>`:''}${d.receiptPhotoData?`<figure><img src="${d.receiptPhotoData}" alt="Original purchase receipt"><figcaption>Original purchase receipt</figcaption></figure>`:''}</div>
       <div class="secondhand-record-signatures"><figure><strong>Seller signature</strong><img src="${d.signatureData}" alt="Seller signature"></figure>${d.thumbprintData?`<figure><strong>Seller thumbprint mark (drawn)</strong><img src="${d.thumbprintData}" alt="Drawn thumbprint mark"></figure>`:''}</div>
-      <p><strong>Witness:</strong> ${safe(d.witnessName)} · ${safe(d.witnessPhone)}</p><p><strong>Shop representative:</strong> ${safe(d.shopRepresentativeName||'Recorded shop owner')} · Seller and product checks acknowledged</p><p class="tiny">The seller confirmed the declaration electronically. This record supports shop record-keeping; it does not itself determine legal ownership or guarantee a court outcome.</p></div><button id="secondhand-print-button" class="btn btn-primary full" type="button">Print / Save as PDF</button>`;
+      <p><strong>Witness:</strong> ${safe(d.witnessName)} · ${safe(d.witnessPhone)}</p><p><strong>Shop representative:</strong> ${safe(d.shopRepresentativeName||'Recorded shop owner')} · Seller and product checks acknowledged</p><p class="tiny">The seller confirmed the declaration electronically. This record supports shop record-keeping; it does not itself determine legal ownership or guarantee a court outcome.</p></div><button id="secondhand-print-button" class="btn btn-primary full" type="button">Print / Save as PDF</button><button id="secondhand-amend-button" class="btn btn-light full" type="button" data-declaration-id="${safe(d.id)}">Amend saved declaration</button><button id="secondhand-amend-history-button" class="btn btn-light full" type="button" data-declaration-id="${safe(d.id)}">View amendment history</button><p id="secondhand-amend-message" class="muted" aria-live="polite"></p>`;
     target.classList.remove('hidden');
     $('secondhand-print-button')?.addEventListener('click',()=>window.print());
+    $('secondhand-amend-button')?.addEventListener('click',async()=>{
+      const id=d.id;if(!id){showNotice('This saved record cannot be amended until it is reopened from history.',true);return;}
+      const reason=window.prompt('Why is this Special Receipt being amended?');if(!reason||!reason.trim())return;
+      const productName=window.prompt('Correct product name / model:',d.productName||d.phoneMakeModel||'');if(productName===null)return;
+      const imei1=window.prompt('Correct IMEI / product identifier:',d.imei1||'');if(imei1===null)return;
+      const priceText=window.prompt('Correct purchase price in KSh:',String(d.purchasePriceKes||''));if(priceText===null)return;
+      const price=Number(priceText);if(!Number.isSafeInteger(price)||price<1){showNotice('Enter a valid whole-number purchase price.',true);return;}
+      const button=$('secondhand-amend-button');button.disabled=true;button.textContent='Saving new version…';
+      try{
+        const result=await request('/api/v1/second-hand-phone-declarations/'+encodeURIComponent(id)+'/amendments',{method:'POST',body:JSON.stringify({reason:reason.trim(),changes:{productName:productName.trim(),imei1:imei1.trim(),purchasePriceKes:price}})});
+        $('secondhand-amend-message').textContent='Amendment saved as version '+result.amendment.versionNo+'. The original declaration remains unchanged.';
+      }catch(err){$('secondhand-amend-message').textContent=err.message||'Could not save amendment.';}
+      finally{button.disabled=false;button.textContent='Amend saved declaration';}
+    });
+    $('secondhand-amend-history-button')?.addEventListener('click',async()=>{
+      const id=d.id;if(!id)return;const out=$('secondhand-amend-message');out.textContent='Loading amendment history…';
+      try{const result=await request('/api/v1/second-hand-phone-declarations/'+encodeURIComponent(id)+'/amendments');const rows=result.amendments||[];out.textContent=rows.length?rows.map(a=>'Version '+a.versionNo+' · '+new Date(a.createdAt).toLocaleString()+' · '+a.reason+' · '+JSON.stringify(a.changes)).join('\\n'):'No amendments recorded. Original version remains unchanged.';}
+      catch(err){out.textContent=err.message||'Could not load amendment history.';}
+    });
     target.scrollIntoView({behavior:'smooth',block:'start'});
   }
   $('secondhand-form')?.addEventListener('submit',async ev=>{
