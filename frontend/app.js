@@ -321,6 +321,9 @@
     }else if(screen==='shop'){
       $('shop-home')?.classList.remove('hidden');
       const isShopOwner = state.role === 'owner';
+      $('secondhand-open-card')?.classList.toggle('hidden',!isShopOwner);
+      $('secondhand-panel')?.classList.add('hidden');
+      document.querySelector('#shop-home > .shop-directory-card')?.classList.remove('hidden');
       $('shop-add-products')?.classList.toggle('hidden', !isShopOwner);
       $('shop-owner-note')?.classList.toggle('hidden', isShopOwner);
       if($('shop-directory-title'))$('shop-directory-title').textContent=isShopOwner?'Add Products':'Search Products';
