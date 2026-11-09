@@ -870,3 +870,8 @@ html body.workspace-active #pos-view.workspace-issue-mode .cart-panel{display:bl
 #add-another-item{min-height:34px!important;padding:6px 10px!important;font-size:12px!important}
 #checkout-open{margin-top:10px}
 #product-modal .modal-card{max-width:440px!important}
+
+
+/* Issue Receipt: keep the customer-details action a compact button, never a full-width blue bar. */
+html body.workspace-active #pos-view.workspace-issue-mode #checkout-open.compact-next-btn{display:inline-flex!important;width:auto!important;min-width:0!important;max-width:max-content!important;min-height:36px!important;padding:8px 15px!important;margin:12px 0 0!important;border-radius:10px!important;font-size:13px!important;line-height:1.2!important;flex:0 0 auto!important}
+html body.workspace-active #pos-view.workspace-issue-mode .cart-panel .totals{margin-bottom:8px!important}
