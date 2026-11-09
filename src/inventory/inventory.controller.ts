@@ -11,7 +11,7 @@ export class InventoryController {
   constructor(private db: DbService) {}
 
   @Get('directory/search')
-  @Roles('owner', 'manager', 'cashier', 'vendor', 'freelancer')
+  @Roles('super_admin', 'owner', 'manager', 'cashier', 'vendor', 'freelancer')
   async searchDirectory(@Query('q') q?: string) {
     const search = typeof q === 'string' ? q.trim().slice(0, 100) : '';
     if (search.length < 2) return { products: [] };
