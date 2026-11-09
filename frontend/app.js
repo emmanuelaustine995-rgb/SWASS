@@ -212,7 +212,7 @@
     staffSummary?.classList.add('hidden');
     if(screen==='dashboard'){
       dashboardBusinessCard?.classList.remove('hidden');
-      if(['owner','manager'].includes(state.role)){
+      if(['owner','manager','vendor','freelancer'].includes(state.role)){
         ownerHome?.classList.remove('hidden');
         void loadOwnerHomeSummary();
       }else{
@@ -225,7 +225,7 @@
       $('open-recover-receipt')?.classList.remove('hidden');
     }else if(screen==='profile'){
       renderAccountProfile();
-      if(['owner','manager'].includes(state.role)){
+      if(['owner','manager','vendor','freelancer'].includes(state.role)){
         dashboardBusinessCard?.classList.add('hidden');
         // The profile form lives inside #owner-dashboard-view, which itself
         // sits inside #pos-view. Reveal the parent and suppress sale widgets.
@@ -242,7 +242,7 @@
     document.querySelectorAll('#workspace-nav button').forEach(b=>b.classList.toggle('active',b.dataset.workspace===screen));
   }
 
-  function showPOS(){ if(!state.token){showLogin();return;} document.body.classList.add('workspace-active'); $('login-view').classList.add('hidden'); $('pos-view').classList.remove('hidden'); $('welcome-back-banner')?.classList.add('hidden'); $('profile-menu-btn')?.classList.remove('hidden'); $('logout-btn')?.classList.remove('hidden'); const label=$('user-label');label.textContent=state.userName||state.staffTitle||(state.role==='cashier'?'Shop Attendant':state.role?state.role.replace('_',' '):'Staff');if(state.userPhotoData){const avatar=document.createElement('img');avatar.src=state.userPhotoData;avatar.alt='Profile photo';avatar.style.cssText='width:30px;height:30px;object-fit:cover;border-radius:50%;vertical-align:middle;margin-right:8px';label.prepend(avatar);} $('dashboard-link').classList.toggle('hidden', !['owner','manager'].includes(state.role));$('workspace-nav').classList.remove('hidden');  }
+  function showPOS(){ if(!state.token){showLogin();return;} document.body.classList.add('workspace-active'); $('login-view').classList.add('hidden'); $('pos-view').classList.remove('hidden'); $('welcome-back-banner')?.classList.add('hidden'); $('profile-menu-btn')?.classList.remove('hidden'); $('logout-btn')?.classList.remove('hidden'); const label=$('user-label');label.textContent=state.userName||state.staffTitle||(state.role==='cashier'?'Shop Attendant':state.role?state.role.replace('_',' '):'Staff');if(state.userPhotoData){const avatar=document.createElement('img');avatar.src=state.userPhotoData;avatar.alt='Profile photo';avatar.style.cssText='width:30px;height:30px;object-fit:cover;border-radius:50%;vertical-align:middle;margin-right:8px';label.prepend(avatar);} $('dashboard-link').classList.toggle('hidden', !['owner','manager','vendor','freelancer'].includes(state.role));$('workspace-nav').classList.remove('hidden');  }
   async function lookupCustomer(ev){
     ev.preventDefault();
     const phone=$('lookup-phone').value.trim();
@@ -758,7 +758,7 @@
     const landingScreen = 'dashboard';
     showWorkspaceScreen(landingScreen);
     const backgroundLoads = [];
-    if(['owner','manager'].includes(state.role)){
+    if(['owner','manager','vendor','freelancer'].includes(state.role)){
       backgroundLoads.push(loadBusinessProfile().catch(err => {
         if(err.status === 402){
           showWorkspaceScreen('profile');
@@ -834,7 +834,7 @@
   });
   async function loadOwnerStaffPerformance(){
     const body=$('owner-cashier-rows'),message=$('owner-staff-performance-message');
-    if(!body||!['owner','manager'].includes(state.role))return;
+    if(!body||!['owner','manager','vendor','freelancer'].includes(state.role))return;
     body.innerHTML='<tr><td colspan="5">Loading staff performance…</td></tr>';
     message.textContent='Loading today and month-to-date sales…';
     try{
