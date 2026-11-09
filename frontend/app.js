@@ -298,6 +298,8 @@
     const owner=document.getElementById('owner-dashboard-view'),pos=$('pos-view');
     const posGrid=document.querySelector('.pos-grid');
     const history=$('history-panel'),crm=$('owner-customers-section'),lookup=document.querySelector('.customer-lookup-panel');
+    // Reset nested panels as well as the outer page. These were previously left visible inside POS/profile containers.
+    [history,crm,lookup].forEach(el=>el?.classList.add('hidden'));
     const profile=$('profile-panel'),receiptHome=$('receipts-home'),ownerHome=$('owner-home');
     const dashboardBusinessCard=$('dashboard-business-card');
     const staffSummary=$('staff-sales-summary');
@@ -347,6 +349,8 @@
         pos?.classList.remove('profile-workspace-mode');
         owner?.classList.remove('hidden');
         owner?.classList.add('profile-workspace-mode');
+        // Profile has only its business, account and (for owners) team cards.
+        owner?.querySelectorAll(':scope > *:not(#profile-panel):not(#owner-staff-area)').forEach(el=>el.classList.add('hidden'));
         owner?.querySelector('#owner-staff-area')?.classList.toggle('hidden',state.role!=='owner');
         profile?.classList.remove('hidden');
         // The dashboard and profile share this scroll container. Always reset
@@ -1022,7 +1026,7 @@
     if(performance)void loadOwnerStaffPerformance();
   });
   $('workspace-nav').addEventListener('click',e=>{const b=e.target.closest('[data-workspace]');if(b)showWorkspaceScreen(b.dataset.workspace);});
-  $('owner-home-issue')?.addEventListener('click',()=>{showWorkspaceScreen('receipts');$('receipts-home').classList.add('hidden');$('pos-view').classList.remove('hidden');$('pos-view').classList.add('workspace-issue-mode');$('history-panel').classList.add('hidden');$('products-panel').classList.add('hidden');openSaleItemForm();});
+  $('owner-home-issue')?.addEventListener('click',()=>{showWorkspaceScreen('receipts');$('receipts-home').classList.add('hidden');$('pos-view').classList.remove('hidden');$('pos-view').classList.add('workspace-issue-mode');$('history-panel').classList.add('hidden');$('owner-customers-section')?.classList.add('hidden');document.querySelector('.customer-lookup-panel')?.classList.add('hidden');$('products-panel').classList.add('hidden');openSaleItemForm();});
   $('back-to-receipts').addEventListener('click',()=>{
     $('pos-view').classList.add('hidden');
     $('pos-view').classList.remove('workspace-issue-mode');
@@ -1031,7 +1035,7 @@
   });
   $('open-issue-receipt').addEventListener('click',()=>{
     $('receipts-home').classList.add('hidden');$('pos-view').classList.remove('hidden');$('pos-view').classList.add('workspace-issue-mode');
-    document.querySelector('.pos-grid')?.classList.remove('hidden');$('history-panel').classList.add('hidden');$('products-panel').classList.add('hidden');
+    document.querySelector('.pos-grid')?.classList.remove('hidden');$('history-panel').classList.add('hidden');$('owner-customers-section')?.classList.add('hidden');document.querySelector('.customer-lookup-panel')?.classList.add('hidden');$('products-panel').classList.add('hidden');
     openSaleItemForm();
     syncGlobalBackButton();
   });
