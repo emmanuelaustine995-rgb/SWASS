@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Patch, Req, UseGuards } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Body, Controller, Get, Patch, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard, Roles, RolesGuard } from '../auth/auth';
 import { DbService } from '../db/db.service';
 
@@ -25,7 +25,7 @@ export class BusinessProfileController {
   @Roles('owner')
   async updateProfile(@Req() req:any,@Body() b:any) {
     const u=req.user;
-    if (u?.role !== 'owner' && u?.role !== 'manager') throw new (require('@nestjs/common').ForbiddenException)('Only the shop owner can edit business profile details.');
+    if (u?.role !== 'owner' && u?.role !== 'manager') throw new ForbiddenException('Only the shop owner can edit business profile details.');
     if (!u?.tenantId || !u?.storeId) throw new BadRequestException('Business account required');
     const clean=(v:any,max:number,label:string,nullable=false) => {
       if(v===undefined)return undefined;
