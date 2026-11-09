@@ -1,7 +1,7 @@
 (() => {
   'use strict';
   const $ = (id) => document.getElementById(id);
-  const state = { token: null, role: null, userName: '', staffTitle: '', userPhotoData: '', userPhone: '', userEmail: '', products: [], cart: new Map(), lastReceipt: null, profileLogoData: undefined, businessProfile: {} };
+  const state = { token: null, role: null, userName: '', staffTitle: '', userPhotoData: '', userPhone: '', userEmail: '', products: [], cart: new Map(), lastReceipt: null, profileLogoData: undefined, businessProfile: {}, workspaceHistory: [], currentWorkspace: null, posReturnScreen: null };
   const SESSION_KEY = 'swass-auth-session-v1';
   const referralCodeFromUrl = new URLSearchParams(window.location.search).get('ref') || '';
   const SESSION_IDLE_MS = 3 * 60 * 60 * 1000;
@@ -263,15 +263,28 @@
     const secondhandVisible=!$('secondhand-panel')?.classList.contains('hidden');
     const modalOpen=['checkout-modal','receipt-modal','receipt-recovery-modal'].some(id=>$(id)&&!$(id).classList.contains('hidden'));
     const workspaceOpen=!!$('workspace-nav')&&!$('workspace-nav').classList.contains('hidden');
-    const hasBack=!!state.token&&workspaceOpen&&(posVisible||profileVisible||receiptsVisible||shopVisible||secondhandVisible||modalOpen);
+    const nested=modalOpen||secondhandVisible||(posVisible&&$('pos-view')?.classList.contains('workspace-issue-mode'));
+    const hasBack=!!state.token&&workspaceOpen&&(nested||state.workspaceHistory.length>0||state.currentWorkspace!=='dashboard');
     button.classList.toggle('hidden',!hasBack);
-    button.textContent=modalOpen?'← Back':secondhandVisible?'← Shop':posVisible?'← Receipts':shopVisible?'← Dashboard':profileVisible||receiptsVisible?'← Dashboard':'← Back';
+    const previous=state.workspaceHistory[state.workspaceHistory.length-1];
+    button.textContent=modalOpen?'← Back':secondhandVisible?'← Shop':nested?'← Back':previous?('← '+({dashboard:'Dashboard',receipts:'Receipts',profile:'Profile',shop:'Shop',subscription:'Subscription'}[previous]||'Back')):'← Dashboard';
     button.setAttribute('aria-label',button.textContent.replace('← ','Go back to '));
+  }
+  function goBackWorkspace(){
+    const previous=state.workspaceHistory.pop();
+    if(previous){showWorkspaceScreen(previous,{fromBack:true});return true;}
+    if(state.currentWorkspace&&state.currentWorkspace!=='dashboard'){showWorkspaceScreen('dashboard',{fromBack:true});return true;}
+    return false;
   }
   $('global-back-btn')?.addEventListener('click',()=>{
     const modalIds=['checkout-modal','receipt-modal','receipt-recovery-modal'];
     const openModal=modalIds.map(id=>$(id)).find(el=>el&&!el.classList.contains('hidden'));
-    if(openModal){openModal.classList.add('hidden');openModal.setAttribute('aria-hidden','true');syncGlobalBackButton();return;}
+    if(openModal){
+      if(openModal.id==='checkout-modal'&&!$('checkout-payment-step')?.classList.contains('hidden')){
+        $('checkout-payment-step')?.classList.add('hidden');$('checkout-customer-step')?.classList.remove('hidden');syncGlobalBackButton();return;
+      }
+      openModal.classList.add('hidden');openModal.setAttribute('aria-hidden','true');syncGlobalBackButton();return;
+    }
     const secondhand=$('secondhand-panel');
     if(secondhand&&!secondhand.classList.contains('hidden')){
       secondhand.classList.add('hidden');
@@ -281,18 +294,22 @@
       $('secondhand-saved-record')?.classList.add('hidden');
       syncGlobalBackButton();return;
     }
-    if(!$('pos-view')?.classList.contains('hidden')){
-      if($('pos-view')?.classList.contains('workspace-issue-mode')){$('pos-view').classList.add('hidden');$('pos-view').classList.remove('workspace-issue-mode');$('receipts-home')?.classList.remove('hidden');syncGlobalBackButton();}
-      else showWorkspaceScreen('receipts');
-      return;
+    if(!$('pos-view')?.classList.contains('hidden')&&$('pos-view')?.classList.contains('workspace-issue-mode')){
+      $('pos-view').classList.add('hidden');$('pos-view').classList.remove('workspace-issue-mode');
+      if(state.posReturnScreen==='dashboard'&&goBackWorkspace()){state.posReturnScreen=null;return;}
+      $('receipts-home')?.classList.remove('hidden');state.posReturnScreen=null;syncGlobalBackButton();return;
     }
-    if(!$('shop-home')?.classList.contains('hidden')){showWorkspaceScreen('dashboard');return;}
-    if($('owner-dashboard-view')?.classList.contains('profile-workspace-mode')||!$('receipts-home')?.classList.contains('hidden')){showWorkspaceScreen('dashboard');return;}
-    showWorkspaceScreen('dashboard');
+    if(!$('shop-home')?.classList.contains('hidden')){
+      if($('shop-product-results')&&!$('shop-product-results').classList.contains('hidden')){$('shop-product-results').classList.add('hidden');syncGlobalBackButton();return;}
+    }
+    goBackWorkspace();syncGlobalBackButton();
   });
-  function showWorkspaceScreen(screen){
+  function showWorkspaceScreen(screen,options={}){
     if(!state.token){showLogin();return;}
     if(!['dashboard','receipts','profile','shop','subscription'].includes(screen))screen='dashboard';
+    const previous=state.currentWorkspace;
+    if(!options.fromBack&&previous&&previous!==screen){state.workspaceHistory.push(previous);if(state.workspaceHistory.length>30)state.workspaceHistory.shift();}
+    state.currentWorkspace=screen;
     try{localStorage.setItem('swass-active-workspace-v1',screen);}catch{}
     const owner=document.getElementById('owner-dashboard-view'),pos=$('pos-view');
     const posGrid=document.querySelector('.pos-grid');
@@ -1073,15 +1090,16 @@
   });
   $('workspace-nav').addEventListener('click',e=>{const b=e.target.closest('[data-workspace]');if(b)showWorkspaceScreen(b.dataset.workspace);});
   $('owner-home-subscription')?.addEventListener('click',()=>showWorkspaceScreen('subscription'));
-  $('owner-home-issue')?.addEventListener('click',()=>{showWorkspaceScreen('receipts');$('receipts-home').classList.add('hidden');$('pos-view').classList.remove('hidden');$('pos-view').classList.add('workspace-issue-mode');$('history-panel').classList.add('hidden');$('owner-customers-section')?.classList.add('hidden');document.querySelector('.customer-lookup-panel')?.classList.add('hidden');$('products-panel').classList.add('hidden');closeSaleItemForm();$('checkout-open').disabled=!state.cart.size;syncGlobalBackButton();});
+  $('owner-home-issue')?.addEventListener('click',()=>{showWorkspaceScreen('receipts');state.posReturnScreen='dashboard';$('receipts-home').classList.add('hidden');$('pos-view').classList.remove('hidden');$('pos-view').classList.add('workspace-issue-mode');$('history-panel').classList.add('hidden');$('owner-customers-section')?.classList.add('hidden');document.querySelector('.customer-lookup-panel')?.classList.add('hidden');$('products-panel').classList.add('hidden');closeSaleItemForm();$('checkout-open').disabled=!state.cart.size;syncGlobalBackButton();});
   $('back-to-receipts').addEventListener('click',()=>{
     $('pos-view').classList.add('hidden');
     $('pos-view').classList.remove('workspace-issue-mode');
     $('receipts-home').classList.remove('hidden');
+    state.posReturnScreen=null;
     syncGlobalBackButton();
   });
   $('open-issue-receipt').addEventListener('click',()=>{
-    $('receipts-home').classList.add('hidden');$('pos-view').classList.remove('hidden');$('pos-view').classList.add('workspace-issue-mode');
+    $('receipts-home').classList.add('hidden');$('pos-view').classList.remove('hidden');$('pos-view').classList.add('workspace-issue-mode');state.posReturnScreen='receipts';
     document.querySelector('.pos-grid')?.classList.remove('hidden');$('history-panel').classList.add('hidden');$('owner-customers-section')?.classList.add('hidden');document.querySelector('.customer-lookup-panel')?.classList.add('hidden');$('products-panel').classList.add('hidden');
     closeSaleItemForm();$('checkout-open').disabled=!state.cart.size;
     syncGlobalBackButton();
