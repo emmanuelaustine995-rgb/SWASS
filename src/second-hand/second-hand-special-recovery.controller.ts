@@ -1,5 +1,5 @@
 import { BadRequestException, Body, Controller, Get, Headers, HttpException, Param, Post, ServiceUnavailableException } from '@nestjs/common';
-import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
 import { DbService } from '../db/db.service';
 import { MpesaService } from '../mpesa/mpesa.controller';
 
