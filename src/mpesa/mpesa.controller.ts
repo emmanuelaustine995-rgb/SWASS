@@ -127,11 +127,12 @@ export class MpesaController {
 
   @Post('stk-push')
   @UseGuards(AuthGuard, RolesGuard)
-  @Roles('owner', 'manager')
+  @Roles('owner', 'manager', 'cashier', 'vendor', 'freelancer')
   async stkPush(@Req() req: any, @Body() body: any) {
     const tenantId = req.user?.tenantId;
     if (!tenantId) throw new ForbiddenException();
     const purpose: Purpose = body?.purpose;
+    if (!['owner', 'manager'].includes(req.user?.role) && purpose !== 'receipt_sale') throw new ForbiddenException('Only business owners or managers can make account payments.');
     if (!['subscription', 'wallet_topup', 'vendor_fee', 'receipt_sale'].includes(purpose)) throw new BadRequestException('Invalid payment purpose');
     const phone = this.mpesa.normalizePhone(body?.phone);
     let amount: number;
@@ -175,7 +176,7 @@ export class MpesaController {
 
   @Get('payments/:id')
   @UseGuards(AuthGuard, RolesGuard)
-  @Roles('owner', 'manager')
+  @Roles('owner', 'manager', 'cashier', 'vendor', 'freelancer')
   async paymentStatus(@Req() req: any, @Param('id') id: string) {
     if (!req.user?.tenantId) throw new ForbiddenException();
     const result = await this.db.pool.query(
