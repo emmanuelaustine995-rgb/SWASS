@@ -508,3 +508,21 @@ body.workspace-active #owner-dashboard-view.profile-workspace-mode .profile-invi
 
 .page-back-row{position:sticky;top:8px;z-index:1100;display:flex;justify-content:flex-start;margin:0 0 14px;padding:4px 0;background:transparent}
 .page-back-link{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;box-shadow:0 5px 18px rgba(15,42,67,.14)}
+
+/* Referral wallet history */
+.referral-history{margin-top:12px;padding-top:10px;border-top:1px solid #eadcf2}
+.referral-history h3{font-size:13px;color:#55306e;margin:0 0 7px}
+.referral-withdrawal-history{display:grid;gap:6px;max-height:150px;overflow:auto}
+.referral-history-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 10px;padding:8px 10px;border:1px solid #eee4f4;border-radius:9px;background:#ffffffd9;font-size:11px;color:#6b5878}
+.referral-history-row strong{color:#55306e;font-size:12px}
+.referral-history-row small{grid-column:1/-1;overflow-wrap:anywhere;color:#64748b}
+
+/* Company-side referral withdrawal review */
+.platform-referral-admin{padding:16px;margin:12px 0}
+.platform-referral-admin-list{display:grid;gap:9px;margin-top:12px}
+.platform-referral-request{padding:12px;border:1px solid #dce7f0;border-radius:12px;background:linear-gradient(120deg,#f8fcff,#fff)}
+.platform-referral-request-title{display:flex;justify-content:space-between;gap:12px;color:#173b56}
+.platform-referral-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+.platform-referral-actions input{flex:1;min-width:170px}
+
+.referral-subheading{margin-top:12px;padding-top:8px;border-top:1px solid #eadcf2}

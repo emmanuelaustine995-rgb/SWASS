@@ -225,6 +225,17 @@ export class MpesaController {
         await c.query(`UPDATE payments SET status='success', mpesa_receipt_no=$1 WHERE id=$2 AND status='pending'`, [receipt, p.id]);
         if (p.purpose === 'vendor_fee') {
           await c.query(`UPDATE vendor_invitation_fees SET status='paid',paid_at=now() WHERE payment_id=$1 AND status='pending'`, [p.id]);
+          const referral = await c.query('SELECT referrer_tenant_id FROM tenant_referrals WHERE referred_tenant_id=$1 AND referrer_tenant_id<>$1', [p.tenant_id]);
+          if (referral.rowCount) {
+            const referrerTenantId=referral.rows[0].referrer_tenant_id;
+            const referralAmount=Math.floor(Number(p.amount_kes)*0.5);
+            await c.query(`INSERT INTO referral_commissions(referrer_tenant_id,referred_tenant_id,payment_id,commission_type,amount_kes)
+              VALUES($1,$2,$3,'vendor_activation',$4) ON CONFLICT(payment_id) DO NOTHING`,
+              [referrerTenantId,p.tenant_id,p.id,referralAmount]);
+            await c.query(`INSERT INTO platform_payment_splits(payment_id,tenant_id,payment_purpose,gross_amount_kes,company_amount_kes,referral_amount_kes,referrer_tenant_id)
+              VALUES($1,$2,'vendor_fee',$3,$4,$5,$6) ON CONFLICT(payment_id) DO NOTHING`,
+              [p.id,p.tenant_id,p.amount_kes,Number(p.amount_kes)-referralAmount,referralAmount,referrerTenantId]);
+          }
         } else if (p.purpose === 'subscription') {
           await c.query(
             `INSERT INTO platform_financial_ledger (tenant_id, payment_id, entry_type, amount_kes, external_reference)
@@ -243,14 +254,19 @@ export class MpesaController {
               WHERE tenant_id=$1 AND purpose='subscription' AND status='success'`, [p.tenant_id],
           );
           if (Number(firstSubscription.rows[0].paid_count) === 1) {
-            await c.query(
-              `INSERT INTO referral_rewards(referrer_tenant_id,referred_tenant_id,payment_id,amount_kes)
-               SELECT tr.referrer_tenant_id,tr.referred_tenant_id,$2,FLOOR($3::numeric*0.50)::bigint
-                 FROM tenant_referrals tr
-                WHERE tr.referred_tenant_id=$1 AND tr.referrer_tenant_id<>$1
-               ON CONFLICT (referred_tenant_id) DO NOTHING`,
-              [p.tenant_id,p.id,p.amount_kes],
-            );
+            const referral = await c.query('SELECT referrer_tenant_id FROM tenant_referrals WHERE referred_tenant_id=$1 AND referrer_tenant_id<>$1 FOR UPDATE', [p.tenant_id]);
+            if (referral.rowCount) {
+              const referrerTenantId=referral.rows[0].referrer_tenant_id;
+              const referralAmount=Math.floor(Number(p.amount_kes)*0.5);
+              await c.query(
+                `INSERT INTO referral_rewards(referrer_tenant_id,referred_tenant_id,payment_id,amount_kes)
+                 VALUES($1,$2,$3,$4) ON CONFLICT (referred_tenant_id) DO NOTHING`,
+                [referrerTenantId,p.tenant_id,p.id,referralAmount],
+              );
+              await c.query(`INSERT INTO platform_payment_splits(payment_id,tenant_id,payment_purpose,gross_amount_kes,company_amount_kes,referral_amount_kes,referrer_tenant_id)
+                VALUES($1,$2,'subscription',$3,$4,$5,$6) ON CONFLICT(payment_id) DO NOTHING`,
+                [p.id,p.tenant_id,p.amount_kes,Number(p.amount_kes)-referralAmount,referralAmount,referrerTenantId]);
+            }
           }
         } else if (p.purpose === 'wallet_topup') {
           const wallet = await c.query(`UPDATE wallets SET balance_kes=balance_kes+$1 WHERE tenant_id=$2`, [p.amount_kes, p.tenant_id]);
