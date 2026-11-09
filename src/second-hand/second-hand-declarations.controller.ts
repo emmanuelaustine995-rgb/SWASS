@@ -6,7 +6,7 @@ type DeclarationInput = {
   sellerName?: string; nationalId?: string; sellerPhone?: string; alternativePhone?: string;
   residentialAddress?: string; phoneMakeModel?: string; imei1?: string; imei2?: string;
   serialNumber?: string; condition?: string; purchasePriceKes?: number; receivedAt?: string;
-  noReceiptReason?: string; sellerPhotoData?: string; idPhotoData?: string; phonePhotoData?: string;
+  noReceiptReason?: string; saleType?: string; receiptPhotoData?: string; sellerPhotoData?: string; idPhotoData?: string; phonePhotoData?: string;
   signatureData?: string; thumbprintData?: string; witnessName?: string; witnessPhone?: string;
   declarationAccepted?: boolean; shopAcknowledged?: boolean;
 };
@@ -23,7 +23,7 @@ export class SecondHandPhoneDeclarationsController {
     this.requireStore(user);
     const { rows } = await this.db.pool.query(
       `SELECT id, seller_name AS "sellerName", national_id AS "nationalId",
-              seller_phone AS "sellerPhone", phone_make_model AS "phoneMakeModel",
+              seller_phone AS "sellerPhone", phone_make_model AS "phoneMakeModel", sale_type AS "saleType",
               imei1, imei2, purchase_price_kes AS "purchasePriceKes",
               declaration_ref AS "declarationRef", created_at AS "createdAt"
          FROM second_hand_phone_declarations
@@ -73,7 +73,9 @@ export class SecondHandPhoneDeclarationsController {
     const imei2 = text(body.imei2, 'IMEI 2', 20, false);
     const serialNumber = text(body.serialNumber, 'Serial number', 100, false);
     const condition = text(body.condition, 'Phone condition', 40)!;
-    const noReceiptReason = text(body.noReceiptReason, 'Reason for missing receipt', 1000)!;
+    const saleType = body.saleType === 'with_receipt' ? 'with_receipt' : body.saleType === 'without_receipt' ? 'without_receipt' : null;
+    if (!saleType) throw new BadRequestException('Choose whether the seller has the original purchase receipt.');
+    const noReceiptReason = text(body.noReceiptReason, 'Receipt status / missing receipt explanation', 1000)!;
     const witnessName = text(body.witnessName, 'Witness name', 160, false);
     const witnessPhone = text(body.witnessPhone, 'Witness phone', 30, false);
     if (!/^\d{14,16}$/.test(imei1.replace(/\s+/g, ''))) throw new BadRequestException('Enter a valid 14–16 digit IMEI 1.');
@@ -84,7 +86,9 @@ export class SecondHandPhoneDeclarationsController {
     }
     if (body.declarationAccepted !== true) throw new BadRequestException('The seller must accept the ownership and responsibility declaration.');
     if (body.shopAcknowledged !== true) throw new BadRequestException('The shop representative must confirm the seller and phone checks.');
-    const sellerPhotoData = image(body.sellerPhotoData, 'Seller photo');
+    const sellerPhotoData = image(body.sellerPhotoData, 'Seller photo', true);
+    const receiptPhotoData = image(body.receiptPhotoData, 'Original purchase receipt photo', saleType === 'with_receipt');
+    if (saleType === 'without_receipt' && receiptPhotoData) throw new BadRequestException('Receipt photo must be omitted when the seller has no original receipt.');
     const idPhotoData = image(body.idPhotoData, 'Seller ID photo', true);
     const phonePhotoData = image(body.phonePhotoData, 'Phone photo', true);
     const signatureData = image(body.signatureData, 'Seller signature', true);
@@ -95,23 +99,23 @@ export class SecondHandPhoneDeclarationsController {
       `INSERT INTO second_hand_phone_declarations
        (tenant_id, store_id, recorded_by, declaration_ref, seller_name, national_id, seller_phone,
         alternative_phone, residential_address, phone_make_model, imei1, imei2, serial_number,
-        phone_condition, purchase_price_kes, no_receipt_reason, seller_photo_data, id_photo_data,
+        phone_condition, purchase_price_kes, no_receipt_reason, sale_type, receipt_photo_data, seller_photo_data, id_photo_data,
         phone_photo_data, signature_data, thumbprint_data, witness_name, witness_phone,
         declaration_accepted, shop_acknowledged, shop_acknowledged_at, declaration_version, accepted_at)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,true,true,now(),'2026-11-v1',now())
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,true,true,now(),'2026-11-v2',now())
        RETURNING id, declaration_ref AS "declarationRef", seller_name AS "sellerName",
         national_id AS "nationalId", seller_phone AS "sellerPhone", alternative_phone AS "alternativePhone",
         residential_address AS "residentialAddress", phone_make_model AS "phoneMakeModel",
         imei1, imei2, serial_number AS "serialNumber", phone_condition AS "condition",
         purchase_price_kes AS "purchasePriceKes", no_receipt_reason AS "noReceiptReason",
-        seller_photo_data AS "sellerPhotoData", id_photo_data AS "idPhotoData",
+        sale_type AS "saleType", receipt_photo_data AS "receiptPhotoData", seller_photo_data AS "sellerPhotoData", id_photo_data AS "idPhotoData",
         phone_photo_data AS "phonePhotoData", signature_data AS "signatureData",
         thumbprint_data AS "thumbprintData", witness_name AS "witnessName",
         witness_phone AS "witnessPhone", declaration_accepted AS "declarationAccepted", shop_acknowledged AS "shopAcknowledged",
         accepted_at AS "acceptedAt", created_at AS "createdAt"`,
       [user.tenantId, user.storeId, user.sub, declarationRef, sellerName, nationalId, sellerPhone,
        alternativePhone, residentialAddress, phoneMakeModel, imei1.replace(/\s+/g, ''), imei2?.replace(/\s+/g, '') ?? null,
-       serialNumber, condition, body.purchasePriceKes, noReceiptReason, sellerPhotoData, idPhotoData,
+       serialNumber, condition, body.purchasePriceKes, noReceiptReason, saleType, receiptPhotoData, sellerPhotoData, idPhotoData,
        phonePhotoData, signatureData, thumbprintData, witnessName, witnessPhone],
     );
     return { declaration: { ...rows[0], shopRepresentativeName: user.fullName || 'Shop owner' } };
