@@ -25,7 +25,7 @@ export class InventoryController {
         WHERE p.public_listing = true
           AND p.archived_at IS NULL
           AND p.stock_qty > 0
-          AND (p.name ILIKE '%' || $1 || '%' OR similarity(p.name, $1) > 0.25)
+          AND p.name ILIKE '%' || $1 || '%'
         ORDER BY CASE WHEN lower(p.name) = lower($1) THEN 0
                       WHEN lower(p.name) LIKE lower($1) || '%' THEN 1 ELSE 2 END,
                  p.name ASC
