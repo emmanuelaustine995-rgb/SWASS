@@ -43,6 +43,8 @@ export class ReferralsController {
       activeReferrals: Number(counts.rows[0].active || 0),
       earnedKes, redeemedKes, availableKes,
       availableReceipts: Math.floor(availableKes / RECEIPT_FEE_KES),
+      receiptRedeemableKes: Math.floor(availableKes / RECEIPT_FEE_KES) * RECEIPT_FEE_KES,
+      rewardRemainderKes: availableKes % RECEIPT_FEE_KES,
       receiptFeeKes: RECEIPT_FEE_KES,
     };
   }
@@ -99,12 +101,15 @@ export class ReferralsController {
         `INSERT INTO wallet_transactions(tenant_id,change_kes,reason) VALUES($1,$2,'referral_redemption')`,
         [tenantId, requested],
       );
+      const remainingRewardBalanceKes = available - requested;
       return {
         redeemed: true,
         amountKes: Number(saved.rows[0].amount_kes),
         receiptCreditsAdded: Math.floor(requested / RECEIPT_FEE_KES),
+        remainingRewardBalanceKes,
+        remainingReceiptRemainderKes: remainingRewardBalanceKes % RECEIPT_FEE_KES,
         receiptFeeKes: RECEIPT_FEE_KES,
-        message: 'Referral rewards have been added to your receipt wallet.',
+        message: 'Whole receipt credits have been redeemed. Any balance below KSh 4 remains in your referral reward balance.',
       };
     });
   }
