@@ -16,7 +16,7 @@ export class SecondHandSpecialRecoveryController {
       `SELECT id FROM second_hand_phone_declarations
         WHERE regexp_replace(lower(national_id), '[^a-z0-9]', '', 'g') =
               regexp_replace(lower($1), '[^a-z0-9]', '', 'g')
-          AND regexp_replace(seller_phone, '[^0-9]', '', 'g') IN ($2, substring($2 from 4))
+          AND regexp_replace(seller_phone, '[^0-9]', '', 'g') IN ($2, substring($2 from 4), '0' || substring($2 from 4))
         ORDER BY created_at DESC LIMIT 1`,
       [nationalId, phone],
     );
