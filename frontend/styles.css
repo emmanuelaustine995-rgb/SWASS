@@ -477,3 +477,19 @@ body.workspace-active #owner-dashboard-view.profile-workspace-mode>#owner-staff-
 body.workspace-active #owner-dashboard-view.profile-workspace-mode>#owner-staff-area.hidden{display:none!important}
 @media(prefers-reduced-motion:reduce){body.workspace-active #owner-dashboard-view.profile-workspace-mode .profile-shop-card,body.workspace-active #owner-dashboard-view.profile-workspace-mode .profile-account-summary,body.workspace-active #owner-dashboard-view.profile-workspace-mode>#owner-staff-area{animation:none!important}}
 @media(max-width:600px){body.workspace-active .shell>#owner-dashboard-view.profile-workspace-mode{padding-bottom:18px!important}body.workspace-active #owner-dashboard-view.profile-workspace-mode .profile-shop-card,body.workspace-active #owner-dashboard-view.profile-workspace-mode .profile-account-summary,body.workspace-active #owner-dashboard-view.profile-workspace-mode>#owner-staff-area:not(.hidden){padding:10px!important}}
+
+/* Independent tap-to-open profile cards. Each controls only its own details. */
+body.workspace-active #owner-dashboard-view.profile-workspace-mode .profile-card{display:block!important;flex:0 0 auto!important;overflow:hidden!important;padding:0!important;border-radius:16px!important}
+body.workspace-active #owner-dashboard-view.profile-workspace-mode .profile-card-summary{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;min-height:66px!important;padding:13px 15px!important;list-style:none!important;cursor:pointer!important;user-select:none!important}
+body.workspace-active #owner-dashboard-view.profile-workspace-mode .profile-card-summary::-webkit-details-marker{display:none!important}
+body.workspace-active #owner-dashboard-view.profile-workspace-mode .profile-card-summary>span:first-child{display:flex!important;flex-direction:column!important;gap:3px!important}
+body.workspace-active #owner-dashboard-view.profile-workspace-mode .profile-card-summary strong{font-size:15px!important;font-weight:750!important;color:#243044!important}
+body.workspace-active #owner-dashboard-view.profile-workspace-mode .profile-card-summary small{font-size:11px!important;color:#64748b!important}
+body.workspace-active #owner-dashboard-view.profile-workspace-mode .profile-card-chevron{font-size:23px!important;line-height:1!important;transition:transform .2s ease!important;color:#526477!important}
+body.workspace-active #owner-dashboard-view.profile-workspace-mode .profile-card[open]>.profile-card-summary .profile-card-chevron{transform:rotate(180deg)!important}
+body.workspace-active #owner-dashboard-view.profile-workspace-mode .profile-card-body{padding:0 14px 14px!important}
+body.workspace-active #owner-dashboard-view.profile-workspace-mode .profile-shop-card{background:linear-gradient(125deg,rgba(255,248,232,.98),rgba(233,249,245,.97),rgba(244,238,255,.97))!important}
+body.workspace-active #owner-dashboard-view.profile-workspace-mode .profile-account-summary{background:linear-gradient(120deg,rgba(231,244,255,.98),rgba(244,239,255,.97),rgba(255,248,234,.97))!important}
+body.workspace-active #owner-dashboard-view.profile-workspace-mode .profile-invite-card{background:linear-gradient(120deg,rgba(255,239,218,.98),rgba(255,248,232,.97),rgba(246,239,255,.97))!important}
+body.workspace-active #owner-dashboard-view.profile-workspace-mode .profile-invite-card .panel{background:transparent!important;border:0!important;box-shadow:none!important;padding:4px 0!important}
+@media(prefers-reduced-motion:reduce){body.workspace-active #owner-dashboard-view.profile-workspace-mode .profile-card-chevron{transition:none!important}}
