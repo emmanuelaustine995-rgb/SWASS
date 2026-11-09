@@ -263,7 +263,7 @@
     const secondhandVisible=!$('secondhand-panel')?.classList.contains('hidden');
     const modalOpen=['checkout-modal','receipt-modal','receipt-recovery-modal'].some(id=>$(id)&&!$(id).classList.contains('hidden'));
     const workspaceOpen=!!$('workspace-nav')&&!$('workspace-nav').classList.contains('hidden');
-    const hasBack=!!state.token&&workspaceOpen&&(posVisible||profileVisible||receiptsVisible||shopVisible||modalOpen);
+    const hasBack=!!state.token&&workspaceOpen&&(posVisible||profileVisible||receiptsVisible||shopVisible||secondhandVisible||modalOpen);
     button.classList.toggle('hidden',!hasBack);
     button.textContent=modalOpen?'← Back':secondhandVisible?'← Shop':posVisible?'← Receipts':shopVisible?'← Dashboard':profileVisible||receiptsVisible?'← Dashboard':'← Back';
     button.setAttribute('aria-label',button.textContent.replace('← ','Go back to '));
@@ -516,7 +516,7 @@
     }).join(''):'<div class="empty">Your sale is empty. Add the first item to begin.</div>';
     const t=totals(); $('subtotal').textContent=money(t.subtotal);$('total').textContent=money(t.total);$('checkout-open').disabled=!rows.length||t.total<0;$('checkout-open').textContent='Continue to customer details';$('checkout-open').classList.remove('hidden');
   }
-  function openCheckout(){const items=[...state.cart.values()];if(!items.length){showNotice('Add at least one product before customer details.',true);return;}const invalid=[...$('cart-list').querySelectorAll('[data-price]')].some(input=>!Number.isSafeInteger(Number(input.value))||Number(input.value)<1);if(invalid){showNotice('Enter a valid price for each product before continuing.',true);return;}const needsBuyer=items.some(r=>r.product.requiresBuyerId);$('buyer-id-wrap').classList.remove('hidden');$('buyer-id-note').classList.remove('hidden');$('buyer-id').required=true;$('checkout-total').textContent=money(totals().total);$('checkout-error').textContent='';const modal=$('checkout-modal');modal.classList.remove('hidden');modal.setAttribute('aria-hidden','false');const card=modal.querySelector('.modal-card');if(card)card.scrollTop=0;syncGlobalBackButton();}
+  function openCheckout(){const items=[...state.cart.values()];if(!items.length){showNotice('Add at least one product before customer details.',true);return;}const invalid=[...$('cart-list').querySelectorAll('[data-price]')].some(input=>!Number.isSafeInteger(Number(input.value))||Number(input.value)<1);if(invalid){showNotice('Enter a valid price for each product before continuing.',true);return;}const needsBuyer=items.some(r=>r.product.requiresBuyerId);$('buyer-id-wrap').classList.remove('hidden');$('buyer-id-note').classList.remove('hidden');$('buyer-id').required=true;$('checkout-total').textContent=money(totals().total);$('receipt-mpesa-amount').value=String(totals().total);$('receipt-mpesa-phone').value=$('buyer-phone').value.trim();$('receipt-mpesa-fields').classList.toggle('hidden',$('payment-method').value!=='mpesa');$('checkout-error').textContent='';const modal=$('checkout-modal');modal.classList.remove('hidden');modal.setAttribute('aria-hidden','false');const card=modal.querySelector('.modal-card');if(card)card.scrollTop=0;syncGlobalBackButton();}
   function makeReceiptMarkup(receipt, sale, customer){
     const business=receipt.business||{};
     const lines=sale.items.map(i=>`<div class="receipt-line"><span><strong>${escapeHtml(i.name)}</strong> × ${i.qty}<br><small>Unit price: ${money(i.price)}${i.serialNo?`<br>IMEI / Serial: ${escapeHtml(i.serialNo)}<br><span id="imei-qr-${sale.items.indexOf(i)}" class="imei-qr"></span>`:''}</small></span><strong>${money(i.price*i.qty)}</strong></div>`).join('');
@@ -558,6 +558,26 @@
     payload.customer=customer;
     const btn=$('complete-sale');btn.disabled=true;btn.textContent='Issuing receipt…';$('checkout-error').textContent='';
     try{
+      if(payload.paymentMethod==='mpesa'){
+        const payPhone=$('receipt-mpesa-phone')?.value.trim()||'';
+        const payAmount=Number($('receipt-mpesa-amount')?.value||t.total);
+        if(!payPhone)throw new Error('Enter the M-Pesa phone number to receive the STK prompt.');
+        if(!Number.isSafeInteger(payAmount)||payAmount!==t.total)throw new Error('The M-Pesa amount must match the receipt total of '+money(t.total)+'.');
+        btn.textContent='Requesting STK push…';
+        const started=await request('/api/v1/mpesa/stk-push',{method:'POST',body:JSON.stringify({purpose:'receipt_sale',phone:payPhone,amountKes:payAmount})});
+        if(!started.paymentId)throw new Error('The payment provider did not return a payment reference. Do not retry until payment status is checked.');
+        $('checkout-error').textContent='STK prompt sent to '+started.phone+'. Enter your M-Pesa PIN to pay '+money(started.amountKes)+'.';
+        const deadline=Date.now()+120000;let confirmed=false;
+        while(Date.now()<deadline){
+          await new Promise(resolve=>setTimeout(resolve,3000));
+          const status=await request('/api/v1/mpesa/payments/'+encodeURIComponent(started.paymentId));
+          if(status.status==='success'){confirmed=true;payload.mpesaReceiptNumber=status.receiptNumber||'';break;}
+          if(status.status==='failed')throw new Error('M-Pesa payment was not completed. No receipt has been issued.');
+          $('checkout-error').textContent='Waiting for M-Pesa confirmation… Complete the STK prompt on your phone.';
+        }
+        if(!confirmed)throw new Error('Payment is still pending. No receipt has been issued. Check payment status before trying again.');
+      }
+      btn.textContent='Issuing receipt…';
       const receipt=await request('/api/v1/receipts',{method:'POST',body:JSON.stringify(payload)});
       state.lastReceipt=receipt; const sale={items:items.flatMap(r=>{const price=Number(r.unitPriceKes??r.product.priceKes);const codes=Array.isArray(r.serials)?r.serials.filter(Boolean):[];if(codes.length){const serialLines=codes.map(serialNo=>({name:r.product.name,qty:1,price,serialNo}));if(r.qty>codes.length)serialLines.push({name:r.product.name,qty:r.qty-codes.length,price,serialNo:null});return serialLines;}return [{name:r.product.name,qty:r.qty,price,serialNo:r.imei&&r.imei.trim()?r.imei.trim():null}];}),subtotal:Number(receipt.subtotalKes??t.subtotal),discount:Number(receipt.discountKes??t.discount),paymentMethod:payload.paymentMethod};
       $('receipt-paper').innerHTML=makeReceiptMarkup(receipt,sale,payload.customer);if(window.QRCode){try{if(receipt.qrToken){const verifyUrl=new URL('verify.html',window.location.href).href+'?token='+encodeURIComponent(receipt.qrToken);new QRCode($('receipt-qr'),{text:verifyUrl,width:116,height:116,correctLevel:QRCode.CorrectLevel.M});}sale.items.forEach((item,index)=>{if(item.serialNo){const target=$('imei-qr-'+index);if(target)new QRCode(target,{text:item.serialNo,width:72,height:72,correctLevel:QRCode.CorrectLevel.M});}});}catch(error){console.warn('Receipt QR rendering failed:',error?.message||'unknown error');}}$('checkout-modal').classList.add('hidden');$('receipt-modal').classList.remove('hidden');state.cart.clear();$('discount').value='0';$('checkout-form').reset();renderCart();const emailStatus=$('receipt-email-status');if(emailStatus){emailStatus.textContent='Email: '+(receipt.emailDelivery?.message||(payload.customer?.email?'Delivery status unavailable.':'No customer email was provided.'))+' WhatsApp: '+(receipt.whatsappDelivery?.message||(payload.customer?.phone?'Delivery status unavailable.':'No customer phone was provided.'));emailStatus.classList.toggle('error',!!((payload.customer?.email&&!receipt.emailDelivery?.sent)||(payload.customer?.phone&&!receipt.whatsappDelivery?.sent)));}window.dispatchEvent(new CustomEvent('swass:sale-issued',{detail:{receiptNo:receipt.receiptNo,totalKes:receipt.totalKes}}));if(state.role==='cashier')await loadStaffSalesSummary();hideNotice();
@@ -1075,6 +1095,9 @@
   // Sales are manual-entry only. No product catalogue is loaded or searched.
   $('discount').addEventListener('input',renderCart);$('clear-cart').addEventListener('click',()=>{state.cart.clear();$('discount').value='0';renderCart();});
   $('checkout-open').addEventListener('click',openCheckout);$('checkout-close').addEventListener('click',()=>$('checkout-modal').classList.add('hidden'));$('checkout-form').addEventListener('submit',completeSale);
+  $('payment-method')?.addEventListener('change',()=>{$('receipt-mpesa-fields')?.classList.toggle('hidden',$('payment-method').value!=='mpesa');if($('payment-method').value==='mpesa'&&!$('receipt-mpesa-phone').value)$('receipt-mpesa-phone').value=$('buyer-phone').value.trim();});
+  $('buyer-phone')?.addEventListener('input',()=>{if($('payment-method')?.value==='mpesa'&&!$('receipt-mpesa-phone')?.dataset.edited)$('receipt-mpesa-phone').value=$('buyer-phone').value.trim();});
+  $('receipt-mpesa-phone')?.addEventListener('input',e=>{e.currentTarget.dataset.edited='true';});
   $('receipt-close').addEventListener('click',()=>$('receipt-modal').classList.add('hidden'));$('new-sale').addEventListener('click',()=>$('receipt-modal').classList.add('hidden'));$('print-receipt').addEventListener('click',()=>{if(state.lastReceipt?.id)openReceiptPdf(state.lastReceipt.id);else window.print();});
   const shareBtn=$('share-receipt'); if(shareBtn) shareBtn.addEventListener('click', async()=>{ if(!state.lastReceipt)return; const verifyUrl=new URL('verify.html',window.location.href).href+'?token='+encodeURIComponent(state.lastReceipt.qrToken); const text=`AURORA E-RECEIPT ${state.lastReceipt.receiptNo} · KSh ${Number(state.lastReceipt.totalKes).toLocaleString('en-KE')} · Verify: ${verifyUrl}`; try { if(navigator.share) await navigator.share({title:'AURORA E-RECEIPT',text}); else if(navigator.clipboard) { await navigator.clipboard.writeText(text); alert('Receipt summary copied.'); } } catch {} });
   // Installable Android experience: this adds the app without replacing the website.
