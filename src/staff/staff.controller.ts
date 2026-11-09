@@ -48,11 +48,11 @@ export class StaffController {
 
   @Patch('profile-photo')
   @UseGuards(AuthGuard, RolesGuard)
-  @Roles('cashier', 'vendor', 'freelancer')
+  @Roles('cashier')
   async updateOwnProfilePhoto(@Req() req: any, @Body() body: { profilePhotoData?: string }) {
     const photo = String(body?.profilePhotoData ?? '');
     if (!/^data:image\/(jpeg|png|webp);base64,/.test(photo) || photo.length > 65000) throw new BadRequestException('Choose a PNG, JPG or WebP image no larger than 45 KB.');
-    await this.db.pool.query("UPDATE users SET profile_photo_data=$1 WHERE id=$2 AND role IN ('cashier','vendor','freelancer') AND tenant_id=$3 AND store_id=$4", [photo, req.user.sub, req.user.tenantId, req.user.storeId]);
+    await this.db.pool.query("UPDATE users SET profile_photo_data=$1 WHERE id=$2 AND role='cashier' AND tenant_id=$3 AND store_id=$4", [photo, req.user.sub, req.user.tenantId, req.user.storeId]);
     return { saved: true, profilePhotoData: photo };
   }
 
