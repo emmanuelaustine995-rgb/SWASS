@@ -479,6 +479,19 @@
   const dashboardPaymentPanel = $('dashboard-payment-panel');
   const existingPaymentCard = $('owner-mpesa-form')?.closest('section') || $('owner-payments-section')?.querySelector(':scope > section:first-child');
   if (dashboardPaymentSlot && existingPaymentCard) dashboardPaymentSlot.appendChild(existingPaymentCard);
+  const vendorAccessTab = $('dashboard-vendor-tab');
+  if (vendorAccessTab) {
+    vendorAccessTab.classList.toggle('hidden', state.role !== 'owner');
+    vendorAccessTab.addEventListener('click', () => {
+      showWorkspaceScreen('profile');
+      const team = $('owner-staff-area');
+      if (team) team.open = true;
+      setStaffInviteOpen(true);
+      $('staff-invite-role').value = 'Vendor';
+      $('staff-invite-message').textContent = 'Each Vendor has a one-time KSh 50 activation fee, paid by the business owner through M-Pesa. Freelancers are free.';
+      requestAnimationFrame(() => team?.scrollIntoView({behavior:'smooth',block:'center'}));
+    });
+  }
   document.querySelectorAll('[data-payment-purpose]').forEach(tab => tab.addEventListener('click', () => {
     const purpose = tab.dataset.paymentPurpose;
     const selector = $('owner-mpesa-purpose');
