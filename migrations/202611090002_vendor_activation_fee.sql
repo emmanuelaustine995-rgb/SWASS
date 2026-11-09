@@ -9,3 +9,6 @@ CREATE TABLE IF NOT EXISTS vendor_invitation_fees (
  paid_at TIMESTAMPTZ
 );
 CREATE INDEX IF NOT EXISTS idx_vendor_invitation_fees_tenant ON vendor_invitation_fees(tenant_id,created_at DESC);
+
+ALTER TABLE payments DROP CONSTRAINT IF EXISTS payments_purpose_check;
+ALTER TABLE payments ADD CONSTRAINT payments_purpose_check CHECK (purpose IN ('subscription','wallet_topup','vendor_fee'));
