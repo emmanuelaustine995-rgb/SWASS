@@ -1137,7 +1137,7 @@
     input.addEventListener('change',()=>{const file=input.files?.[0];if(!file){preview.classList.add('hidden');return;}preview.src=URL.createObjectURL(file);preview.classList.remove('hidden');});
   }
   watchSecondhandPhoto('sh-id-photo','sh-id-preview');watchSecondhandPhoto('sh-seller-photo','sh-seller-preview');watchSecondhandPhoto('sh-phone-photo','sh-phone-preview');watchSecondhandPhoto('sh-receipt-photo','sh-receipt-preview');
-  function syncSecondhandReceiptMode(){const selected=document.querySelector('input[name="sh-receipt-choice"]:checked')?.value||'without_receipt';$('sh-sale-type').value=selected;const withReceipt=selected==='with_receipt';$('sh-no-receipt-wrap')?.classList.toggle('hidden',withReceipt);$('sh-receipt-photo-wrap')?.classList.toggle('hidden',!withReceipt);$('sh-no-receipt').required=!withReceipt;$('sh-receipt-photo').required=withReceipt;document.querySelectorAll('.secondhand-receipt-option').forEach(el=>el.classList.toggle('selected',el.querySelector('input')?.checked));}
+  function syncSecondhandReceiptMode(){const selected=document.querySelector('input[name="sh-receipt-choice"]:checked')?.value||'without_receipt';$('sh-sale-type').value=selected;const withReceipt=selected==='with_receipt';$('sh-no-receipt-wrap')?.classList.toggle('hidden',withReceipt);$('sh-receipt-photo-wrap')?.classList.toggle('hidden',!withReceipt);$('sh-no-receipt').required=!withReceipt;$('sh-receipt-photo').required=withReceipt;$('sh-thumbprint-wrap')?.classList.toggle('hidden',withReceipt);document.querySelectorAll('.secondhand-receipt-option').forEach(el=>el.classList.toggle('selected',el.querySelector('input')?.checked));}
   document.querySelectorAll('input[name="sh-receipt-choice"]').forEach(el=>el.addEventListener('change',syncSecondhandReceiptMode));syncSecondhandReceiptMode();
   async function secondhandImageData(inputId,required=false) {
     const file=$(inputId)?.files?.[0];if(!file){if(required)throw new Error('Please attach the required seller ID and phone photos.');return null;}
@@ -1192,7 +1192,7 @@
   }
   $('secondhand-form')?.addEventListener('submit',async ev=>{
     ev.preventDefault();const message=$('secondhand-message'),button=$('secondhand-submit');
-    if(!secondhandPadState['sh-signature']||!secondhandPadState['sh-thumbprint']){message.textContent='The seller must complete both the signature and thumbprint mark on the screen.';message.style.color='#a12b22';return;}
+    const selectedSaleType=$('sh-sale-type').value;if(!secondhandPadState['sh-signature']||(selectedSaleType==='without_receipt'&&!secondhandPadState['sh-thumbprint'])){message.textContent=selectedSaleType==='without_receipt'?'The seller must complete both the signature and thumbprint mark on the screen.':'The seller must complete the electronic signature.';message.style.color='#a12b22';return;}
     if(!$('sh-declaration-accepted').checked){message.textContent='The seller must confirm the declaration before submission.';message.style.color='#a12b22';return;}
     if(!$('sh-shop-acknowledged').checked){message.textContent='The shop representative must confirm that the seller and phone details were checked.';message.style.color='#a12b22';return;}
     const imei1=$('sh-imei1').value.replace(/\s+/g,''),imei2=$('sh-imei2').value.replace(/\s+/g,'');
