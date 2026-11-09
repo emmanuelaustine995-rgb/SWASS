@@ -78,8 +78,7 @@ export class SecondHandPhoneDeclarationsController {
     const noReceiptReason = text(body.noReceiptReason, 'Receipt status / missing receipt explanation', 1000)!;
     const witnessName = text(body.witnessName, 'Witness name', 160, false);
     const witnessPhone = text(body.witnessPhone, 'Witness phone', 30, false);
-    if (!/^\d{14,16}$/.test(imei1.replace(/\s+/g, ''))) throw new BadRequestException('Enter a valid 14–16 digit IMEI 1.');
-    if (imei2 && !/^\d{14,16}$/.test(imei2.replace(/\s+/g, ''))) throw new BadRequestException('Enter a valid 14–16 digit IMEI 2.');
+    if (imei1.length > 40 || (imei2 && imei2.length > 40)) throw new BadRequestException('Product identifier is too long.');
     if (!['New', 'Excellent', 'Good', 'Fair', 'Faulty'].includes(condition)) throw new BadRequestException('Select a valid phone condition.');
     if (!Number.isSafeInteger(body.purchasePriceKes) || body.purchasePriceKes! < 1 || body.purchasePriceKes! > 100000000) {
       throw new BadRequestException('Enter a valid agreed purchase price in KSh.');
