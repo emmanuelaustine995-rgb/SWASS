@@ -780,3 +780,57 @@ html body.workspace-active #receipts-home .receipt-history-toggle{display:inline
 }
 @media(max-width:380px){.topbar .brand{font-size:12px;letter-spacing:.025em}}
 @media(prefers-reduced-motion:reduce){.topbar .brand{animation:none;filter:none;text-shadow:0 0 10px rgba(143,252,255,.55)}}
+
+
+/* Second-hand phone seller declaration card and compact evidence form. */
+.secondhand-entry-card{width:100%;display:flex;align-items:center;gap:13px;margin:13px 0 0;padding:16px;text-align:left;border:1px solid rgba(91,73,168,.22);border-radius:17px;background:linear-gradient(120deg,#f2edff 0%,#e6f9ff 52%,#fff0f6 100%);box-shadow:0 8px 22px rgba(69,80,150,.10);color:#25314b;cursor:pointer}
+.secondhand-entry-card:active{transform:scale(.99)}
+.secondhand-entry-icon{display:grid;place-items:center;flex:0 0 43px;width:43px;height:43px;border-radius:13px;background:linear-gradient(135deg,#6656bd,#219eaa);font-size:22px;box-shadow:0 5px 15px #4c55a333}
+.secondhand-entry-copy{display:grid;gap:5px;min-width:0}
+.secondhand-entry-copy strong{font-size:13px;font-weight:850;line-height:1.3}
+.secondhand-entry-copy small{font-size:11px;line-height:1.45;color:#657087}
+.secondhand-entry-arrow{margin-left:auto;font-size:28px;color:#6958ad}
+.secondhand-panel{max-width:780px;margin:0 auto;padding:12px 0 28px}
+.secondhand-panel-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.secondhand-panel-heading h2{margin:3px 0;font-size:20px}
+.secondhand-panel-heading .btn{white-space:nowrap;min-height:36px;padding:7px 10px;font-size:11px}
+.secondhand-warning{margin:10px 0 14px;padding:12px 14px;border:1px solid #f0d59a;border-radius:12px;background:#fff8e8;color:#79541b;font-size:12px;line-height:1.5}
+.secondhand-form{display:grid;gap:12px}
+.secondhand-form fieldset{min-width:0;margin:0;padding:13px;border:1px solid #dfe6f0;border-radius:14px;background:rgba(255,255,255,.96);box-shadow:0 4px 15px rgba(30,52,88,.045)}
+.secondhand-form legend{padding:0 7px;color:#45558b;font-size:12px;font-weight:850;letter-spacing:.035em}
+.secondhand-form label{display:grid;gap:6px;margin:8px 0;color:#35435a;font-size:11px;font-weight:700}
+.secondhand-form input:not([type=file]):not([type=checkbox]),.secondhand-form select,.secondhand-form textarea{box-sizing:border-box;width:100%;min-height:40px;padding:9px 10px;border:1px solid #d8e0ec;border-radius:9px;background:#fbfcff;color:#1d2a3d;font:500 13px system-ui,sans-serif}
+.secondhand-form input[type=file]{width:100%;font-size:11px;color:#536176}
+.secondhand-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.secondhand-legal-copy{padding:12px;border-radius:10px;background:#f4f6fb;color:#3d4b62;font-size:12px;line-height:1.65}
+.secondhand-consent{display:flex!important;grid-template-columns:20px 1fr;align-items:start;gap:9px!important;line-height:1.5}
+.secondhand-consent input{width:18px;height:18px;margin:1px 0 0;accent-color:#6555b8}
+.secondhand-pad-wrap{margin:12px 0}
+.secondhand-pad-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;color:#34435d;font-size:12px}
+.secondhand-pad{display:block;width:100%;height:118px;border:1px dashed #9daac0;border-radius:10px;background:repeating-linear-gradient(0deg,#fff,#fff 29px,#f1f4f9 30px);touch-action:none;cursor:crosshair}
+.secondhand-biometric-status{padding:10px 12px;border-radius:10px;background:#f2f4f8;color:#4b5870;font-size:11px;line-height:1.5}
+.secondhand-biometric-status.available{background:#e9f8ef;color:#206743}
+.secondhand-photo-preview{display:block;max-width:180px;max-height:130px;object-fit:contain;padding:4px;border:1px solid #dce3ed;border-radius:9px;background:#fff}
+.secondhand-history-tools{margin:14px 0}
+.secondhand-history{display:grid;gap:8px}
+.secondhand-history-row{display:grid;gap:4px;width:100%;padding:11px;text-align:left;border:1px solid #e0e6ef;border-radius:11px;background:#fff;color:#27364d}
+.secondhand-history-row strong{font-size:12px}.secondhand-history-row span,.secondhand-history-row small{font-size:10px;color:#66738a}
+.secondhand-saved-record{margin-top:14px}
+.secondhand-record-print{padding:18px;border:1px solid #dce3ed;border-radius:13px;background:#fff;color:#1c293b}
+.secondhand-record-head{display:flex;justify-content:space-between;gap:12px;align-items:center;border-bottom:2px solid #243c68;padding-bottom:10px}
+.secondhand-record-head h2{font-size:17px;margin:3px 0}
+.secondhand-record-stamp{padding:7px 10px;border:2px solid #21835c;border-radius:7px;color:#21835c;font-size:11px;font-weight:900;transform:rotate(-5deg)}
+.secondhand-record-print h3{margin:16px 0 6px;font-size:13px;color:#304b79}
+.secondhand-record-print p{font-size:11px;line-height:1.55;margin:5px 0}
+.secondhand-record-images,.secondhand-record-signatures{display:flex;flex-wrap:wrap;gap:12px;margin:12px 0}
+.secondhand-record-images figure,.secondhand-record-signatures figure{display:grid;gap:5px;margin:0;max-width:180px;font-size:10px}
+.secondhand-record-images img{max-width:170px;max-height:130px;object-fit:contain;border:1px solid #e0e5ed;border-radius:6px}
+.secondhand-record-signatures img{width:170px;height:65px;object-fit:contain;border:1px solid #dce3ed;border-radius:6px;background:#fff}
+@media(max-width:520px){.secondhand-fields{grid-template-columns:1fr;gap:2px}.secondhand-panel-heading{align-items:flex-start;flex-direction:column}.secondhand-panel-heading .btn{align-self:flex-start}.secondhand-form fieldset{padding:11px}.secondhand-entry-card{padding:13px}}
+@media print{
+  body *{visibility:hidden!important}
+  #secondhand-saved-record,#secondhand-saved-record *{visibility:visible!important}
+  #secondhand-saved-record{display:block!important;position:absolute!important;inset:0!important;width:100%!important;margin:0!important;padding:0!important;background:#fff!important}
+  #secondhand-saved-record .secondhand-record-print{border:0!important;box-shadow:none!important;padding:0!important}
+  #secondhand-saved-record #secondhand-print-button{display:none!important}
+}
