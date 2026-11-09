@@ -107,4 +107,92 @@
   });
   function money(value) { return Number(value || 0).toLocaleString('en-KE',{minimumFractionDigits:2}); }
   function escapeHtml(value) { return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  // Separate KSh 50 recovery for saved second-hand Special Receipts.
+  let specialRecoveryToken = '';
+  const specialMessage = (value) => { $('special-message').textContent = value; };
+  $('special-request-form').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const button = $('special-request-button');
+    const nationalId = $('special-national-id').value.trim();
+    const phone = $('special-phone').value.trim();
+    if (!nationalId || !phone) { specialMessage('Enter the seller National ID and phone number.'); return; }
+    button.disabled = true;
+    button.textContent = 'Connecting to M-Pesa…';
+    $('special-receipt-list').innerHTML = '';
+    try {
+      await warmApi();
+      const response = await fetch(`${api}/api/v1/second-hand-special-recovery/request`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nationalId, phone })
+      });
+      const data = await readResponse(response);
+      specialRecoveryToken = data.recoveryToken;
+      specialMessage('M-Pesa prompt requested for KSh 50. Enter your M-Pesa PIN, then wait for payment confirmation.');
+      button.textContent = 'Waiting for KSh 50 payment…';
+      await pollSpecialPayment(data.paymentId);
+    } catch (error) {
+      specialMessage(error.message || 'Could not start Special Receipt recovery.');
+      button.disabled = false;
+      button.textContent = 'Pay KSh 50 and recover Special Receipt';
+    }
+  });
+  async function pollSpecialPayment(paymentId) {
+    const started = Date.now();
+    while (Date.now() - started < 120000) {
+      await new Promise(resolve => setTimeout(resolve, 2500));
+      const response = await fetch(`${api}/api/v1/second-hand-special-recovery/status/${encodeURIComponent(paymentId)}`, {
+        headers: { 'X-Recovery-Token': specialRecoveryToken }, cache: 'no-store'
+      });
+      const data = await readResponse(response);
+      if (data.status === 'success') {
+        specialMessage('KSh 50 payment confirmed. Loading your Special Receipt…');
+        await loadSpecialDeclaration();
+        return;
+      }
+      if (data.status === 'failed') throw new Error('M-Pesa payment was not completed. Please try again.');
+      specialMessage('Waiting for M-Pesa payment confirmation…');
+    }
+    throw new Error('Payment is still pending. Do not pay again yet. Refresh later and check before retrying.');
+  }
+  async function loadSpecialDeclaration() {
+    const response = await fetch(`${api}/api/v1/second-hand-special-recovery/declaration`, {
+      headers: { 'X-Recovery-Token': specialRecoveryToken }, cache: 'no-store'
+    });
+    const data = await readResponse(response);
+    const d = data.declaration || {};
+    const fields = [
+      ['Special Receipt reference', d.declarationRef], ['Seller full name', d.sellerName],
+      ['National ID', d.nationalId], ['Seller phone', d.sellerPhone],
+      ['Alternative phone', d.alternativePhone], ['Residential address', d.residentialAddress],
+      ['Goods / make and model', d.productName], ['IMEI / identifier', d.imei1],
+      ['Second IMEI', d.imei2], ['Serial number', d.serialNumber],
+      ['Condition', d.condition], ['Agreed purchase price', 'KSh ' + money(d.purchasePriceKes)],
+      ['Original receipt status', d.receiptStatus], ['Witness', d.witnessName],
+      ['Witness phone', d.witnessPhone], ['Declaration accepted', 'Yes'],
+      ['Shop acknowledgement', d.shopAcknowledged ? 'Yes' : 'No'],
+      ['Date recorded', d.createdAt ? new Date(d.createdAt).toLocaleString('en-KE') : '']
+    ];
+    $('special-receipt-list').innerHTML = `<article class="panel recovered-receipt">
+      <h2>Second-Hand Goods Special Receipt</h2>
+      <p><strong>Reference:</strong> ${escapeHtml(d.declarationRef || '')}</p>
+      ${fields.slice(1).map(([label,value]) => value ? `<p><strong>${escapeHtml(label)}:</strong> ${escapeHtml(value)}</p>` : '').join('')}
+      <p><button type="button" id="print-special-receipt">Print / Save PDF</button></p>
+    </article>`;
+    $('print-special-receipt').addEventListener('click', () => {
+      const win = window.open('', '_blank', 'width=520,height=800');
+      if (!win) { specialMessage('Allow pop-ups to print this Special Receipt.'); return; }
+      win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Special Receipt ${escapeHtml(d.declarationRef || '')}</title>
+        <style>body{font:14px Arial;max-width:620px;margin:24px auto;color:#111}h1{text-align:center;font-size:22px}h2{text-align:center}p{padding:7px 0;border-bottom:1px solid #ddd}.notice{border:1px solid #555;padding:12px;margin-top:18px}@media print{button{display:none}}</style>
+        </head><body><h1>AURORA E-RECEIPT</h1><h2>SECOND-HAND GOODS SPECIAL RECEIPT</h2>
+        <p><b>Reference:</b> ${escapeHtml(d.declarationRef || '')}</p>
+        ${fields.slice(1).map(([label,value]) => value ? `<p><b>${escapeHtml(label)}:</b> ${escapeHtml(value)}</p>` : '').join('')}
+        <div class="notice">This document records the seller's declaration and the shop's acknowledgement as stored at the time of signing. It is a record of the declaration, not a guarantee of legal outcome.</div>
+        <p style="text-align:center"><button onclick="window.print()">Print / Save PDF</button></p></body></html>`);
+      win.document.close(); win.focus();
+    });
+    specialMessage('Payment confirmed. Your saved Second-Hand Goods Special Receipt is unlocked.');
+    $('special-request-button').disabled = false;
+    $('special-request-button').textContent = 'Recover another Special Receipt';
+  }
 })();
