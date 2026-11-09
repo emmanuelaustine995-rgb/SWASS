@@ -879,3 +879,17 @@ body.workspace-active #owner-home>.hidden,
 body.workspace-active #owner-home #referral-card.hidden,
 body.workspace-active #owner-home #dashboard-payment-panel.hidden,
 body.workspace-active #owner-home #today-sales-details.hidden{display:none!important}
+
+.receipt-special-amendment {
+  display: inline-flex;
+  width: auto;
+  min-height: 32px;
+  margin-top: 8px;
+  padding: 6px 11px;
+  border: 1px solid var(--line, #d9e2ef);
+  border-radius: 9px;
+  font-size: 12px;
+  line-height: 1.2;
+  font-weight: 600;
+  text-decoration: none;
+}
