@@ -378,7 +378,11 @@
     try{
       const payload={fullName:$('staff-invite-name').value.trim(),email:$('staff-invite-email').value.trim(),phone:$('staff-invite-phone').value.trim(),role:$('staff-invite-role').value};
       const data=await request('/api/v1/staff/invitations',{method:'POST',body:JSON.stringify(payload)});
-      message.textContent='Invitation email sent to '+data.invitation.email+'. The staff member can accept the link and create their own password. The link expires in 7 days.';
+      if(payload.role==='Vendor'){
+        message.textContent='Requesting the one-time KSh 50 vendor fee…';
+        const pay=await request('/api/v1/mpesa/stk-push',{method:'POST',body:JSON.stringify({purpose:'vendor_fee',invitationId:data.invitation.id,phone:$('owner-mpesa-phone')?.value.trim()||payload.phone})});
+        message.textContent='KSh 50 STK prompt sent to '+pay.phone+'. Vendor activation will complete after M-Pesa confirms payment.';
+      }else message.textContent='Freelancer invitation email sent to '+data.invitation.email+'. Freelancers are not charged.';
       $('staff-invite-form').reset();setStaffInviteOpen(false);await loadStaffInvitations();
     }catch(err){message.textContent=err.message||'Could not send the staff invitation.';}
     finally{btn.disabled=false;btn.textContent='Send email invitation';}
