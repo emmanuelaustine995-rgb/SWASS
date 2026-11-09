@@ -9,7 +9,7 @@ import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypt
 import { DbService } from '../db/db.service';
 import { EmailVerificationService } from '../notifications/email-verification.service';
 
-export type Role = 'super_admin' | 'owner' | 'manager' | 'cashier';
+export type Role = 'super_admin' | 'owner' | 'manager' | 'cashier' | 'vendor' | 'freelancer';
 
 export interface AuthUser {
   sub: string;
@@ -71,8 +71,14 @@ export class RolesGuard implements CanActivate {
   canActivate(ctx: ExecutionContext): boolean {
     const allowed = this.reflector.get<Role[]>('roles', ctx.getHandler());
     if (!allowed) return true;
-    const user: AuthUser = ctx.switchToHttp().getRequest().user;
-    if (!user || !allowed.includes(user.role)) throw new ForbiddenException();
+    const req = ctx.switchToHttp().getRequest();
+    const user: AuthUser = req.user;
+    if (!user) throw new ForbiddenException();
+    // Vendors and freelancers share owner workspace permissions, except invitations.
+    const path = String(req.originalUrl ?? req.url ?? '').split('?')[0];
+    if ((user.role === 'vendor' || user.role === 'freelancer') && path.startsWith('/api/v1/staff/invitations')) throw new ForbiddenException();
+    const effectiveRole: Role = ['vendor','freelancer'].includes(user.role) ? 'owner' : user.role;
+    if (!allowed.includes(effectiveRole)) throw new ForbiddenException();
     return true;
   }
 }
@@ -512,7 +518,7 @@ export class AuthController {
     const tenantIsUsable = !u?.tenant_id || u.tenant_status === 'active';
     const ok = u && u.is_active && tenantIsUsable && passwordOk;
     const requestedType = body.accountType === 'staff' ? 'staff' : 'owner';
-    const roleMatches = requestedType === 'staff' ? u?.role === 'cashier' : ['owner','manager','super_admin'].includes(u?.role);
+    const roleMatches = requestedType === 'staff' ? ['cashier','vendor','freelancer'].includes(u?.role) : ['owner','manager','super_admin'].includes(u?.role);
     if (!ok || !roleMatches) throw new UnauthorizedException('Invalid phone or password for this sign-in type');
 
     const payload: AuthUser = { sub: u.id, tenantId: u.tenant_id, storeId: u.store_id, role: u.role, mustChangePassword: !!u.must_change_password, fullName: u.full_name };
