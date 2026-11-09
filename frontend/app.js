@@ -465,6 +465,23 @@
     }catch(e){$('checkout-error').textContent=e.message;}
     finally{btn.disabled=false;btn.textContent='Issue receipt';}
   }
+  // Put the existing M-Pesa subscription/top-up form behind compact dashboard tabs.
+  const dashboardPaymentSlot = $('dashboard-payment-form-slot');
+  const dashboardPaymentPanel = $('dashboard-payment-panel');
+  const existingPaymentCard = $('owner-payments-section')?.querySelector(':scope > section:first-child');
+  if (dashboardPaymentSlot && existingPaymentCard) dashboardPaymentSlot.appendChild(existingPaymentCard);
+  document.querySelectorAll('[data-payment-purpose]').forEach(tab => tab.addEventListener('click', () => {
+    const purpose = tab.dataset.paymentPurpose;
+    const selector = $('owner-mpesa-purpose');
+    if (selector) { selector.value = purpose; selector.dispatchEvent(new Event('change')); }
+    dashboardPaymentPanel?.classList.remove('hidden');
+    document.querySelectorAll('[data-payment-purpose]').forEach(item => item.classList.toggle('active', item === tab));
+    dashboardPaymentPanel?.scrollIntoView({behavior:'smooth',block:'nearest'});
+  }));
+  $('dashboard-payment-close')?.addEventListener('click', () => {
+    dashboardPaymentPanel?.classList.add('hidden');
+    document.querySelectorAll('[data-payment-purpose]').forEach(item => item.classList.remove('active'));
+  });
   // Tuma subscription and wallet payments
   const tumaForm = $('owner-mpesa-form');
   const tumaPurpose = $('owner-mpesa-purpose');
