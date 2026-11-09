@@ -48,7 +48,7 @@ export class StaffController {
 
   @Patch('profile-photo')
   @UseGuards(AuthGuard, RolesGuard)
-  @Roles('cashier')
+  @Roles('cashier', 'vendor', 'freelancer')
   async updateOwnProfilePhoto(@Req() req: any, @Body() body: { profilePhotoData?: string }) {
     const photo = String(body?.profilePhotoData ?? '');
     if (!/^data:image\/(jpeg|png|webp);base64,/.test(photo) || photo.length > 65000) throw new BadRequestException('Choose a PNG, JPG or WebP image no larger than 45 KB.');
