@@ -77,8 +77,9 @@ export class RolesGuard implements CanActivate {
     // Vendors and freelancers share owner workspace permissions, except invitations.
     const path = String(req.originalUrl ?? req.url ?? '').split('?')[0];
     if ((user.role === 'vendor' || user.role === 'freelancer') && path.startsWith('/api/v1/staff/invitations')) throw new ForbiddenException();
-    const effectiveRole: Role = ['vendor','freelancer'].includes(user.role) ? 'owner' : user.role;
-    if (!allowed.includes(effectiveRole)) throw new ForbiddenException();
+    const isVendorWorkspace = user.role === 'vendor' || user.role === 'freelancer';
+    const effectiveRole: Role = isVendorWorkspace ? 'owner' : user.role;
+    if (!allowed.includes(effectiveRole) && !(isVendorWorkspace && allowed.some(role => role === 'vendor' || role === 'freelancer'))) throw new ForbiddenException();
     return true;
   }
 }
