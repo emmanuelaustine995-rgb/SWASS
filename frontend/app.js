@@ -301,6 +301,9 @@
     const profile=$('profile-panel'),receiptHome=$('receipts-home'),ownerHome=$('owner-home');
     const dashboardBusinessCard=$('dashboard-business-card');
     const staffSummary=$('staff-sales-summary');
+    // Every tab starts from a clean slate: no dashboard summary may leak into
+    // Receipts, Profile or Shop.
+    dashboardBusinessCard?.classList.add('hidden');
     pos?.classList.remove('profile-workspace-mode');
     owner?.classList.remove('profile-workspace-mode');
     [history,crm,lookup,receiptHome,ownerHome,profile,$('platform-referral-admin'),$('shop-home')].forEach(el=>el?.classList.add('hidden'));
