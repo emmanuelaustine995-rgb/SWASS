@@ -87,7 +87,7 @@
     if(close)close.classList.toggle('hidden',!complete);
     // Do not let business completeness hide the profile editor while the Profile tab is open.
     if(document.body.classList.contains('workspace-active') &&
-       document.getElementById('pos-view')?.classList.contains('profile-workspace-mode')){
+       document.getElementById('owner-dashboard-view')?.classList.contains('profile-workspace-mode')){
       panel.classList.remove('hidden');
     }
   }
@@ -110,8 +110,14 @@
     const businessRow=$('account-profile-business-row');
     businessRow.classList.toggle('hidden',!['owner','manager','vendor','freelancer'].includes(state.role));
     $('account-profile-business').textContent=business.businessName||'Business details not added';
+    const readOnlyProfile=['vendor','freelancer'].includes(state.role);
     $('account-profile-photo-area').classList.toggle('hidden',state.role!=='cashier');
-    $('account-profile-business-edit').classList.toggle('hidden',!['owner','manager','vendor','freelancer'].includes(state.role));
+    $('account-profile-business-edit').classList.toggle('hidden',!['owner','manager'].includes(state.role));
+    const profileForm=$('profile-form');
+    if(profileForm){profileForm.querySelectorAll('input,select,textarea,button').forEach(control=>{control.disabled=readOnlyProfile;});const save=profileForm.querySelector('button[type="submit"]');if(save)save.classList.toggle('hidden',readOnlyProfile);}
+    $('profile-panel')?.classList.toggle('profile-readonly',readOnlyProfile);
+    $('profile-readonly-note')?.classList.toggle('hidden',!readOnlyProfile);
+    $('account-profile-photo-area').classList.toggle('hidden',readOnlyProfile || state.role!=='cashier');
     if(state.userPhotoData)$('staff-profile-preview').src=state.userPhotoData;
     else $('staff-profile-preview').removeAttribute('src');
   }
@@ -193,6 +199,29 @@
     }
   }
 
+  function syncGlobalBackButton(){
+    const button=$('global-back-btn');if(!button)return;
+    const posVisible=!$('pos-view')?.classList.contains('hidden');
+    const profileVisible=$('owner-dashboard-view')?.classList.contains('profile-workspace-mode');
+    const receiptsVisible=!$('receipts-home')?.classList.contains('hidden');
+    const modalOpen=['checkout-modal','receipt-modal','receipt-recovery-modal'].some(id=>$(id)&&!$(id).classList.contains('hidden'));
+    const hasBack=!!state.token&&(posVisible||profileVisible||receiptsVisible||modalOpen);
+    button.classList.toggle('hidden',!hasBack);
+    button.textContent=modalOpen?'← Back':posVisible?'← Receipts':'← Dashboard';
+  }
+  $('global-back-btn')?.addEventListener('click',()=>{
+    const checkout=$('checkout-modal');
+    if(checkout&&!checkout.classList.contains('hidden')){checkout.classList.add('hidden');checkout.setAttribute('aria-hidden','true');syncGlobalBackButton();return;}
+    const receiptModal=$('receipt-modal');
+    if(receiptModal&&!receiptModal.classList.contains('hidden')){receiptModal.classList.add('hidden');receiptModal.setAttribute('aria-hidden','true');syncGlobalBackButton();return;}
+    if(!$('pos-view')?.classList.contains('hidden')){
+      if($('pos-view')?.classList.contains('workspace-issue-mode')){$('pos-view').classList.add('hidden');$('pos-view').classList.remove('workspace-issue-mode');$('receipts-home')?.classList.remove('hidden');syncGlobalBackButton();}
+      else showWorkspaceScreen('receipts');
+      return;
+    }
+    if($('owner-dashboard-view')?.classList.contains('profile-workspace-mode')||!$('receipts-home')?.classList.contains('hidden')){showWorkspaceScreen('dashboard');return;}
+    showWorkspaceScreen('dashboard');
+  });
   function showWorkspaceScreen(screen){
     if(!state.token){showLogin();return;}
     if(!['dashboard','receipts','profile'].includes(screen))screen='dashboard';
@@ -252,9 +281,10 @@
       }
     }
     document.querySelectorAll('#workspace-nav button').forEach(b=>b.classList.toggle('active',b.dataset.workspace===screen));
+    syncGlobalBackButton();
   }
 
-  function showPOS(){ if(!state.token){showLogin();return;} document.body.classList.add('workspace-active'); $('login-view').classList.add('hidden'); $('pos-view').classList.remove('hidden'); $('welcome-back-banner')?.classList.add('hidden'); $('profile-menu-btn')?.classList.remove('hidden'); $('logout-btn')?.classList.remove('hidden'); const label=$('user-label');label.textContent=state.userName||state.staffTitle||(state.role==='cashier'?'Shop Attendant':state.role?state.role.replace('_',' '):'Staff');if(state.userPhotoData){const avatar=document.createElement('img');avatar.src=state.userPhotoData;avatar.alt='Profile photo';avatar.style.cssText='width:30px;height:30px;object-fit:cover;border-radius:50%;vertical-align:middle;margin-right:8px';label.prepend(avatar);} $('dashboard-link').classList.toggle('hidden', !['owner','manager','vendor','freelancer'].includes(state.role));$('workspace-nav').classList.remove('hidden');  }
+  function showPOS(){ if(!state.token){showLogin();return;} document.body.classList.add('workspace-active'); $('login-view').classList.add('hidden'); $('pos-view').classList.remove('hidden'); $('welcome-back-banner')?.classList.add('hidden'); $('profile-menu-btn')?.classList.remove('hidden'); $('logout-btn')?.classList.remove('hidden'); const label=$('user-label');label.textContent=state.userName||state.staffTitle||(state.role==='cashier'?'Shop Attendant':state.role?state.role.replace('_',' '):'Staff');if(state.userPhotoData){const avatar=document.createElement('img');avatar.src=state.userPhotoData;avatar.alt='Profile photo';avatar.style.cssText='width:30px;height:30px;object-fit:cover;border-radius:50%;vertical-align:middle;margin-right:8px';label.prepend(avatar);} $('dashboard-link').classList.toggle('hidden', !['owner','manager','vendor','freelancer'].includes(state.role));$('workspace-nav').classList.remove('hidden');syncGlobalBackButton();  }
   async function lookupCustomer(ev){
     ev.preventDefault();
     const phone=$('lookup-phone').value.trim();
@@ -387,7 +417,7 @@
     }).join(''):'<div class="empty">Your sale is empty. Add the first item to begin.</div>';
     const t=totals(); $('subtotal').textContent=money(t.subtotal);$('total').textContent=money(t.total);$('checkout-open').disabled=!rows.length||t.total<0;$('checkout-open').textContent='Continue to customer details';$('checkout-open').classList.remove('hidden');
   }
-  function openCheckout(){const items=[...state.cart.values()];if(!items.length){showNotice('Add at least one product before customer details.',true);return;}const invalid=[...$('cart-list').querySelectorAll('[data-price]')].some(input=>!Number.isSafeInteger(Number(input.value))||Number(input.value)<1);if(invalid){showNotice('Enter a valid price for each product before continuing.',true);return;}const needsBuyer=items.some(r=>r.product.requiresBuyerId);$('buyer-id-wrap').classList.toggle('hidden',!needsBuyer);$('buyer-id-note').classList.toggle('hidden',!needsBuyer);$('checkout-total').textContent=money(totals().total);$('checkout-error').textContent='';const modal=$('checkout-modal');modal.classList.remove('hidden');modal.setAttribute('aria-hidden','false');const card=modal.querySelector('.modal-card');if(card)card.scrollTop=0;}
+  function openCheckout(){const items=[...state.cart.values()];if(!items.length){showNotice('Add at least one product before customer details.',true);return;}const invalid=[...$('cart-list').querySelectorAll('[data-price]')].some(input=>!Number.isSafeInteger(Number(input.value))||Number(input.value)<1);if(invalid){showNotice('Enter a valid price for each product before continuing.',true);return;}const needsBuyer=items.some(r=>r.product.requiresBuyerId);$('buyer-id-wrap').classList.toggle('hidden',!needsBuyer);$('buyer-id-note').classList.toggle('hidden',!needsBuyer);$('checkout-total').textContent=money(totals().total);$('checkout-error').textContent='';const modal=$('checkout-modal');modal.classList.remove('hidden');modal.setAttribute('aria-hidden','false');const card=modal.querySelector('.modal-card');if(card)card.scrollTop=0;syncGlobalBackButton();}
   function makeReceiptMarkup(receipt, sale, customer){
     const business=receipt.business||{};
     const lines=sale.items.map(i=>`<div class="receipt-line"><span><strong>${escapeHtml(i.name)}</strong> × ${i.qty}<br><small>Unit price: ${money(i.price)}${i.serialNo?`<br>IMEI / Serial: ${escapeHtml(i.serialNo)}<br><span id="imei-qr-${sale.items.indexOf(i)}" class="imei-qr"></span>`:''}</small></span><strong>${money(i.price*i.qty)}</strong></div>`).join('');
@@ -874,11 +904,13 @@
     $('pos-view').classList.add('hidden');
     $('pos-view').classList.remove('workspace-issue-mode');
     $('receipts-home').classList.remove('hidden');
+    syncGlobalBackButton();
   });
   $('open-issue-receipt').addEventListener('click',()=>{
     $('receipts-home').classList.add('hidden');$('pos-view').classList.remove('hidden');$('pos-view').classList.add('workspace-issue-mode');
     document.querySelector('.pos-grid')?.classList.remove('hidden');$('history-panel').classList.add('hidden');$('products-panel').classList.add('hidden');
     openSaleItemForm();
+    syncGlobalBackButton();
   });
   $('open-recover-receipt').addEventListener('click',()=>{window.location.href='recover.html';});
   document.querySelector('.dashboard-sidebar')?.addEventListener('click',e=>{const link=e.target.closest('.sidebar-link');if(!link)return;const screen=link.dataset.screen||(link.getAttribute('href')==='#owner-customers-section'?'customers':link.getAttribute('href')==='#owner-reports-section'?'reports':link.getAttribute('href')==='#owner-payments-section'?'payments':'overview');e.preventDefault();showWorkspaceScreen(screen);});
