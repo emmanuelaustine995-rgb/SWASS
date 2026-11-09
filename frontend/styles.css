@@ -917,3 +917,9 @@ body:not(.workspace-active) .login-role-tabs{margin:0 0 8px}
 body:not(.workspace-active) .login-forgot-wrap{margin-top:6px}
 body:not(.workspace-active) #owner-register-entry{margin:10px 0 0}
 @media(max-width:480px){body:not(.workspace-active) .shell{margin:0 auto;padding:10px 14px;min-height:100dvh}body:not(.workspace-active) #login-view .login-card{padding:16px 14px}}
+
+
+/* AURORA login logo: use the supplied platform artwork without extra welcome copy */
+.aurora-login-logo{display:block;width:min(100%,420px);height:auto;max-height:220px;object-fit:contain;margin:0 auto 14px;border-radius:12px}
+#login-view .login-card{padding-top:16px}
+@media(max-width:600px){.aurora-login-logo{width:100%;max-height:190px;margin-bottom:10px}#login-view .login-card{padding:12px}}
