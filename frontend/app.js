@@ -1090,7 +1090,6 @@
   });
   $('workspace-nav').addEventListener('click',e=>{const b=e.target.closest('[data-workspace]');if(b)showWorkspaceScreen(b.dataset.workspace);});
   $('owner-home-subscription')?.addEventListener('click',()=>showWorkspaceScreen('subscription'));
-  $('owner-home-issue')?.addEventListener('click',()=>{showWorkspaceScreen('receipts');state.posReturnScreen='dashboard';$('receipts-home').classList.add('hidden');$('pos-view').classList.remove('hidden');$('pos-view').classList.add('workspace-issue-mode');$('history-panel').classList.add('hidden');$('owner-customers-section')?.classList.add('hidden');document.querySelector('.customer-lookup-panel')?.classList.add('hidden');$('products-panel').classList.add('hidden');closeSaleItemForm();$('checkout-open').disabled=!state.cart.size;syncGlobalBackButton();});
   $('back-to-receipts').addEventListener('click',()=>{
     $('pos-view').classList.add('hidden');
     $('pos-view').classList.remove('workspace-issue-mode');
@@ -1106,6 +1105,13 @@
     syncGlobalBackButton();
   });
   $('open-recover-receipt').addEventListener('click',()=>{window.location.href='recover.html';});
+  $('open-special-amendment')?.addEventListener('click',()=>{
+    if(state.role!=='owner'){showNotice('Only the shop owner can amend a saved Second-Hand Special Receipt.',true);return;}
+    showWorkspaceScreen('shop');
+    $('secondhand-open-card')?.click();
+    $('secondhand-history-toggle')?.click();
+    $('secondhand-history')?.scrollIntoView({behavior:'smooth',block:'start'});
+  });
   document.querySelector('.dashboard-sidebar')?.addEventListener('click',e=>{const link=e.target.closest('.sidebar-link');if(!link)return;const screen=link.dataset.screen||(link.getAttribute('href')==='#owner-customers-section'?'customers':link.getAttribute('href')==='#owner-reports-section'?'reports':link.getAttribute('href')==='#owner-payments-section'?'payments':'overview');e.preventDefault();showWorkspaceScreen(screen);});
   $('history-toggle').addEventListener('click',async()=>{const box=$('history-content');const opening=box.classList.contains('hidden');box.classList.toggle('hidden');$('history-toggle').textContent=opening?'Close receipt history':'My receipt history';$('history-toggle').setAttribute('aria-expanded',String(opening));if(opening)await loadReceiptHistory();});
   $('history-search-btn').addEventListener('click',loadReceiptHistory);
