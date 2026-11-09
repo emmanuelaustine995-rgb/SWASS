@@ -133,3 +133,36 @@ body.workspace-active .profile-account-summary .account-profile-details{grid-tem
 #pos-view.profile-workspace-mode #owner-dashboard-view{display:block!important;}
 #pos-view.profile-workspace-mode #owner-dashboard-view > :not(#profile-panel){display:none!important;}
 #pos-view.profile-workspace-mode #owner-dashboard-view > #profile-panel{display:block!important;width:100%;max-width:100%;}
+
+
+/* Soft, continuous Aurora colour breathing for the E-RECEIPT header label only. */
+@keyframes ereceiptAuraBreath {
+  0%, 100% {
+    opacity: .72;
+    color: #a7f7ed;
+    text-shadow: 0 0 5px rgba(91, 232, 218, .22);
+  }
+  25% {
+    opacity: .88;
+    color: #b9d9ff;
+    text-shadow: 0 0 9px rgba(111, 177, 255, .34);
+  }
+  50% {
+    opacity: 1;
+    color: #f6dca0;
+    text-shadow: 0 0 12px rgba(246, 220, 160, .52), 0 0 22px rgba(167, 247, 237, .2);
+  }
+  75% {
+    opacity: .86;
+    color: #d8baff;
+    text-shadow: 0 0 9px rgba(216, 186, 255, .36);
+  }
+}
+.ereceipt-aura-title {
+  display: inline-block;
+  animation: ereceiptAuraBreath 4.2s ease-in-out infinite;
+  will-change: opacity, color, text-shadow;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ereceipt-aura-title { animation: none; opacity: 1; color: #a7f7ed; text-shadow: none; }
+}
