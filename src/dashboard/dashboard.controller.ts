@@ -130,7 +130,7 @@ export class DashboardController {
 
 
   @Get('staff-summary')
-  @Roles('cashier')
+  @Roles('cashier', 'vendor', 'freelancer')
   async staffSummary(@Req() req: any) {
     const [tenantId, storeId] = this.scope(req.user);
     const { rows } = await this.db.pool.query(
