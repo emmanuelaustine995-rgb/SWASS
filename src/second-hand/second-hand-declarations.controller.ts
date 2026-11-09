@@ -135,13 +135,13 @@ export class SecondHandPhoneDeclarationsController {
         phone_photo_data AS "phonePhotoData", signature_data AS "signatureData",
         thumbprint_data AS "thumbprintData", witness_name AS "witnessName",
         witness_phone AS "witnessPhone", declaration_accepted AS "declarationAccepted",
-        accepted_at AS "acceptedAt", created_at AS "createdAt"
+        shop_acknowledged AS "shopAcknowledged", accepted_at AS "acceptedAt", created_at AS "createdAt"
        FROM second_hand_phone_declarations
        WHERE id=$1 AND tenant_id=$2 AND store_id=$3 LIMIT 1`,
       [id, user.tenantId, user.storeId],
     );
     if (!rows[0]) throw new BadRequestException('Declaration not found in this shop.');
-    return { declaration: rows[0] };
+    return { declaration: { ...rows[0], shopRepresentativeName: user.fullName || 'Shop owner' } };
   }
 
   private requireStore(user: any) {
