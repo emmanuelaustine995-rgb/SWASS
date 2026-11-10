@@ -1255,6 +1255,8 @@
     form?.classList.remove('hidden');
     $('sh-no-receipt-wrap')?.classList.toggle('hidden',withReceipt);
     $('sh-receipt-photo-wrap')?.classList.toggle('hidden',!withReceipt);
+    $('sh-seller-photo-wrap')?.classList.toggle('hidden',withReceipt);
+    $('sh-seller-photo').required=!withReceipt;
     $('sh-no-receipt').required=!withReceipt;
     $('sh-receipt-photo').required=withReceipt;
     $('sh-thumbprint-wrap')?.classList.toggle('hidden',withReceipt);
@@ -1363,7 +1365,7 @@
     const imei1=$('sh-imei1').value.trim(),imei2=$('sh-imei2').value.trim();
     button.disabled=true;button.textContent='Saving protected declaration…';message.textContent='Preparing evidence and saving the seller declaration…';message.style.color='';
     try{
-      const saleType=$('sh-sale-type').value;const [idPhotoData,phonePhotoData,sellerPhotoData,receiptPhotoData]=await Promise.all([secondhandImageData('sh-id-photo',true),secondhandImageData('sh-phone-photo',true),secondhandImageData('sh-seller-photo',true),secondhandImageData('sh-receipt-photo',saleType==='with_receipt')]);
+      const saleType=$('sh-sale-type').value;const [idPhotoData,phonePhotoData,sellerPhotoData,receiptPhotoData]=await Promise.all([secondhandImageData('sh-id-photo',true),secondhandImageData('sh-phone-photo',true),secondhandImageData('sh-seller-photo',saleType==='without_receipt'),secondhandImageData('sh-receipt-photo',saleType==='with_receipt')]);
       const payload={saleType,receiptPhotoData,sellerName:$('sh-seller-name').value.trim(),nationalId:$('sh-national-id').value.trim(),sellerPhone:$('sh-seller-phone').value.trim(),sellerEmail:$('sh-seller-email').value.trim(),buyerName:$('sh-buyer-name').value.trim(),buyerNationalId:$('sh-buyer-id').value.trim(),buyerPhone:$('sh-buyer-phone').value.trim(),buyerEmail:$('sh-buyer-email').value.trim(),alternativePhone:$('sh-alt-phone').value.trim(),residentialAddress:$('sh-address').value.trim(),productName:$('sh-model').value.trim(),imei1,imei2,serialNumber:$('sh-serial').value.trim(),condition:$('sh-condition').value,purchasePriceKes:Number($('sh-price').value),noReceiptReason:saleType==='with_receipt'?'Original purchase receipt photographed and attached.':$('sh-no-receipt').value.trim(),sellerPhotoData,idPhotoData,phonePhotoData,signatureData:$('sh-signature').toDataURL('image/png'),thumbprintData:saleType==='without_receipt'?$('sh-thumbprint').toDataURL('image/png'):null,witnessName:$('sh-witness-name').value.trim(),witnessPhone:$('sh-witness-phone').value.trim(),declarationAccepted:true,shopAcknowledged:$('sh-shop-acknowledged').checked};
       const result=await request('/api/v1/second-hand-phone-declarations',{method:'POST',body:JSON.stringify(payload)});
       const delivery=result.delivery||{};const status=(party,channel)=>delivery[party]?.[channel]?.sent?'Sent':'Not sent'+(delivery[party]?.[channel]?.reason?': '+delivery[party][channel].reason:'');
