@@ -1015,3 +1015,9 @@ html body.workspace-active #pos-view.workspace-issue-mode .receipt-product-actio
 }
 html body.workspace-active #pos-view.workspace-issue-mode .receipt-product-actions #checkout-open.compact-next-btn:disabled{opacity:.48!important}
 html body.workspace-active #pos-view.workspace-issue-mode .page-heading{margin-bottom:4px!important}
+
+/* Keep added receipt goods visible above the continue action. */
+html body.workspace-active #pos-view.workspace-issue-mode .cart-panel > #receipt-add-product-toggle{display:inline-flex!important;width:auto!important;max-width:max-content!important;margin:0 0 8px!important}
+html body.workspace-active #pos-view.workspace-issue-mode .cart-panel > #cart-list{display:block!important;position:relative!important;z-index:1!important;overflow-y:auto!important;max-height:min(32vh,260px)!important;min-height:44px!important;margin:6px 0 10px!important;padding:4px!important;visibility:visible!important;opacity:1!important}
+html body.workspace-active #pos-view.workspace-issue-mode .cart-panel > .receipt-product-actions{display:flex!important;flex-direction:column!important;align-items:flex-start!important;margin:4px 0 8px!important;padding:0!important}
+html body.workspace-active #pos-view.workspace-issue-mode #product-form .add-sale-product-btn{width:auto!important;min-width:0!important;max-width:max-content!important}
