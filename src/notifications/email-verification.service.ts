@@ -71,6 +71,29 @@ export class EmailVerificationService {
     return {sent:true,provider:'brevo'};
   }
 
+  async sendSecondHandReceipt(input: {
+    to: string; recipientName: string; reference: string; productName: string;
+    sellerName: string; buyerName: string; pdf: Buffer;
+  }) {
+    const apiKey=process.env.BREVO_API_KEY?.trim(), from=process.env.BREVO_FROM_EMAIL?.trim();
+    if(!apiKey||!from)throw new Error('Brevo email provider is not configured. Set BREVO_API_KEY and BREVO_FROM_EMAIL.');
+    const esc=(v:unknown)=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
+    const response=await fetch('https://api.brevo.com/v3/smtp/email',{
+      method:'POST',signal:AbortSignal.timeout(15000),
+      headers:{'api-key':apiKey,'Content-Type':'application/json',accept:'application/json'},
+      body:JSON.stringify({
+        sender:{email:from,name:'AURORA E-RECEIPT'},
+        to:[{email:input.to,name:input.recipientName}],
+        subject:`Second-Hand Receipt ${input.reference} · ${input.productName}`,
+        htmlContent:`<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#17324d"><h2>AURORA Second-Hand Receipt</h2><p>Hello ${esc(input.recipientName)},</p><p>The second-hand sale record for <strong>${esc(input.productName)}</strong> has been completed. This copy is for your records.</p><p><strong>Receipt reference:</strong> ${esc(input.reference)}<br><strong>Seller:</strong> ${esc(input.sellerName)}<br><strong>Buyer:</strong> ${esc(input.buyerName)}</p><p>The PDF document is attached. Please keep it safely.</p><p>AURORA E-RECEIPT</p></div>`,
+        attachment:[{name:`AURORA-Second-Hand-${input.reference}.pdf`,content:input.pdf.toString('base64')}]
+      })
+    });
+    const raw=await response.text();
+    if(!response.ok)throw new Error(`Brevo HTTP ${response.status}: ${raw.slice(0,240)}`);
+    return {sent:true,provider:'brevo'};
+  }
+
   async verify(token: string) {
     if (typeof token !== 'string' || token.length < 20 || token.length > 200) throw new BadRequestException('Invalid or expired verification link');
     const tokenHash = createHash('sha256').update(token).digest('hex');
