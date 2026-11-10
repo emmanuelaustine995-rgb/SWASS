@@ -12,18 +12,24 @@ export class LostItemsController {
   constructor(private db: DbService, private email: EmailVerificationService, private whatsapp: WhatsAppReceiptService) {}
   private scope(user:any){if(!user.tenantId||!user.storeId)throw new BadRequestException('Shop details are unavailable');return [user.tenantId,user.storeId];}
   @Get('check') @Roles('owner','manager','cashier','vendor','freelancer','customer')
-  async checkIdentifier(@Query('identifier') identifier?:string){
+  async checkIdentifier(@Req() req:any,@Query('identifier') identifier?:string){
     const normalized=String(identifier||'').trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
     if(normalized.length<6||normalized.length>40)throw new BadRequestException('Enter a valid IMEI or serial number (at least 6 characters).');
     const {rows}=await this.db.pool.query(`SELECT item_code AS "itemCode",item_name AS "itemName",brand,model,colour,status FROM lost_items WHERE status='lost' AND (
       upper(regexp_replace(COALESCE(imei_1,''),'[^A-Za-z0-9]','','g'))=$1 OR upper(regexp_replace(COALESCE(imei_2,''),'[^A-Za-z0-9]','','g'))=$1 OR upper(regexp_replace(COALESCE(serial_number,''),'[^A-Za-z0-9]','','g'))=$1
     ) ORDER BY lost_at DESC NULLS LAST LIMIT 1`,[normalized]);
-    return rows[0]?{match:true,item:rows[0]}:{match:false};
+    if(!rows[0])return {match:false};
+    const item=rows[0];
+    const {rows:searcherRows}=await this.db.pool.query('SELECT full_name AS name,phone FROM users WHERE id=$1 LIMIT 1',[req.user.sub]);
+    const searcher=searcherRows[0]||{};
+    await this.db.pool.query('INSERT INTO lost_item_searches(item_code,identifier,searched_by_user_id,searched_by_phone,searched_by_name) VALUES($1,$2,$3,$4,$5)',[item.itemCode,normalized,String(req.user.sub||''),searcher.phone||null,searcher.name||null]);
+    const {rows:lastRows}=await this.db.pool.query('SELECT searched_by_phone AS "lastSearchedByPhone",searched_by_name AS "lastSearchedByName",searched_at AS "lastSearchedAt" FROM lost_item_searches WHERE item_code=$1 ORDER BY searched_at DESC LIMIT 1',[item.itemCode]);
+    return {match:true,item:{...item,...(lastRows[0]||{})}};
   }
   @Get() @Roles('owner','manager')
   async list(@Req() req:any){
     const [t,s]=this.scope(req.user);
-    const {rows}=await this.db.pool.query(`SELECT li.id,li.item_code AS "itemCode",li.item_name AS "itemName",li.brand,li.model,li.colour,li.description,li.imei_1 AS "imei1",li.imei_2 AS "imei2",li.serial_number AS "serialNumber",li.purchase_date AS "purchaseDate",li.receipt_reference AS "receiptReference",li.status,li.lost_at AS "lostAt",li.created_at AS "createdAt",COUNT(r.id)::int AS "reportCount" FROM lost_items li LEFT JOIN lost_item_reports r ON r.lost_item_id=li.id WHERE li.tenant_id=$1 AND li.store_id=$2 GROUP BY li.id ORDER BY li.created_at DESC LIMIT 200`,[t,s]);
+    const {rows}=await this.db.pool.query(`SELECT li.id,li.item_code AS "itemCode",li.item_name AS "itemName",li.brand,li.model,li.colour,li.description,li.imei_1 AS "imei1",li.imei_2 AS "imei2",li.serial_number AS "serialNumber",li.purchase_date AS "purchaseDate",li.receipt_reference AS "receiptReference",li.ob_number AS "obNumber",li.status,li.lost_at AS "lostAt",li.created_at AS "createdAt",COUNT(r.id)::int AS "reportCount" FROM lost_items li LEFT JOIN lost_item_reports r ON r.lost_item_id=li.id WHERE li.tenant_id=$1 AND li.store_id=$2 GROUP BY li.id ORDER BY li.created_at DESC LIMIT 200`,[t,s]);
     return {items:rows};
   }
   @Post() @Roles('owner','manager')
@@ -34,13 +40,17 @@ export class LostItemsController {
     if(!imei1&&!imei2&&!serial)throw new BadRequestException('Enter at least one IMEI or serial number so the item can be identified');
     for(const v of [imei1,imei2])if(v&&!/^[A-Za-z0-9 -]{6,30}$/.test(v))throw new BadRequestException('Check the IMEI number');
     const normalized=[imei1,imei2,serial].filter(Boolean);
+    const lostDate=String(b.lostDate||'').trim();
+    if(lostDate&&!/^\d{4}-\d{2}-\d{2}$/.test(lostDate))throw new BadRequestException('Enter a valid date lost');
+    const obNumber=String(b.obNumber||'').trim().slice(0,100);
+    if(!obNumber)throw new BadRequestException('Police OB number is required when registering a lost item');
     const duplicate=await this.db.pool.query(`SELECT item_code AS "itemCode",item_name AS "itemName",brand,model,status FROM lost_items WHERE (NULLIF(upper(regexp_replace(imei_1,'[^A-Za-z0-9]','','g')),'')=ANY($1::text[]) OR NULLIF(upper(regexp_replace(imei_2,'[^A-Za-z0-9]','','g')),'')=ANY($1::text[]) OR NULLIF(upper(regexp_replace(serial_number,'[^A-Za-z0-9]','','g')),'')=ANY($1::text[])) ORDER BY created_at DESC LIMIT 10`,[normalized.map(v=>v.toUpperCase().replace(/[^A-Za-z0-9]/g,''))]);
     const normalizedIds=normalized.map(v=>v.toUpperCase().replace(/[^A-Za-z0-9]/g,''));
     const declaredDuplicates=await this.db.pool.query(`SELECT declaration_ref AS "itemCode",phone_make_model AS "itemName",NULL::text AS brand,NULL::text AS model,'second-hand declaration' AS status FROM second_hand_phone_declarations WHERE (NULLIF(upper(regexp_replace(imei1,'[^A-Za-z0-9]','','g')),'')=ANY($1::text[]) OR NULLIF(upper(regexp_replace(imei2,'[^A-Za-z0-9]','','g')),'')=ANY($1::text[]) OR NULLIF(upper(regexp_replace(serial_number,'[^A-Za-z0-9]','','g')),'')=ANY($1::text[])) ORDER BY created_at DESC LIMIT 10`,[normalizedIds]);
     const duplicateMatches=[...duplicate.rows,...declaredDuplicates.rows].slice(0,10);
     const code='AUR-LI-'+Date.now().toString(36).toUpperCase()+'-'+Math.random().toString(36).slice(2,6).toUpperCase();
     const publicCode=randomUUID();
-    const {rows}=await this.db.pool.query(`INSERT INTO lost_items(tenant_id,store_id,registered_by,item_code,public_code,item_name,brand,model,colour,description,imei_1,imei_2,serial_number,photo_data,purchase_date,receipt_reference) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15::date,$16) RETURNING id,item_code AS "itemCode",item_name AS "itemName",brand,model,colour,description,imei_1 AS "imei1",imei_2 AS "imei2",serial_number AS "serialNumber",status,created_at AS "createdAt"`,[t,s,req.user.sub,code,publicCode,b.itemName.trim(),b.brand?.trim()||null,b.model?.trim()||null,b.colour?.trim()||null,b.description?.trim()||null,imei1||null,imei2||null,serial||null,null,b.purchaseDate||null,b.receiptReference?.trim()||null]);
+    const {rows}=await this.db.pool.query(`INSERT INTO lost_items(tenant_id,store_id,registered_by,item_code,public_code,item_name,brand,model,colour,description,imei_1,imei_2,serial_number,photo_data,purchase_date,receipt_reference,ob_number,status,lost_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15::date,$16,$17,'lost',COALESCE($18::timestamptz,now())) RETURNING id,item_code AS "itemCode",item_name AS "itemName",brand,model,colour,description,imei_1 AS "imei1",imei_2 AS "imei2",serial_number AS "serialNumber",ob_number AS "obNumber",status,lost_at AS "lostAt",created_at AS "createdAt"`,[t,s,req.user.sub,code,publicCode,b.itemName.trim(),b.brand?.trim()||null,b.model?.trim()||null,b.colour?.trim()||null,b.description?.trim()||null,imei1||null,imei2||null,serial||null,null,b.purchaseDate||null,b.receiptReference?.trim()||null,obNumber,lostDate?new Date(lostDate+'T12:00:00').toISOString():null]);
     const base=(process.env.FRONTEND_URL||'https://swass-web.onrender.com').replace(/\/$/,'');
     const publicUrl=base+'/?lostItem='+encodeURIComponent(publicCode);
     const qrDataUrl=await QRCode.toDataURL(publicUrl,{errorCorrectionLevel:'M',margin:2,width:420});
@@ -67,7 +77,7 @@ export class PublicLostItemsController {
   @Get(':code')
   async view(@Param('code') code:string){
     if(!/^[0-9a-f-]{36}$/i.test(code))throw new BadRequestException('This AURORA item QR code is not recognised');
-    const {rows}=await this.db.pool.query(`SELECT item_code AS "itemCode",item_name AS "itemName",brand,model,colour,description,status FROM lost_items WHERE public_code=$1 LIMIT 1`,[code]);
+    const {rows}=await this.db.pool.query(`SELECT item_code AS "itemCode",item_name AS "itemName",brand,model,colour,description,ob_number AS "obNumber",status,lost_at AS "lostAt" FROM lost_items WHERE public_code=$1 LIMIT 1`,[code]);
     if(!rows[0])throw new BadRequestException('This AURORA item QR code is not recognised');
     return {item:rows[0]};
   }
