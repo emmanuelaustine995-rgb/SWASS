@@ -24,13 +24,16 @@ export class LostItemsController {
     for(const v of [imei1,imei2])if(v&&!/^[A-Za-z0-9 -]{6,30}$/.test(v))throw new BadRequestException('Check the IMEI number');
     const normalized=[imei1,imei2,serial].filter(Boolean);
     const duplicate=await this.db.pool.query(`SELECT item_code AS "itemCode",item_name AS "itemName",brand,model,status FROM lost_items WHERE (NULLIF(upper(regexp_replace(imei_1,'[^A-Za-z0-9]','','g')),'')=ANY($1::text[]) OR NULLIF(upper(regexp_replace(imei_2,'[^A-Za-z0-9]','','g')),'')=ANY($1::text[]) OR NULLIF(upper(regexp_replace(serial_number,'[^A-Za-z0-9]','','g')),'')=ANY($1::text[])) ORDER BY created_at DESC LIMIT 10`,[normalized.map(v=>v.toUpperCase().replace(/[^A-Za-z0-9]/g,''))]);
+    const normalizedIds=normalized.map(v=>v.toUpperCase().replace(/[^A-Za-z0-9]/g,''));
+    const declaredDuplicates=await this.db.pool.query(`SELECT declaration_ref AS "itemCode",phone_make_model AS "itemName",NULL::text AS brand,NULL::text AS model,'second-hand declaration' AS status FROM second_hand_phone_declarations WHERE (NULLIF(upper(regexp_replace(imei1,'[^A-Za-z0-9]','','g')),'')=ANY($1::text[]) OR NULLIF(upper(regexp_replace(imei2,'[^A-Za-z0-9]','','g')),'')=ANY($1::text[]) OR NULLIF(upper(regexp_replace(serial_number,'[^A-Za-z0-9]','','g')),'')=ANY($1::text[])) ORDER BY created_at DESC LIMIT 10`,[normalizedIds]);
+    const duplicateMatches=[...duplicate.rows,...declaredDuplicates.rows].slice(0,10);
     const code='AUR-LI-'+Date.now().toString(36).toUpperCase()+'-'+Math.random().toString(36).slice(2,6).toUpperCase();
     const publicCode=randomUUID();
     const {rows}=await this.db.pool.query(`INSERT INTO lost_items(tenant_id,store_id,registered_by,item_code,public_code,item_name,brand,model,colour,description,imei_1,imei_2,serial_number,photo_data,purchase_date,receipt_reference) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15::date,$16) RETURNING id,item_code AS "itemCode",item_name AS "itemName",brand,model,colour,description,imei_1 AS "imei1",imei_2 AS "imei2",serial_number AS "serialNumber",status,created_at AS "createdAt"`,[t,s,req.user.sub,code,publicCode,b.itemName.trim(),b.brand?.trim()||null,b.model?.trim()||null,b.colour?.trim()||null,b.description?.trim()||null,imei1||null,imei2||null,serial||null,null,b.purchaseDate||null,b.receiptReference?.trim()||null]);
     const base=(process.env.FRONTEND_URL||'https://swass-web.onrender.com').replace(/\/$/,'');
     const publicUrl=base+'/?lostItem='+encodeURIComponent(publicCode);
     const qrDataUrl=await QRCode.toDataURL(publicUrl,{errorCorrectionLevel:'M',margin:2,width:420});
-    return {item:rows[0],publicUrl,qrDataUrl,duplicates:duplicate.rows,message:duplicate.rows.length?'Registered, but a matching identifier already exists. Review the possible duplicate before proceeding.':'Item registered successfully.'};
+    return {item:rows[0],publicUrl,qrDataUrl,duplicates:duplicateMatches,message:duplicateMatches.length?'Registered, but a matching identifier already exists. Review the possible duplicate before proceeding.':'Item registered successfully.'};
   }
   @Get(':id/reports') @Roles('owner','manager')
   async reports(@Req() req:any,@Param('id') id:string){
