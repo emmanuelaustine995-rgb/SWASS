@@ -123,7 +123,7 @@
   }
   $('profile-menu-btn')?.addEventListener('click',()=>{const panel=$('account-profile-menu');const open=panel.classList.contains('hidden');if(open){renderAccountProfile();panel.classList.remove('hidden');$('profile-menu-btn').setAttribute('aria-expanded','true');}else{panel.classList.add('hidden');$('profile-menu-btn').setAttribute('aria-expanded','false');}});
   $('close-account-profile')?.addEventListener('click',()=>{$('account-profile-menu').classList.add('hidden');$('profile-menu-btn').setAttribute('aria-expanded','false');});
-  $('account-profile-business-edit')?.addEventListener('click',()=>{$('account-profile-menu').classList.add('hidden');$('profile-menu-btn').setAttribute('aria-expanded','false');showWorkspaceScreen('profile');});
+  $('account-profile-business-edit')?.addEventListener('click',()=>{$('account-profile-menu').classList.add('hidden');$('profile-menu-btn').setAttribute('aria-expanded','false');showWorkspaceScreen('shop');setShopTab('profile');});
   document.addEventListener('click',e=>{const panel=$('account-profile-menu'),button=$('profile-menu-btn');if(panel&&!panel.classList.contains('hidden')&&!panel.contains(e.target)&&!button?.contains(e.target)){panel.classList.add('hidden');button?.setAttribute('aria-expanded','false');}});
   let staffProfilePhotoDraft=null;
   $('staff-profile-photo')?.addEventListener('change',async e=>{const file=e.target.files?.[0];staffProfilePhotoDraft=null;if(!file)return;try{staffProfilePhotoDraft=await compressLogo(file);$('staff-profile-preview').src=staffProfilePhotoDraft;}catch(err){e.target.value='';$('staff-profile-message').textContent=err.message||'Could not prepare your photo.';}});
@@ -1018,8 +1018,9 @@
     if(['owner','manager','vendor','freelancer'].includes(state.role)){
       backgroundLoads.push(loadBusinessProfile().catch(err => {
         if(err.status === 402){
-          showWorkspaceScreen('profile');
-          showNotice('AURORA is locked until you subscribe. Open Wallet & Subscription in your profile to continue.');
+          showWorkspaceScreen('shop');
+          setShopTab('profile');
+          showNotice('AURORA is locked until you subscribe. Open Subscription & Payments from the dashboard.');
         } else {
           showNotice('You are signed in, but the business profile could not be loaded. '+(err.message||''),true);
         }
@@ -1142,7 +1143,7 @@
   $('history-search-btn').addEventListener('click',loadReceiptHistory);
   $('history-list').addEventListener('click',e=>{const b=e.target.closest('[data-view-pdf]');if(b)openReceiptPdf(b.dataset.viewPdf);});
   $('history-search').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();loadReceiptHistory();}});
-  $('dashboard-edit-profile').addEventListener('click',()=>showWorkspaceScreen('profile'));
+  $('dashboard-edit-profile').addEventListener('click',()=>{showWorkspaceScreen('shop');setShopTab('profile');});
   $('profile-close')?.addEventListener('click',()=>{if(!goBackWorkspace())showWorkspaceScreen('dashboard',{fromBack:true});});
   $('business-logo').addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file)return;const img=$('logo-preview');img.classList.remove('hidden');img.alt='Preparing selected business logo…';$('profile-error').textContent='Preparing logo…';try{state.profileLogoData=await compressLogo(file);img.src=state.profileLogoData;img.alt='Selected business logo preview';$('profile-error').textContent='Logo preview ready. Tap Save business profile to keep it.';}catch(err){state.profileLogoData=undefined;e.target.value='';img.removeAttribute('src');img.classList.add('hidden');$('profile-error').textContent=err.message;}});
   $('profile-form').addEventListener('submit',async e=>{e.preventDefault();const btn=$('profile-form').querySelector('button[type="submit"]');btn.disabled=true;btn.textContent='Saving…';$('profile-error').textContent='';const payload={businessName:$('profile-business-name').value.trim(),businessPhone:$('profile-business-phone').value.trim(),businessEmail:$('profile-business-email').value.trim()||null,legalName:$('profile-legal-name').value.trim()||null,storeName:$('profile-store-name').value.trim(),storeLocation:$('profile-store-location').value.trim(),houseName:$('profile-house-name').value.trim()||null,floor:$('profile-floor').value.trim()||null,houseNumber:$('profile-house-number').value.trim()||null,websiteUrl:$('profile-website').value.trim()||null,kraPin:$('profile-kra-pin').value.trim()||null,registrationCode:$('profile-registration-code').value.trim()||null,outletId:$('profile-outlet-id').value.trim()||null,terminalNumber:$('profile-terminal-number').value.trim()||null,receiptHeader:$('profile-receipt-header').value.trim()||null,receiptFooter:$('profile-receipt-footer').value.trim()||null};if(state.profileLogoData!==undefined)payload.logoData=state.profileLogoData;if(state.shopInsidePhotoDraft!==undefined)payload.shopInsidePhotoData=state.shopInsidePhotoDraft;if(state.shopOutsidePhotoDraft!==undefined)payload.shopOutsidePhotoData=state.shopOutsidePhotoDraft;try{await request('/api/v1/business/profile',{method:'PATCH',body:JSON.stringify(payload)});state.businessProfile={...state.businessProfile,...payload};renderDashboardBusinessProfile();renderAccountProfile();$('profile-error').textContent='Profile saved successfully. Your business details, logo and shop photos are updated.';$('profile-error').style.color='#16804a';}catch(err){$('profile-error').textContent=err.message||'Could not save business profile.';}finally{btn.disabled=false;btn.textContent='Save business profile';}});
