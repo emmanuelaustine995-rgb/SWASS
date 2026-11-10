@@ -96,13 +96,13 @@
 
       <button id="secondhand-open-card" class="secondhand-entry-card" type="button">
         <span class="secondhand-entry-icon" aria-hidden="true">🛡️</span>
-        <span class="secondhand-entry-copy"><strong>Second-Hand Product Seller Declaration</strong><small>Record seller identity, product identifiers, ownership declaration, photos and signatures before buying any second-hand product.</small></span>
+        <span class="secondhand-entry-copy"><strong>Second-Hand Receipt</strong><small>Record seller, buyer and product details, then issue a PDF copy to both parties.</small></span>
         <span class="secondhand-entry-arrow" aria-hidden="true">›</span>
       </button>
 
-      <section id="secondhand-panel" class="secondhand-panel hidden" aria-label="Second-hand product seller declaration">
+      <section id="secondhand-panel" class="secondhand-panel hidden" aria-label="Second-hand receipt">
         <div class="secondhand-panel-heading">
-          <div><p class="eyebrow">AURORA · SHOP PROTECTION</p><h2>Second-Hand Product Declaration</h2><p class="muted small">Complete this with the seller before accepting the product.</p></div>
+          <div><p class="eyebrow">AURORA · SHOP PROTECTION</p><h2>Second-Hand Receipt</h2><p class="muted small">Complete seller, buyer and product details together before issuing the receipt.</p></div>
           <button id="secondhand-back" class="btn btn-light" type="button">← Back to Shop</button>
         </div>
         <div class="secondhand-warning"><strong>Important:</strong> Record any second-hand product only after checking the seller's identity, product details, ownership and signed record.</div>
@@ -117,12 +117,13 @@
           </fieldset>
           <fieldset><legend>1 · Seller identification</legend>
             <label>Full legal name<input id="sh-seller-name" maxlength="160" autocomplete="name" required placeholder="Name as shown on ID"></label>
-            <div class="secondhand-fields"><label>National ID / Passport number<input id="sh-national-id" maxlength="40" required></label><label>Seller phone number<input id="sh-seller-phone" type="tel" maxlength="30" autocomplete="tel" required placeholder="07XX XXX XXX"></label></div>
-            <div class="secondhand-fields"><label>Alternative phone (optional)<input id="sh-alt-phone" type="tel" maxlength="30"></label><label>Residential address / area<input id="sh-address" maxlength="300" required placeholder="Estate, town, county"></label></div>
+            <div class="secondhand-fields"><label>National ID / Passport number<input id="sh-national-id" maxlength="40" required></label><label>Seller phone number<input id="sh-seller-phone" type="tel" maxlength="30" autocomplete="tel" required placeholder="07XX XXX XXX"></label></div><div class="secondhand-fields"><label>Seller email address<input id="sh-seller-email" type="email" maxlength="254" autocomplete="email" required placeholder="seller@example.com"></label><label>Alternative phone (optional)<input id="sh-alt-phone" type="tel" maxlength="30"></label></div>
+            <label>Residential address / area<input id="sh-address" maxlength="300" required placeholder="Estate, town, county"></label>
             <label>Seller ID photo (front) <input id="sh-id-photo" type="file" accept="image/*" capture="environment" required></label><img id="sh-id-preview" class="secondhand-photo-preview hidden" alt="Seller ID preview">
             <label>Seller photo (required, with consent)<input id="sh-seller-photo" type="file" accept="image/*" capture="user" required></label><img id="sh-seller-preview" class="secondhand-photo-preview hidden" alt="Seller photo preview">
           </fieldset>
-          <fieldset><legend>2 · Product being sold</legend>
+          <fieldset><legend>2 · Buyer details</legend><div class="secondhand-fields"><label>Buyer full name<input id="sh-buyer-name" maxlength="160" autocomplete="name" required placeholder="Buyer full legal name"></label><label>Buyer National ID number<input id="sh-buyer-id" maxlength="40" required placeholder="Buyer ID / passport number"></label></div><div class="secondhand-fields"><label>Buyer phone number<input id="sh-buyer-phone" type="tel" maxlength="30" autocomplete="tel" required placeholder="07XX XXX XXX"></label><label>Buyer email address<input id="sh-buyer-email" type="email" maxlength="254" autocomplete="email" required placeholder="buyer@example.com"></label></div></fieldset>
+          <fieldset><legend>3 · Product being sold</legend>
             <label>Product name / make and model<input id="sh-model" maxlength="160" required placeholder="e.g. Samsung phone, laptop, television, bicycle"></label>
             <div class="secondhand-fields"><label>Product identifier / barcode / serial number (IMEI for phones, if applicable)<input id="sh-imei1" inputmode="text" maxlength="40" placeholder="Serial, IMEI, barcode or other identifier"></label><label>Second identifier (if applicable)<input id="sh-imei2" inputmode="text" maxlength="40" placeholder="Optional"></label></div>
             <label>Additional serial number / identifying details (if available)<input id="sh-serial" maxlength="100"></label>
@@ -130,24 +131,24 @@
             <label>Photo of the product and its identifying details<input id="sh-phone-photo" type="file" accept="image/*" capture="environment" required></label><img id="sh-phone-preview" class="secondhand-photo-preview hidden" alt="Product photo preview">
             <div id="sh-no-receipt-wrap"><label>Why is the original product purchase receipt unavailable?<textarea id="sh-no-receipt" rows="3" maxlength="1000" required placeholder="Seller must explain clearly…"></textarea></label></div><div id="sh-receipt-photo-wrap" class="hidden"><label>Photograph of original purchase receipt<input id="sh-receipt-photo" type="file" accept="image/*" capture="environment"></label><img id="sh-receipt-preview" class="secondhand-photo-preview hidden" alt="Original receipt photo preview"></div>
           </fieldset>
-          <fieldset><legend>3 · Seller's ownership and responsibility declaration</legend>
+          <fieldset><legend>4 · Seller's ownership and responsibility declaration</legend>
             <div id="sh-declaration-with-receipt" class="secondhand-legal-copy secondhand-declaration-copy secondhand-declaration-pink hidden"><strong>DECLARATION — PRODUCT WITH ORIGINAL RECEIPT</strong><br>I declare that I am the lawful owner of the product recorded above or have full legal authority to sell it. I confirm that the original purchase receipt shown and attached to this record relates to this product and, to the best of my knowledge, is genuine and has not been altered. I confirm that the product is not stolen, unlawfully obtained, fraudulently acquired or subject to an ownership dispute, and that all product identifiers and details I have supplied are true. I accept responsibility for false statements, a false or altered receipt, fraudulent representation or an unlawful ownership claim connected with this sale. I agree to cooperate with lawful investigations and provide further information when lawfully required. I understand that this declaration may be retained and disclosed to lawful authorities when required.</div><div id="sh-declaration-without-receipt" class="secondhand-legal-copy secondhand-declaration-copy secondhand-declaration-blue"><strong>DECLARATION — PRODUCT WITHOUT ORIGINAL RECEIPT</strong><br>I declare that I am the lawful owner of the product recorded above or have full legal authority to sell it, even though I cannot provide its original purchase receipt. I have truthfully explained why the receipt is unavailable and confirm that, to the best of my knowledge, the product is not stolen, unlawfully obtained, fraudulently acquired or subject to an ownership dispute. I confirm that all product identifiers and details I have supplied are true and have not knowingly been altered. I accept responsibility for false statements, fraudulent representation or an unlawful ownership claim connected with this sale. I agree to cooperate with lawful investigations and provide further information when lawfully required. I understand that this declaration may be retained and disclosed to lawful authorities when required.</div>
             <label class="secondhand-consent"><input id="sh-declaration-accepted" type="checkbox" required><span>I have read or had this declaration read to me, understood it, and confirm that the information I have supplied is true.</span></label>
           </fieldset>
-          <fieldset><legend>4 · Electronic signatures and thumbprint</legend>
+          <fieldset><legend>5 · Electronic signatures and thumbprint</legend>
             <p class="muted small">Ask the seller to sign electronically. A thumbprint mark is additionally requested when the product is sold without its original receipt.</p>
             <div class="secondhand-pad-wrap"><div class="secondhand-pad-title"><strong>Seller's electronic signature</strong><button type="button" class="text-btn" data-clear-pad="sh-signature">Clear</button></div><canvas id="sh-signature" class="secondhand-pad" width="720" height="180" aria-label="Draw seller signature"></canvas></div>
             <div id="sh-thumbprint-wrap"><div class="secondhand-pad-wrap"><div class="secondhand-pad-title"><strong>Seller's electronic thumbprint mark</strong><button type="button" class="text-btn" data-clear-pad="sh-thumbprint">Clear</button></div><canvas id="sh-thumbprint" class="secondhand-pad" width="720" height="180" aria-label="Draw seller thumbprint mark"></canvas><p class="tiny muted">This is a finger-drawn mark, not a biometric fingerprint scan or identity match.</p></div></div>
             <div id="sh-biometric-status" class="secondhand-biometric-status" role="status">Checking whether this device has a built-in biometric authenticator…</div>
             <p class="tiny muted">A device may use fingerprint, face recognition or its screen lock. A normal browser cannot read or store fingerprint ridge data. A compatible external fingerprint reader and verified integration would be needed for actual fingerprint capture.</p>
           </fieldset>
-          <fieldset><legend>5 · Shop and witness record</legend>
+          <fieldset><legend>6 · Shop and witness record</legend>
             <div class="secondhand-fields"><label>Witness full name (optional)<input id="sh-witness-name" maxlength="160"></label><label>Witness phone (optional)<input id="sh-witness-phone" type="tel" maxlength="30"></label></div>
             <label class="secondhand-consent"><input id="sh-shop-acknowledged" type="checkbox" required><span>I, as the shop representative, confirm that I checked the seller's identification and compared the product identifiers with the item before accepting it.</span></label>
             <p class="tiny muted">AURORA records the logged-in shop account and the server's date and time when this declaration is submitted.</p>
           </fieldset>
           <p id="secondhand-message" class="shop-directory-message" role="status"></p>
-          <button id="secondhand-submit" class="btn btn-primary full" type="submit">Save Seller Declaration &amp; Record Product</button>
+          <button id="secondhand-submit" class="btn btn-primary full" type="submit">Issue Second-Hand Receipt PDF &amp; Send to Both Parties</button>
           <button id="secondhand-clear" class="btn btn-light full" type="button">Clear Details &amp; Start Again</button>
         </form>
         <div id="secondhand-saved-record" class="secondhand-saved-record hidden"></div>
