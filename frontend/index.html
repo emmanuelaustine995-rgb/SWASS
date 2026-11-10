@@ -75,7 +75,6 @@
       <article class="shop-directory-card">
         <div class="shop-directory-heading">
           <div><p class="eyebrow">AURORA SHOP DIRECTORY</p><h1 id="shop-directory-title">Add Products</h1><p class="muted small">List goods available in your shop so customers across AURORA can find you.</p></div>
-          <button id="shop-search-toggle" class="shop-search-toggle" type="button">Search Product</button>
         </div>
         <form id="shop-add-products" class="shop-add-products">
           <label>Product name<input id="shop-product-name" maxlength="160" required placeholder="e.g. Samsung Galaxy A15"></label>
@@ -87,12 +86,15 @@
           <p id="shop-product-message" class="shop-directory-message" role="status"></p>
         </form>
         <p id="shop-owner-note" class="muted small hidden">Only the shop owner can add products to the public directory. You can still search for products listed by other shops.</p>
+      </article>
+      <article class="shop-search-directory-card">
+        <div class="shop-directory-heading"><div><p class="eyebrow">AURORA SHOP DIRECTORY</p><h2>Find Products</h2><p class="muted small">Search products listed by other shops.</p></div><button id="shop-search-toggle" class="shop-search-toggle" type="button">Search Product</button></div>
         <form id="shop-product-search-form" class="shop-product-search-form hidden">
           <label>Search by product name<input id="shop-product-search" type="search" maxlength="100" placeholder="Type a product name…" autocomplete="off"></label>
           <button class="btn btn-primary full" type="submit">Find Shops</button>
         </form>
+        <section id="shop-product-results" class="shop-product-results hidden" aria-live="polite"></section>
       </article>
-      <section id="shop-product-results" class="shop-product-results hidden" aria-live="polite"></section>
 
       <button id="secondhand-open-card" class="secondhand-entry-card" type="button">
         <span class="secondhand-entry-icon" aria-hidden="true">🛡️</span>
@@ -152,7 +154,7 @@
           <button id="secondhand-clear" class="btn btn-light full" type="button">Clear Details &amp; Start Again</button>
         </form>
         <div id="secondhand-saved-record" class="secondhand-saved-record hidden"></div>
-        <div class="secondhand-history-tools"><button id="secondhand-history-toggle" class="btn btn-light" type="button">View saved declarations</button></div>
+        <div class="secondhand-history-tools"><button id="secondhand-history-toggle" class="btn btn-light" type="button">View Second-Hand Receipt History</button></div>
         <div id="secondhand-history" class="secondhand-history hidden" aria-live="polite"></div>
       </section>
     </section>
