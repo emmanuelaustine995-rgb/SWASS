@@ -267,7 +267,7 @@
     const hasBack=!!state.token&&workspaceOpen&&(nested||state.workspaceHistory.length>0||state.currentWorkspace!=='dashboard');
     button.classList.toggle('hidden',!hasBack);
     const previous=state.workspaceHistory[state.workspaceHistory.length-1];
-    button.textContent=modalOpen?'← Back':secondhandVisible?'← Shop':nested?'← Back':previous?('← '+({dashboard:'Dashboard',receipts:'Receipts',profile:'Profile',shop:'Shop',subscription:'Subscription'}[previous]||'Back')):'← Dashboard';
+    button.textContent=modalOpen?'← Back':secondhandVisible?'← Receipts':nested?'← Back':previous?('← '+({dashboard:'Dashboard',receipts:'Receipts',profile:'Profile',shop:'Shop',subscription:'Subscription'}[previous]||'Back')):'← Dashboard';
     button.setAttribute('aria-label',button.textContent.replace('← ','Go back to '));
   }
   function goBackWorkspace(){
@@ -288,7 +288,6 @@
     const secondhand=$('secondhand-panel');
     if(secondhand&&!secondhand.classList.contains('hidden')){
       secondhand.classList.add('hidden');
-      document.querySelector('#shop-home > .shop-directory-card')?.classList.remove('hidden');
       $('secondhand-open-card')?.classList.remove('hidden');
       $('secondhand-history')?.classList.add('hidden');
       $('secondhand-saved-record')?.classList.add('hidden');
@@ -365,7 +364,7 @@
     }else if(screen==='shop'){
       $('shop-home')?.classList.remove('hidden');
       const isShopOwner = state.role === 'owner';
-      $('secondhand-open-card')?.classList.toggle('hidden',!isShopOwner);
+      $('secondhand-panel')?.classList.add('hidden');
       $('secondhand-panel')?.classList.add('hidden');
       document.querySelector('#shop-home > .shop-directory-card')?.classList.remove('hidden');
       $('shop-add-products')?.classList.toggle('hidden', !isShopOwner);
@@ -1123,7 +1122,7 @@
   $('open-recover-receipt').addEventListener('click',()=>{window.location.href='recover.html';});
   $('open-special-amendment')?.addEventListener('click',()=>{
     if(state.role!=='owner'){showNotice('Only the shop owner can amend a saved Second-Hand Special Receipt.',true);return;}
-    showWorkspaceScreen('shop');
+    showWorkspaceScreen('receipts');
     $('secondhand-open-card')?.click();
     $('secondhand-history-toggle')?.click();
     $('secondhand-history')?.scrollIntoView({behavior:'smooth',block:'start'});
