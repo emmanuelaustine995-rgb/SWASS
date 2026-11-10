@@ -1088,3 +1088,51 @@ body.workspace-active #shop-home .shop-business-details-card .profile-readonly-n
 body.aurora-lost-alarm .topbar{animation:auroraGlobalLostAlarm .55s steps(2,end) infinite!important;border-bottom:4px solid #dc2626!important}@keyframes auroraGlobalLostAlarm{0%,100%{background:#7f1d1d!important;box-shadow:0 0 0 0 #ef444455}50%{background:#dc2626!important;box-shadow:0 0 0 8px #ef444422}}
 
 .aurora-lost-alarm-banner{position:fixed;z-index:10000;top:78px;left:50%;transform:translateX(-50%);width:min(94vw,620px);display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 15px;border:2px solid #fecaca;border-radius:12px;background:#991b1b;color:#fff;box-shadow:0 12px 35px #0006;font-size:13px;animation:auroraGlobalLostAlarm .55s steps(2,end) infinite}.aurora-lost-alarm-banner button{flex:0 0 auto;border:1px solid #fff;border-radius:8px;padding:8px 10px;background:#fff;color:#991b1b;font-weight:800}
+
+
+/* Lost Goods is a dedicated scroll area. Keep every form control above the fixed
+   four-button navigation on short phones and when the register is expanded. */
+body.workspace-active #shop-lost-items-panel:not(.hidden){
+  position:fixed!important;
+  top:72px!important;
+  bottom:calc(74px + env(safe-area-inset-bottom))!important;
+  left:50%!important;
+  transform:translateX(-50%)!important;
+  width:min(100%,520px)!important;
+  max-width:520px!important;
+  box-sizing:border-box!important;
+  display:block!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  overscroll-behavior:contain!important;
+  -webkit-overflow-scrolling:touch!important;
+  padding:8px 12px 18px!important;
+  margin:0!important;
+  z-index:20!important;
+  background:#f7fbff!important;
+}
+body.workspace-active #shop-lost-items-panel:not(.hidden) .lost-item-register{
+  max-width:100%!important;
+  box-sizing:border-box!important;
+}
+body.workspace-active #shop-lost-items-panel:not(.hidden) .lost-item-form,
+body.workspace-active #shop-lost-items-panel:not(.hidden) .lost-item-form>*{
+  min-width:0!important;
+  max-width:100%!important;
+  box-sizing:border-box!important;
+}
+body.workspace-active #shop-lost-items-panel:not(.hidden) input,
+body.workspace-active #shop-lost-items-panel:not(.hidden) textarea,
+body.workspace-active #shop-lost-items-panel:not(.hidden) select{
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  box-sizing:border-box!important;
+}
+@media(max-width:760px){
+  body.workspace-active #shop-lost-items-panel:not(.hidden){
+    top:64px!important;
+    bottom:calc(66px + env(safe-area-inset-bottom))!important;
+    padding:6px 9px 16px!important;
+  }
+}
