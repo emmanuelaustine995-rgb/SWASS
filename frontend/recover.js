@@ -81,8 +81,8 @@
       receipts.map((r, index) => `<article class="panel recovered-receipt">
         <div class="history-row-top"><strong>${escapeHtml(r.receipt_no)}</strong><strong>${r.recordType==='loan'?'LOAN NOTE':'KSh '+Number(r.totalKes).toLocaleString('en-KE',{minimumFractionDigits:2})}</strong></div>
         <p>${escapeHtml(r.business_name || r.store_name || '')} · ${escapeHtml(r.store_name || '')}</p>
-        <p>${escapeHtml(r.customer_name || 'Customer')} · ${escapeHtml(r.customer_phone || '')}</p>
-        <p>${new Date(r.issued_at).toLocaleString('en-KE')} · ${escapeHtml(String(r.status || 'issued'))}</p>
+        <p>${escapeHtml(r.recordType==='loan'?(r.borrower_name||'Customer'):(r.customer_name||'Customer'))} · ${escapeHtml(r.recordType==='loan'?(r.phone||''):(r.customer_phone||''))}</p>
+        <p>${new Date(r.issued_at).toLocaleString('en-KE')} · ${escapeHtml(r.recordType==='loan'?(r.returned?'Returned':r.sold?'Sold':'On loan'):String(r.status||'issued'))}</p>
         <p> ${r.recordType==='loan'?'Item on loan: '+escapeHtml(r.item_name||''):(r.items || []).map(item => escapeHtml(item.name) + ' × ' + Number(item.qty)).join(', ')}</p>
         <button type="button" class="print-recovered" data-index="${index}">Print / Save PDF</button>
       </article>`).join('');
