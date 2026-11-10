@@ -1249,10 +1249,10 @@
   function syncSecondhandReceiptMode(selected){
     const mode=selected||$('sh-sale-type')?.value||'';
     const form=$('secondhand-form');
-    if(!mode){form?.classList.add('hidden');return;}
+    if(!mode){if(form){form.hidden=true;form.classList.add('hidden');}return;}
     $('sh-sale-type').value=mode;
     const withReceipt=mode==='with_receipt';
-    form?.classList.remove('hidden');
+    if(form){form.hidden=false;form.classList.remove('hidden');}
     $('sh-no-receipt-wrap')?.classList.toggle('hidden',withReceipt);
     $('sh-receipt-photo-wrap')?.classList.toggle('hidden',!withReceipt);
     $('sh-seller-photo-wrap')?.classList.toggle('hidden',withReceipt);
@@ -1298,7 +1298,7 @@
     $('receipts-home')?.classList.add('secondhand-active');
     $('secondhand-open-card')?.classList.add('hidden');
     $('secondhand-panel')?.classList.remove('hidden');
-    $('secondhand-form')?.classList.add('hidden');
+    if($('secondhand-form')){$('secondhand-form').hidden=true;$('secondhand-form').classList.add('hidden');}
     $('sh-sale-type').value='';
     document.querySelectorAll('[data-secondhand-mode]').forEach(el=>el.classList.remove('selected'));
     checkSecondhandBiometricSupport();
