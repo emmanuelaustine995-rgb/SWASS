@@ -58,7 +58,7 @@ export class ReceiptsService {
          LEFT JOIN receipt_delivery_logs dl ON dl.receipt_id = r.id
          LEFT JOIN receipt_items ri ON ri.receipt_id = r.id
         WHERE r.tenant_id = $1 AND r.store_id = $2
-          AND r.cashier_id = $10::uuid
+          AND r.cashier_id::text = $10
           AND ($3::date IS NULL OR r.issued_at >= $3::date)
           AND ($4::date IS NULL OR r.issued_at < ($4::date + interval '1 day'))
           AND ($5 = '' OR r.receipt_no ILIKE '%' || $5 || '%'
@@ -103,7 +103,7 @@ export class ReceiptsService {
          LEFT JOIN users u ON u.id=r.cashier_id AND u.tenant_id=r.tenant_id
          LEFT JOIN receipt_items ri ON ri.receipt_id=r.id
         WHERE r.id=$1 AND r.tenant_id=$2 AND r.store_id=$3
-          AND r.cashier_id=$4::uuid
+          AND r.cashier_id::text=$4
         GROUP BY r.id,t.id,s.id,c.id,u.id LIMIT 1`,
       [receiptId,user.tenantId,user.storeId,user.sub],
     );
