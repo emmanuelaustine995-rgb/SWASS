@@ -138,7 +138,11 @@ export class ReceiptsService {
             upper(regexp_replace(COALESCE(li.imei_1,''),'[^A-Za-z0-9]','','g'))=ANY($1::text[]) OR upper(regexp_replace(COALESCE(li.imei_2,''),'[^A-Za-z0-9]','','g'))=ANY($1::text[]) OR upper(regexp_replace(COALESCE(li.serial_number,''),'[^A-Za-z0-9]','','g'))=ANY($1::text[])
           ) ORDER BY li.lost_at DESC NULLS LAST LIMIT 1`,[ids]);
         if(match.rows[0]){
-          const lost=match.rows[0],warning=`AURORA ALERT: ${lost.itemName||'A product'} (reference ${lost.itemCode}) is recorded as LOST. Do not complete this sale until ownership is verified with the relevant authorities.`;
+          const lost=match.rows[0];
+          const {rows:searcherRows}=await this.db.pool.query('SELECT full_name AS name,phone FROM users WHERE id=$1 LIMIT 1',[user.sub]);
+          const searcher=searcherRows[0]||{};
+          await this.db.pool.query('INSERT INTO lost_item_searches(item_code,identifier,searched_by_user_id,searched_by_phone,searched_by_name) VALUES($1,$2,$3,$4,$5)',[lost.itemCode,ids[0],String(user.sub||''),searcher.phone||null,searcher.name||null]);
+          const warning=`AURORA ALERT: ${lost.itemName||'A product'} (reference ${lost.itemCode}) is recorded as LOST. Do not complete this sale until ownership is verified with the relevant authorities.`;
           const tasks:Promise<any>[]=[];
           if(lost.registeredByEmail)tasks.push(this.emailVerification.sendLostItemAlert({to:lost.registeredByEmail,recipientName:lost.registeredByName||'AURORA user',itemName:lost.itemName||'Product',itemCode:lost.itemCode,warning}));
           if(lost.registeredByPhone)tasks.push(this.whatsapp.sendText({to:lost.registeredByPhone,text:warning}));
