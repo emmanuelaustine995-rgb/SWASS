@@ -47,7 +47,7 @@ export class LoanItemsController {
     const money=Number(x.amountKes||0).toLocaleString('en-KE',{minimumFractionDigits:2,maximumFractionDigits:2});
     let y=42;
     d.roundedRect(42,y,511,104,12).fill('#F1F6FB');
-    if(shop.logo_data){try{const raw=String(shop.logo_data).replace(/^data:image\\/[a-zA-Z0-9.+-]+;base64,/,'');d.image(Buffer.from(raw,'base64'),56,y+17,{fit:[86,66]});}catch{}}
+    if(shop.logo_data){try{const raw=String(shop.logo_data).replace(/^data:image\/[a-zA-Z0-9.+-]+;base64,/,'');d.image(Buffer.from(raw,'base64'),56,y+17,{fit:[86,66]});}catch{}}
     const tx=shop.logo_data?154:58;
     d.fillColor(navy).font('Helvetica-Bold').fontSize(19).text(shop.name||'AURORA E-RECEIPT',tx,y+17,{width:385});
     d.fillColor(muted).font('Helvetica').fontSize(9).text(shop.store_name||'Shop',tx,y+43,{width:385});
