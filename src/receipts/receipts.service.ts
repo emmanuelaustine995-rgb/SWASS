@@ -129,6 +129,26 @@ export class ReceiptsService {
     this.validate(dto);
     if (!user.tenantId || !user.storeId) throw new ForbiddenException('User is not tied to a store');
 
+    const existingReceipt=await this.db.pool.query('SELECT id FROM receipts WHERE tenant_id=$1 AND client_uuid=$2 LIMIT 1',[user.tenantId,dto.clientUuid]);
+    if(!existingReceipt.rowCount){
+      const ids=[...new Set((dto.items||[]).map(i=>String(i.serialNo||'').toUpperCase().replace(/[^A-Z0-9]/g,'')).filter(v=>v.length>=6))];
+      if(ids.length){
+        const match=await this.db.pool.query(`SELECT li.item_code AS "itemCode",li.item_name AS "itemName",u.full_name AS "registeredByName",u.email AS "registeredByEmail",u.phone AS "registeredByPhone"
+          FROM lost_items li LEFT JOIN users u ON u.id=li.registered_by WHERE li.status='lost' AND (
+            upper(regexp_replace(COALESCE(li.imei_1,''),'[^A-Za-z0-9]','','g'))=ANY($1::text[]) OR upper(regexp_replace(COALESCE(li.imei_2,''),'[^A-Za-z0-9]','','g'))=ANY($1::text[]) OR upper(regexp_replace(COALESCE(li.serial_number,''),'[^A-Za-z0-9]','','g'))=ANY($1::text[])
+          ) ORDER BY li.lost_at DESC NULLS LAST LIMIT 1`,[ids]);
+        if(match.rows[0]){
+          const lost=match.rows[0],warning=`AURORA ALERT: ${lost.itemName||'A product'} (reference ${lost.itemCode}) is recorded as LOST. Do not complete this sale until ownership is verified with the relevant authorities.`;
+          const tasks:Promise<any>[]=[];
+          if(lost.registeredByEmail)tasks.push(this.emailVerification.sendLostItemAlert({to:lost.registeredByEmail,recipientName:lost.registeredByName||'AURORA user',itemName:lost.itemName||'Product',itemCode:lost.itemCode,warning}));
+          if(lost.registeredByPhone)tasks.push(this.whatsapp.sendText({to:lost.registeredByPhone,text:warning}));
+          if(dto.customer?.email)tasks.push(this.emailVerification.sendLostItemAlert({to:dto.customer.email,recipientName:dto.customer.fullName,itemName:lost.itemName||'Product',itemCode:lost.itemCode,warning}));
+          if(dto.customer?.phone)tasks.push(this.whatsapp.sendText({to:dto.customer.phone,text:warning}));
+          await Promise.allSettled(tasks);
+          throw new ConflictException('AURORA RED ALERT: An item identifier in this sale is recorded as LOST (reference '+lost.itemCode+'). The sale has been blocked. The registered contact and buyer have been notified where contact details are available.');
+        }
+      }
+    }
     try {
       const receipt = await this.db.tx((c) => this.createInTx(c, user, dto));
       if (receipt.duplicate) {
