@@ -52,12 +52,14 @@ export class PublicLostItemsController {
   constructor(private db:DbService){}
   @Get(':code')
   async view(@Param('code') code:string){
+    if(!/^[0-9a-f-]{36}$/i.test(code))throw new BadRequestException('This AURORA item QR code is not recognised');
     const {rows}=await this.db.pool.query(`SELECT item_code AS "itemCode",item_name AS "itemName",brand,model,colour,description,status FROM lost_items WHERE public_code=$1 LIMIT 1`,[code]);
     if(!rows[0])throw new BadRequestException('This AURORA item QR code is not recognised');
     return {item:rows[0]};
   }
   @Post(':code/found')
   async report(@Param('code') code:string,@Body() b:any){
+    if(!/^[0-9a-f-]{36}$/i.test(code))throw new BadRequestException('This AURORA item QR code is not recognised');
     const {rows}=await this.db.pool.query('SELECT id,status FROM lost_items WHERE public_code=$1 LIMIT 1',[code]);
     if(!rows[0])throw new BadRequestException('This AURORA item QR code is not recognised');
     if(typeof b?.reporterPhone!=='string'||b.reporterPhone.trim().length<7)throw new BadRequestException('Enter a contact phone number');
