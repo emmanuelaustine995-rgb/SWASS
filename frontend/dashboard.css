@@ -1089,3 +1089,7 @@ html body.workspace-active #pos-view.workspace-issue-mode #product-form .add-sal
 .secondhand-receipt-option.selected{outline:2px solid #4d70b5;outline-offset:2px}
 .secondhand-form.hidden{display:none!important}
 @media(max-width:380px){.secondhand-receipt-options{grid-template-columns:1fr!important}}
+
+/* Hard-hide second-hand details until a receipt option is explicitly selected. */
+#secondhand-form[hidden],#secondhand-form.hidden{display:none!important;visibility:hidden!important;}
+#secondhand-form:not([hidden]){display:grid!important;visibility:visible!important;}
