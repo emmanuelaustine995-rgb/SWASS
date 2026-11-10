@@ -90,7 +90,7 @@ export class ReceiptRecoveryController {
     );
     if (!payment.rowCount) throw new BadRequestException('Recovery session not found');
     if (payment.rows[0].status !== 'success') throw new HttpException('Complete the KSh 10 M-Pesa payment before viewing receipts.', HttpStatus.PAYMENT_REQUIRED);
-    return { receipts: rows.map((r: any) => ({
+    const salesReceipts = rows.map((r: any) => ({
       ...r,
       cashier: { name: r.cashier_name || 'Staff', phone: r.cashier_phone || null },
       subtotalKes: Number(r.subtotal_kes), discountKes: Number(r.discount_kes), totalKes: Number(r.total_kes),
