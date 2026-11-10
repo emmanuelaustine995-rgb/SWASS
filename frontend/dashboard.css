@@ -992,3 +992,26 @@ html body.workspace-active #pos-view.workspace-issue-mode .receipt-product-actio
   box-shadow:0 3px 8px rgba(22,145,78,.18)!important;flex:0 0 auto!important
 }
 html body.workspace-active #pos-view.workspace-issue-mode .receipt-product-actions #checkout-open.compact-next-btn:disabled{opacity:.5!important}
+
+
+/* Final compact receipt actions: lift them closer to Product Details and keep both as small tabs. */
+html body.workspace-active #pos-view.workspace-issue-mode .cart-panel .section-head{margin-bottom:5px!important}
+html body.workspace-active #pos-view.workspace-issue-mode .receipt-product-actions{
+  display:flex!important;flex-direction:column!important;align-items:flex-start!important;
+  justify-content:flex-start!important;gap:5px!important;margin:-2px 0 7px!important;padding:0!important;
+  width:auto!important;max-width:100%!important
+}
+html body.workspace-active #pos-view.workspace-issue-mode .receipt-product-actions #receipt-add-product-toggle,
+html body.workspace-active #pos-view.workspace-issue-mode .receipt-product-actions #checkout-open.compact-next-btn{
+  display:inline-flex!important;align-self:flex-start!important;flex:0 0 auto!important;
+  width:auto!important;min-width:0!important;max-width:max-content!important;height:auto!important;
+  min-height:32px!important;margin:0!important;padding:6px 11px!important;border-radius:8px!important;
+  white-space:nowrap!important;font-size:11px!important;line-height:1.15!important
+}
+html body.workspace-active #pos-view.workspace-issue-mode .receipt-product-actions #checkout-open.compact-next-btn{
+  min-height:34px!important;padding:7px 12px!important;background:#159653!important;
+  border:1px solid #128348!important;color:#fff!important;font-weight:800!important;
+  box-shadow:0 2px 7px rgba(22,145,78,.16)!important
+}
+html body.workspace-active #pos-view.workspace-issue-mode .receipt-product-actions #checkout-open.compact-next-btn:disabled{opacity:.48!important}
+html body.workspace-active #pos-view.workspace-issue-mode .page-heading{margin-bottom:4px!important}
