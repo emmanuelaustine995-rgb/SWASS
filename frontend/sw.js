@@ -1,5 +1,5 @@
-const CACHE_NAME = 'aurora-shell-v82';
-const SHELL = ['./', './index.html', './styles.css', './dashboard.css', './app.js', './dashboard.js', './config.js', './swass-icon.svg'];
+const CACHE_NAME = 'aurora-shell-v83';
+const SHELL = ['./', './index.html', './styles.css', './dashboard.css', './app.js', './dashboard.js', './config.js', './swass-icon.svg', './assets/aurora-login.jpg'];
 
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting()));
