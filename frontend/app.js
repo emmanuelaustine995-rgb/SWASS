@@ -1452,6 +1452,7 @@
     document.querySelector('#shop-home > .shop-business-details-card')?.classList.toggle('hidden',tab!=='profile');
     $('shop-lost-items-panel')?.classList.toggle('hidden',tab!=='lost');
     document.querySelectorAll('[data-shop-tab]').forEach(b=>b.classList.toggle('active',b.dataset.shopTab===tab));
+    document.querySelector('[data-shop-tab="lost"]')?.classList.toggle('hidden',!['owner','manager'].includes(state.role));
     if(tab==='profile')void loadBusinessProfile().catch(e=>showNotice('Shop profile could not be loaded. '+(e.message||''),true));
     if(tab==='lost'&&['owner','manager'].includes(state.role))void loadLostItems();
   }
