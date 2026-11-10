@@ -1080,3 +1080,12 @@ html body.workspace-active #pos-view.workspace-issue-mode #product-form .add-sal
   .secondhand-form .secondhand-receipt-options{grid-template-columns:1fr!important}
   .secondhand-form label.secondhand-receipt-option{padding:11px 12px}
 }
+
+/* Receipt status is a two-button landing screen; reveal the form only after a choice. */
+.secondhand-receipt-options{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0 16px}
+.secondhand-receipt-option{display:flex!important;align-items:center!important;justify-content:center!important;box-sizing:border-box;min-height:58px;padding:12px 8px!important;margin:0!important;border:1px solid #a9b8cc!important;border-radius:12px!important;font-size:13px!important;font-weight:850!important;letter-spacing:.02em;text-align:center!important;line-height:1.25!important;white-space:normal!important;color:#25314b!important;cursor:pointer}
+.secondhand-receipt-option[data-secondhand-mode="with_receipt"]{background:#fff0f7!important;border-color:#e99bc1!important}
+.secondhand-receipt-option[data-secondhand-mode="without_receipt"]{background:#eaf7ff!important;border-color:#91c9ed!important}
+.secondhand-receipt-option.selected{outline:2px solid #4d70b5;outline-offset:2px}
+.secondhand-form.hidden{display:none!important}
+@media(max-width:380px){.secondhand-receipt-options{grid-template-columns:1fr!important}}
