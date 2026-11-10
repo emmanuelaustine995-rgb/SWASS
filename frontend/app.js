@@ -267,7 +267,7 @@
     const hasBack=!!state.token&&workspaceOpen&&(nested||state.workspaceHistory.length>0);
     button.classList.toggle('hidden',!hasBack);
     const previous=state.workspaceHistory[state.workspaceHistory.length-1];
-    button.textContent=modalOpen?'← Back':secondhandVisible?'← Receipts':nested?'← Back':previous?('← '+({dashboard:'Dashboard',receipts:'Receipts',profile:'Profile',shop:'Shop',subscription:'Subscription'}[previous]||'Back')):'← Back';
+    button.textContent=modalOpen?'← Back':secondhandVisible?'← Receipts':nested?'← Back':previous?('← '+({dashboard:'Home',receipts:'Receipts',profile:'Profile',shop:'Shop',subscription:'Subscription','lost-goods':'Lost Goods'}[previous]||'Back')):'← Back';
     button.setAttribute('aria-label',button.textContent.replace('← ','Go back to '));
   }
   function goBackWorkspace(){
@@ -310,7 +310,7 @@
     document.body.classList.add('workspace-active');
     $('login-view')?.classList.add('hidden');
     $('back-to-login-btn')?.classList.remove('hidden');
-    if(!['dashboard','receipts','profile','shop','subscription'].includes(screen))screen='dashboard';
+    if(!['dashboard','receipts','profile','shop','subscription','lost-goods'].includes(screen))screen='dashboard';
     const previous=state.currentWorkspace;
     if(!options.fromBack&&previous&&previous!==screen){state.workspaceHistory.push(previous);if(state.workspaceHistory.length>30)state.workspaceHistory.shift();}
     state.currentWorkspace=screen;
@@ -378,16 +378,9 @@
       if($('shop-directory-title'))$('shop-directory-title').textContent=isShopOwner?'Add Products':'Search Products';
       if($('shop-product-results'))$('shop-product-results').classList.add('hidden');
     }else if(screen==='lost-goods'){
-      if(!['owner','manager'].includes(state.role)){
-        showNotice('Lost Goods is available to the shop owner or manager.',true);
-        screen='dashboard';
-        dashboardBusinessCard?.classList.remove('hidden');
-        ownerHome?.classList.remove('hidden');
-        void loadOwnerHomeSummary();
-      }else{
-        $('shop-lost-items-panel')?.classList.remove('hidden');
-        void loadLostItems();
-      }
+      $('shop-lost-items-panel')?.classList.remove('hidden');
+      document.querySelectorAll('[data-lost-owner-only]').forEach(el=>el.classList.toggle('hidden',!['owner','manager'].includes(state.role)));
+      if(['owner','manager'].includes(state.role))void loadLostItems();
     }else if(screen==='profile'){
       renderAccountProfile();
       if(['owner','manager','vendor','freelancer'].includes(state.role)){
@@ -1470,6 +1463,11 @@
     if(tab==='profile')void loadBusinessProfile().catch(e=>showNotice('Shop profile could not be loaded. '+(e.message||''),true));
   }
   document.querySelectorAll('[data-shop-tab]').forEach(b=>b.addEventListener('click',()=>setShopTab(b.dataset.shopTab)));
+  let lostAlarmAudio=null;
+  function stopLostAlarm(){if(lostAlarmAudio){try{lostAlarmAudio.close();}catch{}lostAlarmAudio=null;}$('lost-item-alarm-ack')?.classList.add('hidden');$('lost-item-check-result')?.classList.remove('lost-match-alert');}
+  function ringLostAlarm(){if(lostAlarmAudio){try{lostAlarmAudio.close();}catch{}lostAlarmAudio=null;}$('lost-item-alarm-ack')?.classList.remove('hidden');const AudioCtx=window.AudioContext||window.webkitAudioContext;if(AudioCtx){try{lostAlarmAudio=new AudioCtx();let count=0;const beep=()=>{if(!lostAlarmAudio||count++>=5)return;const osc=lostAlarmAudio.createOscillator(),gain=lostAlarmAudio.createGain();osc.type='sawtooth';osc.frequency.value=880;gain.gain.value=.12;osc.connect(gain);gain.connect(lostAlarmAudio.destination);osc.start();osc.stop(lostAlarmAudio.currentTime+.22);setTimeout(beep,420);};void lostAlarmAudio.resume().then(beep);}catch{}}if('Notification'in window){const notify=()=>{if(Notification.permission==='granted')new Notification('AURORA LOST ITEM ALERT',{body:'This IMEI is recorded as lost. Stop the transaction and verify ownership.'});};if(Notification.permission==='granted')notify();else if(Notification.permission==='default')void Notification.requestPermission().then(p=>{if(p==='granted')notify();});}}
+  $('lost-item-alarm-ack')?.addEventListener('click',stopLostAlarm);
+  $('lost-item-check-form')?.addEventListener('submit',async e=>{e.preventDefault();const value=$('lost-item-check-value').value.trim(),result=$('lost-item-check-result'),button=e.currentTarget.querySelector('button[type="submit"]');button.disabled=true;stopLostAlarm();result.classList.remove('hidden');result.textContent='Checking AURORA lost-item records…';try{const data=await request('/api/v1/lost-items/check?identifier='+encodeURIComponent(value));if(data.match){const x=data.item;result.innerHTML='<strong>⚠ LOST ITEM MATCH — DO NOT BUY OR SELL</strong><p>'+escapeHtml([x.itemName,x.brand,x.model].filter(Boolean).join(' · '))+'</p><p>AURORA reference: '+escapeHtml(x.itemCode)+' · Recorded status: LOST</p><p>Stop the transaction. Verify ownership with the relevant authorities before proceeding.</p>';result.classList.add('lost-match-alert');ringLostAlarm();}else{result.textContent='No matching lost record was found in AURORA at this time. This is not proof of ownership.';}}catch(err){result.textContent=err.message||'The lost-item check failed. Do not proceed until the identifier can be checked.';result.classList.add('lost-match-alert');}finally{button.disabled=false;}});
   async function loadLostItems(){
     const target=$('lost-items-list');if(!target||!['owner','manager'].includes(state.role))return;
     target.innerHTML='<p class="muted small">Loading registered items…</p>';
