@@ -124,7 +124,7 @@
   <section id="staff-sales-summary" class="metric-grid hidden" aria-label="My sales summary"><article class="metric"><span>My sales today</span><strong id="staff-today-sales">KSh 0</strong><small id="staff-today-transactions">0 receipts today</small></article><article class="metric"><span>My total sales</span><strong id="staff-total-sales">KSh 0</strong><small id="staff-total-transactions">0 receipts recorded</small></article></section>
   <div class="receipt-actions-grid">
     <button id="open-issue-receipt" class="receipt-choice" type="button"><span aria-hidden="true">＋</span><strong>Issue Receipt</strong><small>Record a sale and create a customer receipt</small></button>
-    <button id="open-recover-receipt" class="receipt-choice" type="button"><span aria-hidden="true">↗</span><strong>Recover Receipt</strong><small>Find a receipt using customer or product details</small></button>
+    <button id="open-recover-receipt" class="receipt-choice" type="button"><span aria-hidden="true">↗</span><strong>Recover Receipt</strong><small>Recover an ordinary sales receipt using customer details</small></button>
     <button id="open-special-amendment" class="text-btn receipt-special-amendment" type="button">Special Receipt · Amendments</button>
   </div>
   <div class="secondhand-receipt-entry-label"><p class="eyebrow">SPECIAL RECEIPTS</p></div>
@@ -190,6 +190,7 @@
         <div id="secondhand-history" class="secondhand-history hidden" aria-live="polite"></div>
       </section>
 
+   <div class="secondhand-recovery-shortcut"><a class="secondhand-recovery-tab" href="recover-secondhand.html">↗ Recover Second-Hand Goods Receipt</a></div>
    <section id="history-panel" class="receipt-history-panel" aria-label="Receipt History"><button id="history-toggle" class="receipt-history-toggle" type="button" aria-expanded="false" aria-controls="history-content">Receipt History</button><div id="history-content" class="panel history-panel hidden"><div class="history-filters"><label>Search by IMEI, National ID, phone or name<input id="history-search" type="search" placeholder="Enter IMEI, National ID, phone or customer name"></label><label>From date<input id="history-from" type="date"></label><label>To date<input id="history-to" type="date"></label><button id="history-search-btn" class="btn btn-primary" type="button">Search</button></div><p id="history-error" class="error" role="alert"></p><div id="history-list" class="history-list"><div class="empty">Open Receipt History or choose a date range to load recent receipts.</div></div></div></section>
 </section>
 <section id="pos-view" class="hidden">
