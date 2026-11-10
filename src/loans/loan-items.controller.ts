@@ -30,9 +30,11 @@ export class LoanItemsController {
     const deliver=async(fn:()=>Promise<any>)=>{try{const x=await fn();return {sent:!!x?.sent};}catch(e){return {sent:false,reason:e instanceof Error?e.message:'Delivery failed'};}};
     const [emailDelivery,whatsappDelivery,customerEmailDelivery,customerWhatsappDelivery]=await Promise.all([
       ownerRow.email?deliver(()=>this.email.sendLoanNote({to:ownerRow.email,ownerName:ownerRow.full_name||'Shop owner',businessName:shop.name||'AURORA',reference:ref,itemName:b.itemName,borrowerName:b.borrowerName,pdf})):Promise.resolve({sent:false,reason:'Owner email is not registered'}),
-      ownerRow.phone?deliver(()=>this.whatsapp.sendPdf({to:ownerRow.phone,receiptNo:ref,businessName:shop.name||'AURORA',pdf})):Promise.resolve({sent:false,reason:'Owner phone is not registered'})
+      ownerRow.phone?deliver(()=>this.whatsapp.sendPdf({to:ownerRow.phone,receiptNo:ref,businessName:shop.name||'AURORA',pdf})):Promise.resolve({sent:false,reason:'Owner phone is not registered'}),
+      deliver(()=>this.email.sendLoanNote({to:b.borrowerEmail,ownerName:b.borrowerName,businessName:shop.name||'AURORA',reference:ref,itemName:b.itemName,borrowerName:b.borrowerName,pdf})),
+      deliver(()=>this.whatsapp.sendPdf({to:b.phone,receiptNo:ref,businessName:shop.name||'AURORA',pdf}))
     ]);
-    return {item:{id:rows[0].id,...record},pdfBase64:pdf.toString('base64'),ownerDelivery:{email:emailDelivery,whatsapp:whatsappDelivery},message:'Loan record saved. Owner delivery attempts completed.'};
+    return {item:{id:rows[0].id,...record},pdfBase64:pdf.toString('base64'),ownerDelivery:{email:emailDelivery,whatsapp:whatsappDelivery},customerDelivery:{email:customerEmailDelivery,whatsapp:customerWhatsappDelivery},message:'Loan record saved. Customer and owner delivery attempts completed.'};
   }
   @Patch(':id/status') @Roles('owner')
   async status(@Req() req:any,@Param('id') id:string,@Body() b:any){const [t,s]=this.scope(req.user);if(!b||(!['returned','sold'].includes(b.status)))throw new BadRequestException('Choose Returned or Sold');const col=b.status==='returned'?'returned':'sold';const condition=typeof b.conditionIn==='string'?b.conditionIn.trim():null;const {rows}=await this.db.pool.query(`UPDATE loan_items SET ${col}=true,condition_in=COALESCE($4,condition_in),updated_at=now() WHERE id=$1 AND tenant_id=$2 AND store_id=$3 RETURNING id,${col} AS status`,[id,t,s,condition]);if(!rows[0])throw new BadRequestException('Loan item not found');return {item:rows[0]};}
