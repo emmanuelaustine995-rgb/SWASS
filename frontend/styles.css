@@ -1041,3 +1041,17 @@ body.workspace-active #shop-home .shop-business-details-card .profile-readonly-n
 .receipt-party-separator{border-top:2px solid #222;margin:8px 0}
 @media(max-width:430px){#receipt-modal .receipt-card{width:min(80mm,calc(100vw - 16px))!important;max-width:calc(100vw - 16px)!important;padding:8px!important}}
 @media print{.receipt-seller-details,.receipt-customer-details{break-inside:avoid}.receipt-party-separator{border-top:1.5px solid #000}}
+
+
+/* Receipt preview: true compact 80 mm thermal format, scrollable without covering controls. */
+#receipt-modal{align-items:center!important;justify-items:center!important;padding:8px!important;overflow-y:auto!important;overscroll-behavior:contain}
+#receipt-modal .receipt-card{box-sizing:border-box!important;width:80mm!important;max-width:calc(100vw - 16px)!important;max-height:calc(100dvh - 16px)!important;overflow-x:hidden!important;overflow-y:auto!important;padding:7px!important;margin:auto!important}
+#receipt-modal #receipt-paper{box-sizing:border-box!important;width:100%!important;max-width:100%!important;padding:2px!important;font-size:9px!important;line-height:1.25!important}
+#receipt-modal #receipt-paper .receipt-divider{margin:5px 0!important}
+#receipt-modal #receipt-paper .receipt-line{gap:5px!important;margin:3px 0!important}
+#receipt-modal #receipt-paper .receipt-party-separator{margin:5px 0!important}
+#receipt-modal .modal-head{margin-bottom:7px!important}
+#receipt-modal .modal-head h2{font-size:16px!important}
+#receipt-modal .receipt-actions{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:5px!important;margin-top:7px!important}
+#receipt-modal .receipt-actions button{min-width:0!important;min-height:34px!important;padding:6px 4px!important;font-size:10px!important;white-space:normal!important}
+@media print{#receipt-modal .receipt-card{width:80mm!important;max-width:80mm!important;max-height:none!important;overflow:visible!important;padding:0!important}#receipt-modal #receipt-paper{width:76mm!important;max-width:76mm!important;font-size:10px!important}}
