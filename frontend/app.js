@@ -306,6 +306,9 @@
   });
   function showWorkspaceScreen(screen,options={}){
     if(!state.token){showLogin();return;}
+    document.body.classList.add('workspace-active');
+    $('login-view')?.classList.add('hidden');
+    $('back-to-login-btn')?.classList.remove('hidden');
     if(!['dashboard','receipts','profile','shop','subscription'].includes(screen))screen='dashboard';
     const previous=state.currentWorkspace;
     if(!options.fromBack&&previous&&previous!==screen){state.workspaceHistory.push(previous);if(state.workspaceHistory.length>30)state.workspaceHistory.shift();}
