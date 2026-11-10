@@ -933,3 +933,19 @@ body:not(.workspace-active) #owner-register-entry{margin:10px 0 0}
 #login-view .aurora-tagline strong{font-size:clamp(13px,3.4vw,16px);font-weight:650;color:var(--text,#102448)}
 #login-view .login-card{padding-top:18px}
 @media(max-width:600px){#login-view .aurora-brand-lockup{margin-bottom:14px;padding:4px 8px 10px}#login-view .aurora-login-logo{width:210px;height:96px;max-height:96px}}
+
+
+/* Full-page living aurora atmosphere: slow, soft fading colour movement */
+body:not(.workspace-active){background-color:#07152d!important;background-image:linear-gradient(125deg,rgba(4,13,43,.82),rgba(14,37,83,.54),rgba(34,15,76,.62),rgba(0,61,83,.60),rgba(4,13,43,.82)),url('./aurora-background.jpg')!important;background-size:320% 320%,cover!important;background-position:0% 50%,center center!important;background-attachment:fixed,fixed!important;animation:auroraLoginAtmosphere 22s ease-in-out infinite!important}
+body:not(.workspace-active):before{content:"";position:fixed;inset:-20%;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 18% 25%,rgba(0,211,255,.20),transparent 38%),radial-gradient(ellipse at 82% 70%,rgba(174,90,255,.20),transparent 42%),radial-gradient(ellipse at 50% 50%,rgba(42,117,255,.12),transparent 55%);filter:blur(24px);animation:auroraAmbientFade 14s ease-in-out infinite alternate}
+@keyframes auroraLoginAtmosphere{0%,100%{background-position:0% 50%,center center;filter:brightness(.88) saturate(1)}50%{background-position:100% 50%,center center;filter:brightness(1.12) saturate(1.25)}}
+@keyframes auroraAmbientFade{0%{opacity:.45;transform:scale(.96)}100%{opacity:1;transform:scale(1.06)}}
+/* Restore the animated, glowing AURORA heading on the welcome/login screen */
+body:not(.workspace-active) .topbar{display:flex!important;position:relative!important;top:auto!important;min-height:62px!important;height:62px!important;padding:0 18px!important;background:linear-gradient(115deg,#071d38,#075b74,#493b80,#087c79,#071d38)!important;background-size:320% 320%!important;animation:auroraHeaderFlow 13s ease-in-out infinite!important;box-shadow:0 5px 26px rgba(42,220,208,.24),0 2px 18px rgba(132,102,255,.2)!important;border-bottom:1px solid rgba(255,255,255,.24)!important;backdrop-filter:blur(16px)!important}
+body:not(.workspace-active) .topbar .brand{font-size:clamp(19px,4vw,24px)!important;font-weight:900!important;letter-spacing:.09em!important;color:#fff!important;text-shadow:0 0 8px rgba(139,255,244,.8),0 0 16px rgba(139,255,244,.58),0 0 27px rgba(174,142,255,.58)!important;animation:auroraBrandGlow 3.8s ease-in-out infinite}
+@keyframes auroraBrandGlow{0%,100%{filter:brightness(.86);text-shadow:0 0 7px rgba(139,255,244,.45),0 0 15px rgba(174,142,255,.32)}50%{filter:brightness(1.35);text-shadow:0 0 12px rgba(139,255,244,.95),0 0 25px rgba(139,255,244,.72),0 0 38px rgba(174,142,255,.7)}}
+body:not(.workspace-active) .shell{margin:12px auto!important;min-height:calc(100vh - 86px)!important}
+body:not(.workspace-active) #login-view .login-card{background:rgba(7,17,48,.76)!important;border:1px solid rgba(177,202,255,.34)!important;box-shadow:0 18px 60px rgba(0,0,0,.32),0 0 28px rgba(48,164,255,.12)!important;backdrop-filter:blur(18px)!important;color:#f5f7ff!important}
+body:not(.workspace-active) #login-view .login-card label{color:#e0e8ff!important}
+body:not(.workspace-active) #login-view .login-card .muted{color:#c2cbe3!important}
+@media(prefers-reduced-motion:reduce){body:not(.workspace-active),body:not(.workspace-active):before,body:not(.workspace-active) .topbar .brand{animation:none!important}}
