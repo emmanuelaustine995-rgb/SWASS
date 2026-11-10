@@ -976,3 +976,19 @@ html body.workspace-active #pos-view.workspace-issue-mode .cart-panel{padding:10
 html body.workspace-active #pos-view.workspace-issue-mode .cart-panel .section-head{margin-bottom:7px!important}
 html body.workspace-active #pos-view.workspace-issue-mode .page-heading{margin:0 0 5px!important}
 html body.workspace-active #pos-view.workspace-issue-mode .page-heading h1{font-size:18px!important}
+
+
+/* Final Issue Receipt refinement: hide price summaries here (they remain calculated for the receipt),
+   and make the customer-details action comfortably tappable without becoming a full-width bar. */
+html body.workspace-active #pos-view.workspace-issue-mode .cart-panel .totals,
+html body.workspace-active #pos-view.workspace-issue-mode .cart-panel > .tiny{display:none!important}
+html body.workspace-active #pos-view.workspace-issue-mode .receipt-product-actions{display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:7px!important;margin:3px 0 10px!important}
+html body.workspace-active #pos-view.workspace-issue-mode .receipt-product-actions #checkout-open.compact-next-btn{
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  width:auto!important;min-width:0!important;max-width:100%!important;min-height:36px!important;height:36px!important;
+  margin:0 0 0 2px!important;padding:8px 14px!important;border:1px solid #128348!important;border-radius:9px!important;
+  background:linear-gradient(110deg,#159653,#20ad68)!important;color:#fff!important;
+  font-size:12px!important;font-weight:800!important;line-height:1.15!important;letter-spacing:.01em!important;
+  box-shadow:0 3px 8px rgba(22,145,78,.18)!important;flex:0 0 auto!important
+}
+html body.workspace-active #pos-view.workspace-issue-mode .receipt-product-actions #checkout-open.compact-next-btn:disabled{opacity:.5!important}
