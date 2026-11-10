@@ -550,6 +550,9 @@
     }).join(''):'<div class="empty">Your sale is empty. Add the first item to begin.</div>';
     const t=totals(); $('subtotal').textContent=money(t.subtotal);$('total').textContent=money(t.total);$('checkout-open').disabled=!rows.length||t.total<0;$('checkout-open').textContent='Continue to customer details →';$('checkout-open').classList.remove('hidden');
   }
+  // Checkout and receipt dialogs must live under <body>, not inside the hidden dashboard view.
+  // Otherwise their hidden ancestor prevents them from appearing when a sale is started from the POS.
+  ['checkout-modal','receipt-modal','imei-scanner-modal'].forEach(id=>{const modal=$(id);if(modal&&modal.parentElement!==document.body)document.body.appendChild(modal);});
   function openCheckout(){$('checkout-customer-step')?.classList.remove('hidden');$('checkout-payment-step')?.classList.add('hidden');const items=[...state.cart.values()];if(!items.length){showNotice('Add at least one product before customer details.',true);return;}const invalid=[...$('cart-list').querySelectorAll('[data-price]')].some(input=>!Number.isSafeInteger(Number(input.value))||Number(input.value)<1);if(invalid){showNotice('Enter a valid price for each product before continuing.',true);return;}$('buyer-id').required=true;$('checkout-total').textContent=money(totals().total);$('receipt-mpesa-amount').value=String(totals().total);$('receipt-mpesa-phone').value=$('buyer-phone').value.trim();$('receipt-mpesa-fields').classList.toggle('hidden',$('payment-method').value!=='mpesa');$('checkout-error').textContent='';const modal=$('checkout-modal');modal.classList.remove('hidden');modal.setAttribute('aria-hidden','false');const card=modal.querySelector('.modal-card');if(card)card.scrollTop=0;syncGlobalBackButton();}
   function makeReceiptMarkup(receipt, sale, customer){
     const business=receipt.business||{};
