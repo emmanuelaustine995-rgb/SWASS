@@ -1,14 +1,25 @@
-import { BadRequestException, Body, Controller, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { AuthGuard, Roles, RolesGuard } from '../auth/auth';
 import { DbService } from '../db/db.service';
 import * as QRCode from 'qrcode';
+import { EmailVerificationService } from '../notifications/email-verification.service';
+import { WhatsAppReceiptService } from '../notifications/whatsapp-receipt.service';
 
 @Controller('api/v1/lost-items')
 @UseGuards(AuthGuard, RolesGuard)
 export class LostItemsController {
-  constructor(private db: DbService) {}
+  constructor(private db: DbService, private email: EmailVerificationService, private whatsapp: WhatsAppReceiptService) {}
   private scope(user:any){if(!user.tenantId||!user.storeId)throw new BadRequestException('Shop details are unavailable');return [user.tenantId,user.storeId];}
+  @Get('check') @Roles('owner','manager','cashier','vendor','freelancer')
+  async checkIdentifier(@Query('identifier') identifier?:string){
+    const normalized=String(identifier||'').trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
+    if(normalized.length<6||normalized.length>40)throw new BadRequestException('Enter a valid IMEI or serial number (at least 6 characters).');
+    const {rows}=await this.db.pool.query(`SELECT item_code AS "itemCode",item_name AS "itemName",brand,model,colour,status FROM lost_items WHERE status='lost' AND (
+      upper(regexp_replace(COALESCE(imei_1,''),'[^A-Za-z0-9]','','g'))=$1 OR upper(regexp_replace(COALESCE(imei_2,''),'[^A-Za-z0-9]','','g'))=$1 OR upper(regexp_replace(COALESCE(serial_number,''),'[^A-Za-z0-9]','','g'))=$1
+    ) ORDER BY lost_at DESC NULLS LAST LIMIT 1`,[normalized]);
+    return rows[0]?{match:true,item:rows[0]}:{match:false};
+  }
   @Get() @Roles('owner','manager')
   async list(@Req() req:any){
     const [t,s]=this.scope(req.user);
