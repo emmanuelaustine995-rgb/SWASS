@@ -1,8 +1,8 @@
 CREATE TABLE IF NOT EXISTS lost_items (
   id BIGSERIAL PRIMARY KEY,
-  tenant_id BIGINT NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
-  store_id BIGINT NOT NULL REFERENCES stores(id) ON DELETE CASCADE,
-  registered_by BIGINT,
+  tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+  store_id UUID NOT NULL REFERENCES stores(id) ON DELETE CASCADE,
+  registered_by UUID,
   item_code TEXT NOT NULL UNIQUE,
   public_code UUID NOT NULL UNIQUE,
   item_name TEXT NOT NULL,
