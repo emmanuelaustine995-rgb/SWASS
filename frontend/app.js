@@ -1296,10 +1296,11 @@
     $('receipts-home')?.classList.add('secondhand-active');
     $('secondhand-open-card')?.classList.add('hidden');
     $('secondhand-panel')?.classList.remove('hidden');
-    $('secondhand-form')?.classList.remove('hidden');
+    $('secondhand-form')?.classList.add('hidden');
+    $('sh-sale-type').value='';
+    document.querySelectorAll('[data-secondhand-mode]').forEach(el=>el.classList.remove('selected'));
     checkSecondhandBiometricSupport();
     $('secondhand-panel')?.scrollIntoView({behavior:'smooth',block:'start'});
-    setTimeout(()=> $('sh-seller-name')?.focus({preventScroll:true}),250);
     syncGlobalBackButton();
   });
   $('secondhand-back')?.addEventListener('click',()=>{
