@@ -104,7 +104,7 @@ export class SecondHandPhoneDeclarationsController {
         if(buyerEmail)tasks.push(this.email.sendLostItemAlert({to:buyerEmail,recipientName:buyerName,itemName:lost.itemName||phoneMakeModel,itemCode:lost.itemCode,warning}));
         if(buyerPhone)tasks.push(this.whatsapp.sendText({to:buyerPhone,text:warning}));
         await Promise.allSettled(tasks);
-        throw new ConflictException('AURORA RED ALERT: This phone/identifier is recorded as LOST (reference '+lost.itemCode+'). The second-hand sale is blocked. The registered contact and buyer have been notified where contact details are available.');
+        throw new ConflictException('AURORA RED ALERT: This phone/identifier is recorded as LOST (reference '+lost.itemCode+'). The second-hand sale is blocked. Alert delivery was attempted through the available contact channels.');
       }
     }
     if (!['New', 'Excellent', 'Good', 'Fair', 'Faulty'].includes(condition)) throw new BadRequestException('Select a valid phone condition.');
