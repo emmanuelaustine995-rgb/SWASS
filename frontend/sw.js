@@ -1,4 +1,4 @@
-const CACHE_NAME = 'aurora-shell-v101';
+const CACHE_NAME = 'aurora-shell-v102';
 const SHELL = ['./', './index.html', './styles.css', './dashboard.css', './app.js', './dashboard.js', './config.js', './swass-icon.svg', './assets/aurora-login.jpg'];
 
 self.addEventListener('install', event => {
