@@ -1,9 +1,13 @@
 import { BadRequestException, Controller, Get, Post, Body, Req, Param, UseGuards } from '@nestjs/common';
 import { AuthGuard, Roles, RolesGuard } from '../auth/auth';
 import { DbService } from '../db/db.service';
+import PDFDocument = require('pdfkit');
+import { EmailVerificationService } from '../notifications/email-verification.service';
+import { WhatsAppReceiptService } from '../notifications/whatsapp-receipt.service';
 
 type DeclarationInput = {
-  sellerName?: string; nationalId?: string; sellerPhone?: string; alternativePhone?: string;
+  sellerName?: string; nationalId?: string; sellerPhone?: string; sellerEmail?: string; alternativePhone?: string;
+  buyerName?: string; buyerNationalId?: string; buyerPhone?: string; buyerEmail?: string;
   residentialAddress?: string; phoneMakeModel?: string; productName?: string; imei1?: string; imei2?: string;
   serialNumber?: string; condition?: string; purchasePriceKes?: number; receivedAt?: string;
   noReceiptReason?: string; saleType?: string; receiptPhotoData?: string; sellerPhotoData?: string; idPhotoData?: string; phonePhotoData?: string;
@@ -14,7 +18,7 @@ type DeclarationInput = {
 @Controller('api/v1/second-hand-phone-declarations')
 @UseGuards(AuthGuard, RolesGuard)
 export class SecondHandPhoneDeclarationsController {
-  constructor(private db: DbService) {}
+  constructor(private db: DbService, private email: EmailVerificationService, private whatsapp: WhatsAppReceiptService) {}
 
   @Get()
   @Roles('owner')
@@ -66,6 +70,13 @@ export class SecondHandPhoneDeclarationsController {
     const sellerName = text(body.sellerName, 'Seller full name', 160)!;
     const nationalId = text(body.nationalId, 'National ID or passport number', 40)!;
     const sellerPhone = text(body.sellerPhone, 'Seller phone', 30)!;
+    const sellerEmail = text(body.sellerEmail, 'Seller email', 254)!;
+    const buyerName = text(body.buyerName, 'Buyer full name', 160)!;
+    const buyerNationalId = text(body.buyerNationalId, 'Buyer National ID', 40)!;
+    const buyerPhone = text(body.buyerPhone, 'Buyer phone', 30)!;
+    const buyerEmail = text(body.buyerEmail, 'Buyer email', 254)!;
+    const validEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+    if (!validEmail(sellerEmail) || !validEmail(buyerEmail)) throw new BadRequestException('Enter valid seller and buyer email addresses.');
     const alternativePhone = text(body.alternativePhone, 'Alternative phone', 30, false);
     const residentialAddress = text(body.residentialAddress, 'Residential address', 300)!;
     const phoneMakeModel = text(body.productName ?? body.phoneMakeModel, 'Product name / make and model', 160)!;
@@ -100,8 +111,9 @@ export class SecondHandPhoneDeclarationsController {
         alternative_phone, residential_address, phone_make_model, imei1, imei2, serial_number,
         phone_condition, purchase_price_kes, no_receipt_reason, sale_type, receipt_photo_data, seller_photo_data, id_photo_data,
         phone_photo_data, signature_data, thumbprint_data, witness_name, witness_phone,
+        seller_email, buyer_name, buyer_national_id, buyer_phone, buyer_email,
         declaration_accepted, shop_acknowledged, shop_acknowledged_at, declaration_version, accepted_at)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,true,true,now(),'2026-11-v2',now())
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,true,true,now(),'2026-11-v3',now())
        RETURNING id, declaration_ref AS "declarationRef", seller_name AS "sellerName",
         national_id AS "nationalId", seller_phone AS "sellerPhone", alternative_phone AS "alternativePhone",
         residential_address AS "residentialAddress", phone_make_model AS "phoneMakeModel",
@@ -110,14 +122,33 @@ export class SecondHandPhoneDeclarationsController {
         sale_type AS "saleType", receipt_photo_data AS "receiptPhotoData", seller_photo_data AS "sellerPhotoData", id_photo_data AS "idPhotoData",
         phone_photo_data AS "phonePhotoData", signature_data AS "signatureData",
         thumbprint_data AS "thumbprintData", witness_name AS "witnessName",
-        witness_phone AS "witnessPhone", declaration_accepted AS "declarationAccepted", shop_acknowledged AS "shopAcknowledged",
+        witness_phone AS "witnessPhone", seller_email AS "sellerEmail", buyer_name AS "buyerName",
+        buyer_national_id AS "buyerNationalId", buyer_phone AS "buyerPhone", buyer_email AS "buyerEmail",
+        declaration_accepted AS "declarationAccepted", shop_acknowledged AS "shopAcknowledged",
         accepted_at AS "acceptedAt", created_at AS "createdAt"`,
       [user.tenantId, user.storeId, user.sub, declarationRef, sellerName, nationalId, sellerPhone,
        alternativePhone, residentialAddress, phoneMakeModel, imei1.replace(/\s+/g, ''), imei2?.replace(/\s+/g, '') ?? null,
        serialNumber, condition, body.purchasePriceKes, noReceiptReason, saleType, receiptPhotoData, sellerPhotoData, idPhotoData,
-       phonePhotoData, signatureData, thumbprintData, witnessName, witnessPhone],
+       phonePhotoData, signatureData, thumbprintData, witnessName, witnessPhone,
+       sellerEmail, buyerName, buyerNationalId, buyerPhone, buyerEmail],
     );
-    return { declaration: { ...rows[0], shopRepresentativeName: user.fullName || 'Shop owner' } };
+
+    const declaration = { ...rows[0], shopRepresentativeName: user.fullName || 'Shop owner' };
+    const pdf = await this.buildSecondHandPdf(declaration);
+    const deliver = async (task: () => Promise<any>) => {
+      try { const result = await task(); return { sent: !!result?.sent, reason: null as string | null }; }
+      catch (error) { return { sent: false, reason: error instanceof Error ? error.message : 'Delivery failed' }; }
+    };
+    const [sellerEmailDelivery, buyerEmailDelivery, sellerWhatsappDelivery, buyerWhatsappDelivery] = await Promise.all([
+      deliver(() => this.email.sendSecondHandReceipt({to:sellerEmail,recipientName:sellerName,reference:declarationRef,productName:phoneMakeModel,sellerName,buyerName,pdf})),
+      deliver(() => this.email.sendSecondHandReceipt({to:buyerEmail,recipientName:buyerName,reference:declarationRef,productName:phoneMakeModel,sellerName,buyerName,pdf})),
+      deliver(() => this.whatsapp.sendPdf({to:sellerPhone,receiptNo:declarationRef,businessName:'AURORA E-RECEIPT',pdf})),
+      deliver(() => this.whatsapp.sendPdf({to:buyerPhone,receiptNo:declarationRef,businessName:'AURORA E-RECEIPT',pdf})),
+    ]);
+    return { declaration, pdfBase64: pdf.toString('base64'), delivery: {
+      seller: { email: sellerEmailDelivery, whatsapp: sellerWhatsappDelivery },
+      buyer: { email: buyerEmailDelivery, whatsapp: buyerWhatsappDelivery },
+    } };
   }
 
   @Get(':id')
@@ -211,6 +242,34 @@ export class SecondHandPhoneDeclarationsController {
       return inserted.rows[0];
     });
     return { amendment: saved, originalPreserved: true };
+  }
+
+  private buildSecondHandPdf(d: any): Promise<Buffer> {
+    return new Promise((resolve,reject)=>{
+      const doc=new PDFDocument({size:'A4',margin:46,info:{Title:'AURORA Second-Hand Receipt '+d.declarationRef,Author:'AURORA E-RECEIPT'}});
+      const chunks:Buffer[]=[];
+      doc.on('data',(chunk:Buffer)=>chunks.push(Buffer.from(chunk)));
+      doc.on('error',reject);
+      doc.on('end',()=>resolve(Buffer.concat(chunks)));
+      const line=(label:string,value:unknown)=>{doc.font('Helvetica-Bold').fontSize(9).fillColor('#17324d').text(label+': ',{continued:true});doc.font('Helvetica').text(String(value??'—'));};
+      const heading=(value:string)=>{doc.moveDown(.7).font('Helvetica-Bold').fontSize(12).fillColor('#075b74').text(value);doc.moveDown(.25);};
+      doc.font('Helvetica-Bold').fontSize(19).fillColor('#075b74').text('AURORA E-RECEIPT');
+      doc.fontSize(15).fillColor('#172b45').text('SECOND-HAND PRODUCT RECEIPT');
+      doc.moveDown(.3).font('Helvetica').fontSize(9).fillColor('#526477').text('Receipt reference: '+d.declarationRef);
+      doc.text('Issued: '+new Date(d.createdAt||Date.now()).toLocaleString('en-KE',{timeZone:'Africa/Nairobi'}));
+      doc.moveDown().moveTo(46,doc.y).lineTo(550,doc.y).strokeColor('#9bb7c8').stroke();
+      heading('SELLER DETAILS');line('Full name',d.sellerName);line('National ID / Passport',d.nationalId);line('Phone',d.sellerPhone);line('Email',d.sellerEmail);line('Address',d.residentialAddress);
+      heading('BUYER DETAILS');line('Full name',d.buyerName);line('National ID / Passport',d.buyerNationalId);line('Phone',d.buyerPhone);line('Email',d.buyerEmail);
+      heading('PRODUCT AND SALE DETAILS');line('Product',d.phoneMakeModel);line('IMEI / Identifier',d.imei1||'Not provided');line('Second identifier',d.imei2||'Not provided');line('Serial number',d.serialNumber||'Not provided');line('Condition',d.condition);line('Agreed price','KSh '+Number(d.purchasePriceKes||0).toLocaleString('en-KE'));line('Original purchase receipt',d.saleType==='with_receipt'?'Provided':'Not provided');if(d.saleType!=='with_receipt')line('Reason unavailable',d.noReceiptReason);
+      heading('SELLER OWNERSHIP DECLARATION');
+      doc.font('Helvetica').fontSize(9).fillColor('#263746').text('The seller declares that they are the lawful owner of the product recorded above or are authorised to sell it; that, to the best of their knowledge, it is not stolen, unlawfully obtained, fraudulently acquired or subject to an ownership dispute; and that the details supplied are true. The seller accepts responsibility for false statements or an unlawful ownership claim connected with this sale and agrees to cooperate with lawful investigations.');
+      heading('CONFIRMATION AND SIGNATURE');
+      line('Seller declaration accepted',d.declarationAccepted?'Yes':'No');line('Shop representative',d.shopRepresentativeName);line('Shop checks acknowledged',d.shopAcknowledged?'Yes':'No');line('Witness',d.witnessName||'Not supplied');line('Witness phone',d.witnessPhone||'Not supplied');
+      const addImage=(label:string,data?:string)=>{if(!data||!data.startsWith('data:image/'))return;try{const raw=Buffer.from(data.split(',')[1],'base64');if(doc.y>640)doc.addPage();doc.moveDown(.5).font('Helvetica-Bold').fontSize(9).fillColor('#17324d').text(label);doc.image(raw,{fit:[230,110]});doc.moveDown(.5);}catch{}};
+      addImage('Seller signature',d.signatureData);addImage('Seller ID image',d.idPhotoData);addImage('Seller photograph',d.sellerPhotoData);addImage('Product photograph',d.phonePhotoData);addImage('Original purchase receipt image',d.receiptPhotoData);
+      doc.moveDown().font('Helvetica').fontSize(8).fillColor('#65758a').text('This record documents the information and declarations supplied by the parties. It does not independently verify identity, establish legal ownership or guarantee a court outcome.');
+      doc.end();
+    });
   }
 
   private requireStore(user: any) {
