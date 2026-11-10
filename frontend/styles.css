@@ -1055,3 +1055,29 @@ body.workspace-active #shop-home .shop-business-details-card .profile-readonly-n
 #receipt-modal .receipt-actions{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:5px!important;margin-top:7px!important}
 #receipt-modal .receipt-actions button{min-width:0!important;min-height:34px!important;padding:6px 4px!important;font-size:10px!important;white-space:normal!important}
 @media print{#receipt-modal .receipt-card{width:80mm!important;max-width:80mm!important;max-height:none!important;overflow:visible!important;padding:0!important}#receipt-modal #receipt-paper{width:76mm!important;max-width:76mm!important;font-size:10px!important}}
+
+/* Compact Shop section tabs and Lost & Found workflow */
+.shop-section-tabs{display:flex;gap:7px;position:sticky;top:0;z-index:4;padding:8px;margin:0 0 12px;border:1px solid #dce8f4;border-radius:15px;background:rgba(248,251,255,.96);box-shadow:0 5px 18px rgba(23,65,100,.07)}
+.shop-section-tabs button{flex:1;min-width:0;border:0;border-radius:10px;padding:10px 8px;background:transparent;color:#496176;font-weight:700;font-size:13px}
+.shop-section-tabs button.active{background:linear-gradient(120deg,#dcefff,#dff8f4);color:#075b85;box-shadow:inset 0 0 0 1px #b9dff3}
+.shop-business-details-card{margin:0 0 12px!important}
+.shop-business-details-card summary{padding:12px 14px!important}
+.shop-lost-items-panel{display:grid;gap:12px}
+.lost-items-intro{padding:15px!important}
+.lost-items-intro h2{margin:4px 0}
+.lost-item-register{padding:14px!important;border-radius:16px}
+.lost-item-register>summary{display:grid;gap:4px;cursor:pointer}
+.lost-item-register>summary small{color:#687b8c}
+.lost-item-form{display:grid;gap:10px;margin-top:14px}
+.lost-item-qr{margin-top:12px;padding:14px;border:1px dashed #91b9d4;border-radius:14px;text-align:center;background:#f4faff}
+.lost-item-qr img{display:block;width:min(260px,100%);height:auto;margin:12px auto;background:white}
+.lost-items-list-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.lost-item-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px;margin:8px 0;border:1px solid #dfe8f1;border-radius:13px;background:#fff}
+.lost-item-row>div:first-child{min-width:0;display:grid;gap:4px}
+.lost-item-row small{color:#65788b;overflow-wrap:anywhere}
+.lost-item-actions{display:flex;flex-wrap:wrap;gap:5px;justify-content:flex-end}
+.public-lost-item-view{max-width:620px;margin:24px auto;padding:12px}
+.public-lost-item-view .panel{padding:20px}
+.public-lost-item-view form{display:grid;gap:12px;margin-top:18px}
+.public-lost-item-view h1{margin:4px 0 14px}
+@media(max-width:520px){.lost-item-row{align-items:flex-start;flex-direction:column}.lost-item-actions{justify-content:flex-start}.shop-section-tabs button{font-size:12px;padding:9px 4px}}
