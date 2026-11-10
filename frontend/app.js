@@ -1450,7 +1450,11 @@
   function setShopTab(tab){
     const products=['shop-directory-card','loan-items-card','shop-search-directory-card'];
     products.forEach(sel=>document.querySelector('#shop-home > .'+sel)?.classList.toggle('hidden',tab!=='products'));
-    document.querySelector('#shop-home > .shop-business-details-card')?.classList.toggle('hidden',tab!=='profile');
+    const businessCard=document.querySelector('#shop-home > .shop-business-details-card');
+    const accountCard=document.querySelector('#shop-home > .profile-account-summary');
+    businessCard?.classList.toggle('hidden',tab!=='profile');
+    accountCard?.classList.toggle('hidden',tab!=='profile');
+    if(tab==='profile'&&businessCard)businessCard.open=true;
     $('shop-lost-items-panel')?.classList.toggle('hidden',tab!=='lost');
     document.querySelectorAll('[data-shop-tab]').forEach(b=>b.classList.toggle('active',b.dataset.shopTab===tab));
     document.querySelector('[data-shop-tab="lost"]')?.classList.toggle('hidden',!['owner','manager'].includes(state.role));
