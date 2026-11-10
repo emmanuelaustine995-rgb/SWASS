@@ -993,3 +993,34 @@ body.workspace-active #receipts-home #secondhand-open-card .secondhand-entry-cop
 body.workspace-active #receipts-home #secondhand-open-card .secondhand-entry-copy strong{font-size:14px}
 body.workspace-active #receipts-home #secondhand-open-card .secondhand-entry-copy small{font-size:11px;line-height:1.35}
 body.workspace-active #receipts-home #secondhand-panel{margin-top:10px}
+
+
+/* Shop Details moved from Profile to a dedicated green fading card below Find Products. */
+body.workspace-active #shop-home .shop-business-details-card{
+  display:block!important;
+  margin:12px 0 18px!important;
+  overflow:hidden;
+  border:1px solid rgba(44,154,104,.42)!important;
+  border-radius:17px!important;
+  background:linear-gradient(125deg,#e7fff0,#b8f0ce,#f0fff5,#a9e8c1)!important;
+  background-size:300% 300%!important;
+  animation:auroraShopDetailsFade 13s ease-in-out infinite!important;
+  box-shadow:0 5px 18px rgba(24,135,83,.15),inset 0 0 18px rgba(255,255,255,.62)!important;
+}
+body.workspace-active #shop-home .shop-business-details-card>.profile-card-summary{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:14px 15px!important;color:#145b39!important;cursor:pointer;list-style:none;
+}
+body.workspace-active #shop-home .shop-business-details-card>.profile-card-summary::-webkit-details-marker{display:none}
+body.workspace-active #shop-home .shop-business-details-card>.profile-card-summary strong{display:block;font-size:15px}
+body.workspace-active #shop-home .shop-business-details-card>.profile-card-summary small{display:block;margin-top:3px;color:#327653;font-size:11px}
+body.workspace-active #shop-home .shop-business-details-card[open]>.profile-card-body{
+  padding:12px!important;border-top:1px solid rgba(34,139,84,.2);
+  background:rgba(255,255,255,.84);color:#17251f;
+}
+body.workspace-active #shop-home .shop-business-details-card .profile-readonly-note{margin:0 0 10px;color:#80551a;font-size:12px}
+@keyframes auroraShopDetailsFade{
+  0%,100%{background-position:0% 50%;filter:brightness(.94);box-shadow:0 4px 14px rgba(24,135,83,.12),inset 0 0 14px rgba(255,255,255,.55)}
+  50%{background-position:100% 50%;filter:brightness(1.08);box-shadow:0 7px 24px rgba(24,155,91,.28),inset 0 0 24px rgba(255,255,255,.78)}
+}
+@media(prefers-reduced-motion:reduce){body.workspace-active #shop-home .shop-business-details-card{animation:none!important}}
