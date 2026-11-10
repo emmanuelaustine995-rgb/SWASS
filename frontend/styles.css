@@ -972,3 +972,16 @@ body.workspace-active #owner-home .dashboard-back-to-login{
   box-shadow:0 3px 12px rgba(38,112,177,.13)!important;
 }
 body.workspace-active #owner-home .dashboard-back-to-login:active{transform:translateY(1px)}
+
+/* Shop directory card two and card three follow one compact visual system. */
+body.workspace-active #shop-home .shop-search-directory-card{
+  display:grid;gap:10px;margin:10px 0;padding:12px;border:1px solid rgba(93,169,224,.38);
+  border-radius:16px;background:linear-gradient(125deg,rgba(226,244,255,.98),rgba(193,226,250,.96),rgba(240,249,255,.98));
+  box-shadow:0 5px 16px rgba(71,154,219,.12),inset 0 0 14px rgba(255,255,255,.65);
+}
+body.workspace-active #shop-home #secondhand-open-card{margin:10px 0 12px;width:100%;min-height:78px}
+body.workspace-active #shop-home #secondhand-open-card .secondhand-entry-copy strong{font-size:14px}
+body.workspace-active #shop-home #secondhand-open-card .secondhand-entry-copy small{font-size:11px;line-height:1.35}
+.secondhand-download-pdf{display:flex;align-items:center;justify-content:center;margin:0 0 10px;text-decoration:none}
+.secondhand-buyer-summary{padding:10px 12px;border-radius:10px;background:#eaf5ff;color:#174b73;font-size:12px}
+@media(max-width:420px){body.workspace-active #shop-home .shop-search-directory-card{padding:10px;gap:8px}}
