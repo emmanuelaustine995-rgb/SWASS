@@ -288,6 +288,7 @@
     const secondhand=$('secondhand-panel');
     if(secondhand&&!secondhand.classList.contains('hidden')){
       secondhand.classList.add('hidden');
+      $('receipts-home')?.classList.remove('secondhand-active');
       $('receipts-home')?.classList.remove('hidden');
       $('secondhand-open-card')?.classList.remove('hidden');
       $('secondhand-history')?.classList.add('hidden');
@@ -1268,14 +1269,19 @@
   checkSecondhandBiometricSupport();
   $('secondhand-open-card')?.addEventListener('click',()=>{
     if(state.role!=='owner'){showNotice('Only the shop owner can record second-hand product purchases.',true);return;}
-    $('receipts-home')?.classList.add('hidden');
+    $('receipts-home')?.classList.remove('hidden');
+    $('receipts-home')?.classList.add('secondhand-active');
     $('secondhand-open-card')?.classList.add('hidden');
     $('secondhand-panel')?.classList.remove('hidden');
+    $('secondhand-form')?.classList.remove('hidden');
     checkSecondhandBiometricSupport();
+    $('secondhand-panel')?.scrollIntoView({behavior:'smooth',block:'start'});
+    setTimeout(()=> $('sh-seller-name')?.focus({preventScroll:true}),250);
     syncGlobalBackButton();
   });
   $('secondhand-back')?.addEventListener('click',()=>{
     $('secondhand-panel')?.classList.add('hidden');
+    $('receipts-home')?.classList.remove('secondhand-active');
     $('receipts-home')?.classList.remove('hidden');
     $('secondhand-open-card')?.classList.remove('hidden');
     $('secondhand-history')?.classList.add('hidden');
