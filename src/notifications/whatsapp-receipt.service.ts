@@ -7,7 +7,7 @@ export class WhatsAppReceiptService {
     const normalised = phone.startsWith('0') ? '254' + phone.slice(1) : phone.startsWith('254') ? phone : '254' + phone;
     if (!/^254[17]\d{8}$/.test(normalised)) throw new Error('Invalid customer WhatsApp number');
 
-    const provider = (process.env.WHATSAPP_PROVIDER || 'cloud').trim().toLowerCase();
+    const provider = (process.env.WHATSAPP_PROVIDER || 'flaresend').trim().toLowerCase();
     if (provider === 'flaresend') return this.sendWithFlareSend({ ...input, phone: normalised });
     if (provider !== 'cloud') throw new Error('Unsupported WHATSAPP_PROVIDER. Use cloud or flaresend.');
 
@@ -26,10 +26,6 @@ export class WhatsAppReceiptService {
     });
     const uploaded = await upload.json() as { id?: string; error?: { message?: string } };
     if (!upload.ok || !uploaded.id) throw new Error(uploaded.error?.message || `WhatsApp media upload failed (${upload.status})`);
-    // A receipt is commonly the first message sent to a customer. Outside the
-    // 24-hour customer-service window, Meta requires an approved template.
-    // Configure WHATSAPP_RECEIPT_TEMPLATE_NAME to use a template with a DOCUMENT
-    // header and a static BODY. The PDF uploaded above is attached as that header.
     const templateName = process.env.WHATSAPP_RECEIPT_TEMPLATE_NAME?.trim();
     const language = process.env.WHATSAPP_RECEIPT_TEMPLATE_LANGUAGE?.trim() || 'en';
     const messageBody = templateName
