@@ -1,4 +1,4 @@
-import { BadRequestException, Controller, Get, Post, Body, Req, Param, UseGuards } from '@nestjs/common';
+import { BadRequestException, ConflictException, Controller, Get, Post, Body, Req, Param, UseGuards } from '@nestjs/common';
 import { AuthGuard, Roles, RolesGuard } from '../auth/auth';
 import { DbService } from '../db/db.service';
 import PDFDocument = require('pdfkit');
@@ -90,6 +90,23 @@ export class SecondHandPhoneDeclarationsController {
     const witnessName = text(body.witnessName, 'Witness name', 160, false);
     const witnessPhone = text(body.witnessPhone, 'Witness phone', 30, false);
     if (imei1.length > 40 || (imei2 && imei2.length > 40)) throw new BadRequestException('Product identifier is too long.');
+    const lostIds=[imei1,imei2||'',serialNumber||''].map(v=>v.toUpperCase().replace(/[^A-Z0-9]/g,'')).filter(v=>v.length>=6);
+    if(lostIds.length){
+      const match=await this.db.pool.query(`SELECT li.item_code AS "itemCode",li.item_name AS "itemName",u.full_name AS "registeredByName",u.email AS "registeredByEmail",u.phone AS "registeredByPhone"
+        FROM lost_items li LEFT JOIN users u ON u.id=li.registered_by WHERE li.status='lost' AND (
+          upper(regexp_replace(COALESCE(li.imei_1,''),'[^A-Za-z0-9]','','g'))=ANY($1::text[]) OR upper(regexp_replace(COALESCE(li.imei_2,''),'[^A-Za-z0-9]','','g'))=ANY($1::text[]) OR upper(regexp_replace(COALESCE(li.serial_number,''),'[^A-Za-z0-9]','','g'))=ANY($1::text[])
+        ) ORDER BY li.lost_at DESC NULLS LAST LIMIT 1`,[lostIds]);
+      if(match.rows[0]){
+        const lost=match.rows[0],warning=`AURORA ALERT: The ${lost.itemName||phoneMakeModel} (reference ${lost.itemCode}) has been recorded as LOST. Do not complete this sale until ownership is verified with the relevant authorities.`;
+        const tasks:Promise<any>[]=[];
+        if(lost.registeredByEmail)tasks.push(this.email.sendLostItemAlert({to:lost.registeredByEmail,recipientName:lost.registeredByName||'AURORA user',itemName:lost.itemName||phoneMakeModel,itemCode:lost.itemCode,warning}));
+        if(lost.registeredByPhone)tasks.push(this.whatsapp.sendText({to:lost.registeredByPhone,text:warning}));
+        if(buyerEmail)tasks.push(this.email.sendLostItemAlert({to:buyerEmail,recipientName:buyerName,itemName:lost.itemName||phoneMakeModel,itemCode:lost.itemCode,warning}));
+        if(buyerPhone)tasks.push(this.whatsapp.sendText({to:buyerPhone,text:warning}));
+        await Promise.allSettled(tasks);
+        throw new ConflictException('AURORA RED ALERT: This phone/identifier is recorded as LOST (reference '+lost.itemCode+'). The second-hand sale is blocked. The registered contact and buyer have been notified where contact details are available.');
+      }
+    }
     if (!['New', 'Excellent', 'Good', 'Fair', 'Faulty'].includes(condition)) throw new BadRequestException('Select a valid phone condition.');
     if (!Number.isSafeInteger(body.purchasePriceKes) || body.purchasePriceKes! < 1 || body.purchasePriceKes! > 100000000) {
       throw new BadRequestException('Enter a valid agreed purchase price in KSh.');
