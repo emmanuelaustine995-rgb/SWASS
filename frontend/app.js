@@ -546,7 +546,7 @@
       const serials=Array.isArray(r.serials)?r.serials:[r.imei||''];
       return `<div class="cart-row simple-cart-row"><div><div class="cart-row-name">${escapeHtml(r.product.name)}</div><label class="cart-unit-price">Price (KSh)<input type="number" min="1" max="100000000000" step="1" inputmode="numeric" data-price="${id}" value="${Number(r.unitPriceKes??r.product.priceKes)}" required></label><div class="cart-row-sub cart-line-total">Line total: ${money(Number(r.unitPriceKes??r.product.priceKes)*r.qty)}</div><div class="simple-cart-serial"><input type="text" maxlength="80" data-serial-index="${id}" data-index="0" value="${escapeHtml(serials[0]||'')}" placeholder="IMEI / serial (optional)"><button type="button" class="btn btn-light btn-small" data-scan-serial="${id}" data-index="0">Scan</button></div></div></div>`;
     }).join(''):'<div class="empty">Your sale is empty. Add the first item to begin.</div>';
-    const t=totals(); $('subtotal').textContent=money(t.subtotal);$('total').textContent=money(t.total);$('checkout-open').disabled=!rows.length||t.total<0;$('checkout-open').textContent='Next: Customer Details →';$('checkout-open').classList.remove('hidden');
+    const t=totals(); $('subtotal').textContent=money(t.subtotal);$('total').textContent=money(t.total);$('checkout-open').disabled=!rows.length||t.total<0;$('checkout-open').textContent='Continue to customer details →';$('checkout-open').classList.remove('hidden');
   }
   function openCheckout(){$('checkout-customer-step')?.classList.remove('hidden');$('checkout-payment-step')?.classList.add('hidden');const items=[...state.cart.values()];if(!items.length){showNotice('Add at least one product before customer details.',true);return;}const invalid=[...$('cart-list').querySelectorAll('[data-price]')].some(input=>!Number.isSafeInteger(Number(input.value))||Number(input.value)<1);if(invalid){showNotice('Enter a valid price for each product before continuing.',true);return;}const needsBuyer=items.some(r=>r.product.requiresBuyerId);$('buyer-id-wrap').classList.remove('hidden');$('buyer-id-note').classList.remove('hidden');$('buyer-id').required=true;$('checkout-total').textContent=money(totals().total);$('receipt-mpesa-amount').value=String(totals().total);$('receipt-mpesa-phone').value=$('buyer-phone').value.trim();$('receipt-mpesa-fields').classList.toggle('hidden',$('payment-method').value!=='mpesa');$('checkout-error').textContent='';const modal=$('checkout-modal');modal.classList.remove('hidden');modal.setAttribute('aria-hidden','false');const card=modal.querySelector('.modal-card');if(card)card.scrollTop=0;syncGlobalBackButton();}
   function makeReceiptMarkup(receipt, sale, customer){
@@ -804,12 +804,12 @@
     const serialValue=$('product-serial-1').value.trim();
     const serials=serialValue?[serialValue]:[];
     const qty=1,price=Number($('product-price').value);
-    if(!Number.isSafeInteger(price)||price<1){$('product-error').textContent='Enter a valid selling price.';btn.disabled=false;btn.textContent='Add product to sale';return;}
+    if(!Number.isSafeInteger(price)||price<1){$('product-error').textContent='Enter a valid selling price.';btn.disabled=false;btn.textContent='＋ Add product';return;}
     const id='direct-'+uuid(),product={id,name:$('product-name').value.trim(),priceKes:price,costKes:0,stockQty:qty,reorderLevel:0,requiresBuyerId:$('product-buyer-id').checked};
     state.cart.set(id,{product,qty,unitPriceKes:price,serials,imei:serials[0]||'',directSale:true});
     $('product-form').reset();$('product-stock').value='1';$('product-reorder').value='1';
     renderCart();closeSaleItemForm();showNotice('Item added to this receipt. Add another product or continue to customer details.');
-    btn.disabled=false;btn.textContent='Add product to sale';
+    btn.disabled=false;btn.textContent='＋ Add product';
   });
   $('clear-catalogue-btn')?.addEventListener('click',async()=>{
     if(!window.confirm('Clear all current products from this shop catalogue? Previous sales and receipts will be preserved.'))return;
