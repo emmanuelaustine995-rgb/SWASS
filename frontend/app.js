@@ -326,7 +326,7 @@
     const staffSummary=$('staff-sales-summary');
     // Hide every workspace root before opening exactly one destination.
     // This also prevents content retained by a previous tab from remaining visible.
-    [dashboardBusinessCard,ownerHome,receiptHome,pos,owner,$('platform-referral-admin'),$('shop-home'),subscriptionHome,staffSummary,$('staff-profile-panel'),$('account-profile-menu')].forEach(el=>el?.classList.add('hidden'));
+    [dashboardBusinessCard,ownerHome,receiptHome,pos,owner,$('platform-referral-admin'),$('shop-home'),$('shop-lost-items-panel'),subscriptionHome,staffSummary,$('staff-profile-panel'),$('account-profile-menu')].forEach(el=>el?.classList.add('hidden'));
     dashboardBusinessCard?.classList.add('hidden');
     pos?.classList.remove('profile-workspace-mode');
     owner?.classList.remove('profile-workspace-mode');
@@ -369,7 +369,7 @@
       setShopTab('products');
       void loadBusinessProfile().catch(err=>showNotice('Shop profile could not be loaded. '+(err.message||''),true));
       if(state.role==='owner')void loadLoanItems();
-      if(['owner','manager'].includes(state.role))void loadLostItems();
+      
       const isShopOwner = state.role === 'owner';
       $('secondhand-panel')?.classList.add('hidden');
       document.querySelector('#shop-home > .shop-directory-card')?.classList.remove('hidden');
@@ -377,6 +377,17 @@
       $('shop-owner-note')?.classList.toggle('hidden', isShopOwner);
       if($('shop-directory-title'))$('shop-directory-title').textContent=isShopOwner?'Add Products':'Search Products';
       if($('shop-product-results'))$('shop-product-results').classList.add('hidden');
+    }else if(screen==='lost-goods'){
+      if(!['owner','manager'].includes(state.role)){
+        showNotice('Lost Goods is available to the shop owner or manager.',true);
+        screen='dashboard';
+        dashboardBusinessCard?.classList.remove('hidden');
+        ownerHome?.classList.remove('hidden');
+        void loadOwnerHomeSummary();
+      }else{
+        $('shop-lost-items-panel')?.classList.remove('hidden');
+        void loadLostItems();
+      }
     }else if(screen==='profile'){
       renderAccountProfile();
       if(['owner','manager','vendor','freelancer'].includes(state.role)){
@@ -1455,11 +1466,8 @@
     businessCard?.classList.toggle('hidden',tab!=='profile');
     accountCard?.classList.toggle('hidden',tab!=='profile');
     if(tab==='profile'&&businessCard)businessCard.open=true;
-    $('shop-lost-items-panel')?.classList.toggle('hidden',tab!=='lost');
     document.querySelectorAll('[data-shop-tab]').forEach(b=>b.classList.toggle('active',b.dataset.shopTab===tab));
-    document.querySelector('[data-shop-tab="lost"]')?.classList.toggle('hidden',!['owner','manager'].includes(state.role));
     if(tab==='profile')void loadBusinessProfile().catch(e=>showNotice('Shop profile could not be loaded. '+(e.message||''),true));
-    if(tab==='lost'&&['owner','manager'].includes(state.role))void loadLostItems();
   }
   document.querySelectorAll('[data-shop-tab]').forEach(b=>b.addEventListener('click',()=>setShopTab(b.dataset.shopTab)));
   async function loadLostItems(){
