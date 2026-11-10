@@ -24,9 +24,9 @@ export class LoanItemsController {
     const ref='AUR-LN-'+Date.now().toString(36).toUpperCase();
     const {rows}=await this.db.pool.query(`INSERT INTO loan_items(tenant_id,store_id,reference,item_name,borrower_name,phone,id_number,national_id_hash,borrower_email,imei,serial_number,loan_date,condition_out,amount_kes,processed_by,recorded_by) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12::date,$13,$14,$15,$16) RETURNING id`,[t,s,ref,b.itemName.trim(),b.borrowerName.trim(),b.phone.trim(),b.idNumber.trim(),nationalIdHash,b.borrowerEmail.trim().toLowerCase(),b.imei?.trim()||null,b.serialNumber?.trim()||null,b.loanDate,b.conditionOut.trim(),amount,b.processedBy?.trim()||req.user.fullName||'Shop owner',req.user.sub]);
     const record={...b,reference:ref,processedBy:b.processedBy||req.user.fullName||'Shop owner',createdAt:new Date().toISOString()};
-    const pdf=await this.makePdf(record,shop);
     const business=await this.db.pool.query('SELECT t.name,t.phone,t.email,s.name AS store_name,s.location,s.logo_data,s.receipt_header,s.receipt_footer FROM tenants t JOIN stores s ON s.tenant_id=t.id AND s.id=$2 WHERE t.id=$1',[t,s]);
     const shop=business.rows[0]||{};
+    const pdf=await this.makePdf(record,shop);
     const owner=await this.db.pool.query('SELECT email,phone,full_name FROM users WHERE id=$1 AND tenant_id=$2',[req.user.sub,t]);
     const ownerRow=owner.rows[0]||{};
     const deliver=async(fn:()=>Promise<any>)=>{try{const x=await fn();return {sent:!!x?.sent};}catch(e){return {sent:false,reason:e instanceof Error?e.message:'Delivery failed'};}};
