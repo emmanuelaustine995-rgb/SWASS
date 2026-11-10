@@ -94,6 +94,21 @@ export class EmailVerificationService {
     return {sent:true,provider:'brevo'};
   }
 
+
+  async sendLoanNote(input: { to: string; ownerName: string; businessName: string; reference: string; itemName: string; borrowerName: string; pdf: Buffer }) {
+    const apiKey=process.env.BREVO_API_KEY?.trim(), from=process.env.BREVO_FROM_EMAIL?.trim();
+    if(!apiKey||!from)throw new Error('Brevo email provider is not configured. Set BREVO_API_KEY and BREVO_FROM_EMAIL.');
+    const esc=(v:unknown)=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
+    const response=await fetch('https://api.brevo.com/v3/smtp/email',{method:'POST',signal:AbortSignal.timeout(15000),
+      headers:{'api-key':apiKey,'Content-Type':'application/json',accept:'application/json'},
+      body:JSON.stringify({sender:{email:from,name:input.businessName||'AURORA E-RECEIPT'},to:[{email:input.to,name:input.ownerName}],
+        subject:`Item on loan: ${input.itemName} · ${input.reference}`,
+        htmlContent:`<div style="font-family:Arial,sans-serif;color:#493d2b"><h2>New item issued on loan</h2><p>Dear ${esc(input.ownerName)},</p><p>${esc(input.borrowerName)} has been issued <strong>${esc(input.itemName)}</strong>.</p><p>Loan reference: ${esc(input.reference)}. The completed loan note PDF is attached.</p></div>`,
+        attachment:[{name:`AURORA-Loan-${input.reference}.pdf`,content:input.pdf.toString('base64')}]})});
+    const raw=await response.text();if(!response.ok)throw new Error(`Brevo HTTP ${response.status}: ${raw.slice(0,220)}`);
+    return {sent:true,provider:'brevo'};
+  }
+
   async verify(token: string) {
     if (typeof token !== 'string' || token.length < 20 || token.length > 200) throw new BadRequestException('Invalid or expired verification link');
     const tokenHash = createHash('sha256').update(token).digest('hex');
