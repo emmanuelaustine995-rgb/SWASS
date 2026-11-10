@@ -27,7 +27,7 @@ export class SecondHandPhoneDeclarationsController {
     this.requireStore(user);
     const { rows } = await this.db.pool.query(
       `SELECT id, seller_name AS "sellerName", national_id AS "nationalId",
-              seller_phone AS "sellerPhone", phone_make_model AS "phoneMakeModel", sale_type AS "saleType",
+              seller_phone AS "sellerPhone", seller_email AS "sellerEmail", buyer_name AS "buyerName", buyer_national_id AS "buyerNationalId", buyer_phone AS "buyerPhone", buyer_email AS "buyerEmail", phone_make_model AS "phoneMakeModel", sale_type AS "saleType",
               imei1, imei2, purchase_price_kes AS "purchasePriceKes",
               declaration_ref AS "declarationRef", created_at AS "createdAt"
          FROM second_hand_phone_declarations
@@ -115,8 +115,9 @@ export class SecondHandPhoneDeclarationsController {
         declaration_accepted, shop_acknowledged, shop_acknowledged_at, declaration_version, accepted_at)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,true,true,now(),'2026-11-v3',now())
        RETURNING id, declaration_ref AS "declarationRef", seller_name AS "sellerName",
-        national_id AS "nationalId", seller_phone AS "sellerPhone", alternative_phone AS "alternativePhone",
-        residential_address AS "residentialAddress", phone_make_model AS "phoneMakeModel",
+        national_id AS "nationalId", seller_phone AS "sellerPhone", seller_email AS "sellerEmail",
+        buyer_name AS "buyerName", buyer_national_id AS "buyerNationalId", buyer_phone AS "buyerPhone", buyer_email AS "buyerEmail",
+        alternative_phone AS "alternativePhone", residential_address AS "residentialAddress", phone_make_model AS "phoneMakeModel",
         imei1, imei2, serial_number AS "serialNumber", phone_condition AS "condition",
         purchase_price_kes AS "purchasePriceKes", no_receipt_reason AS "noReceiptReason",
         sale_type AS "saleType", receipt_photo_data AS "receiptPhotoData", seller_photo_data AS "sellerPhotoData", id_photo_data AS "idPhotoData",
