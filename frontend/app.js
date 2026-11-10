@@ -1475,7 +1475,11 @@
     }catch(err){msg.textContent=err.message||'Could not register this item.';}finally{btn.disabled=false;}
   });
   $('lost-items-refresh')?.addEventListener('click',loadLostItems);
-  $('lost-items-list')?.addEventListener('click',async e=>{const b=e.target.closest('[data-lost-status]');if(!b)return;b.disabled=true;try{await request('/api/v1/lost-items/'+encodeURIComponent(b.dataset.lostId)+'/status',{method:'PATCH',body:JSON.stringify({status:b.dataset.lostStatus})});await loadLostItems();}catch(err){window.alert(err.message||'Could not update item status.');b.disabled=false;}});
+  $('lost-items-list')?.addEventListener('click',async e=>{
+    const reportButton=e.target.closest('[data-lost-reports]');
+    if(reportButton){const row=reportButton.closest('.lost-item-row'),panel=row?.querySelector('.lost-item-report-details');if(!panel)return;if(!panel.classList.contains('hidden')){panel.classList.add('hidden');return;}panel.classList.remove('hidden');panel.innerHTML='<small>Loading scan reports…</small>';try{const data=await request('/api/v1/lost-items/'+encodeURIComponent(reportButton.dataset.lostReports)+'/reports');const reports=data.reports||[];panel.innerHTML=reports.length?reports.map(r=>'<p><strong>'+escapeHtml(r.reporterName||'Finder')+'</strong> · '+escapeHtml(r.reporterPhone)+'<br>'+escapeHtml(r.locationLabel||'Location not provided')+' · '+escapeHtml(new Date(r.createdAt).toLocaleString())+(r.details?'<br>'+escapeHtml(r.details):'')+(r.latitude!=null&&r.longitude!=null?'<br><a target="_blank" rel="noopener" href="https://www.google.com/maps?q='+encodeURIComponent(r.latitude+','+r.longitude)+'">View shared scan location</a>':'')+'</p>').join(''):'<small>No one has reported this item found yet.</small>';}catch(err){panel.innerHTML='<small>'+escapeHtml(err.message||'Could not load reports.')+'</small>';}return;}
+    const b=e.target.closest('[data-lost-status]');if(!b)return;b.disabled=true;try{await request('/api/v1/lost-items/'+encodeURIComponent(b.dataset.lostId)+'/status',{method:'PATCH',body:JSON.stringify({status:b.dataset.lostStatus})});await loadLostItems();}catch(err){window.alert(err.message||'Could not update item status.');b.disabled=false;}
+  });
   async function openPublicLostItem(){
     const code=new URLSearchParams(location.search).get('lostItem');if(!code)return;
     ['login-view','workspace-nav','shop-home','owner-dashboard-view','pos-view','receipts-home','owner-home'].forEach(id=>$(id)?.classList.add('hidden'));
@@ -1494,5 +1498,5 @@
   });
   void openPublicLostItem();
 
-  renderCart();void restoreSession();
+  renderCart();if(new URLSearchParams(location.search).has('lostItem')){clearSession();}else void restoreSession();
 })();
