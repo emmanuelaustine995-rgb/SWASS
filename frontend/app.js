@@ -264,17 +264,17 @@
     const modalOpen=['checkout-modal','receipt-modal','receipt-recovery-modal'].some(id=>$(id)&&!$(id).classList.contains('hidden'));
     const workspaceOpen=!!$('workspace-nav')&&!$('workspace-nav').classList.contains('hidden');
     const nested=modalOpen||secondhandVisible||(posVisible&&$('pos-view')?.classList.contains('workspace-issue-mode'));
-    const hasBack=!!state.token&&workspaceOpen&&(nested||state.workspaceHistory.length>0||state.currentWorkspace!=='dashboard');
+    const hasBack=!!state.token&&workspaceOpen&&(nested||state.workspaceHistory.length>0);
     button.classList.toggle('hidden',!hasBack);
     const previous=state.workspaceHistory[state.workspaceHistory.length-1];
-    button.textContent=modalOpen?'← Back':secondhandVisible?'← Receipts':nested?'← Back':previous?('← '+({dashboard:'Dashboard',receipts:'Receipts',profile:'Profile',shop:'Shop',subscription:'Subscription'}[previous]||'Back')):'← Dashboard';
+    button.textContent=modalOpen?'← Back':secondhandVisible?'← Receipts':nested?'← Back':previous?('← '+({dashboard:'Dashboard',receipts:'Receipts',profile:'Profile',shop:'Shop',subscription:'Subscription'}[previous]||'Back')):'← Back';
     button.setAttribute('aria-label',button.textContent.replace('← ','Go back to '));
   }
   function goBackWorkspace(){
     const previous=state.workspaceHistory.pop();
-    if(previous){showWorkspaceScreen(previous,{fromBack:true});return true;}
-    if(state.currentWorkspace&&state.currentWorkspace!=='dashboard'){showWorkspaceScreen('dashboard',{fromBack:true});return true;}
-    return false;
+    if(!previous)return false;
+    showWorkspaceScreen(previous,{fromBack:true});
+    return true;
   }
   $('global-back-btn')?.addEventListener('click',()=>{
     const modalIds=['checkout-modal','receipt-modal','receipt-recovery-modal'];
