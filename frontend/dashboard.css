@@ -912,10 +912,10 @@ html body.workspace-active #pos-view.workspace-issue-mode #checkout-open{margin-
 
 
 /* AURORA receipt workflow: compact paired actions below Product Details. */
-html body.workspace-active #pos-view.workspace-issue-mode .receipt-product-actions{display:flex!important;align-items:center!important;gap:8px!important;flex-wrap:wrap!important;margin:2px 0 12px!important}
+html body.workspace-active #pos-view.workspace-issue-mode .receipt-product-actions{display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:6px!important;margin:2px 0 10px!important}
 html body.workspace-active #pos-view.workspace-issue-mode .receipt-product-actions #checkout-open,
-html body.workspace-active #pos-view.workspace-issue-mode .receipt-product-actions #receipt-add-product-toggle{display:inline-flex!important;align-items:center!important;justify-content:center!important;flex:0 0 auto!important;width:auto!important;min-width:0!important;max-width:100%!important;min-height:36px!important;margin:0!important;padding:8px 12px!important;border-radius:10px!important;font-size:12px!important;line-height:1.2!important}
-html body.workspace-active #pos-view.workspace-issue-mode .receipt-product-actions #receipt-add-product-toggle{border:1px solid #c9d8eb!important;background:#f4f8ff!important;color:#174b83!important;font-weight:750!important}
+html body.workspace-active #pos-view.workspace-issue-mode .receipt-product-actions #receipt-add-product-toggle{display:inline-flex!important;align-items:center!important;justify-content:center!important;flex:0 0 auto!important;width:auto!important;min-width:0!important;max-width:100%!important;min-height:32px!important;margin:0!important;padding:6px 11px!important;border-radius:9px!important;font-size:11px!important;line-height:1.2!important}
+html body.workspace-active #pos-view.workspace-issue-mode .receipt-product-actions #receipt-add-product-toggle{border:1px solid #c9d8eb!important;background:#f4f8ff!important;color:#174b83!important;font-weight:750!important} html body.workspace-active #pos-view.workspace-issue-mode .receipt-product-actions #checkout-open{min-height:29px!important;padding:5px 13px!important;font-size:11px!important}
 html body.workspace-active #pos-view.workspace-issue-mode .cart-panel .section-head{margin-bottom:10px!important}
 html body.workspace-active #pos-view.workspace-issue-mode .cart-panel .section-head h2{font-size:19px!important;margin:0!important}
 html body.workspace-active #pos-view.workspace-issue-mode .cart-panel .section-head .eyebrow{font-size:9px!important;margin:0 0 3px!important}
