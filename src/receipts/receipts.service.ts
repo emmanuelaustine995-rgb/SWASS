@@ -145,7 +145,7 @@ export class ReceiptsService {
           if(dto.customer?.email)tasks.push(this.emailVerification.sendLostItemAlert({to:dto.customer.email,recipientName:dto.customer.fullName,itemName:lost.itemName||'Product',itemCode:lost.itemCode,warning}));
           if(dto.customer?.phone)tasks.push(this.whatsapp.sendText({to:dto.customer.phone,text:warning}));
           await Promise.allSettled(tasks);
-          throw new ConflictException('AURORA RED ALERT: An item identifier in this sale is recorded as LOST (reference '+lost.itemCode+'). The sale has been blocked. The registered contact and buyer have been notified where contact details are available.');
+          throw new ConflictException('AURORA RED ALERT: An item identifier in this sale is recorded as LOST (reference '+lost.itemCode+'). The sale has been blocked. Alert delivery was attempted through the available contact channels.');
         }
       }
     }
