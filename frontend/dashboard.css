@@ -957,3 +957,11 @@ html body.workspace-active #pos-view.workspace-issue-mode{display:block!importan
  html body.workspace-active #pos-view.workspace-issue-mode .page-heading h1,
  html body.workspace-active #pos-view.workspace-issue-mode .page-heading .muted{grid-column:2!important}
 }
+
+
+/* Small green shortcut for recovering a second-hand goods declaration. */
+.secondhand-recovery-shortcut{display:flex;justify-content:flex-start;margin:9px 0 4px;position:relative;z-index:2}
+.secondhand-recovery-tab{display:inline-flex;align-items:center;gap:6px;min-height:31px;padding:6px 11px;border:1px solid #a9dfbf;border-radius:9px;background:linear-gradient(110deg,#e7fff0,#c9f3d8,#eafff0);color:#17683b;text-decoration:none;font-size:11px;font-weight:800;box-shadow:0 3px 10px rgba(32,140,77,.12);transition:filter .3s ease,box-shadow .3s ease}
+.secondhand-recovery-tab:hover{filter:brightness(1.04);box-shadow:0 5px 14px rgba(32,140,77,.2)}
+@media(prefers-reduced-motion:no-preference){.secondhand-recovery-tab{animation:secondhandRecoveryFade 6s ease-in-out infinite}}
+@keyframes secondhandRecoveryFade{0%,100%{filter:brightness(.96)}50%{filter:brightness(1.08)}}
