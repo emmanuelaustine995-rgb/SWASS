@@ -2,6 +2,26 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class WhatsAppReceiptService {
+  async sendText(input:{to:string;text:string}) {
+    const phone=input.to.replace(/\D/g,'');
+    const normalised=phone.startsWith('0')?'254'+phone.slice(1):phone.startsWith('254')?phone:'254'+phone;
+    if(!/^254[17]\d{8}$/.test(normalised))throw new Error('Invalid WhatsApp number');
+    const provider=(process.env.WHATSAPP_PROVIDER||'flaresend').trim().toLowerCase();
+    if(provider==='flaresend'){
+      const apiKey=process.env.FLARESEND_API_KEY?.trim();if(!apiKey)throw new Error('FlareSend API key is not configured');
+      const response=await fetch('https://api.flaresend.com/send-message',{method:'POST',headers:{Authorization:'Bearer '+apiKey,'Content-Type':'application/json'},body:JSON.stringify({recipients:[normalised],type:'text',text:input.text}),signal:AbortSignal.timeout(15000)});
+      const result=await response.json() as any;if(!response.ok||result.success===false||(Array.isArray(result.failed_recipients)&&result.failed_recipients.length))throw new Error(result.message||result.error||'FlareSend alert failed');
+      return {sent:true,provider:'flaresend'};
+    }
+    if(provider==='cloud'){
+      const token=process.env.WHATSAPP_ACCESS_TOKEN,phoneNumberId=process.env.WHATSAPP_PHONE_NUMBER_ID,version=process.env.WHATSAPP_GRAPH_VERSION||'v22.0';
+      if(!token||!phoneNumberId)throw new Error('WhatsApp Cloud API is not configured');
+      const response=await fetch(`https://graph.facebook.com/${version}/${phoneNumberId}/messages`,{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({messaging_product:'whatsapp',to:normalised,type:'text',text:{body:input.text}}),signal:AbortSignal.timeout(15000)});
+      const result=await response.json() as any;if(!response.ok||!result.messages?.[0]?.id)throw new Error(result.error?.message||'WhatsApp alert failed');return {sent:true,provider:'cloud'};
+    }
+    throw new Error('Unsupported WhatsApp provider');
+  }
+
   async sendPdf(input: { to: string; receiptNo: string; businessName: string; pdf: Buffer }) {
     const phone = input.to.replace(/\D/g, '');
     const normalised = phone.startsWith('0') ? '254' + phone.slice(1) : phone.startsWith('254') ? phone : '254' + phone;
