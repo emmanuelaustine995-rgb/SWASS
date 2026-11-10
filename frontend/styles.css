@@ -1024,3 +1024,20 @@ body.workspace-active #shop-home .shop-business-details-card .profile-readonly-n
   50%{background-position:100% 50%;filter:brightness(1.08);box-shadow:0 7px 24px rgba(24,155,91,.28),inset 0 0 24px rgba(255,255,255,.78)}
 }
 @media(prefers-reduced-motion:reduce){body.workspace-active #shop-home .shop-business-details-card{animation:none!important}}
+
+
+/* Compact thermal-receipt preview: keep the receipt paper sized and scrollable on phones. */
+#receipt-modal{padding:10px!important;place-items:center!important;overflow:auto!important}
+#receipt-modal .receipt-card{width:min(80mm,calc(100vw - 20px))!important;max-width:80mm!important;max-height:calc(100dvh - 20px)!important;padding:10px!important;overflow-y:auto!important;border-radius:8px!important}
+#receipt-modal #receipt-paper{width:100%!important;max-width:72mm!important;margin:0 auto!important;padding:4px!important;font-size:10px!important;line-height:1.35!important;overflow-wrap:anywhere!important;color:#111!important}
+#receipt-modal .receipt-paper h2{font-size:15px!important}
+#receipt-modal .receipt-logo{max-width:42mm!important;max-height:18mm!important;object-fit:contain!important}
+#receipt-modal .receipt-actions{display:grid!important;grid-template-columns:1fr 1fr!important;gap:6px!important;margin-top:10px!important}
+#receipt-modal .receipt-actions button{min-width:0!important;padding:8px 6px!important;font-size:11px!important}
+#receipt-modal #receipt-email-status{font-size:10px!important;overflow-wrap:anywhere}
+.receipt-seller-details,.receipt-customer-details{padding:5px 0}
+.receipt-seller-meta,.receipt-customer-details{font-size:10px;line-height:1.45}
+.receipt-customer-details>strong{display:block;text-align:center;margin-bottom:4px;letter-spacing:.06em}
+.receipt-party-separator{border-top:2px solid #222;margin:8px 0}
+@media(max-width:430px){#receipt-modal .receipt-card{width:min(80mm,calc(100vw - 16px))!important;max-width:calc(100vw - 16px)!important;padding:8px!important}}
+@media print{.receipt-seller-details,.receipt-customer-details{break-inside:avoid}.receipt-party-separator{border-top:1.5px solid #000}}
