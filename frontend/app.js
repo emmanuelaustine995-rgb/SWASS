@@ -366,7 +366,10 @@
       $('secondhand-open-card')?.classList.toggle('hidden',state.role!=='owner');
     }else if(screen==='shop'){
       $('shop-home')?.classList.remove('hidden');
+      setShopTab('products');
+      void loadBusinessProfile().catch(err=>showNotice('Shop profile could not be loaded. '+(err.message||''),true));
       if(state.role==='owner')void loadLoanItems();
+      if(['owner','manager'].includes(state.role))void loadLostItems();
       const isShopOwner = state.role === 'owner';
       $('secondhand-panel')?.classList.add('hidden');
       document.querySelector('#shop-home > .shop-directory-card')?.classList.remove('hidden');
@@ -398,7 +401,7 @@
           if(profile) profile.scrollTop=0;
           window.scrollTo(0,0);
         });
-        void loadBusinessProfile().then(()=>renderAccountProfile()).catch(err=>showNotice('Business details could not be loaded. '+(err.message||''),true));
+        void Promise.resolve().then(()=>renderAccountProfile());
       }else{
         document.getElementById('staff-profile-panel')?.classList.remove('hidden');
       }
@@ -1441,6 +1444,55 @@
       }).join('');
     }catch(err){results.innerHTML='<p class="empty">'+escapeHtml(err.message||'Product search failed. Please try again.')+'</p>';}
   });
+
+
+  function setShopTab(tab){
+    const products=['shop-directory-card','loan-items-card','shop-search-directory-card'];
+    products.forEach(sel=>document.querySelector('#shop-home > .'+sel)?.classList.toggle('hidden',tab!=='products'));
+    document.querySelector('#shop-home > .shop-business-details-card')?.classList.toggle('hidden',tab!=='profile');
+    $('shop-lost-items-panel')?.classList.toggle('hidden',tab!=='lost');
+    document.querySelectorAll('[data-shop-tab]').forEach(b=>b.classList.toggle('active',b.dataset.shopTab===tab));
+    if(tab==='profile')void loadBusinessProfile().catch(e=>showNotice('Shop profile could not be loaded. '+(e.message||''),true));
+    if(tab==='lost'&&['owner','manager'].includes(state.role))void loadLostItems();
+  }
+  document.querySelectorAll('[data-shop-tab]').forEach(b=>b.addEventListener('click',()=>setShopTab(b.dataset.shopTab)));
+  async function loadLostItems(){
+    const target=$('lost-items-list');if(!target||!['owner','manager'].includes(state.role))return;
+    target.innerHTML='<p class="muted small">Loading registered items…</p>';
+    try{const data=await request('/api/v1/lost-items');const rows=data.items||[];
+      target.innerHTML=rows.length?rows.map(x=>'<article class="lost-item-row"><div><strong>'+escapeHtml(x.itemName)+'</strong><small>'+escapeHtml([x.brand,x.model,x.colour].filter(Boolean).join(' · '))+'</small><small>ID: '+escapeHtml(x.itemCode)+' · '+escapeHtml(x.status.toUpperCase())+'</small><small>IMEI: '+escapeHtml(x.imei1||'—')+' · Serial: '+escapeHtml(x.serialNumber||'—')+'</small><small>Found reports: '+Number(x.reportCount||0)+'</small></div><div class="lost-item-actions"><button type="button" class="btn btn-light btn-small" data-lost-status="lost" data-lost-id="'+escapeHtml(x.id)+'">Mark lost</button><button type="button" class="btn btn-light btn-small" data-lost-status="recovered" data-lost-id="'+escapeHtml(x.id)+'">Recovered</button></div></article>').join(''):'<p class="muted small">No items registered yet. Start by registering a phone or other valuable item above.</p>';
+    }catch(e){target.innerHTML='<p class="error">'+escapeHtml(e.message||'Could not load lost item records.')+'</p>';}
+  }
+  $('lost-item-form')?.addEventListener('submit',async e=>{
+    e.preventDefault();const btn=$('lost-item-save'),msg=$('lost-item-message'),qr=$('lost-item-qr');btn.disabled=true;msg.textContent='Checking identifiers and registering item…';qr.classList.add('hidden');
+    try{const payload={itemName:$('lost-item-name').value.trim(),brand:$('lost-item-brand').value.trim(),model:$('lost-item-model').value.trim(),colour:$('lost-item-colour').value.trim(),imei1:$('lost-item-imei1').value.trim(),imei2:$('lost-item-imei2').value.trim(),serialNumber:$('lost-item-serial').value.trim(),purchaseDate:$('lost-item-purchase-date').value||null,receiptReference:$('lost-item-receipt').value.trim(),description:$('lost-item-description').value.trim()};
+      const data=await request('/api/v1/lost-items',{method:'POST',body:JSON.stringify(payload)});
+      qr.innerHTML='<div><strong>Item registered: '+escapeHtml(data.item.itemCode)+'</strong><p class="muted small">Print or save this QR label. Any ordinary QR scanner can open the AURORA report page.</p><img src="'+data.qrDataUrl+'" alt="AURORA item QR code"><p><a href="'+escapeHtml(data.publicUrl)+'" target="_blank" rel="noopener">Open public QR page</a></p><button type="button" class="btn btn-light btn-small" id="lost-item-print-qr">Print QR label</button></div>';
+      qr.classList.remove('hidden');msg.textContent=data.message;
+      if(data.duplicates?.length)msg.textContent+=' Possible matches: '+data.duplicates.map(d=>d.itemCode+' ('+d.status+')').join(', ')+'. Check ownership and records; a match is not proof of theft.';
+      $('lost-item-form').reset();await loadLostItems();
+      $('lost-item-print-qr')?.addEventListener('click',()=>{const w=window.open('','_blank');if(!w)return;w.document.write('<html><head><title>AURORA QR label</title></head><body style="font-family:Arial;text-align:center;padding:24px"><h2>AURORA ITEM ID</h2><h3>'+escapeHtml(data.item.itemCode)+'</h3><img style="width:280px" src="'+data.qrDataUrl+'"><p>Scan to report found</p></body></html>');w.document.close();w.print();});
+    }catch(err){msg.textContent=err.message||'Could not register this item.';}finally{btn.disabled=false;}
+  });
+  $('lost-items-refresh')?.addEventListener('click',loadLostItems);
+  $('lost-items-list')?.addEventListener('click',async e=>{const b=e.target.closest('[data-lost-status]');if(!b)return;b.disabled=true;try{await request('/api/v1/lost-items/'+encodeURIComponent(b.dataset.lostId)+'/status',{method:'PATCH',body:JSON.stringify({status:b.dataset.lostStatus})});await loadLostItems();}catch(err){window.alert(err.message||'Could not update item status.');b.disabled=false;}});
+  async function openPublicLostItem(){
+    const code=new URLSearchParams(location.search).get('lostItem');if(!code)return;
+    ['login-view','workspace-nav','shop-home','owner-dashboard-view','pos-view','receipts-home','owner-home'].forEach(id=>$(id)?.classList.add('hidden'));
+    $('public-lost-item-view')?.classList.remove('hidden');document.body.classList.remove('workspace-active');
+    const details=$('public-lost-item-details'),form=$('public-lost-found-form');details.innerHTML='<p class="muted">Loading secure item details…</p>';
+    try{const data=await fetch(API+'/api/v1/public/lost-items/'+encodeURIComponent(code),{cache:'no-store'}).then(async r=>{const v=await r.json();if(!r.ok)throw new Error(v.message||'Item not found');return v;});
+      const x=data.item;details.innerHTML='<h2>'+escapeHtml(x.itemName)+'</h2><p><strong>AURORA ID:</strong> '+escapeHtml(x.itemCode)+'</p><p>'+escapeHtml([x.brand,x.model,x.colour].filter(Boolean).join(' · '))+'</p><p><strong>Status:</strong> '+escapeHtml(x.status.toUpperCase())+'</p><p class="muted small">For privacy, the registered owner’s name, phone number and address are not displayed.</p>';
+      form.classList.remove('hidden');form.dataset.code=code;
+    }catch(err){details.innerHTML='<p class="error">'+escapeHtml(err.message||'This QR code could not be verified.')+'</p>';form.classList.add('hidden');}
+  }
+  $('public-lost-found-form')?.addEventListener('submit',async e=>{
+    e.preventDefault();const form=e.currentTarget,msg=$('public-lost-item-message'),btn=form.querySelector('button[type="submit"]');btn.disabled=true;msg.textContent='Sending your report…';
+    const payload={reporterName:$('public-finder-name').value.trim(),reporterPhone:$('public-finder-phone').value.trim(),locationLabel:$('public-finder-location').value.trim(),details:$('public-finder-details').value.trim()};
+    if(navigator.geolocation){try{const pos=await new Promise((resolve,reject)=>navigator.geolocation.getCurrentPosition(resolve,reject,{enableHighAccuracy:false,timeout:7000,maximumAge:60000}));payload.latitude=pos.coords.latitude;payload.longitude=pos.coords.longitude;payload.accuracy=pos.coords.accuracy;}catch{}}
+    try{const r=await fetch(API+'/api/v1/public/lost-items/'+encodeURIComponent(form.dataset.code)+'/found',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const d=await r.json();if(!r.ok)throw new Error(d.message||'Could not send report');msg.textContent=d.message;form.reset();}catch(err){msg.textContent=err.message||'Could not send your report.';}finally{btn.disabled=false;}
+  });
+  void openPublicLostItem();
 
   renderCart();void restoreSession();
 })();
