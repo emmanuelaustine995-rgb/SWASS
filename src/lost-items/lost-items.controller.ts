@@ -32,6 +32,12 @@ export class LostItemsController {
     const qrDataUrl=await QRCode.toDataURL(publicUrl,{errorCorrectionLevel:'M',margin:2,width:420});
     return {item:rows[0],publicUrl,qrDataUrl,duplicates:duplicate.rows,message:duplicate.rows.length?'Registered, but a matching identifier already exists. Review the possible duplicate before proceeding.':'Item registered successfully.'};
   }
+  @Get(':id/reports') @Roles('owner','manager')
+  async reports(@Req() req:any,@Param('id') id:string){
+    const [t,s]=this.scope(req.user);
+    const {rows}=await this.db.pool.query(`SELECT r.id,r.reporter_name AS "reporterName",r.reporter_phone AS "reporterPhone",r.report_details AS details,r.latitude,r.longitude,r.accuracy_m AS accuracy,r.location_label AS "locationLabel",r.created_at AS "createdAt" FROM lost_item_reports r JOIN lost_items li ON li.id=r.lost_item_id WHERE li.id=$1 AND li.tenant_id=$2 AND li.store_id=$3 ORDER BY r.created_at DESC LIMIT 100`,[id,t,s]);
+    return {reports:rows};
+  }
   @Patch(':id/status') @Roles('owner','manager')
   async updateStatus(@Req() req:any,@Param('id') id:string,@Body() b:any){
     const [t,s]=this.scope(req.user);const status=String(b?.status||'');
