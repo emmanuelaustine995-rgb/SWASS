@@ -87,6 +87,23 @@
         </form>
         <p id="shop-owner-note" class="muted small hidden">Only the shop owner can add products to the public directory. You can still search for products listed by other shops.</p>
       </article>
+      <details class="loan-items-card" open>
+        <summary><span class="eyebrow">SHOP RECORDS</span><strong>Items on Loan</strong><small>Record goods issued temporarily and track returns</small></summary>
+        <div class="loan-card-body">
+          <form id="loan-item-form" class="loan-item-form">
+            <div class="form-two"><label>Item name<input id="loan-item-name" required maxlength="160"></label><label>Borrower / customer name<input id="loan-borrower-name" required maxlength="160"></label></div>
+            <div class="form-two"><label>Phone number<input id="loan-phone" required inputmode="tel"></label><label>ID / Passport number<input id="loan-id" required maxlength="50"></label></div>
+            <label>Borrower email<input id="loan-email" type="email" required></label>
+            <div class="form-two"><label>IMEI number (optional)<input id="loan-imei" maxlength="50"></label><label>Serial number (optional)<input id="loan-serial" maxlength="100"></label></div>
+            <div class="form-two"><label>Date out / loan date<input id="loan-date" type="date" required></label><label>Expected return date<input id="loan-return-date" type="date" required></label></div>
+            <label>Condition out<textarea id="loan-condition-out" rows="2" required maxlength="1000"></textarea></label>
+            <div class="form-two"><label>Deposit / value amount (KSh)<input id="loan-amount" type="number" min="0" step="1" required value="0"></label><label>Processed by<input id="loan-processed-by" maxlength="160" placeholder="Staff name"></label></div>
+            <button class="btn btn-primary" id="loan-issue-button" type="submit">Issue Loan Note</button><p id="loan-message" role="status" class="muted small"></p>
+          </form>
+          <div class="loan-items-list-head"><strong>Loan register</strong><button id="loan-refresh" class="btn btn-light btn-small" type="button">Refresh</button></div>
+          <div id="loan-items-list"><p class="muted small">Loading loan records…</p></div>
+        </div>
+      </details>
       <article class="shop-search-directory-card">
         <div class="shop-directory-heading"><div><p class="eyebrow">AURORA SHOP DIRECTORY</p><h2>Find Products</h2><p class="muted small">Search products listed by other shops.</p></div><button id="shop-search-toggle" class="shop-search-toggle" type="button">Search Product</button></div>
         <form id="shop-product-search-form" class="shop-product-search-form hidden">
