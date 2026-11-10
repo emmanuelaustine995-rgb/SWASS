@@ -79,11 +79,11 @@
     }
     $('receipt-list').innerHTML = '<h2>Recovered receipts (' + receipts.length + ')</h2>' +
       receipts.map((r, index) => `<article class="panel recovered-receipt">
-        <div class="history-row-top"><strong>${escapeHtml(r.receipt_no)}</strong><strong>KSh ${Number(r.totalKes).toLocaleString('en-KE',{minimumFractionDigits:2})}</strong></div>
+        <div class="history-row-top"><strong>${escapeHtml(r.receipt_no)}</strong><strong>${r.recordType==='loan'?'LOAN NOTE':'KSh '+Number(r.totalKes).toLocaleString('en-KE',{minimumFractionDigits:2})}</strong></div>
         <p>${escapeHtml(r.business_name || r.store_name || '')} · ${escapeHtml(r.store_name || '')}</p>
         <p>${escapeHtml(r.customer_name || 'Customer')} · ${escapeHtml(r.customer_phone || '')}</p>
         <p>${new Date(r.issued_at).toLocaleString('en-KE')} · ${escapeHtml(String(r.status || 'issued'))}</p>
-        <p>${(r.items || []).map(item => escapeHtml(item.name) + ' × ' + Number(item.qty)).join(', ')}</p>
+        <p> ${r.recordType==='loan'?'Item on loan: '+escapeHtml(r.item_name||''):(r.items || []).map(item => escapeHtml(item.name) + ' × ' + Number(item.qty)).join(', ')}</p>
         <button type="button" class="print-recovered" data-index="${index}">Print / Save PDF</button>
       </article>`).join('');
     message('Payment confirmed. All ' + receipts.length + ' matching receipts are now unlocked. You can print or save each one as PDF.');
@@ -93,6 +93,11 @@
     if (!button) return;
     const r = receipts[Number(button.dataset.index)];
     if (!r) return;
+    if(r.recordType==='loan'){
+      const win=window.open('','_blank','width=520,height=800');if(!win){message('Allow pop-ups to print this loan note.');return;}
+      win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(r.receipt_no)}</title><style>body{font:13px Arial;max-width:620px;margin:24px auto;color:#263445}header{text-align:center;border-bottom:2px solid #1769aa;padding:0 0 14px}header img{max-width:110px;max-height:75px;object-fit:contain}h1{font-size:21px;margin:7px}h2{text-align:center;color:#1769aa;font-size:18px;margin:20px 0 4px}.sub{text-align:center;color:#667789;font-size:10px;letter-spacing:1px}.ref{background:#eaf2fa;padding:12px;border-radius:8px;margin:16px 0}section{margin:15px 0}section h3{font-size:11px;color:#123b63;border-bottom:1px solid #d9e2ec;padding-bottom:6px}p{margin:8px 0}.sign{display:flex;justify-content:space-between;margin-top:45px}.sign span{width:43%;border-top:1px solid #718096;padding-top:7px;font-size:10px;color:#667789}@media print{button{display:none}}</style></head><body><header>${r.logo_data?'<img src="'+escapeHtml(r.logo_data)+'">':''}<h1>${escapeHtml(r.business_name||r.store_name||'Business')}</h1><p>${escapeHtml(r.store_location||'')} · ${escapeHtml(r.business_phone||'')}</p></header><h2>GOODS ON LOAN</h2><p class="sub">OFFICIAL LOAN NOTE · CUSTOMER COPY</p><div class="ref"><b>Loan reference:</b> ${escapeHtml(r.receipt_no)}<br><b>Date issued:</b> ${new Date(r.issued_at).toLocaleDateString('en-KE')}</div><section><h3>BORROWER DETAILS</h3><p><b>Name:</b> ${escapeHtml(r.borrower_name||'')}</p><p><b>Phone:</b> ${escapeHtml(r.phone||'')}</p><p><b>ID / Passport:</b> ${escapeHtml(r.id_number||'')}</p><p><b>Email:</b> ${escapeHtml(r.borrower_email||'')}</p></section><section><h3>ITEM DETAILS</h3><p><b>Item:</b> ${escapeHtml(r.item_name||'')}</p><p><b>IMEI:</b> ${escapeHtml(r.imei||'—')} · <b>Serial:</b> ${escapeHtml(r.serial_number||'—')}</p><p><b>Condition at handover:</b> ${escapeHtml(r.condition_out||'')}</p><p><b>Deposit / value:</b> KSh ${money(r.amount_kes)}</p><p><b>Processed by:</b> ${escapeHtml(r.processed_by||'')}</p><p><b>Status:</b> ${r.returned?'Returned':r.sold?'Sold':'On loan'}</p></section><p>I acknowledge receipt of the item described above in the stated condition.</p><div class="sign"><span>Borrower signature / thumbprint</span><span>Shop representative signature</span></div><p style="text-align:center;color:#667789;margin-top:25px">Keep this document for your records.</p><p style="text-align:center"><button onclick="window.print()">Print / Save PDF</button></p></body></html>`);
+      win.document.close();win.focus();return;
+    }
     const rows = (r.items || []).map(item => `<tr><td>${escapeHtml(item.name)}${item.serialNo ? '<br>IMEI: '+escapeHtml(item.serialNo) : ''}</td><td>${Number(item.qty)}</td><td>KSh ${money(item.unitPriceKes)}</td><td>KSh ${money(item.lineTotalKes)}</td></tr>`).join('');
     const win = window.open('', '_blank', 'width=480,height=800');
     if (!win) { message('Allow pop-ups to print this receipt.'); return; }
