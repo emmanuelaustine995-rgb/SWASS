@@ -953,3 +953,6 @@ body:not(.workspace-active) #login-view .login-card .muted{color:#c2cbe3!importa
 
 /* Compact signed-in header action to return to the AURORA sign-in screen. */
 .topbar-actions{display:flex;align-items:center;gap:8px;margin-left:auto}.back-to-login-btn{border:1px solid rgba(255,255,255,.5);border-radius:9px;padding:8px 11px;background:rgba(255,255,255,.14);color:#fff;font-size:12px;font-weight:800;white-space:nowrap;cursor:pointer}.back-to-login-btn:hover{background:rgba(255,255,255,.24)}body:not(.workspace-active) .topbar-actions{display:none!important}@media(max-width:420px){.back-to-login-btn{padding:7px 8px;font-size:11px}}
+
+/* Keep the return-to-login action visible on every authenticated workspace page. */
+body.workspace-active .topbar{display:flex!important;align-items:center!important;justify-content:space-between!important;position:relative!important;z-index:100!important}body.workspace-active .topbar-actions{display:flex!important;align-items:center!important;visibility:visible!important;opacity:1!important}body.workspace-active .back-to-login-btn:not(.hidden){display:inline-flex!important;align-items:center!important;justify-content:center!important;visibility:visible!important;opacity:1!important;position:relative!important;z-index:101!important}
