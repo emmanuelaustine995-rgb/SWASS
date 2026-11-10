@@ -58,7 +58,7 @@ export class ReceiptsService {
          LEFT JOIN receipt_delivery_logs dl ON dl.receipt_id = r.id
          LEFT JOIN receipt_items ri ON ri.receipt_id = r.id
         WHERE r.tenant_id = $1 AND r.store_id = $2
-          AND r.cashier_id::text = $10
+          AND ($10::boolean OR r.cashier_id::text = $11)
           AND ($3::date IS NULL OR r.issued_at >= $3::date)
           AND ($4::date IS NULL OR r.issued_at < ($4::date + interval '1 day'))
           AND ($5 = '' OR r.receipt_no ILIKE '%' || $5 || '%'
@@ -73,7 +73,7 @@ export class ReceiptsService {
                OR r.total_kes::text ILIKE '%' || $5 || '%')
         GROUP BY r.id, c.full_name, c.phone, c.email, c.national_id_last4, u.full_name
         ORDER BY r.issued_at DESC, r.id DESC LIMIT $6`,
-      [user.tenantId, user.storeId, from, to, q, limit, idHash, phoneSearch, idLast4, user.sub],
+      [user.tenantId, user.storeId, from, to, q, limit, idHash, phoneSearch, idLast4, ['owner','manager','vendor','freelancer'].includes(user.role), user.sub],
     );
     return { receipts: rows.map((r: any) => ({
       id: r.id, receiptNo: r.receipt_no, issuedAt: r.issued_at,
@@ -103,9 +103,9 @@ export class ReceiptsService {
          LEFT JOIN users u ON u.id=r.cashier_id AND u.tenant_id=r.tenant_id
          LEFT JOIN receipt_items ri ON ri.receipt_id=r.id
         WHERE r.id=$1 AND r.tenant_id=$2 AND r.store_id=$3
-          AND r.cashier_id::text=$4
+          AND ($4::boolean OR r.cashier_id::text=$5)
         GROUP BY r.id,t.id,s.id,c.id,u.id LIMIT 1`,
-      [receiptId,user.tenantId,user.storeId,user.sub],
+      [receiptId,user.tenantId,user.storeId,['owner','manager','vendor','freelancer'].includes(user.role),user.sub],
     );
     const r=rows[0];
     if(!r) throw new NotFoundException('Receipt not found');
