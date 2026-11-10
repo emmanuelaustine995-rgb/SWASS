@@ -156,15 +156,12 @@
           <button id="secondhand-back" class="btn btn-light" type="button">← Back to Receipts</button>
         </div>
         <div class="secondhand-warning"><strong>Important:</strong> Record any second-hand product only after checking the seller's identity, product details, ownership and signed record.</div>
-        <form id="secondhand-form" class="secondhand-form">
-          <fieldset class="secondhand-receipt-choice"><legend>Choose the product's receipt status</legend>
-            <input type="hidden" id="sh-sale-type" value="without_receipt">
-            <div class="secondhand-receipt-options">
-              <label class="secondhand-receipt-option"><input type="radio" name="sh-receipt-choice" value="with_receipt"><span><strong>PRODUCT WITH RECEIPT</strong><small>Attach a photograph of the original purchase receipt.</small></span></label>
-              <label class="secondhand-receipt-option selected"><input type="radio" name="sh-receipt-choice" value="without_receipt" checked><span><strong>PRODUCT WITHOUT RECEIPT</strong><small>Seller explains why the original receipt is unavailable.</small></span></label>
-            </div>
-            <p class="tiny muted">Choose either half. Both are part of this one seller-record card.</p>
-          </fieldset>
+        <div class="secondhand-receipt-options" role="group" aria-label="Choose receipt status">
+          <button type="button" class="secondhand-receipt-option" data-secondhand-mode="with_receipt">WITH RECEIPT</button>
+          <button type="button" class="secondhand-receipt-option" data-secondhand-mode="without_receipt">WITHOUT RECEIPT</button>
+        </div>
+        <form id="secondhand-form" class="secondhand-form hidden">
+          <input type="hidden" id="sh-sale-type" value="">
           <fieldset><legend>1 · Seller identification</legend>
             <label>Full legal name<input id="sh-seller-name" maxlength="160" autocomplete="name" required placeholder="Name as shown on ID"></label>
             <div class="secondhand-fields"><label>National ID / Passport number<input id="sh-national-id" maxlength="40" required></label><label>Seller phone number<input id="sh-seller-phone" type="tel" maxlength="30" autocomplete="tel" required placeholder="07XX XXX XXX"></label></div><div class="secondhand-fields"><label>Seller email address<input id="sh-seller-email" type="email" maxlength="254" autocomplete="email" required placeholder="seller@example.com"></label><label>Alternative phone (optional)<input id="sh-alt-phone" type="tel" maxlength="30"></label></div>
