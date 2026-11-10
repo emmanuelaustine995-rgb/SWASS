@@ -67,6 +67,6 @@ export class PublicLostItemsController {
     const validLocation=Number.isFinite(lat)&&lat>=-90&&lat<=90&&Number.isFinite(lng)&&lng>=-180&&lng<=180;
     await this.db.pool.query(`INSERT INTO lost_item_reports(lost_item_id,reporter_name,reporter_phone,report_details,latitude,longitude,accuracy_m,location_label) VALUES($1,$2,$3,$4,$5,$6,$7,$8)`,[rows[0].id,String(b.reporterName||'').trim().slice(0,120)||null,b.reporterPhone.trim().slice(0,40),String(b.details||'').trim().slice(0,1000)||null,validLocation?lat:null,validLocation?lng:null,Number.isFinite(Number(b.accuracy))?Math.max(0,Math.min(100000,Number(b.accuracy))):null,String(b.locationLabel||'').trim().slice(0,200)||null]);
     await this.db.pool.query(`UPDATE lost_items SET status=CASE WHEN status IN ('lost','registered') THEN 'found' ELSE status END,updated_at=now() WHERE id=$1`,[rows[0].id]);
-    return {message:'Thank you. Your found-item report has been sent to the registered shop.'};
+    return {message:'Thank you. Your report has been saved for the registered shop to review.'};
   }
 }
