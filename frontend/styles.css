@@ -979,9 +979,17 @@ body.workspace-active #shop-home .shop-search-directory-card{
   border-radius:16px;background:linear-gradient(125deg,rgba(226,244,255,.98),rgba(193,226,250,.96),rgba(240,249,255,.98));
   box-shadow:0 5px 16px rgba(71,154,219,.12),inset 0 0 14px rgba(255,255,255,.65);
 }
-body.workspace-active #shop-home #secondhand-open-card{margin:10px 0 12px;width:100%;min-height:78px}
-body.workspace-active #shop-home #secondhand-open-card .secondhand-entry-copy strong{font-size:14px}
-body.workspace-active #shop-home #secondhand-open-card .secondhand-entry-copy small{font-size:11px;line-height:1.35}
+body.workspace-active #receipts-home #secondhand-open-card{margin:10px 0 12px;width:100%;min-height:78px}
+body.workspace-active #receipts-home #secondhand-open-card .secondhand-entry-copy strong{font-size:14px}
+body.workspace-active #receipts-home #secondhand-open-card .secondhand-entry-copy small{font-size:11px;line-height:1.35}
 .secondhand-download-pdf{display:flex;align-items:center;justify-content:center;margin:0 0 10px;text-decoration:none}
 .secondhand-buyer-summary{padding:10px 12px;border-radius:10px;background:#eaf5ff;color:#174b73;font-size:12px}
 @media(max-width:420px){body.workspace-active #shop-home .shop-search-directory-card{padding:10px;gap:8px}}
+
+/* Second-Hand Receipt now lives inside the Receipt workspace. */
+body.workspace-active #receipts-home .secondhand-receipt-entry-label{margin:14px 0 4px;color:#4b83ac}
+body.workspace-active #receipts-home #secondhand-open-card{display:flex;align-items:center;gap:12px;padding:13px;border:1px solid #b9d9f4;border-radius:14px;background:linear-gradient(120deg,#edf7ff,#dceeff);color:#174b73;text-align:left;cursor:pointer}
+body.workspace-active #receipts-home #secondhand-open-card .secondhand-entry-copy{display:grid;gap:3px}
+body.workspace-active #receipts-home #secondhand-open-card .secondhand-entry-copy strong{font-size:14px}
+body.workspace-active #receipts-home #secondhand-open-card .secondhand-entry-copy small{font-size:11px;line-height:1.35}
+body.workspace-active #receipts-home #secondhand-panel{margin-top:10px}
