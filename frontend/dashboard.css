@@ -965,3 +965,14 @@ html body.workspace-active #pos-view.workspace-issue-mode{display:block!importan
 .secondhand-recovery-tab:hover{filter:brightness(1.04);box-shadow:0 5px 14px rgba(32,140,77,.2)}
 @media(prefers-reduced-motion:no-preference){.secondhand-recovery-tab{animation:secondhandRecoveryFade 6s ease-in-out infinite}}
 @keyframes secondhandRecoveryFade{0%,100%{filter:brightness(.96)}50%{filter:brightness(1.08)}}
+
+
+/* Compact green Next tab directly below Add Product on the issue-receipt page */
+html body.workspace-active #pos-view.workspace-issue-mode .receipt-product-actions{display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:5px!important;margin:2px 0 8px!important;padding:0!important}
+html body.workspace-active #pos-view.workspace-issue-mode .receipt-product-actions #checkout-open.compact-next-btn{display:inline-flex!important;align-items:center!important;justify-content:center!important;width:auto!important;min-width:0!important;max-width:max-content!important;min-height:24px!important;height:24px!important;padding:3px 10px!important;margin:0 0 0 2px!important;border:1px solid #16834b!important;border-radius:7px!important;background:#16a05a!important;color:#fff!important;font-size:10px!important;font-weight:750!important;line-height:1!important;box-shadow:0 2px 5px rgba(22,160,90,.16)!important;flex:0 0 auto!important}
+html body.workspace-active #pos-view.workspace-issue-mode .receipt-product-actions #checkout-open.compact-next-btn:disabled{opacity:.48!important}
+html body.workspace-active #pos-view.workspace-issue-mode .receipt-product-actions #receipt-add-product-toggle{min-height:29px!important;height:29px!important;padding:5px 10px!important;margin:0!important;font-size:10px!important;border-radius:8px!important}
+html body.workspace-active #pos-view.workspace-issue-mode .cart-panel{padding:10px!important}
+html body.workspace-active #pos-view.workspace-issue-mode .cart-panel .section-head{margin-bottom:7px!important}
+html body.workspace-active #pos-view.workspace-issue-mode .page-heading{margin:0 0 5px!important}
+html body.workspace-active #pos-view.workspace-issue-mode .page-heading h1{font-size:18px!important}
