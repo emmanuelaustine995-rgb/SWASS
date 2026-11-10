@@ -949,3 +949,7 @@ body:not(.workspace-active) #login-view .login-card{background:rgba(7,17,48,.76)
 body:not(.workspace-active) #login-view .login-card label{color:#e0e8ff!important}
 body:not(.workspace-active) #login-view .login-card .muted{color:#c2cbe3!important}
 @media(prefers-reduced-motion:reduce){body:not(.workspace-active),body:not(.workspace-active):before,body:not(.workspace-active) .topbar .brand{animation:none!important}}
+
+
+/* Compact signed-in header action to return to the AURORA sign-in screen. */
+.topbar-actions{display:flex;align-items:center;gap:8px;margin-left:auto}.back-to-login-btn{border:1px solid rgba(255,255,255,.5);border-radius:9px;padding:8px 11px;background:rgba(255,255,255,.14);color:#fff;font-size:12px;font-weight:800;white-space:nowrap;cursor:pointer}.back-to-login-btn:hover{background:rgba(255,255,255,.24)}body:not(.workspace-active) .topbar-actions{display:none!important}@media(max-width:420px){.back-to-login-btn{padding:7px 8px;font-size:11px}}
