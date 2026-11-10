@@ -1161,7 +1161,7 @@
   $('discount').addEventListener('input',renderCart);$('clear-cart').addEventListener('click',()=>{state.cart.clear();$('discount').value='0';renderCart();});
   
   
-  $('checkout-open').addEventListener('click',openCheckout);$('checkout-close').addEventListener('click',()=>$('checkout-modal').classList.add('hidden'));$('checkout-form').addEventListener('submit',completeSale);
+  $('checkout-open').addEventListener('click',openCheckout);$('checkout-close').addEventListener('click',()=>{$('checkout-modal').classList.add('hidden');$('checkout-open').classList.remove('hidden');});$('checkout-form').addEventListener('submit',completeSale);
   $('payment-method')?.addEventListener('change',()=>{$('receipt-mpesa-fields')?.classList.toggle('hidden',$('payment-method').value!=='mpesa');if($('payment-method').value==='mpesa'&&!$('receipt-mpesa-phone').value)$('receipt-mpesa-phone').value=$('buyer-phone').value.trim();});
   $('buyer-phone')?.addEventListener('input',()=>{if($('payment-method')?.value==='mpesa'&&!$('receipt-mpesa-phone')?.dataset.edited)$('receipt-mpesa-phone').value=$('buyer-phone').value.trim();});
   $('receipt-mpesa-phone')?.addEventListener('input',e=>{e.currentTarget.dataset.edited='true';});
