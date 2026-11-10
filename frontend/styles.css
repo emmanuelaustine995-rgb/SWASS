@@ -923,3 +923,13 @@ body:not(.workspace-active) #owner-register-entry{margin:10px 0 0}
 .aurora-login-logo{display:block;width:min(100%,420px);height:auto;max-height:220px;object-fit:contain;margin:0 auto 14px;border-radius:12px}
 #login-view .login-card{padding-top:16px}
 @media(max-width:600px){.aurora-login-logo{width:100%;max-height:190px;margin-bottom:10px}#login-view .login-card{padding:12px}}
+
+
+/* Compact creative AURORA identity above sign-in */
+#login-view .aurora-brand-lockup{position:relative;text-align:center;margin:0 auto 20px;padding:8px 12px 15px;max-width:390px;border-radius:22px;background:radial-gradient(ellipse at 50% 0%,rgba(0,157,255,.16),transparent 68%)}
+#login-view .aurora-login-logo{width:min(100%,250px);height:116px;max-height:116px;object-fit:contain;display:block;margin:0 auto 2px;border-radius:0;filter:drop-shadow(0 8px 18px rgba(0,116,255,.18))}
+#login-view .aurora-tagline{margin:0;display:flex;flex-direction:column;gap:2px;letter-spacing:.02em;line-height:1.18}
+#login-view .aurora-tagline span{font-size:clamp(17px,4vw,21px);font-weight:800;color:#087de2}
+#login-view .aurora-tagline strong{font-size:clamp(13px,3.4vw,16px);font-weight:650;color:var(--text,#102448)}
+#login-view .login-card{padding-top:18px}
+@media(max-width:600px){#login-view .aurora-brand-lockup{margin-bottom:14px;padding:4px 8px 10px}#login-view .aurora-login-logo{width:210px;height:96px;max-height:96px}}
