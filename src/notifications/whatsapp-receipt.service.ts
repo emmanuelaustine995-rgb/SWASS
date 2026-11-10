@@ -7,7 +7,7 @@ export class WhatsAppReceiptService {
     const normalised = phone.startsWith('0') ? '254' + phone.slice(1) : phone.startsWith('254') ? phone : '254' + phone;
     if (!/^254[17]\d{8}$/.test(normalised)) throw new Error('Invalid customer WhatsApp number');
 
-    const provider = (process.env.WHATSAPP_PROVIDER || 'flaresend').trim().toLowerCase();
+    const provider = (process.env.WHATSAPP_PROVIDER || 'cloud').trim().toLowerCase();
     if (provider === 'flaresend') return this.sendWithFlareSend({ ...input, phone: normalised });
     if (provider !== 'cloud') throw new Error('Unsupported WHATSAPP_PROVIDER. Use cloud or flaresend.');
 
