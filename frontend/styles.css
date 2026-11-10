@@ -1136,3 +1136,33 @@ body.workspace-active #shop-lost-items-panel:not(.hidden) select{
     padding:6px 9px 16px!important;
   }
 }
+
+
+/* Full-screen red emergency state whenever a lost item is detected. */
+body.aurora-lost-alarm,
+body.aurora-lost-alarm .shell,
+body.aurora-lost-alarm #shop-lost-items-panel,
+body.aurora-lost-alarm #lost-item-check-result{
+  background:#fee2e2!important;
+}
+body.aurora-lost-alarm:after{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:9997;
+  pointer-events:none;
+  background:rgba(220,38,38,.20);
+  border:8px solid #dc2626;
+  box-shadow:inset 0 0 0 8px rgba(127,29,29,.22);
+}
+body.aurora-lost-alarm .aurora-lost-alarm-banner{
+  z-index:10000!important;
+  background:#7f1d1d!important;
+  border:3px solid #fff!important;
+}
+body.aurora-lost-alarm #shop-lost-items-panel .lost-item-checker,
+body.aurora-lost-alarm #shop-lost-items-panel .lost-item-check-result{
+  background:#fecaca!important;
+  border:2px solid #b91c1c!important;
+  color:#7f1d1d!important;
+}
