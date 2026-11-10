@@ -19,7 +19,8 @@ export class ReceiptRecoveryController {
     const phone = normalisePhone(String(body?.phone ?? ''));
     const idHash = hashNationalId(body.nationalId);
     const matches = await this.db.pool.query(
-      `SELECT 1 FROM customers WHERE regexp_replace(phone, '[^0-9]', '', 'g') IN ($1, $2) AND national_id_hash=$3 LIMIT 1`,
+      `SELECT 1 FROM customers WHERE regexp_replace(phone, '[^0-9]', '', 'g') IN ($1, $2) AND national_id_hash=$3
+       UNION ALL SELECT 1 FROM loan_items WHERE regexp_replace(phone, '[^0-9]', '', 'g') IN ($1, $2) AND national_id_hash=$3 LIMIT 1`,
       [phone, `0${phone.slice(3)}`, idHash],
     );
     if (!matches.rowCount) throw new HttpException('The National ID and phone number do not match a customer record.', HttpStatus.NOT_FOUND);
@@ -85,6 +86,21 @@ export class ReceiptRecoveryController {
        ORDER BY r.issued_at DESC LIMIT 500`,
       [hashToken(token)],
     );
+    const { rows: loanRows } = await this.db.pool.query(
+      `SELECT li.id,li.reference AS receipt_no,li.amount_kes,li.loan_date AS issued_at,
+              li.item_name,li.borrower_name,li.phone,li.id_number,li.borrower_email,li.imei,li.serial_number,
+              li.condition_out,li.condition_in,li.processed_by,li.returned,li.sold,
+              s.name AS store_name,s.location AS store_location,s.logo_data,
+              t.name AS business_name,t.phone AS business_phone,t.email AS business_email
+       FROM receipt_recovery_payments rp
+       JOIN loan_items li ON regexp_replace(li.phone,'[^0-9]','','g') IN (rp.phone,'0'||substring(rp.phone from 4))
+         AND li.national_id_hash=rp.national_id_hash
+       JOIN stores s ON s.id=li.store_id
+       JOIN tenants t ON t.id=li.tenant_id
+       WHERE rp.token_hash=$1
+       ORDER BY li.loan_date DESC LIMIT 500`,
+      [hashToken(token)],
+    );
     const payment = await this.db.pool.query(
       `SELECT status FROM receipt_recovery_payments WHERE token_hash=$1`, [hashToken(token)],
     );
@@ -92,9 +108,12 @@ export class ReceiptRecoveryController {
     if (payment.rows[0].status !== 'success') throw new HttpException('Complete the KSh 10 M-Pesa payment before viewing receipts.', HttpStatus.PAYMENT_REQUIRED);
     const salesReceipts = rows.map((r: any) => ({
       ...r,
+      recordType: 'sale',
       cashier: { name: r.cashier_name || 'Staff', phone: r.cashier_phone || null },
       subtotalKes: Number(r.subtotal_kes), discountKes: Number(r.discount_kes), totalKes: Number(r.total_kes),
-    })) };
+    }));
+    const recoveredLoans = loanRows.map((r:any)=>({...r,recordType:'loan',totalKes:Number(r.amount_kes)}));
+    return { receipts: [...salesReceipts,...recoveredLoans].sort((a:any,b:any)=>new Date(b.issued_at).getTime()-new Date(a.issued_at).getTime()) };
   }
 
   @Get('verify/:token')
