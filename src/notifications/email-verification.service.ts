@@ -109,6 +109,14 @@ export class EmailVerificationService {
     return {sent:true,provider:'brevo'};
   }
 
+  async sendLostItemAlert(input:{to:string;recipientName:string;itemName:string;itemCode:string;warning:string}) {
+    const apiKey=process.env.BREVO_API_KEY?.trim(),from=process.env.BREVO_FROM_EMAIL?.trim();
+    if(!apiKey||!from)throw new Error('Brevo email provider is not configured');
+    const esc=(v:unknown)=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
+    const response=await fetch('https://api.brevo.com/v3/smtp/email',{method:'POST',signal:AbortSignal.timeout(15000),headers:{'api-key':apiKey,'Content-Type':'application/json',accept:'application/json'},body:JSON.stringify({sender:{email:from,name:'AURORA E-RECEIPT'},to:[{email:input.to,name:input.recipientName}],subject:'URGENT AURORA LOST ITEM ALERT · '+input.itemCode,htmlContent:`<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;padding:24px;border:3px solid #dc2626;border-radius:12px;color:#7f1d1d"><h1 style="color:#b91c1c">AURORA LOST ITEM ALERT</h1><p>${esc(input.warning)}</p><p><strong>Item:</strong> ${esc(input.itemName)}<br><strong>AURORA reference:</strong> ${esc(input.itemCode)}</p><p>Do not confront anyone. Preserve the information and contact the appropriate authorities.</p></div>`})});
+    const raw=await response.text();if(!response.ok)throw new Error('Brevo alert failed: '+raw.slice(0,200));return {sent:true,provider:'brevo'};
+  }
+
   async verify(token: string) {
     if (typeof token !== 'string' || token.length < 20 || token.length > 200) throw new BadRequestException('Invalid or expired verification link');
     const tokenHash = createHash('sha256').update(token).digest('hex');
