@@ -393,7 +393,7 @@
       const isShopOwner = state.role === 'owner';
       $('secondhand-panel')?.classList.add('hidden');
       document.querySelector('#shop-home > .shop-directory-card')?.classList.remove('hidden');
-      $('shop-add-products')?.classList.toggle('hidden', !isShopOwner);
+      $('shop-register-product-card')?.classList.toggle('hidden', !isShopOwner);
       $('shop-owner-note')?.classList.toggle('hidden', isShopOwner);
       if($('shop-directory-title'))$('shop-directory-title').textContent='Find Products';
       if($('shop-product-results'))$('shop-product-results').classList.add('hidden');
@@ -1527,7 +1527,7 @@
 
 
   function setShopTab(tab){
-    const products=['shop-directory-card','loan-items-card','shop-search-directory-card'];
+    const products=['shop-directory-card','loan-items-card','shop-search-directory-card','shop-register-product-card'];
     products.forEach(sel=>document.querySelector('#shop-home > .'+sel)?.classList.toggle('hidden',tab!=='products'));
     const businessCard=document.querySelector('#shop-home > .shop-business-details-card');
     const historyCard=document.querySelector('#shop-home > #shop-receipt-history-card');
