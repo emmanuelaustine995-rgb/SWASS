@@ -1282,3 +1282,16 @@ html body.workspace-active #pos-view.workspace-issue-mode .receipt-product-actio
 .profile-logo-row{align-items:center!important}
 .profile-logo-row .logo-preview{display:block!important;flex:0 0 112px!important;width:112px!important;height:112px!important;max-width:112px!important;max-height:112px!important;box-sizing:border-box!important;object-fit:contain!important;object-position:center!important;padding:8px!important;background:#fff!important;border:1px solid #cbdceb!important;border-radius:14px!important}
 @media(max-width:430px){.profile-logo-row{align-items:center!important;flex-direction:row!important;gap:12px!important}.profile-logo-row>label{min-width:0!important;flex:1!important}}
+
+
+/* Three compact action cards for the AURORA Lost Goods workspace. */
+.lost-goods-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0 0 14px}
+.lost-goods-card{min-width:0;min-height:132px;padding:16px;border:1px solid #d9e7f4;border-radius:17px;text-align:left;display:flex;flex-direction:column;align-items:flex-start;gap:8px;cursor:pointer;box-shadow:0 8px 22px #15395c12;transition:transform .18s ease,box-shadow .18s ease}
+.lost-goods-card:hover{transform:translateY(-2px);box-shadow:0 12px 26px #15395c20}
+.lost-goods-card strong{font-size:15px;color:#17324d}
+.lost-goods-card small{font-size:12px;line-height:1.45;color:#4e6579}
+.lost-card-number{font-size:11px;font-weight:800;letter-spacing:.12em;opacity:.75}
+.lost-card-register{background:linear-gradient(135deg,#e7f2ff,#c8e2ff);border-color:#b5d5fa}
+.lost-card-found{background:linear-gradient(135deg,#e6fbf1,#c5f1dd);border-color:#a9e3c6}
+.lost-card-check{background:linear-gradient(135deg,#fff5df,#ffe4b0);border-color:#f4d69b}
+@media(max-width:620px){.lost-goods-cards{grid-template-columns:1fr;gap:9px}.lost-goods-card{min-height:0;padding:13px}.lost-goods-card small{max-width:34em}}
