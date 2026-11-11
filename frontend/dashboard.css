@@ -1233,3 +1233,38 @@ body.workspace-active #referral-card .referral-history{margin-top:2px!important}
  body.workspace-active #referral-card .referral-redemption-panel{align-items:stretch!important}
  body.workspace-active #referral-card #referral-redeem{width:100%!important}
 }
+
+
+/* Receipt issue flow: compact step-one controls followed by a clear step-two action. */
+html body.workspace-active #pos-view.workspace-issue-mode .receipt-product-actions{
+ display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:flex-start!important;
+ gap:8px!important;margin:10px 0 4px!important;padding:0!important
+}
+html body.workspace-active #pos-view.workspace-issue-mode #checkout-open.compact-next-btn{
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;
+ position:static!important;inset:auto!important;float:none!important;flex:0 0 auto!important;
+ width:auto!important;min-width:0!important;max-width:100%!important;min-height:38px!important;
+ margin:0!important;padding:8px 15px!important;border-radius:10px!important;
+ background:linear-gradient(135deg,#2467dc,#3986f4)!important;color:#fff!important;
+ box-shadow:0 3px 9px rgba(38,103,220,.14)!important;font-size:12px!important;font-weight:800!important
+}
+html body.workspace-active #pos-view.workspace-issue-mode #checkout-open.compact-next-btn:disabled{
+ opacity:.45!important;filter:none!important
+}
+html body.workspace-active #pos-view.workspace-issue-mode .receipt-product-actions:before{
+ content:"STEP 2";display:inline-flex;align-items:center;color:#6d8296;
+ font-size:9px;font-weight:850;letter-spacing:.12em
+}
+html body.workspace-active #pos-view.workspace-issue-mode .cart-panel>.totals{margin:10px 0 5px!important}
+html body.workspace-active #pos-view.workspace-issue-mode .cart-panel>.tiny{font-size:10px!important;line-height:1.3!important;margin:4px 0!important}
+#receipt-modal{z-index:3000!important}
+#receipt-modal .receipt-card{width:min(80mm,calc(100vw - 24px))!important;max-width:80mm!important;max-height:calc(100dvh - 24px)!important;overflow-y:auto!important}
+#receipt-modal #receipt-paper{width:100%!important;max-width:72mm!important;margin:0 auto!important;padding:3px!important;font-size:9px!important;line-height:1.25!important}
+#receipt-modal .receipt-actions{display:flex!important;flex-wrap:wrap!important;gap:6px!important;justify-content:center!important}
+#receipt-modal .receipt-actions button{min-height:34px!important;padding:7px 10px!important;font-size:11px!important}
+@media(max-width:600px){
+ html body.workspace-active #pos-view.workspace-issue-mode .receipt-product-actions{flex-wrap:wrap!important}
+ html body.workspace-active #pos-view.workspace-issue-mode #checkout-open.compact-next-btn{min-height:36px!important}
+ #receipt-modal{padding:8px!important}
+ #receipt-modal .receipt-card{max-height:calc(100dvh - 16px)!important}
+}
