@@ -1237,3 +1237,10 @@ body.aurora-lost-alarm #shop-lost-items-panel .lost-item-check-result{
 #subscription-home.is-payment-page #subscription-payment-view #dashboard-payment-form-slot{width:100%!important}
 #subscription-home.is-payment-page #subscription-payment-view #dashboard-payment-form-slot>section{width:100%!important;max-width:100%!important;margin:12px 0!important}
 @media(max-width:600px){#subscription-home .subscription-choice-card{padding:12px 14px!important}#subscription-home.is-payment-page #subscription-payment-view{min-height:calc(100dvh - 90px)!important;padding:13px!important}}
+
+
+/* AURORA header wordmark: calm sky-blue fade, no blinking or glow. */
+.topbar{background:linear-gradient(110deg,#082b50,#075b86,#0b4770)!important;background-size:100% 100%!important;animation:none!important;box-shadow:none!important;border-bottom:1px solid rgba(135,206,235,.22)!important}
+.topbar .brand{color:#87ceeb!important;text-shadow:none!important;animation:auroraWordmarkFade 7s ease-in-out infinite!important}
+@keyframes auroraWordmarkFade{0%,100%{color:#b8e7ff}50%{color:#65b9e8}}
+@media(prefers-reduced-motion:reduce){.topbar,.topbar .brand{animation:none!important}.topbar .brand{color:#87ceeb!important}}
