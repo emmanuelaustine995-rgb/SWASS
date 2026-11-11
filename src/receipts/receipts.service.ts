@@ -133,8 +133,8 @@ export class ReceiptsService {
     if(!existingReceipt.rowCount){
       const ids=[...new Set((dto.items||[]).map(i=>String(i.serialNo||'').toUpperCase().replace(/[^A-Z0-9]/g,'')).filter(v=>v.length>=6))];
       if(ids.length){
-        const match=await this.db.pool.query(`SELECT li.item_code AS "itemCode",li.item_name AS "itemName",u.full_name AS "registeredByName",u.email AS "registeredByEmail",u.phone AS "registeredByPhone"
-          FROM lost_items li LEFT JOIN users u ON u.id=li.registered_by WHERE li.status='lost' AND (
+        const match=await this.db.pool.query(`SELECT li.item_code AS "itemCode",li.item_name AS "itemName",u.full_name AS "registeredByName",u.email AS "registeredByEmail",u.phone AS "registeredByPhone",t.name AS "registeredShop",s.name AS "registeredBranch",s.location AS "registeredLocation"
+          FROM lost_items li LEFT JOIN users u ON u.id=li.registered_by LEFT JOIN tenants t ON t.id=li.tenant_id LEFT JOIN stores s ON s.id=li.store_id AND s.tenant_id=li.tenant_id WHERE li.status='lost' AND (
             upper(regexp_replace(COALESCE(li.imei_1,''),'[^A-Za-z0-9]','','g'))=ANY($1::text[]) OR upper(regexp_replace(COALESCE(li.imei_2,''),'[^A-Za-z0-9]','','g'))=ANY($1::text[]) OR upper(regexp_replace(COALESCE(li.serial_number,''),'[^A-Za-z0-9]','','g'))=ANY($1::text[])
           ) ORDER BY li.lost_at DESC NULLS LAST LIMIT 1`,[ids]);
         if(match.rows[0]){
@@ -149,7 +149,7 @@ export class ReceiptsService {
           if(dto.customer?.email)tasks.push(this.emailVerification.sendLostItemAlert({to:dto.customer.email,recipientName:dto.customer.fullName,itemName:lost.itemName||'Product',itemCode:lost.itemCode,warning}));
           if(dto.customer?.phone)tasks.push(this.whatsapp.sendText({to:dto.customer.phone,text:warning}));
           await Promise.allSettled(tasks);
-          throw new ConflictException('AURORA RED ALERT: An item identifier in this sale is recorded as LOST (reference '+lost.itemCode+'). The sale has been blocked. Alert delivery was attempted through the available contact channels.');
+          throw new ConflictException('AURORA RED ALERT: '+(lost.itemName||'Item')+' is recorded as LOST (reference '+lost.itemCode+'). Person presenting the item: '+(dto.customer?.fullName||'Not supplied')+' · '+(dto.customer?.phone||'Phone not supplied')+'. Registered by: '+(lost.registeredByName||'Not available')+' · '+(lost.registeredByPhone||'Phone unavailable')+'. Registered shop: '+(lost.registeredShop||'Not available')+' · '+(lost.registeredBranch||'Branch not supplied')+'. Registered shop location: '+(lost.registeredLocation||'Not supplied')+'. Stop the sale and verify ownership with the relevant authorities. Alert delivery was attempted through the available contact channels.');
         }
       }
     }
