@@ -1663,3 +1663,13 @@ body.workspace-active:has(#shop-lost-items-panel:not(.hidden)) .shell{
   color:#fff!important;
 }
 @media(max-width:430px){.topbar{background:#fff!important}}
+
+
+/* Active Lost Items card uses a soft creamy-blue background. */
+#shop-lost-items-panel .lost-goods-card.lost-card-active{
+  background:#e8f4fb!important;
+  border:1px solid #c8e1ef!important;
+  box-shadow:0 6px 18px rgba(66,133,160,.10)!important;
+}
+#shop-lost-items-panel .lost-goods-card.lost-card-active strong{color:#234b61!important}
+#shop-lost-items-panel .lost-goods-card.lost-card-active small{color:#557487!important}
