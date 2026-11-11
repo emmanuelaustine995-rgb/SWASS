@@ -1,4 +1,35 @@
+# General public crawling
 User-agent: *
+Allow: /
+Disallow: /*?lostItem=
+Disallow: /*&lostItem=
+
+# OpenAI search crawler (ChatGPT Search)
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /*?lostItem=
+Disallow: /*&lostItem=
+
+# Anthropic search crawler (Claude Search)
+User-agent: Claude-SearchBot
+Allow: /
+Disallow: /*?lostItem=
+Disallow: /*&lostItem=
+
+# Perplexity search crawler
+User-agent: PerplexityBot
+Allow: /
+Disallow: /*?lostItem=
+Disallow: /*&lostItem=
+
+# Google Search crawler (including Google AI search features)
+User-agent: Googlebot
+Allow: /
+Disallow: /*?lostItem=
+Disallow: /*&lostItem=
+
+# Microsoft/Bing search crawler
+User-agent: Bingbot
 Allow: /
 Disallow: /*?lostItem=
 Disallow: /*&lostItem=
