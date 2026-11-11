@@ -176,13 +176,13 @@
   <div class="secondhand-receipt-entry-label"><p class="eyebrow">SPECIAL RECEIPTS</p></div>
       <button id="secondhand-open-card" class="secondhand-entry-card" type="button">
         <span class="secondhand-entry-icon" aria-hidden="true">🛡️</span>
-        <span class="secondhand-entry-copy"><strong>Second-Hand Receipt</strong><small>Record seller, buyer and product details, then issue a PDF copy to both parties.</small></span>
+        <span class="secondhand-entry-copy"><strong>Sales Declaration Form</strong><small>Record the seller, buyer and product details and issue a signed declaration to both parties.</small></span>
         <span class="secondhand-entry-arrow" aria-hidden="true">›</span>
       </button>
 
-      <section id="secondhand-panel" class="secondhand-panel hidden" aria-label="Second-hand receipt">
+      <section id="secondhand-panel" class="secondhand-panel hidden" aria-label="Sales declaration form">
         <div class="secondhand-panel-heading">
-          <div><p class="eyebrow">AURORA · SPECIAL RECEIPT</p><h2>Second-Hand Receipt</h2><p class="muted small">Complete seller, buyer and product details together before issuing the receipt.</p></div>
+          <div><p class="eyebrow">AURORA · SPECIAL RECEIPT</p><h2>Sales Declaration Form</h2><p class="muted small">Complete the seller, buyer and product details before issuing the signed sales declaration.</p></div>
           <button id="secondhand-back" class="btn btn-light" type="button">← Back to Receipts</button>
         </div>
         <div class="secondhand-warning"><strong>Important:</strong> Record any second-hand product only after checking the seller's identity, product details, ownership and signed record.</div>
@@ -225,15 +225,15 @@
             <p class="tiny muted">AURORA records the logged-in shop account and the server's date and time when this declaration is submitted.</p>
           </fieldset>
           <p id="secondhand-message" class="shop-directory-message" role="status"></p>
-          <button id="secondhand-submit" class="btn btn-primary full" type="submit">Issue Second-Hand Receipt PDF &amp; Send to Both Parties</button>
+          <button id="secondhand-submit" class="btn btn-primary full" type="submit">Issue Sales Declaration PDF &amp; Send to Both Parties</button>
           <button id="secondhand-clear" class="btn btn-light full" type="button">Clear Details &amp; Start Again</button>
         </form>
         <div id="secondhand-saved-record" class="secondhand-saved-record hidden"></div>
-        <div class="secondhand-history-tools"><button id="secondhand-history-toggle" class="btn btn-light" type="button">View Second-Hand Receipt History</button></div>
+        <div class="secondhand-history-tools"><button id="secondhand-history-toggle" class="btn btn-light" type="button">View Sales Declaration History</button></div>
         <div id="secondhand-history" class="secondhand-history hidden" aria-live="polite"></div>
       </section>
 
-   <div class="secondhand-recovery-shortcut"><a class="secondhand-recovery-tab" href="recover-secondhand.html">↗ Recover Second-Hand Goods Receipt</a></div>
+   <div class="secondhand-recovery-shortcut"><a class="secondhand-recovery-tab" href="recover-secondhand.html">↗ Verify Sales Declaration</a></div>
    <section id="history-panel" class="receipt-history-panel" aria-label="Receipt History"><button id="history-toggle" class="receipt-history-toggle" type="button" aria-expanded="false" aria-controls="history-content">My Issued Receipt History</button><div id="history-content" class="panel history-panel hidden"><div class="history-filters"><label>Search by IMEI, National ID, phone or name<input id="history-search" type="search" placeholder="Enter IMEI, National ID, phone or customer name"></label><label>From date<input id="history-from" type="date"></label><label>To date<input id="history-to" type="date"></label><button id="history-search-btn" class="btn btn-primary" type="button">Search</button></div><p id="history-error" class="error" role="alert"></p><div id="history-list" class="history-list"><div class="empty">Open your issued receipt history or choose a date range to load receipts issued through your account.</div></div></div></section>
 </section>
 <section id="pos-view" class="hidden">
