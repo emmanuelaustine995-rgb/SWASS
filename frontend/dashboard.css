@@ -1268,3 +1268,18 @@ html body.workspace-active #pos-view.workspace-issue-mode .cart-panel>.tiny{font
  #receipt-modal{padding:8px!important}
  #receipt-modal .receipt-card{max-height:calc(100dvh - 16px)!important}
 }
+
+
+/* Simple AURORA referral link and scan card */
+body.workspace-active #referral-card{background:linear-gradient(145deg,#fff,#f1f9ff)!important;border:1px solid #d7eaf7!important;box-shadow:0 5px 18px rgba(32,104,145,.08)!important;animation:none!important;padding:16px!important}
+body.workspace-active #referral-card:before{display:none!important}
+body.workspace-active #referral-card .referral-stats,body.workspace-active #referral-card .referral-redemption-panel,body.workspace-active #referral-card .referral-history{display:none!important}
+body.workspace-active #referral-card .referral-heading h2{color:#174b70!important;font-size:18px!important}
+body.workspace-active #referral-card .referral-heading .muted{font-size:12px!important}
+body.workspace-active #referral-card .referral-share-row{display:flex!important;gap:8px!important;margin:10px 0!important}
+body.workspace-active #referral-card .referral-share-row input{min-width:0!important;min-height:40px!important;font-size:11px!important}
+body.workspace-active #referral-card .referral-share-row button{min-height:40px!important}
+.referral-qr-area{display:flex;align-items:center;gap:12px;margin:10px auto 2px;width:max-content;max-width:100%;padding:9px 14px;background:#fff;border:1px solid #dcecf6;border-radius:12px;color:#23658b;font-size:11px;font-weight:800;letter-spacing:.12em}
+.referral-qr{width:144px;min-height:144px;display:grid;place-items:center}.referral-qr img,.referral-qr canvas{display:block;max-width:144px;height:auto}
+body.workspace-active #referral-card #referral-message{font-size:11px!important;margin:7px 0 0!important}
+@media(max-width:520px){.referral-qr-area{gap:9px;padding:8px 10px}.referral-qr{width:124px;min-height:124px}.referral-qr img,.referral-qr canvas{max-width:124px}.referral-qr-area span{font-size:10px}}
