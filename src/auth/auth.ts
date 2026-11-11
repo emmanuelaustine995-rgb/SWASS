@@ -43,7 +43,7 @@ export class AuthGuard implements CanActivate {
     if (user.mustChangePassword && path !== '/api/v1/auth/change-password') throw new ForbiddenException('Please create your own password before using the shop workspace.');
     // Keep the payment portal usable when a subscription has expired or has
     // not yet been purchased. All business-operation APIs remain locked.
-    const paymentRoute = path === '/api/v1/mpesa/stk-push' || path === '/api/v1/auth/change-password' ||
+    const paymentRoute = path === '/api/v1/mpesa/stk-push' || path === '/api/v1/mpesa/account-summary' || path === '/api/v1/auth/change-password' ||
       /^\/api\/v1\/mpesa\/payments\/[0-9a-f-]+$/i.test(path);
     if (user.tenantId && user.role !== 'super_admin' && !paymentRoute) {
       const active = await this.db.pool.query(
