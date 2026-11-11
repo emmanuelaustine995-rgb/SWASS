@@ -395,7 +395,7 @@
       document.querySelector('#shop-home > .shop-directory-card')?.classList.remove('hidden');
       $('shop-add-products')?.classList.toggle('hidden', !isShopOwner);
       $('shop-owner-note')?.classList.toggle('hidden', isShopOwner);
-      if($('shop-directory-title'))$('shop-directory-title').textContent=isShopOwner?'Add Products':'Search Products';
+      if($('shop-directory-title'))$('shop-directory-title').textContent='Find Products';
       if($('shop-product-results'))$('shop-product-results').classList.add('hidden');
     }else if(screen==='lost-goods'){
       $('shop-lost-items-panel')?.classList.remove('hidden');
@@ -1191,10 +1191,6 @@
     $('receipts-home').classList.remove('hidden');
     state.posReturnScreen=null;
     syncGlobalBackButton();
-  });
-  $('shop-add-receipt-card')?.addEventListener('click',()=>{
-    showWorkspaceScreen('receipts');
-    $('open-issue-receipt')?.click();
   });
   $('open-issue-receipt').addEventListener('click',()=>{
     $('receipts-home').classList.add('hidden');$('pos-view').classList.remove('hidden');$('pos-view').classList.add('workspace-issue-mode');state.posReturnScreen='receipts';
