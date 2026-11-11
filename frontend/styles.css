@@ -1295,3 +1295,7 @@ html body.workspace-active #pos-view.workspace-issue-mode .receipt-product-actio
 .lost-card-found{background:linear-gradient(135deg,#e6fbf1,#c5f1dd);border-color:#a9e3c6}
 .lost-card-check{background:linear-gradient(135deg,#fff5df,#ffe4b0);border-color:#f4d69b}
 @media(max-width:620px){.lost-goods-cards{grid-template-columns:1fr;gap:9px}.lost-goods-card{min-height:0;padding:13px}.lost-goods-card small{max-width:34em}}
+
+
+/* The Issue Receipt workspace must never leak onto Home or other tabs. */
+#pos-view:not(.workspace-issue-mode){display:none!important;}
