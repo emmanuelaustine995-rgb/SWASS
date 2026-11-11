@@ -1454,3 +1454,8 @@ html body.workspace-active #receipts-home .receipt-actions-grid .receipt-choice{
 .shop-add-product-disclosure[open]>summary:after{content:"−"}
 .shop-add-product-disclosure>summary small{margin-left:auto;color:#718096;font-size:11px;font-weight:500}
 .shop-add-product-disclosure .shop-add-products{padding:4px 14px 14px}
+
+/* Keep the Shop Add Product action card aligned with the other Shop cards. */
+#shop-home .shop-add-product-entry{width:100%;min-height:64px;display:flex;align-items:center;justify-content:flex-start;text-align:left;box-sizing:border-box;cursor:pointer;font:inherit;color:inherit;background:#fff;border:1px solid #e5eaf1;border-radius:16px;padding:0 16px;margin:14px 0;box-shadow:0 5px 18px rgba(30,60,90,.06)}
+#shop-home .shop-add-product-entry .shop-directory-heading{display:flex;align-items:center;width:100%;margin:0;padding:15px 2px}
+#shop-home .shop-add-product-entry #shop-directory-title{font-size:19px;font-weight:800;color:#26384d}
