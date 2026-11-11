@@ -4,16 +4,30 @@
   const state = { token: null, role: null, userName: '', staffTitle: '', userPhotoData: '', userPhone: '', userEmail: '', products: [], cart: new Map(), lastReceipt: null, profileLogoData: undefined, businessProfile: {}, workspaceHistory: [], currentWorkspace: null, posReturnScreen: null };
   const SESSION_KEY = 'swass-auth-session-v1';
   const referralCodeFromUrl = new URLSearchParams(window.location.search).get('ref') || '';
-  const SESSION_IDLE_MS = 3 * 60 * 60 * 1000;
+  const SESSION_IDLE_MS = 5 * 60 * 60 * 1000;
   let lastSessionWrite = 0;
   function saveSession(){ if(!state.token)return; const now=Date.now(); localStorage.setItem(SESSION_KEY,JSON.stringify({token:state.token,role:state.role,userName:state.userName,staffTitle:state.staffTitle,userPhotoData:state.userPhotoData,userPhone:state.userPhone,userEmail:state.userEmail,lastActivity:now})); lastSessionWrite=now; }
   function touchSession(){ if(!state.token)return; const now=Date.now(); if(now-lastSessionWrite<30000)return; try{const saved=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');if(saved?.token===state.token){saved.lastActivity=now;localStorage.setItem(SESSION_KEY,JSON.stringify(saved));lastSessionWrite=now;}}catch{localStorage.removeItem(SESSION_KEY);} }
   function clearSession(){ localStorage.removeItem(SESSION_KEY); state.token=null; state.role=null; state.userName=''; state.staffTitle=''; state.userPhotoData=''; state.userPhone=''; state.userEmail=''; state.workspaceHistory=[]; state.currentWorkspace=null; state.posReturnScreen=null; }
   function sessionIsValid(saved){ if(!saved?.token||!Number.isFinite(saved.lastActivity)||Date.now()-saved.lastActivity>SESSION_IDLE_MS)return false; try{const part=saved.token.split('.')[1];const claims=JSON.parse(atob(part.replace(/-/g,'+').replace(/_/g,'/')));return !!claims.exp&&claims.exp*1000>Date.now();}catch{return false;} }
-  // Always require an explicit sign-in when the app is opened or refreshed.
-  // Do not reveal protected workspaces from a stale browser-cached token.
-  function restoreSession(){ clearSession(); showLogin(); }
-  function checkSessionExpiry(){ if(!state.token)return; let saved;try{saved=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');}catch{} if(!sessionIsValid(saved)){clearSession();window.dispatchEvent(new Event('swass:logout'));state.cart.clear();renderCart();showLogin();showNotice('Your session ended after 3 hours without activity. Please sign in again.');} }
+  // Restore a still-valid session after refresh/reopening the browser. Expire only after five hours without activity.
+  function restoreSession(){
+    let saved;try{saved=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');}catch{}
+    if(!sessionIsValid(saved)){clearSession();showLogin();return;}
+    state.token=saved.token;state.role=saved.role||null;state.userName=saved.userName||'';
+    state.staffTitle=saved.staffTitle||'';state.userPhotoData=saved.userPhotoData||'';
+    state.userPhone=saved.userPhone||'';state.userEmail=saved.userEmail||'';
+    lastSessionWrite=Number(saved.lastActivity)||Date.now();
+    showPOS();
+    const allowed=['dashboard','receipts','profile','shop','subscription','lost-goods'];
+    let screen='dashboard';try{const remembered=localStorage.getItem('swass-active-workspace-v1');if(allowed.includes(remembered))screen=remembered;}catch{}
+    showWorkspaceScreen(screen);
+    window.dispatchEvent(new CustomEvent('swass:login',{detail:{token:state.token,role:state.role,restored:true}}));
+  }
+  function checkSessionExpiry(){ if(!state.token)return; let saved;try{saved=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');}catch{} if(!sessionIsValid(saved)){clearSession();window.dispatchEvent(new Event('swass:logout'));state.cart.clear();renderCart();showLogin();showNotice('You were signed out after 5 hours without activity. Please sign in again.');} }
+  // Count normal user interaction as activity, even on pages that make no API calls.
+  ['pointerdown','keydown','touchstart','scroll','click'].forEach(eventName=>document.addEventListener(eventName,()=>touchSession(),{passive:true}));
+  window.setInterval(checkSessionExpiry,60*1000);
   const API = (window.SWASS_API_URL || '').replace(/\/$/, '');
   // Warm the free Render API while the visitor is reading the page. This
   // reduces the chance that signup is the first request after the service sleeps.
