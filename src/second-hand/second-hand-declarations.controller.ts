@@ -97,6 +97,7 @@ export class SecondHandPhoneDeclarationsController {
           upper(regexp_replace(COALESCE(li.imei_1,''),'[^A-Za-z0-9]','','g'))=ANY($1::text[]) OR upper(regexp_replace(COALESCE(li.imei_2,''),'[^A-Za-z0-9]','','g'))=ANY($1::text[]) OR upper(regexp_replace(COALESCE(li.serial_number,''),'[^A-Za-z0-9]','','g'))=ANY($1::text[])
         ) ORDER BY li.lost_at DESC NULLS LAST LIMIT 1`,[lostIds]);
       if(match.rows[0]){
+        const lost=match.rows[0];
         const shopResult=await this.db.pool.query(`SELECT t.name AS "shopName",t.phone AS "shopPhone",t.email AS "shopEmail",s.name AS "branchName",s.location AS "shopLocation" FROM tenants t JOIN stores s ON s.tenant_id=t.id WHERE t.id=$1 AND s.id=$2 LIMIT 1`,[user.tenantId,user.storeId]);
         const shop=shopResult.rows[0]||{};
         const matchedIdentifier=lostIds[0]||'not supplied';
