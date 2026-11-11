@@ -71,7 +71,7 @@ export class ReceiptsService {
                            WHERE search_item.receipt_id = r.id
                              AND COALESCE(search_item.serial_no, '') ILIKE '%' || $5 || '%')
                OR r.total_kes::text ILIKE '%' || $5 || '%')
-        GROUP BY r.id, c.full_name, c.phone, c.email, c.national_id_last4, u.full_name
+        GROUP BY r.id, c.full_name, c.phone, c.email, c.national_id_last4, u.full_name, dl.email_status, dl.whatsapp_status
         ORDER BY r.issued_at DESC, r.id DESC LIMIT $6`,
       [user.tenantId, user.storeId, from, to, q, limit, idHash, phoneSearch, idLast4, ['owner','manager','vendor','freelancer'].includes(user.role), user.sub],
     );
