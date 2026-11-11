@@ -59,7 +59,7 @@
     if (!res.ok) {
       const error = new Error(data.message || `Request failed (${res.status})`);
       error.status = res.status;
-      if (/AURORA RED ALERT|recorded as LOST/i.test(error.message) && typeof ringLostAlarm === 'function') ringLostAlarm();
+      if (/AURORA RED ALERT|recorded as LOST/i.test(error.message) && typeof ringLostAlarm === 'function') ringLostAlarm(error.message);
       throw error;
     }
     return data;
