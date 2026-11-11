@@ -12,7 +12,7 @@ export class LostItemsController {
   constructor(private db: DbService, private email: EmailVerificationService, private whatsapp: WhatsAppReceiptService) {}
   private scope(user:any){if(!user.tenantId||!user.storeId)throw new BadRequestException('Shop details are unavailable');return [user.tenantId,user.storeId];}
   @Get('check') @Roles('owner','manager','cashier','vendor','freelancer','customer')
-  async checkIdentifier(@Req() req:any,@Query('identifier') identifier?:string){
+  async checkIdentifier(@Req() req:any,@Query('identifier') identifier?:string,@Query('presenterName') presenterName?:string,@Query('presenterPhone') presenterPhone?:string){
     const normalized=String(identifier||'').trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
     if(normalized.length<6||normalized.length>40)throw new BadRequestException('Enter a valid IMEI or serial number (at least 6 characters).');
     const {rows}=await this.db.pool.query(`SELECT li.item_code AS "itemCode",li.item_name AS "itemName",li.brand,li.model,li.colour,li.description,li.ob_number AS "obNumber",li.status,li.lost_at AS "lostAt",u.full_name AS "registeredByName",u.phone AS "registeredByPhone",t.name AS "registeredShop",s.location AS "registeredLocation",s.name AS "registeredBranch" FROM lost_items li LEFT JOIN users u ON u.id=li.registered_by LEFT JOIN tenants t ON t.id=li.tenant_id LEFT JOIN stores s ON s.id=li.store_id AND s.tenant_id=li.tenant_id WHERE li.status='lost' AND (
@@ -22,8 +22,8 @@ export class LostItemsController {
     const item=rows[0];
     const {rows:searcherRows}=await this.db.pool.query('SELECT full_name AS name,phone FROM users WHERE id=$1 LIMIT 1',[req.user.sub]);
     const searcher=searcherRows[0]||{};
-    await this.db.pool.query('INSERT INTO lost_item_searches(item_code,identifier,searched_by_user_id,searched_by_phone,searched_by_name) VALUES($1,$2,$3,$4,$5)',[item.itemCode,normalized,String(req.user.sub||''),searcher.phone||null,searcher.name||null]);
-    const {rows:lastRows}=await this.db.pool.query('SELECT searched_by_phone AS "lastSearchedByPhone",searched_by_name AS "lastSearchedByName",searched_at AS "lastSearchedAt" FROM lost_item_searches WHERE item_code=$1 ORDER BY searched_at DESC LIMIT 1',[item.itemCode]);
+    await this.db.pool.query('INSERT INTO lost_item_searches(item_code,identifier,searched_by_user_id,searched_by_phone,searched_by_name,presented_by_name,presented_by_phone) VALUES($1,$2,$3,$4,$5,$6,$7)',[item.itemCode,normalized,String(req.user.sub||''),searcher.phone||null,searcher.name||null,String(presenterName||'').trim().slice(0,120)||null,String(presenterPhone||'').trim().slice(0,40)||null]);
+    const {rows:lastRows}=await this.db.pool.query('SELECT searched_by_phone AS "lastSearchedByPhone",searched_by_name AS "lastSearchedByName",presented_by_name AS "presentedByName",presented_by_phone AS "presentedByPhone",searched_at AS "lastSearchedAt" FROM lost_item_searches WHERE item_code=$1 ORDER BY searched_at DESC LIMIT 1',[item.itemCode]);
     return {match:true,item:{...item,...(lastRows[0]||{})}};
   }
   @Get() @Roles('owner','manager')
