@@ -1403,3 +1403,10 @@ html body.workspace-active #receipts-home .receipt-choice small{font-size:clamp(
     border-radius:16px!important;
   }
 }
+
+
+/* Receipt action cards stay borderless on both desktop and mobile. */
+html body.workspace-active #receipts-home .receipt-actions-grid .receipt-choice{
+  border:0!important;
+  outline:0!important;
+}
