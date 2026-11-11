@@ -1542,3 +1542,30 @@ html body.workspace-active #pos-view.workspace-issue-mode .receipt-product-actio
 .shop-search-disclosure>summary{list-style:none;cursor:pointer}
 .shop-search-disclosure>summary::-webkit-details-marker{display:none}
 .shop-search-disclosure .shop-product-search-form{margin-top:10px}
+
+
+/* Flagged Items navigation: red alert-style tab with a flag symbol. */
+.bottom-nav .nav-lost-goods{
+  color:#fff!important;background:#c62828!important;border:1px solid #a91f1f!important;
+  border-radius:12px!important;font-weight:800!important;
+  box-shadow:0 4px 13px rgba(198,40,40,.24)!important;
+}
+.bottom-nav .nav-lost-goods .nav-icon{font-size:21px!important;color:#fff!important}
+.bottom-nav .nav-lost-goods.active,
+.bottom-nav .nav-lost-goods[aria-current="page"]{background:#a91f1f!important;color:#fff!important}
+/* Purple fading treatment for the AURORA Lost & Found Network intro card. */
+#shop-lost-items-panel .lost-items-intro{
+  background:linear-gradient(115deg,#eee3ff,#d9c2ff,#f0e7ff)!important;
+  border:1px solid rgba(139,92,246,.28)!important;
+  color:#452477!important;
+  animation:auroraFlaggedPurpleFade 3.2s ease-in-out infinite;
+  box-shadow:0 7px 22px rgba(104,58,170,.16)!important;
+}
+#shop-lost-items-panel .lost-items-intro .eyebrow,
+#shop-lost-items-panel .lost-items-intro h2{color:#542b91!important}
+#shop-lost-items-panel .lost-items-intro .muted{color:#654a85!important}
+@keyframes auroraFlaggedPurpleFade{
+  0%,100%{background:linear-gradient(115deg,#eee3ff,#d9c2ff,#f0e7ff);box-shadow:0 7px 22px rgba(104,58,170,.13)}
+  50%{background:linear-gradient(115deg,#d8c0ff,#b995f2,#e2d0ff);box-shadow:0 8px 25px rgba(104,58,170,.28)}
+}
+@media(prefers-reduced-motion:reduce){#shop-lost-items-panel .lost-items-intro{animation:none}}
