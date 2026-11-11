@@ -478,7 +478,7 @@
     try{
       const [ordinary,secondhand]=await Promise.all([
         request('/api/v1/receipts?'+p.toString()),
-        request('/api/v1/second-hand-phone-declarations')
+        state.role==='owner'?request('/api/v1/second-hand-phone-declarations'):Promise.resolve({declarations:[]})
       ]);
       const rows=(ordinary.receipts||[]).map(r=>({kind:'ordinary',data:r}));
       const needle=q.toLowerCase();
