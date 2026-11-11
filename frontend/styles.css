@@ -1256,3 +1256,12 @@ body.workspace-active .global-back-dock:not(.hidden){
  color:#174b70!important;font:750 13px system-ui,sans-serif!important;box-shadow:0 2px 7px rgba(24,85,125,.10)!important;
  backdrop-filter:none!important
 }
+
+
+/* Clear, compact history button row below the header. */
+body.workspace-active .global-back-row{min-height:0!important;padding:5px 14px 0!important;margin:0 auto!important}
+body.workspace-active .global-back-dock:not(.hidden){
+  min-height:34px!important;padding:6px 13px!important;border-radius:10px!important;
+  background:#e4f2fc!important;color:#245b80!important;border:1px solid #c2deef!important;
+  font-size:12px!important;font-weight:750!important;box-shadow:none!important;opacity:1!important
+}
