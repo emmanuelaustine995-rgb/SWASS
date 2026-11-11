@@ -1517,3 +1517,13 @@ html body.workspace-active #pos-view.workspace-issue-mode .receipt-product-actio
   .topbar, .bottom-nav { max-width: 100vw !important; }
   .bottom-nav { overflow-x: auto !important; }
 }
+
+
+/* Shop: product fields stay hidden until Add Product is tapped. */
+.shop-add-product-disclosure{margin-top:8px}
+.shop-add-product-disclosure>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:42px;padding:10px 13px;border-radius:10px;background:linear-gradient(120deg,#1677b8,#315fbd);color:#fff;cursor:pointer}
+.shop-add-product-disclosure>summary::-webkit-details-marker{display:none}
+.shop-add-product-disclosure>summary strong{font-size:13px;font-weight:800}
+.shop-add-product-disclosure>summary small{font-size:10px;font-weight:600;opacity:.9;text-align:right}
+.shop-add-product-disclosure[open]>summary{border-radius:10px 10px 0 0}
+.shop-add-product-disclosure .shop-add-products{padding:12px;border:1px solid #d9e8f4;border-top:0;border-radius:0 0 10px 10px;background:#f8fbff}
