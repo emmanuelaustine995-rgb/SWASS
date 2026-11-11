@@ -131,10 +131,8 @@
             <label>Date out / loan date<input id="loan-date" type="date" required></label>
             <label>Condition out<textarea id="loan-condition-out" rows="2" required maxlength="1000"></textarea></label>
             <div class="form-two"><label>Deposit / value amount (KSh)<input id="loan-amount" type="number" min="0" step="1" required value="0"></label><label>Processed by<input id="loan-processed-by" maxlength="160" placeholder="Staff name"></label></div>
-            <button class="btn btn-primary" id="loan-issue-button" type="submit">Issue Loan Receipt</button><p id="loan-message" role="status" class="muted small"></p>
+            <button class="btn btn-primary" id="loan-issue-button" type="submit">LOAN</button><p id="loan-message" role="status" class="muted small"></p>
           </form>
-          <div class="loan-items-list-head"><strong>Loan register</strong><button id="loan-refresh" class="btn btn-light btn-small" type="button">Refresh</button></div>
-          <div id="loan-items-list"><p class="muted small">Loading loan records…</p></div>
         </div>
       </details>
       <details class="profile-shop-card profile-card panel shop-business-details-card hidden"><summary class="profile-card-summary"><span><strong>Shop Details</strong><small>Business information, branding and shop photos</small></span><span class="profile-card-chevron" aria-hidden="true">⌄</span></summary><div class="profile-card-body"><p id="profile-readonly-note" class="profile-readonly-note hidden">Viewing mode · Shop owners can edit these details. Vendors and freelancers can view them only.</p><form id="profile-form">
