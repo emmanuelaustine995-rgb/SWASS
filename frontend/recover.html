@@ -1,14 +1,14 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Recover AURORA receipts</title><link rel="stylesheet" href="styles.css"></head>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Verify AURORA receipts</title><link rel="stylesheet" href="styles.css"></head>
 <body><main class="auth-shell"><section class="panel">
 <p class="page-back-row"><a class="btn btn-light page-back-link" href="index.html" onclick="if(window.history.length>1){event.preventDefault();window.history.back();}">← Back to AURORA</a></p>
-<h1>Recover lost receipts</h1>
-<p>Enter the National ID and phone number used when purchasing. Pay a one-time KSh 10 recovery fee to unlock <strong>all receipts</strong> linked to those details.</p>
+<h1>Verify Receipts</h1>
+<p>Enter the National ID and phone number used when purchasing. Pay a one-time KSh 10 verification fee to view <strong>all receipts</strong> linked to those details.</p>
 
 <form id="request-form">
 <label>National ID number<input id="national-id" type="text" autocomplete="off" maxlength="30" placeholder="Enter National ID number" required></label>
 <label>Phone number<input id="phone" type="tel" autocomplete="tel" placeholder="07XXXXXXXX or 2547XXXXXXXX" required></label>
-<button id="request-button" type="submit">Pay KSh 10 and recover receipts</button>
+<button id="request-button" type="submit">Pay KSh 10 and verify receipts</button>
 </form>
 <p id="message" role="status" aria-live="polite"></p>
 <div id="receipt-list"></div>
