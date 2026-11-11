@@ -1326,3 +1326,57 @@ body.workspace-active #referral-card #referral-message{font-size:11px!important;
 #owner-home .referral-area>article{border-radius:20px!important;overflow:hidden!important}
 #owner-home .referral-area h2{font-weight:850!important;letter-spacing:-.02em!important}
 #owner-home .referral-area button{border-radius:12px!important;box-shadow:0 5px 14px rgba(18,60,95,.12)!important}
+
+
+/* AURORA Receipts: three equal bordered cards on a fixed, non-scrolling page. */
+html body.workspace-active #receipts-home:not(.hidden){
+  display:flex!important;
+  flex:1 1 auto!important;
+  flex-direction:column!important;
+  min-height:0!important;
+  height:100%!important;
+  max-height:100%!important;
+  margin:0!important;
+  overflow:hidden!important;
+  overscroll-behavior:none!important;
+  padding:clamp(10px,2vh,20px)!important;
+}
+html body.workspace-active #receipts-home:not(.hidden) .section-head{flex:0 0 auto!important;margin:0 0 12px!important}
+html body.workspace-active #receipts-home .receipt-actions-grid{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  grid-auto-rows:1fr!important;
+  align-items:stretch!important;
+  gap:12px!important;
+  flex:0 0 auto!important;
+  min-height:0!important;
+}
+html body.workspace-active #receipts-home .receipt-choice{
+  width:100%!important;
+  min-width:0!important;
+  min-height:clamp(108px,17vh,150px)!important;
+  height:clamp(108px,17vh,150px)!important;
+  margin:0!important;
+  padding:clamp(10px,1.6vw,18px)!important;
+  border:1px solid rgba(137,169,197,.58)!important;
+  border-radius:15px!important;
+  box-sizing:border-box!important;
+  box-shadow:0 5px 15px rgba(31,73,108,.08)!important;
+  overflow:hidden!important;
+}
+html body.workspace-active #receipts-home .receipt-choice strong{font-size:clamp(12px,1.3vw,16px)!important;line-height:1.2!important}
+html body.workspace-active #receipts-home .receipt-choice small{font-size:clamp(10px,1vw,12px)!important;line-height:1.3!important}
+@media(max-width:600px){
+  html body.workspace-active #receipts-home:not(.hidden){padding:9px!important}
+  html body.workspace-active #receipts-home .receipt-actions-grid{grid-template-columns:1fr!important;gap:8px!important}
+  html body.workspace-active #receipts-home .receipt-choice{
+    height:clamp(86px,13vh,104px)!important;
+    min-height:clamp(86px,13vh,104px)!important;
+    padding:9px 12px!important;
+    gap:4px!important;
+    border-radius:12px!important;
+  }
+  html body.workspace-active #receipts-home .receipt-choice>span{width:30px!important;height:30px!important;font-size:20px!important;border-radius:9px!important}
+  html body.workspace-active #receipts-home .receipt-choice strong{font-size:13px!important}
+  html body.workspace-active #receipts-home .receipt-choice small{font-size:10px!important;line-height:1.2!important}
+}
