@@ -1460,11 +1460,15 @@ html body.workspace-active #receipts-home .receipt-actions-grid .receipt-choice{
 #shop-home .shop-add-product-entry .shop-directory-heading{display:flex;align-items:center;width:100%;margin:0;padding:15px 2px}
 #shop-home .shop-add-product-entry #shop-directory-title{font-size:19px;font-weight:800;color:#26384d}
 
-/* AURORA Shop: single, non-expandable creamy-pink Add Product action card. */
-#shop-home button.shop-add-product-entry{background:#f9e3e8!important;border:1px solid #efc6d1!important;color:#65414b!important;box-shadow:0 4px 12px rgba(150,85,105,.10)!important;border-radius:16px!important;min-height:64px!important;}
-#shop-home button.shop-add-product-entry:hover,#shop-home button.shop-add-product-entry:focus-visible{background:#f5d7df!important;}
-#shop-home button.shop-add-product-entry #shop-directory-title{color:#704653!important;}
-#shop-home button.shop-add-product-entry small{display:none!important;}
+/* AURORA Shop: product discovery card opens the shop-search form in place. */
+#shop-home details.shop-add-product-entry{display:block;width:100%;margin:14px 0;background:#f9e3e8!important;border:0!important;border-radius:16px!important;box-shadow:0 0 0 1px rgba(190,125,145,.18),0 5px 14px rgba(150,85,105,.12)!important;overflow:hidden;}
+#shop-home details.shop-add-product-entry>summary{display:flex;align-items:center;justify-content:flex-start;min-height:64px;padding:12px 16px;list-style:none;cursor:pointer;color:#704653!important;}
+#shop-home details.shop-add-product-entry>summary::-webkit-details-marker{display:none;}
+#shop-home details.shop-add-product-entry>summary>div{display:flex;flex-direction:column;gap:4px;}
+#shop-home details.shop-add-product-entry #shop-directory-title{font-size:19px;font-weight:800;color:#704653!important;}
+#shop-home details.shop-add-product-entry>summary small{display:block;color:#805b65!important;font-size:12px;line-height:1.35;font-weight:500;}
+#shop-home details.shop-add-product-entry[open]>summary{border-bottom:1px solid rgba(190,125,145,.18);}
+#shop-home details.shop-add-product-entry .shop-product-search-form{padding:12px 16px 14px;}
 
 /* Align Sales Declaration Form content to the left like the other receipt cards. */
 html body.workspace-active #receipts-home .receipt-actions-grid .declaration-choice{display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:flex-start!important;text-align:left!important;}
