@@ -359,6 +359,7 @@
       }else{
         subscriptionHome?.classList.remove('hidden');
         syncTumaFields();
+        void loadSubscriptionBalance();
       }
     }else if(screen==='receipts'){
       receiptHome?.classList.remove('hidden');
@@ -626,9 +627,24 @@
       btn.textContent='Issuing receipt…';
       const receipt=await request('/api/v1/receipts',{method:'POST',body:JSON.stringify(payload)});
       state.lastReceipt=receipt; const sale={items:items.flatMap(r=>{const price=Number(r.unitPriceKes??r.product.priceKes);const codes=Array.isArray(r.serials)?r.serials.filter(Boolean):[];if(codes.length){const serialLines=codes.map(serialNo=>({name:r.product.name,qty:1,price,serialNo}));if(r.qty>codes.length)serialLines.push({name:r.product.name,qty:r.qty-codes.length,price,serialNo:null});return serialLines;}return [{name:r.product.name,qty:r.qty,price,serialNo:r.imei&&r.imei.trim()?r.imei.trim():null}];}),subtotal:Number(receipt.subtotalKes??t.subtotal),discount:Number(receipt.discountKes??t.discount),paymentMethod:payload.paymentMethod};
-      $('receipt-paper').innerHTML=makeReceiptMarkup(receipt,sale,payload.customer);if(window.QRCode){try{if(receipt.qrToken){const verifyUrl=new URL('verify.html',window.location.href).href+'?token='+encodeURIComponent(receipt.qrToken);new QRCode($('receipt-qr'),{text:verifyUrl,width:116,height:116,correctLevel:QRCode.CorrectLevel.M});}sale.items.forEach((item,index)=>{if(item.serialNo){const target=$('imei-qr-'+index);if(target)new QRCode(target,{text:item.serialNo,width:72,height:72,correctLevel:QRCode.CorrectLevel.M});}});}catch(error){console.warn('Receipt QR rendering failed:',error?.message||'unknown error');}}$('checkout-modal').classList.add('hidden');$('receipt-modal').classList.remove('hidden');state.cart.clear();$('discount').value='0';$('checkout-form').reset();renderCart();const emailStatus=$('receipt-email-status');if(emailStatus){emailStatus.textContent='Email: '+(receipt.emailDelivery?.message||(payload.customer?.email?'Delivery status unavailable.':'No customer email was provided.'))+' WhatsApp: '+(receipt.whatsappDelivery?.message||(payload.customer?.phone?'Delivery status unavailable.':'No customer phone was provided.'));emailStatus.classList.toggle('error',!!((payload.customer?.email&&!receipt.emailDelivery?.sent)||(payload.customer?.phone&&!receipt.whatsappDelivery?.sent)));}window.dispatchEvent(new CustomEvent('swass:sale-issued',{detail:{receiptNo:receipt.receiptNo,totalKes:receipt.totalKes}}));if(state.role==='cashier')await loadStaffSalesSummary();hideNotice();
+      $('receipt-paper').innerHTML=makeReceiptMarkup(receipt,sale,payload.customer);if(window.QRCode){try{if(receipt.qrToken){const verifyUrl=new URL('verify.html',window.location.href).href+'?token='+encodeURIComponent(receipt.qrToken);new QRCode($('receipt-qr'),{text:verifyUrl,width:116,height:116,correctLevel:QRCode.CorrectLevel.M});}sale.items.forEach((item,index)=>{if(item.serialNo){const target=$('imei-qr-'+index);if(target)new QRCode(target,{text:item.serialNo,width:72,height:72,correctLevel:QRCode.CorrectLevel.M});}});}catch(error){console.warn('Receipt QR rendering failed:',error?.message||'unknown error');}}$('checkout-modal').classList.add('hidden');$('receipt-modal').classList.remove('hidden');state.cart.clear();$('discount').value='0';$('checkout-form').reset();renderCart();const emailStatus=$('receipt-email-status');if(emailStatus){emailStatus.textContent='Email: '+(receipt.emailDelivery?.message||(payload.customer?.email?'Delivery status unavailable.':'No customer email was provided.'))+' WhatsApp: '+(receipt.whatsappDelivery?.message||(payload.customer?.phone?'Delivery status unavailable.':'No customer phone was provided.'));emailStatus.classList.toggle('error',!!((payload.customer?.email&&!receipt.emailDelivery?.sent)||(payload.customer?.phone&&!receipt.whatsappDelivery?.sent)));}window.dispatchEvent(new CustomEvent('swass:sale-issued',{detail:{receiptNo:receipt.receiptNo,totalKes:receipt.totalKes}}));if(state.role==='cashier')await loadStaffSalesSummary();if(['owner','manager'].includes(state.role))void loadSubscriptionBalance();hideNotice();
     }catch(e){$('checkout-error').textContent=e.message;}
     finally{btn.disabled=false;btn.textContent='Issue receipt';}
+  }
+  async function loadSubscriptionBalance(){
+    if(!['owner','manager'].includes(state.role))return;
+    const status=$('subscription-status'),remaining=$('subscription-receipts-remaining'),balance=$('subscription-wallet-balance'),expiry=$('subscription-expiry'),remainder=$('subscription-wallet-remainder'),message=$('subscription-balance-message');
+    if(message)message.textContent='Refreshing subscription and receipt balance…';
+    try{
+      const data=await request('/api/v1/mpesa/account-summary');
+      const sub=data.subscription;
+      if(status)status.textContent=sub?.active?'Active':(sub?'Expired':'Payment required');
+      if(expiry)expiry.textContent=sub?.endsAt?'Valid until '+new Date(sub.endsAt).toLocaleDateString('en-KE'):(sub?'Subscription expired or inactive':'Pay KSh 100 monthly or KSh 900 yearly to unlock services.');
+      if(remaining)remaining.textContent=Number(data.receiptsRemaining||0).toLocaleString('en-KE');
+      if(balance)balance.textContent=money(data.balanceKes);
+      if(remainder)remainder.textContent=Number(data.walletRemainderKes||0)>0?money(data.walletRemainderKes)+' carried forward':'No unused wallet fraction';
+      if(message)message.textContent=sub?.active?'Your subscription is active. Each issued receipt automatically deducts KSh 4 and updates this count.': 'Pay your existing subscription fee to unlock services. Then top up the receipt wallet to issue receipts.';
+    }catch(error){if(message)message.textContent=error.message||'Could not load your subscription balance.';}
   }
   // Put the existing M-Pesa subscription/top-up form behind compact dashboard tabs.
   const dashboardPaymentSlot = $('dashboard-payment-form-slot');
@@ -708,6 +724,7 @@
         if (current.status === 'success') {
           message.textContent = 'Payment confirmed successfully' + (current.receiptNumber ? ' · M-Pesa receipt: ' + current.receiptNumber : '') + '. Your AURORA subscription or wallet has been updated.';
           showNotice('Tuma payment confirmed successfully.');
+          await loadSubscriptionBalance();
           return;
         }
         if (current.status === 'failed') {
