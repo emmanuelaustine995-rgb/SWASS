@@ -664,22 +664,17 @@
       requestAnimationFrame(() => team?.scrollIntoView({behavior:'smooth',block:'center'}));
     });
   }
-  document.querySelectorAll('[data-payment-purpose]').forEach(tab => tab.addEventListener('click', () => {
-    const purpose = tab.dataset.paymentPurpose;
-    const selector = $('owner-mpesa-purpose');
-    if (selector) selector.value = purpose;
-    if (purpose === 'subscription' && $('owner-subscription-plan')) $('owner-subscription-plan').value = tab.dataset.subscriptionPlan || 'monthly';
-    syncTumaFields();
-    $('dashboard-payment-intro').textContent = purpose === 'subscription' ? 'Subscription payment: confirm your plan and amount, enter the M-Pesa number, then approve the STK prompt on your phone.' : 'Receipt wallet top-up: enter an amount of at least KSh 4, add your M-Pesa number, then approve the STK prompt on your phone.';
-    dashboardPaymentPanel?.classList.remove('hidden');
-    document.querySelectorAll('[data-payment-purpose]').forEach(item => item.classList.toggle('active', item === tab));
-    dashboardPaymentPanel?.scrollIntoView({behavior:'smooth',block:'nearest'});
+  function openSubscriptionPayment(purpose,plan){
+    if($('owner-mpesa-purpose'))$('owner-mpesa-purpose').value=purpose;
+    if(purpose==='subscription'&&$('owner-subscription-plan'))$('owner-subscription-plan').value=plan||'monthly';
+    syncTumaFields();$('subscription-overview-view')?.classList.add('hidden');$('subscription-payment-view')?.classList.remove('hidden');$('subscription-payment-success')?.classList.add('hidden');$('owner-mpesa-form')?.classList.remove('hidden');
+    $('subscription-payment-title').textContent=purpose==='subscription'?(plan==='yearly'?'Yearly Subscription · KSh 900':'Monthly Subscription · KSh 100'):'Buy Receipt Credits · KSh 4 each';
+    $('subscription-payment-intro').textContent=purpose==='subscription'?'Enter your M-Pesa number and approve the STK prompt.':'Enter the amount you want to spend. Every KSh 4 buys one receipt.';
     $('owner-mpesa-phone')?.focus({preventScroll:true});
-  }));
-  $('dashboard-payment-close')?.addEventListener('click', () => {
-    dashboardPaymentPanel?.classList.add('hidden');
-    document.querySelectorAll('[data-payment-purpose]').forEach(item => item.classList.remove('active'));
-  });
+  }
+  document.querySelectorAll('[data-payment-purpose]').forEach(tab=>{tab.addEventListener('click',()=>openSubscriptionPayment(tab.dataset.paymentPurpose,tab.dataset.subscriptionPlan||'monthly'));});
+  function closeSubscriptionPayment(){ $('subscription-payment-view')?.classList.add('hidden');$('subscription-overview-view')?.classList.remove('hidden');$('subscription-payment-success')?.classList.add('hidden');$('owner-mpesa-form')?.classList.remove('hidden');void loadSubscriptionBalance(); }
+  $('subscription-payment-back')?.addEventListener('click',closeSubscriptionPayment);$('subscription-success-back')?.addEventListener('click',closeSubscriptionPayment);$('dashboard-payment-close')?.addEventListener('click',closeSubscriptionPayment);
   // Tuma subscription and wallet payments
   const tumaForm = $('owner-mpesa-form');
   const tumaPurpose = $('owner-mpesa-purpose');
