@@ -278,11 +278,12 @@
     const secondhandVisible=!$('secondhand-panel')?.classList.contains('hidden');
     const modalOpen=['checkout-modal','receipt-modal','receipt-recovery-modal'].some(id=>$(id)&&!$(id).classList.contains('hidden'));
     const workspaceOpen=!!$('workspace-nav')&&!$('workspace-nav').classList.contains('hidden');
-    const nested=modalOpen||secondhandVisible||(posVisible&&$('pos-view')?.classList.contains('workspace-issue-mode'));
-    const hasBack=!!state.token&&workspaceOpen&&state.currentWorkspace!=='dashboard';
+    const issueStep=posVisible&&$('pos-view')?.classList.contains('workspace-issue-mode');
+    const shopResults=shopVisible&&$('shop-product-results')&&!$('shop-product-results').classList.contains('hidden');
+    // Back is only for moving within a multi-step task, never for switching workspaces.
+    const hasBack=!!state.token&&workspaceOpen&&(modalOpen||secondhandVisible||issueStep||shopResults);
     button.classList.toggle('hidden',!hasBack);
-    const previous=state.workspaceHistory[state.workspaceHistory.length-1];
-    button.textContent=modalOpen?'← Back':secondhandVisible?'← Receipts':nested?'← Back':previous?('← '+({dashboard:'Home',receipts:'Receipts',profile:'Profile',shop:'Shop',subscription:'Subscription','lost-goods':'Lost Goods'}[previous]||'Back')):'← Back';
+    button.textContent=secondhandVisible?'← Back to Receipts':'← Back';
     button.setAttribute('aria-label',button.textContent.replace('← ','Go back to '));
   }
   function goBackWorkspace(){
