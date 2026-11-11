@@ -1622,3 +1622,17 @@ body.workspace-active #shop-lost-items-panel:not(.hidden){
     background:#ffe3e3!important;
   }
 }
+
+
+/* Full viewport Flagged Items theme: colour the page behind the centred panel too. */
+@supports selector(body:has(#shop-lost-items-panel:not(.hidden))){
+  body.workspace-active:has(#shop-lost-items-panel:not(.hidden)),
+  body.workspace-active:has(#shop-lost-items-panel:not(.hidden)) .shell{
+    background:linear-gradient(125deg,#ffe1e1 0%,#ffd0d0 38%,#fff0ec 70%,#ffcaca 100%)!important;
+    background-size:300% 300%!important;
+    animation:auroraFlaggedPageFade 7s ease-in-out infinite!important;
+  }
+  body.workspace-active:has(#shop-lost-items-panel:not(.hidden)) #shop-lost-items-panel:not(.hidden){
+    background:transparent!important;
+  }
+}
