@@ -173,7 +173,6 @@
     <button id="open-issue-receipt" class="receipt-choice" type="button"><span aria-hidden="true">＋</span><strong>Issue Receipt</strong><small>Record a sale and create a customer receipt</small></button>
     <button id="open-recover-receipt" class="receipt-choice" type="button"><span aria-hidden="true">↗</span><strong>Verify Receipt</strong><small>Verify an ordinary sales receipt using customer details</small></button>
   </div>
-  <div class="secondhand-receipt-entry-label"><p class="eyebrow">SPECIAL RECEIPTS</p></div>
       <button id="secondhand-open-card" class="secondhand-entry-card" type="button">
         <span class="secondhand-entry-icon" aria-hidden="true">🛡️</span>
         <span class="secondhand-entry-copy"><strong>Sales Declaration Form</strong><small>Record the seller, buyer and product details and issue a signed declaration to both parties.</small></span>
@@ -277,18 +276,7 @@
       </section>
 <section id="owner-dashboard-view" class="hidden">
 <section id="profile-panel" class="profile-panel hidden">
-</section><details id="owner-staff-area" class="owner-staff-area profile-invite-card profile-card panel"><summary class="profile-card-summary"><span><span class="eyebrow">03 · TEAM</span><strong>Invite Vendor / Freelancer</strong><small>Invite staff and manage team access</small></span><span class="profile-card-chevron" aria-hidden="true">⌄</span></summary><div class="profile-card-body"><div class="owner-staff-tabs" role="tablist" aria-label="Staff management"><button type="button" class="owner-staff-tab active" role="tab" aria-selected="true" aria-controls="staff-invitations-panel" data-staff-tab="list">Staff list</button><button type="button" class="owner-staff-tab" role="tab" aria-selected="false" aria-controls="owner-staff-performance" data-staff-tab="performance">Staff performance</button></div><section id="staff-invitations-panel" class="panel">
-  <div class="section-head"><div><h2>Invite Vendor / Freelancer</h2><p class="muted small">The business owner pays a one-time KSh 50 activation fee for each Vendor. Freelancers are free.</p></div><button id="show-staff-invite-form" class="btn btn-primary" type="button" aria-expanded="false">＋ Send invitation</button></div>
-  <form id="staff-invite-form" class="form-two hidden">
-    <label>Vendor / freelancer full name<input id="staff-invite-name" maxlength="120" autocomplete="name" required placeholder="Full name"></label>
-    <label>Email address<input id="staff-invite-email" type="email" maxlength="254" autocomplete="email" required placeholder="name@example.com"></label>
-    <label>Phone number<input id="staff-invite-phone" type="tel" inputmode="tel" autocomplete="tel" required placeholder="07XX XXX XXX"></label>
-    <label>Invitation type<select id="staff-invite-role" required><option>Vendor</option><option>Freelancer</option></select></label>
-    <div class="form-actions"><button id="create-staff-invite" class="btn btn-primary" type="submit">Invite and pay KSh 50 for Vendor</button><button id="cancel-staff-invite" class="btn btn-secondary" type="button">Cancel</button></div>
-  </form>
-  <p id="staff-invite-message" class="muted small" role="status"></p>
-  <div id="staff-invitations-list" class="history-list"><div class="empty">Loading invitations…</div></div>
-</section><section id="owner-staff-performance" class="panel hidden"><div class="panel-heading"><div><h2>Staff performance</h2><p class="muted">Daily and month-to-date results for shop activity.</p></div><span class="channel-period">Today · MTD</span></div><div class="table-scroll"><table><thead><tr><th>Staff member</th><th>Today receipts</th><th>Today sales</th><th>MTD receipts</th><th>MTD sales</th></tr></thead><tbody id="owner-cashier-rows"><tr><td colspan="5">Loading staff performance…</td></tr></tbody></table></div><p id="owner-staff-performance-message" class="muted small" role="status">MTD means from the 1st of this month to today.</p></section></div></details>
+</section>
       <section id="dashboard-business-card" class="panel dashboard-business-card hidden" aria-label="Business profile"><div class="dashboard-business-identity"><img id="dashboard-profile-image" alt="Business profile photo" class="dashboard-profile-image hidden"><div><p class="eyebrow">BUSINESS PROFILE</p><h2 id="dashboard-profile-name">Complete your business profile</h2><p id="dashboard-profile-meta" class="muted small">Add your business details and logo to personalise AURORA E-RECEIPT receipts.</p></div></div><div id="dashboard-shop-photos" class="dashboard-shop-photos hidden"><figure><img id="dashboard-shop-inside-photo" class="dashboard-shop-photo hidden" alt="Inside of registered shop"><figcaption>Inside shop</figcaption></figure><figure><img id="dashboard-shop-outside-photo" class="dashboard-shop-photo hidden" alt="Outside of registered shop"><figcaption>Outside shop</figcaption></figure></div><button id="dashboard-edit-profile" class="btn btn-primary" type="button">Complete business profile</button></section><div class="page-heading"><div><h1>Sales performance</h1><p class="muted">View sales results, daily trends and comparisons with previous periods.</p></div><div class="date-filter"><label>From<input id="owner-date-from" type="date"></label><label>To<input id="owner-date-to" type="date"></label><button id="owner-refresh-btn" class="btn btn-primary">Refresh</button></div></div><p id="owner-notice" class="notice hidden"></p>
 <div class="dashboard-layout">
 
