@@ -5,7 +5,7 @@
   <meta name="theme-color" content="#075bd8"><meta name="description" content="AURORA E-RECEIPT by E-Tech: professional digital receipts, sales records and customer management.">
   <link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./swass-icon.svg" type="image/svg+xml"><title>AURORA E-RECEIPT | E-Tech</title>
   <link rel="stylesheet" href="./styles.css?v=aurora-dashboard-neat-20261111">
-  <link rel="stylesheet" href="./dashboard.css?v=aurora-home-clean-20261111">
+  <link rel="stylesheet" href="./dashboard.css?v=aurora-receipt-steps-20261111">
 </head>
 <body>
   <header class="topbar"><a class="brand" href="#" aria-label="AURORA E-RECEIPT PLATFORM"><span>AURORA E-RECEIPT PLATFORM</span></a><div class="topbar-actions"></div></header>
@@ -214,16 +214,16 @@
 </section>
 <section id="pos-view" class="hidden">
       
-      <div class="page-heading"><div><button id="back-to-receipts" class="btn btn-light" type="button">← Back to Receipts</button><p class="eyebrow">ISSUE RECEIPT</p><h1>New sale</h1><p class="muted small">Add a product, add more if needed, or continue to customer details.</p></div></div>
+      <div class="page-heading"><div><button id="back-to-receipts" class="btn btn-light" type="button">← Back to Receipts</button><p class="eyebrow">ISSUE RECEIPT</p><h1>New sale</h1><p class="muted small">Step 1: Add products. Step 2: Issue the receipt and enter customer details.</p></div></div>
       <div id="notice" class="notice hidden" role="status"></div>
       <div class="pos-grid">
         <section id="products-panel" class="hidden" aria-hidden="true"><span id="product-count">0 items</span><input id="product-search" type="search"><input id="low-stock" type="checkbox"><div id="product-list"></div><button id="refresh-btn" type="button"></button><button id="clear-catalogue-btn" type="button"></button></section>
         <section class="panel cart-panel">
-          <div class="section-head"><div><p class="eyebrow">ISSUE RECEIPT</p><h2>Product Details</h2><p class="muted small">Add one or more goods to this receipt.</p></div><button id="clear-cart" class="text-btn" type="button">Clear</button></div>
+          <div class="section-head"><div><p class="eyebrow">STEP 1 OF 2</p><h2>Add products</h2><p class="muted small">Add one or more goods to this receipt.</p></div><button id="clear-cart" class="text-btn" type="button">Clear</button></div>
           <button id="receipt-add-product-toggle" class="btn btn-light receipt-add-product-tab" type="button" aria-expanded="false">＋ Add Product</button>
           <form id="product-form" class="simple-sale-item-form hidden"><label>Product name<input id="product-name" required maxlength="160" placeholder="Enter product name"></label><label>Product price (KSh)<input id="product-price" type="number" min="1" step="1" required inputmode="numeric" placeholder="Enter selling price"></label><input id="product-date" type="hidden"><label>IMEI / serial number <span class="muted small">(optional)</span><div class="simple-serial-row"><input id="product-serial-1" maxlength="80" placeholder="Enter IMEI or serial number"><button type="button" class="btn btn-light btn-small" data-scan-field="product-serial-1">Scan</button></div></label><input id="product-cost" type="hidden" value="0"><input id="product-stock" type="hidden" value="1"><input id="product-reorder" type="hidden" value="1"><input id="product-buyer-id" type="checkbox" class="hidden"><p id="product-error" class="error" role="alert"></p><button class="btn btn-primary btn-small add-sale-product-btn" type="submit">＋ Add product</button></form>
           <div id="cart-list" class="cart-list"><div class="empty">No products added yet. Tap Add Product to begin.</div></div>
-          <div class="receipt-product-actions"><button id="checkout-open" class="btn btn-primary compact-next-btn" type="button" disabled>Continue to customer details →</button></div>
+          <div class="receipt-product-actions"><button id="checkout-open" class="btn btn-primary compact-next-btn" type="button" disabled>2 · Issue Receipt →</button></div>
           <div class="totals"><div><span>Subtotal</span><strong id="subtotal">KSh 0</strong></div><label class="discount-line"><span>Discount (KSh)</span><input id="discount" type="number" min="0" step="1" value="0" inputmode="numeric"></label><div class="grand-total"><span>Total due</span><strong id="total">KSh 0</strong></div></div>
           <p class="tiny muted">A KSh 4 receipt processing fee is charged to the shop wallet by the API.</p>
         </section>
