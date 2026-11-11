@@ -29,7 +29,7 @@ export class LostItemsController {
   @Get() @Roles('owner','manager')
   async list(@Req() req:any){
     const [t,s]=this.scope(req.user);
-    const {rows}=await this.db.pool.query(`SELECT li.id,li.item_code AS "itemCode",li.item_name AS "itemName",li.brand,li.model,li.colour,li.description,li.imei_1 AS "imei1",li.imei_2 AS "imei2",li.serial_number AS "serialNumber",li.purchase_date AS "purchaseDate",li.receipt_reference AS "receiptReference",li.ob_number AS "obNumber",li.status,li.lost_at AS "lostAt",li.created_at AS "createdAt",COUNT(r.id)::int AS "reportCount" FROM lost_items li LEFT JOIN lost_item_reports r ON r.lost_item_id=li.id WHERE li.tenant_id=$1 AND li.store_id=$2 GROUP BY li.id ORDER BY li.created_at DESC LIMIT 200`,[t,s]);
+    const {rows}=await this.db.pool.query(`SELECT li.id,li.item_code AS "itemCode",li.item_name AS "itemName",li.brand,li.model,li.colour,li.description,li.imei_1 AS "imei1",li.imei_2 AS "imei2",li.serial_number AS "serialNumber",li.purchase_date AS "purchaseDate",li.receipt_reference AS "receiptReference",li.ob_number AS "obNumber",li.status,li.lost_at AS "lostAt",li.created_at AS "createdAt",COUNT(r.id)::int AS "reportCount" FROM lost_items li LEFT JOIN lost_item_reports r ON r.lost_item_id=li.id WHERE li.tenant_id=$1 AND li.store_id=$2 AND li.status='lost' GROUP BY li.id ORDER BY li.created_at DESC LIMIT 200`,[t,s]);
     return {items:rows};
   }
   @Post() @Roles('owner','manager')
