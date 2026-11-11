@@ -1166,3 +1166,28 @@ body.aurora-lost-alarm #shop-lost-items-panel .lost-item-check-result{
   border:2px solid #b91c1c!important;
   color:#7f1d1d!important;
 }
+
+
+/* AURORA subscription: three softly fading cards and a dedicated payment page */
+.subscription-choice-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin:16px 0}
+.subscription-choice-card{min-width:0;padding:17px;border-radius:19px;border:1px solid rgba(255,255,255,.72);box-shadow:0 9px 25px rgba(23,55,100,.12);background-size:260% 260%;animation:auroraSubscriptionFade 12s ease-in-out infinite;display:flex;flex-direction:column;gap:10px}
+.subscription-choice-card h2{font-size:19px;margin:0;color:#102b4b}.subscription-choice-card>p:not(.eyebrow){font-size:12px;color:#405a72;line-height:1.45;margin:0}
+.subscription-plan-card{background-image:linear-gradient(130deg,#e5f2ff,#a9d5ff,#edf7ff,#9bcaff)}
+.subscription-buy-card{background-image:linear-gradient(130deg,#e8fff2,#9ce8c0,#f0fff6,#a8edc9);animation-delay:-4s}
+.subscription-balance-card{background-image:linear-gradient(130deg,#fff2df,#ffd19a,#fff8e9,#ffdda9);animation-delay:-8s}
+.subscription-choice-action{width:100%;display:flex;justify-content:space-between;align-items:center;gap:8px;text-align:left;border:1px solid rgba(36,100,160,.18);border-radius:12px;padding:11px;background:rgba(255,255,255,.78);color:#143b62;cursor:pointer}
+.subscription-choice-action span{display:grid;gap:3px}.subscription-choice-action strong{font-size:14px}.subscription-choice-action small{font-size:11px}.subscription-choice-action b{font-size:11px;white-space:nowrap}
+.receipt-unit-price{display:flex;align-items:baseline;gap:7px;margin:7px 0}.receipt-unit-price strong{font-size:30px;color:#12613d}.receipt-unit-price span{font-size:12px;color:#37674d}
+.subscription-main-action{margin-top:auto;padding:12px;border:0;border-radius:12px;background:#14764b;color:white;font-weight:800;cursor:pointer}
+.subscription-count-number{font-size:38px;font-weight:900;line-height:1.05;color:#7a4200;font-variant-numeric:tabular-nums}
+.subscription-count-meta{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid rgba(130,83,20,.16);font-size:12px;color:#674a27}.subscription-count-meta strong{color:#55330d}
+.subscription-expiry-countdown{display:grid;gap:4px;padding:10px;border-radius:12px;background:rgba(255,255,255,.65);color:#70420e;font-size:11px}.subscription-expiry-countdown strong{font-size:17px;font-variant-numeric:tabular-nums}.subscription-expiry-countdown small{font-size:10px}
+.subscription-balance-card #subscription-balance-message{margin:0;font-size:10px}
+.subscription-payment-view{max-width:520px;margin:8px auto;padding:17px;border:1px solid #d6e6f5;border-radius:18px;background:linear-gradient(145deg,#f7fbff,#e9f5ff);box-shadow:0 12px 35px rgba(25,76,125,.12)}
+.subscription-payment-view h1{font-size:23px;margin:8px 0}.subscription-back-button{border:0;background:transparent;color:#1768a8;font-weight:800;padding:8px 0;cursor:pointer}
+.subscription-payment-view #dashboard-payment-form-slot>section{display:block!important;margin:12px 0 0!important}
+.subscription-payment-view #owner-mpesa-form{display:grid;gap:12px}
+.subscription-payment-success{text-align:center;padding:22px 12px}.subscription-success-mark{width:62px;height:62px;margin:0 auto 12px;border-radius:50%;display:grid;place-items:center;background:#dcfce7;color:#15803d;font-size:36px;font-weight:900}.subscription-payment-success h2{color:#166534;margin:8px}.subscription-payment-success p{line-height:1.6;color:#285b3d}
+@keyframes auroraSubscriptionFade{0%,100%{background-position:0% 50%;filter:saturate(.94) brightness(.98)}50%{background-position:100% 50%;filter:saturate(1.16) brightness(1.05)}}
+@media(max-width:760px){.subscription-choice-grid{grid-template-columns:1fr;gap:10px}.subscription-choice-card{padding:14px}.subscription-choice-card h2{font-size:17px}.subscription-payment-view{margin:6px 0;padding:14px}}
+@media(prefers-reduced-motion:reduce){.subscription-choice-card{animation:none}}
