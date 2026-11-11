@@ -1244,3 +1244,15 @@ body.aurora-lost-alarm #shop-lost-items-panel .lost-item-check-result{
 .topbar .brand{color:#87ceeb!important;text-shadow:none!important;animation:auroraWordmarkFade 7s ease-in-out infinite!important}
 @keyframes auroraWordmarkFade{0%,100%{color:#b8e7ff}50%{color:#65b9e8}}
 @media(prefers-reduced-motion:reduce){.topbar,.topbar .brand{animation:none!important}.topbar .brand{color:#87ceeb!important}}
+
+
+/* Back control sits in its own row directly below the AURORA header. */
+.global-back-row{display:none;position:relative;z-index:1200;width:100%;max-width:980px;margin:0 auto;padding:7px 14px 0;box-sizing:border-box;justify-content:flex-start}
+body.workspace-active .global-back-row:has(.global-back-dock:not(.hidden)){display:flex!important}
+body.workspace-active .global-back-dock:not(.hidden){
+ display:inline-flex!important;position:relative!important;inset:auto!important;z-index:1201!important;
+ align-items:center!important;justify-content:center!important;min-height:38px!important;padding:8px 17px!important;
+ border:1px solid #a8d8f3!important;border-radius:999px!important;background:#dff2ff!important;
+ color:#174b70!important;font:750 13px system-ui,sans-serif!important;box-shadow:0 2px 7px rgba(24,85,125,.10)!important;
+ backdrop-filter:none!important
+}
