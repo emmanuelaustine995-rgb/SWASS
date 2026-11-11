@@ -66,7 +66,7 @@ export class LostItemsController {
   async updateStatus(@Req() req:any,@Param('id') id:string,@Body() b:any){
     const [t,s]=this.scope(req.user);const status=String(b?.status||'');
     if(!['registered','lost','found','recovered','closed'].includes(status))throw new BadRequestException('Choose a valid item status');
-    const {rows}=await this.db.pool.query(`UPDATE lost_items SET status=$4,lost_at=CASE WHEN $4='lost' THEN COALESCE(lost_at,now()) ELSE lost_at END,recovered_at=CASE WHEN $4='recovered' THEN now() ELSE recovered_at END,updated_at=now() WHERE id=$1 AND tenant_id=$2 AND store_id=$3 RETURNING id,status`,[id,t,s,status]);
+    const {rows}=await this.db.pool.query(`UPDATE lost_items SET status=$4,lost_at=CASE WHEN $4='lost' THEN COALESCE(lost_at,now()) ELSE lost_at END,recovered_at=CASE WHEN $4 IN ('found','recovered') THEN now() ELSE recovered_at END,updated_at=now() WHERE id=$1 AND tenant_id=$2 AND store_id=$3 RETURNING id,status`,[id,t,s,status]);
     if(!rows[0])throw new BadRequestException('Item not found');return {item:rows[0]};
   }
 }
