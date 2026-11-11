@@ -1527,3 +1527,18 @@ html body.workspace-active #pos-view.workspace-issue-mode .receipt-product-actio
 .shop-add-product-disclosure>summary small{font-size:10px;font-weight:600;opacity:.9;text-align:right}
 .shop-add-product-disclosure[open]>summary{border-radius:10px 10px 0 0}
 .shop-add-product-disclosure .shop-add-products{padding:12px;border:1px solid #d9e8f4;border-top:0;border-radius:0 0 10px 10px;background:#f8fbff}
+
+
+/* Shop cards open their own details; avoid a separate blue search tab/button. */
+.shop-add-product-disclosure>summary{
+  min-height:0!important;padding:7px 2px!important;border-radius:0!important;
+  background:transparent!important;color:#174b73!important;box-shadow:none!important;
+}
+.shop-add-product-disclosure>summary strong{font-size:15px!important;color:#174b73!important}
+.shop-add-product-disclosure>summary small{color:#58758d!important;opacity:1!important}
+.shop-add-product-disclosure[open]>summary{border-radius:0!important}
+.shop-add-product-disclosure .shop-add-products{padding:10px 0 0!important;border:0!important;border-radius:0!important;background:transparent!important}
+.shop-search-disclosure{cursor:pointer}
+.shop-search-disclosure>summary{list-style:none;cursor:pointer}
+.shop-search-disclosure>summary::-webkit-details-marker{display:none}
+.shop-search-disclosure .shop-product-search-form{margin-top:10px}
