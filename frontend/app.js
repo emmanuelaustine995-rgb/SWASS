@@ -218,7 +218,7 @@
       if($('referral-remainder'))$('referral-remainder').textContent=money(data.rewardRemainderKes);
       $('referral-receipts-available').textContent=Math.floor(Math.max(0,Number(data.availableKes)||0)/4).toLocaleString('en-KE');
       $('referral-link').value=data.referralLink||'';const qr=$('referral-qr');if(qr){qr.innerHTML='';if(data.referralLink&&window.QRCode){new QRCode(qr,{text:data.referralLink,width:144,height:144,correctLevel:QRCode.CorrectLevel.M});}}
-      $('referral-message').textContent='Earn 50% after a referred shop owner’s first successful subscription and 50% of each paid KSh 50 vendor activation. Every full KSh 4 redeems one receipt; any smaller balance stays in your reward balance.';
+      $('referral-message').textContent='Your available reward has been converted into receipt credits. Tap Redeem to add them to your receipt wallet.';
       const history=await request('/api/v1/referrals/transactions');
       const earningsList=$('referral-earning-history');
       if(earningsList){
@@ -279,7 +279,7 @@
     const modalOpen=['checkout-modal','receipt-modal','receipt-recovery-modal'].some(id=>$(id)&&!$(id).classList.contains('hidden'));
     const workspaceOpen=!!$('workspace-nav')&&!$('workspace-nav').classList.contains('hidden');
     const nested=modalOpen||secondhandVisible||(posVisible&&$('pos-view')?.classList.contains('workspace-issue-mode'));
-    const hasBack=!!state.token&&workspaceOpen&&(nested||state.workspaceHistory.length>0);
+    const hasBack=!!state.token&&workspaceOpen;
     button.classList.toggle('hidden',!hasBack);
     const previous=state.workspaceHistory[state.workspaceHistory.length-1];
     button.textContent=modalOpen?'← Back':secondhandVisible?'← Receipts':nested?'← Back':previous?('← '+({dashboard:'Home',receipts:'Receipts',profile:'Profile',shop:'Shop',subscription:'Subscription','lost-goods':'Lost Goods'}[previous]||'Back')):'← Back';
@@ -318,7 +318,7 @@
     if(!$('shop-home')?.classList.contains('hidden')){
       if($('shop-product-results')&&!$('shop-product-results').classList.contains('hidden')){$('shop-product-results').classList.add('hidden');syncGlobalBackButton();return;}
     }
-    goBackWorkspace();syncGlobalBackButton();
+    if(!goBackWorkspace()){const fallback=state.currentWorkspace==='dashboard'?'receipts':'dashboard';showWorkspaceScreen(fallback,{fromBack:true});}syncGlobalBackButton();
   });
   function showWorkspaceScreen(screen,options={}){
     if(!state.token){showLogin();return;}
