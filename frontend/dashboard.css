@@ -1283,3 +1283,36 @@ body.workspace-active #referral-card .referral-share-row button{min-height:40px!
 .referral-qr{width:144px;min-height:144px;display:grid;place-items:center}.referral-qr img,.referral-qr canvas{display:block;max-width:144px;height:auto}
 body.workspace-active #referral-card #referral-message{font-size:11px!important;margin:7px 0 0!important}
 @media(max-width:520px){.referral-qr-area{gap:9px;padding:8px 10px}.referral-qr{width:124px;min-height:124px}.referral-qr img,.referral-qr canvas{max-width:124px}.referral-qr-area span{font-size:10px}}
+
+
+/* Simple, colourful Refer & Earn cards */
+.referral-area{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:12px 0 16px}
+.referral-area>.panel{position:relative;overflow:hidden;margin:0;padding:17px;border:1px solid transparent;border-radius:17px;box-shadow:0 8px 22px #102b4518}
+.referral-earn-card{background:linear-gradient(135deg,#eff6ff,#dbeafe 55%,#bfdbfe);border-color:#93c5fd!important;color:#153e75}
+.referral-earn-card h2,.referral-invite-card h2{margin:3px 0 8px;font-size:19px;color:inherit}
+.referral-earn-card>p:not(.eyebrow){margin:0;color:#315a86;font-size:13px;line-height:1.5}
+.referral-earn-card .eyebrow{color:#2563a6}
+.referral-simple-icon{float:right;display:grid;place-items:center;width:39px;height:39px;border-radius:13px;background:#2563eb;color:white;font-size:22px;box-shadow:0 5px 14px #2563eb40}
+.referral-conversion-note{display:inline-block;margin-top:13px;padding:7px 10px;border-radius:20px;background:#fff9;color:#174a84;font-size:11px;font-weight:800}
+.referral-balance-card{background:linear-gradient(135deg,#ecfdf5,#d1fae5 55%,#a7f3d0);border-color:#6ee7b7!important;color:#065f46}
+.referral-balance-card .eyebrow{color:#047857}
+.referral-balance-number{display:flex;align-items:baseline;gap:8px;margin:7px 0 0}
+.referral-balance-number strong{font-size:36px;line-height:1;color:#047857}
+.referral-balance-number span{font-size:12px;font-weight:800;color:#166b50}
+.referral-balance-caption{margin:6px 0 12px;color:#28745a;font-size:11px}
+.referral-redeem-btn{width:100%;background:linear-gradient(110deg,#047857,#10b981);color:#fff;font-weight:900;box-shadow:0 5px 14px #05966935}
+.referral-redeem-btn:disabled{opacity:.55}
+.referral-balance-card #referral-message{margin:8px 0 0;color:#236b54;font-size:10px;line-height:1.35}
+.referral-invite-card{grid-column:1/-1;background:linear-gradient(120deg,#fff7ed,#ffedd5 52%,#fce7f3);border-color:#fdba74!important;color:#854d0e}
+.referral-invite-head{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.referral-invite-card .eyebrow{color:#b45309}
+.referral-qr{display:grid;place-items:center;flex:0 0 112px;width:112px;height:112px;padding:7px;background:white;border:1px solid #fed7aa;border-radius:12px}
+.referral-qr img,.referral-qr canvas{display:block;max-width:100%;height:auto}
+.referral-share-row{display:flex;gap:8px;margin-top:12px}
+.referral-share-row input{flex:1;min-width:0;color:#533b27;background:#fff;border:1px solid #fdba74}
+.referral-share-row button{background:linear-gradient(110deg,#ea580c,#db2777);color:#fff;white-space:nowrap}
+.referral-hidden-data{display:none!important}
+@media(max-width:560px){.referral-area{grid-template-columns:1fr;gap:9px;margin:8px 0 12px}.referral-area>.panel{padding:13px;border-radius:14px}.referral-earn-card h2,.referral-invite-card h2{font-size:17px}.referral-balance-number strong{font-size:31px}.referral-invite-head{gap:10px}.referral-qr{width:100px;height:100px;flex-basis:100px}.referral-share-row{flex-direction:row}.referral-share-row input{font-size:11px;padding:8px}.referral-share-row button{width:auto;padding:8px 10px;font-size:11px}}
+.global-back-row{display:flex;align-items:center;max-width:1240px;margin:7px auto 0;padding:0 20px;min-height:40px}
+.global-back-btn{margin-left:0;background:linear-gradient(110deg,#075bd8,#087c79);border:0;box-shadow:0 4px 12px #075bd833}
+@media(max-width:430px){.global-back-row{padding:0 12px;margin-top:5px;min-height:36px}.global-back-btn{min-height:34px;padding:6px 12px}}
