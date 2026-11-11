@@ -680,7 +680,7 @@
     const status=$('subscription-status'),remaining=$('subscription-receipts-remaining'),balance=$('subscription-wallet-balance'),expiry=$('subscription-expiry'),remainder=$('subscription-wallet-remainder'),message=$('subscription-balance-message');
     if(message)message.textContent='Refreshing subscription and receipt balance…';
     try{
-      const data=await request('/api/v1/mpesa/account-summary');
+      const data=await request('/api/v1/mpesa/account-summary',{cache:'no-store'});
       const sub=data.subscription;
       if(status)status.textContent=sub?.active?'Active':(sub?'Expired':'Payment required');
       if(expiry)expiry.textContent=sub?.endsAt?'Expires: '+new Date(sub.endsAt).toLocaleString('en-KE'):(sub?'Subscription expired or inactive':'No active subscription');
