@@ -1191,3 +1191,30 @@ body.aurora-lost-alarm #shop-lost-items-panel .lost-item-check-result{
 @keyframes auroraSubscriptionFade{0%,100%{background-position:0% 50%;filter:saturate(.94) brightness(.98)}50%{background-position:100% 50%;filter:saturate(1.16) brightness(1.05)}}
 @media(max-width:760px){.subscription-choice-grid{grid-template-columns:1fr;gap:10px}.subscription-choice-card{padding:14px}.subscription-choice-card h2{font-size:17px}.subscription-payment-view{margin:6px 0;padding:14px}}
 @media(prefers-reduced-motion:reduce){.subscription-choice-card{animation:none}}
+
+
+/* AURORA SUBSCRIPTION: three clearly separated, full-width colour cards */
+#subscription-home #subscription-overview-view{display:block!important;width:100%!important;max-width:760px!important;margin:0 auto!important;padding:4px 0 24px!important}
+#subscription-home .subscription-heading{margin:0 0 18px!important}
+#subscription-home .subscription-choice-grid{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:16px!important;width:100%!important;margin:16px 0!important;align-items:stretch!important}
+#subscription-home .subscription-choice-card{display:flex!important;flex-direction:column!important;gap:12px!important;width:100%!important;min-width:0!important;min-height:180px!important;padding:22px!important;border:1px solid rgba(255,255,255,.82)!important;border-radius:22px!important;box-shadow:0 14px 32px rgba(3,18,45,.24),inset 0 1px 0 rgba(255,255,255,.65)!important;background-size:300% 300%!important;color:#102b4b!important;overflow:hidden!important;animation:auroraSubscriptionCardFlow 11s ease-in-out infinite!important}
+#subscription-home .subscription-plan-card{background-image:linear-gradient(125deg,#d9ecff 0%,#8fc5ff 35%,#f0f8ff 68%,#a6d3ff 100%)!important}
+#subscription-home .subscription-buy-card{background-image:linear-gradient(125deg,#d9ffea 0%,#83dfad 35%,#f1fff6 68%,#9be8bd 100%)!important;animation-delay:-3.5s!important}
+#subscription-home .subscription-balance-card{background-image:linear-gradient(125deg,#fff0d6 0%,#ffc879 35%,#fff9ed 68%,#ffdaa0 100%)!important;animation-delay:-7s!important}
+#subscription-home .subscription-choice-card .eyebrow{color:#234e75!important;font-weight:900!important}
+#subscription-home .subscription-choice-card h2{font-size:21px!important;color:#102b4b!important}
+#subscription-home .subscription-choice-card>p:not(.eyebrow){font-size:13px!important;color:#294861!important}
+#subscription-home .subscription-choice-action{display:flex!important;width:100%!important;min-height:58px!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;padding:12px 15px!important;border:1px solid rgba(24,75,120,.18)!important;border-radius:14px!important;background:rgba(255,255,255,.82)!important;color:#153d61!important;box-shadow:0 4px 12px rgba(21,62,99,.08)!important}
+#subscription-home .subscription-choice-action span{display:grid!important;gap:3px!important}
+#subscription-home .subscription-choice-action strong{font-size:15px!important}
+#subscription-home .subscription-choice-action small{font-size:12px!important}
+#subscription-home .subscription-choice-action b{font-size:12px!important;white-space:nowrap!important}
+#subscription-home .subscription-main-action{width:100%!important;min-height:50px!important;border:0!important;border-radius:14px!important;background:#12613d!important;color:#fff!important;font-weight:900!important;box-shadow:0 6px 16px rgba(18,97,61,.2)!important}
+#subscription-home .receipt-unit-price strong{font-size:38px!important;color:#12613d!important}
+#subscription-home .subscription-count-number{font-size:48px!important;line-height:1.05!important;font-weight:900!important;color:#7c4300!important}
+#subscription-home .subscription-count-meta,#subscription-home .subscription-expiry-countdown{display:flex!important;justify-content:space-between!important;align-items:center!important;gap:10px!important;padding:9px 0!important;border-top:1px solid rgba(124,67,0,.16)!important;color:#593b1c!important}
+#subscription-home .subscription-expiry-countdown{display:grid!important;grid-template-columns:1fr auto!important}
+#subscription-home .subscription-expiry-countdown small{grid-column:1/-1!important}
+@keyframes auroraSubscriptionCardFlow{0%,100%{background-position:0% 50%;filter:saturate(1)}50%{background-position:100% 50%;filter:saturate(1.13)}}
+@media(max-width:600px){#subscription-home .subscription-choice-grid{gap:13px!important}#subscription-home .subscription-choice-card{min-height:160px!important;padding:17px!important;border-radius:19px!important}#subscription-home .subscription-choice-card h2{font-size:19px!important}}
+@media(prefers-reduced-motion:reduce){#subscription-home .subscription-choice-card{animation:none!important}}
