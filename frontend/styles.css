@@ -1772,3 +1772,30 @@ body.workspace-active:before{
 @media(prefers-reduced-motion:reduce){
   html,body{animation:none!important;background-position:50% 50%!important}
 }
+
+
+/* Keep the global creamy-yellow outer background visible on Shop and Flagged Items too. */
+@supports selector(body:has(#shop-home:not(.hidden))){
+  body.workspace-active:has(#shop-home:not(.hidden)),
+  body.workspace-active:has(#shop-home:not(.hidden)) .shell{
+    background:linear-gradient(125deg,#fff8df 0%,#fff1c2 35%,#fff6d9 68%,#ffefb8 100%)!important;
+    background-size:260% 260%!important;
+    animation:auroraCreamyYellowFade 32s ease-in-out infinite!important;
+  }
+  body.workspace-active:has(#shop-home:not(.hidden)):before{display:none!important;background:transparent!important}
+}
+@supports selector(body:has(#shop-lost-items-panel:not(.hidden))){
+  body.workspace-active:has(#shop-lost-items-panel:not(.hidden)),
+  body.workspace-active:has(#shop-lost-items-panel:not(.hidden)) .shell{
+    background:linear-gradient(125deg,#fff8df 0%,#fff1c2 35%,#fff6d9 68%,#ffefb8 100%)!important;
+    background-size:260% 260%!important;
+    animation:auroraCreamyYellowFade 32s ease-in-out infinite!important;
+  }
+  body.workspace-active:has(#shop-lost-items-panel:not(.hidden)):before{display:none!important;background:transparent!important}
+}
+@media(prefers-reduced-motion:reduce){
+  body.workspace-active:has(#shop-home:not(.hidden)),
+  body.workspace-active:has(#shop-lost-items-panel:not(.hidden)){
+    animation:none!important;
+  }
+}
