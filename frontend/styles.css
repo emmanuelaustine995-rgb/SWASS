@@ -1265,3 +1265,14 @@ body.workspace-active .global-back-dock:not(.hidden){
   background:#e4f2fc!important;color:#245b80!important;border:1px solid #c2deef!important;
   font-size:12px!important;font-weight:750!important;box-shadow:none!important;opacity:1!important
 }
+
+
+/* Disable old sticky full-width Continue bar on the Issue Receipt screen. */
+html body.workspace-active #pos-view.workspace-issue-mode #checkout-open{
+ position:static!important;bottom:auto!important;top:auto!important;left:auto!important;
+ width:auto!important;min-width:0!important;display:inline-flex!important;
+ box-shadow:none!important;transform:none!important
+}
+html body.workspace-active #pos-view.workspace-issue-mode .receipt-product-actions{
+ position:static!important;bottom:auto!important;box-shadow:none!important
+}
