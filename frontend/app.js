@@ -673,6 +673,7 @@
     });
   }
   function openSubscriptionPayment(purpose,plan){
+    $('subscription-home')?.classList.add('is-payment-page');
     if($('owner-mpesa-purpose'))$('owner-mpesa-purpose').value=purpose;
     if(purpose==='subscription'&&$('owner-subscription-plan'))$('owner-subscription-plan').value=plan||'monthly';
     syncTumaFields();$('subscription-overview-view')?.classList.add('hidden');$('subscription-payment-view')?.classList.remove('hidden');$('subscription-payment-success')?.classList.add('hidden');$('owner-mpesa-form')?.classList.remove('hidden');
@@ -681,7 +682,7 @@
     $('owner-mpesa-phone')?.focus({preventScroll:true});
   }
   document.querySelectorAll('[data-payment-purpose]').forEach(tab=>{tab.addEventListener('click',()=>openSubscriptionPayment(tab.dataset.paymentPurpose,tab.dataset.subscriptionPlan||'monthly'));});
-  function closeSubscriptionPayment(){ $('subscription-payment-view')?.classList.add('hidden');$('subscription-overview-view')?.classList.remove('hidden');$('subscription-payment-success')?.classList.add('hidden');$('owner-mpesa-form')?.classList.remove('hidden');void loadSubscriptionBalance(); }
+  function closeSubscriptionPayment(){ $('subscription-home')?.classList.remove('is-payment-page');$('subscription-payment-view')?.classList.add('hidden');$('subscription-overview-view')?.classList.remove('hidden');$('subscription-payment-success')?.classList.add('hidden');$('owner-mpesa-form')?.classList.remove('hidden');void loadSubscriptionBalance(); }
   $('subscription-payment-back')?.addEventListener('click',closeSubscriptionPayment);$('subscription-success-back')?.addEventListener('click',closeSubscriptionPayment);$('dashboard-payment-close')?.addEventListener('click',closeSubscriptionPayment);
   // Tuma subscription and wallet payments
   const tumaForm = $('owner-mpesa-form');
