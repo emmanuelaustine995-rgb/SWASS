@@ -631,6 +631,13 @@
     }catch(e){$('checkout-error').textContent=e.message;}
     finally{btn.disabled=false;btn.textContent='Issue receipt';}
   }
+  let subscriptionCountdownTimer=null;
+  function updateSubscriptionCountdown(endsAt){
+    const output=$('subscription-expiry-countdown');if(subscriptionCountdownTimer)clearInterval(subscriptionCountdownTimer);if(!output)return;
+    const expiry=endsAt?new Date(endsAt).getTime():NaN;
+    const tick=()=>{if(!Number.isFinite(expiry)){output.textContent='Not active';return;}const left=expiry-Date.now();if(left<=0){output.textContent='Expired';return;}const d=Math.floor(left/86400000),h=Math.floor(left%86400000/3600000),m=Math.floor(left%3600000/60000),sec=Math.floor(left%60000/1000);output.textContent=d+'d '+h+'h '+m+'m '+sec+'s';};
+    tick();subscriptionCountdownTimer=window.setInterval(tick,1000);
+  }
   async function loadSubscriptionBalance(){
     if(!['owner','manager'].includes(state.role))return;
     const status=$('subscription-status'),remaining=$('subscription-receipts-remaining'),balance=$('subscription-wallet-balance'),expiry=$('subscription-expiry'),remainder=$('subscription-wallet-remainder'),message=$('subscription-balance-message');
@@ -639,7 +646,8 @@
       const data=await request('/api/v1/mpesa/account-summary');
       const sub=data.subscription;
       if(status)status.textContent=sub?.active?'Active':(sub?'Expired':'Payment required');
-      if(expiry)expiry.textContent=sub?.endsAt?'Valid until '+new Date(sub.endsAt).toLocaleDateString('en-KE'):(sub?'Subscription expired or inactive':'Pay KSh 100 monthly or KSh 900 yearly to unlock services.');
+      if(expiry)expiry.textContent=sub?.endsAt?'Expires: '+new Date(sub.endsAt).toLocaleString('en-KE'):(sub?'Subscription expired or inactive':'No active subscription');
+      updateSubscriptionCountdown(sub?.endsAt);
       if(remaining)remaining.textContent=Number(data.receiptsRemaining||0).toLocaleString('en-KE');
       if(balance)balance.textContent=money(data.balanceKes);
       if(remainder)remainder.textContent=Number(data.walletRemainderKes||0)>0?money(data.walletRemainderKes)+' carried forward':'No unused wallet fraction';
@@ -717,10 +725,11 @@
         await new Promise(resolve => setTimeout(resolve, 3000));
         const current = await request('/api/v1/mpesa/payments/' + encodeURIComponent(started.paymentId));
         if (current.status === 'success') {
-          message.textContent = 'Payment confirmed successfully' + (current.receiptNumber ? ' · M-Pesa receipt: ' + current.receiptNumber : '') + '. Your AURORA subscription or wallet has been updated.';
-          showNotice('Tuma payment confirmed successfully.');
           await loadSubscriptionBalance();
-          return;
+          const plan=$('owner-subscription-plan')?.value||'monthly';const amount=Number(payload.amountKes||0);const count=Math.floor(amount/4);
+          const confirmation=purpose==='subscription'?'Congratulations! You have paid for your '+plan+' subscription.':'Congratulations! You have bought '+count.toLocaleString('en-KE')+' receipt'+(count===1?'':'s')+' for '+money(amount)+'.';
+          $('subscription-payment-success-message').textContent=confirmation+(current.receiptNumber?' M-Pesa receipt: '+current.receiptNumber+'.':'');$('subscription-payment-success')?.classList.remove('hidden');$('owner-mpesa-form')?.classList.add('hidden');
+          message.textContent=confirmation;showNotice('Payment confirmed successfully.');return;
         }
         if (current.status === 'failed') {
           message.textContent = 'Tuma reports that this payment was not completed. You can try again.';
