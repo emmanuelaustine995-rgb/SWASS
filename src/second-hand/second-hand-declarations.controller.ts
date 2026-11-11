@@ -92,15 +92,20 @@ export class SecondHandPhoneDeclarationsController {
     if (imei1.length > 40 || (imei2 && imei2.length > 40)) throw new BadRequestException('Product identifier is too long.');
     const lostIds=[imei1,imei2||'',serialNumber||''].map(v=>v.toUpperCase().replace(/[^A-Z0-9]/g,'')).filter(v=>v.length>=6);
     if(lostIds.length){
-      const match=await this.db.pool.query(`SELECT li.item_code AS "itemCode",li.item_name AS "itemName",u.full_name AS "registeredByName",u.email AS "registeredByEmail",u.phone AS "registeredByPhone"
+      const match=await this.db.pool.query(`SELECT li.item_code AS "itemCode",li.item_name AS "itemName",li.brand,li.model,li.colour,li.ob_number AS "obNumber",li.lost_at AS "lostAt",u.full_name AS "registeredByName",u.email AS "registeredByEmail",u.phone AS "registeredByPhone"
         FROM lost_items li LEFT JOIN users u ON u.id=li.registered_by WHERE li.status='lost' AND (
           upper(regexp_replace(COALESCE(li.imei_1,''),'[^A-Za-z0-9]','','g'))=ANY($1::text[]) OR upper(regexp_replace(COALESCE(li.imei_2,''),'[^A-Za-z0-9]','','g'))=ANY($1::text[]) OR upper(regexp_replace(COALESCE(li.serial_number,''),'[^A-Za-z0-9]','','g'))=ANY($1::text[])
         ) ORDER BY li.lost_at DESC NULLS LAST LIMIT 1`,[lostIds]);
       if(match.rows[0]){
-        const lost=match.rows[0],warning=`AURORA ALERT: The ${lost.itemName||phoneMakeModel} (reference ${lost.itemCode}) has been recorded as LOST. Do not complete this sale until ownership is verified with the relevant authorities.`;
+        const shopResult=await this.db.pool.query(`SELECT t.name AS "shopName",t.phone AS "shopPhone",t.email AS "shopEmail",s.name AS "branchName",s.location AS "shopLocation" FROM tenants t JOIN stores s ON s.tenant_id=t.id WHERE t.id=$1 AND s.id=$2 LIMIT 1`,[user.tenantId,user.storeId]);
+        const shop=shopResult.rows[0]||{};
+        const matchedIdentifier=lostIds[0]||'not supplied';
+        const warning=`URGENT AURORA LOST ITEM ALERT. ${lost.itemName||phoneMakeModel} (${lost.brand||''} ${lost.model||''} ${lost.colour||''}) reference ${lost.itemCode} is recorded as LOST. Matched IMEI/serial: ${matchedIdentifier}. OB number: ${lost.obNumber||'not supplied'}. Reported lost on: ${lost.lostAt?new Date(lost.lostAt).toISOString():'not recorded'}. Attempting shop: ${shop.shopName||'not available'} / ${shop.branchName||'branch unavailable'} at ${shop.shopLocation||'location unavailable'}. Attempted second-hand seller: ${sellerName}, phone ${sellerPhone}. Buyer: ${buyerName}, phone ${buyerPhone}. The transaction has been blocked. Do not confront anyone; preserve this information and contact the appropriate authorities.`;
         const tasks:Promise<any>[]=[];
         if(lost.registeredByEmail)tasks.push(this.email.sendLostItemAlert({to:lost.registeredByEmail,recipientName:lost.registeredByName||'AURORA user',itemName:lost.itemName||phoneMakeModel,itemCode:lost.itemCode,warning}));
         if(lost.registeredByPhone)tasks.push(this.whatsapp.sendText({to:lost.registeredByPhone,text:warning}));
+        if(shop.shopEmail)tasks.push(this.email.sendLostItemAlert({to:shop.shopEmail,recipientName:shop.shopName||'Shop owner',itemName:lost.itemName||phoneMakeModel,itemCode:lost.itemCode,warning}));
+        if(shop.shopPhone)tasks.push(this.whatsapp.sendText({to:shop.shopPhone,text:warning}));
         if(buyerEmail)tasks.push(this.email.sendLostItemAlert({to:buyerEmail,recipientName:buyerName,itemName:lost.itemName||phoneMakeModel,itemCode:lost.itemCode,warning}));
         if(buyerPhone)tasks.push(this.whatsapp.sendText({to:buyerPhone,text:warning}));
         await Promise.allSettled(tasks);
