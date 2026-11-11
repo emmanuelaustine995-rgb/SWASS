@@ -1469,3 +1469,11 @@ html body.workspace-active #receipts-home .receipt-actions-grid .receipt-choice{
 /* Align Sales Declaration Form content to the left like the other receipt cards. */
 html body.workspace-active #receipts-home .receipt-actions-grid .declaration-choice{display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:flex-start!important;text-align:left!important;}
 html body.workspace-active #receipts-home .receipt-actions-grid .declaration-choice strong,html body.workspace-active #receipts-home .receipt-actions-grid .declaration-choice small{display:block!important;width:100%!important;text-align:left!important;margin-left:0!important;margin-right:0!important;}
+
+
+/* Receipts: replace hard card borders with soft shadow-defined edges. */
+html body.workspace-active #receipts-home .receipt-actions-grid .receipt-choice{
+  border:0!important;
+  outline:0!important;
+  box-shadow:0 0 0 1px rgba(128,166,198,.20),0 5px 16px rgba(31,73,108,.14)!important;
+}
