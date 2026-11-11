@@ -15,9 +15,9 @@ export class LostItemsController {
   async checkIdentifier(@Req() req:any,@Query('identifier') identifier?:string){
     const normalized=String(identifier||'').trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
     if(normalized.length<6||normalized.length>40)throw new BadRequestException('Enter a valid IMEI or serial number (at least 6 characters).');
-    const {rows}=await this.db.pool.query(`SELECT item_code AS "itemCode",item_name AS "itemName",brand,model,colour,status FROM lost_items WHERE status='lost' AND (
-      upper(regexp_replace(COALESCE(imei_1,''),'[^A-Za-z0-9]','','g'))=$1 OR upper(regexp_replace(COALESCE(imei_2,''),'[^A-Za-z0-9]','','g'))=$1 OR upper(regexp_replace(COALESCE(serial_number,''),'[^A-Za-z0-9]','','g'))=$1
-    ) ORDER BY lost_at DESC NULLS LAST LIMIT 1`,[normalized]);
+    const {rows}=await this.db.pool.query(`SELECT li.item_code AS "itemCode",li.item_name AS "itemName",li.brand,li.model,li.colour,li.description,li.ob_number AS "obNumber",li.status,li.lost_at AS "lostAt",u.full_name AS "registeredByName",u.phone AS "registeredByPhone",t.name AS "registeredShop",s.location AS "registeredLocation",s.name AS "registeredBranch" FROM lost_items li LEFT JOIN users u ON u.id=li.registered_by LEFT JOIN tenants t ON t.id=li.tenant_id LEFT JOIN stores s ON s.id=li.store_id AND s.tenant_id=li.tenant_id WHERE li.status='lost' AND (
+      upper(regexp_replace(COALESCE(li.imei_1,''),'[^A-Za-z0-9]','','g'))=$1 OR upper(regexp_replace(COALESCE(li.imei_2,''),'[^A-Za-z0-9]','','g'))=$1 OR upper(regexp_replace(COALESCE(li.serial_number,''),'[^A-Za-z0-9]','','g'))=$1
+    ) ORDER BY li.lost_at DESC NULLS LAST LIMIT 1`,[normalized]);
     if(!rows[0])return {match:false};
     const item=rows[0];
     const {rows:searcherRows}=await this.db.pool.query('SELECT full_name AS name,phone FROM users WHERE id=$1 LIMIT 1',[req.user.sub]);
