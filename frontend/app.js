@@ -1192,6 +1192,10 @@
     state.posReturnScreen=null;
     syncGlobalBackButton();
   });
+  $('shop-add-receipt-card')?.addEventListener('click',()=>{
+    showWorkspaceScreen('receipts');
+    $('open-issue-receipt')?.click();
+  });
   $('open-issue-receipt').addEventListener('click',()=>{
     $('receipts-home').classList.add('hidden');$('pos-view').classList.remove('hidden');$('pos-view').classList.add('workspace-issue-mode');state.posReturnScreen='receipts';
     document.querySelector('.pos-grid')?.classList.remove('hidden');$('history-panel').classList.add('hidden');$('owner-customers-section')?.classList.add('hidden');document.querySelector('.customer-lookup-panel')?.classList.add('hidden');$('products-panel').classList.add('hidden');
