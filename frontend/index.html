@@ -4,8 +4,8 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#075bd8"><meta name="description" content="AURORA E-RECEIPT by E-Tech: professional digital receipts, sales records and customer management.">
   <link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./swass-icon.svg" type="image/svg+xml"><title>AURORA E-RECEIPT | E-Tech</title>
-  <link rel="stylesheet" href="./styles.css?v=aurora-lost-goods-cards-20261111c">
-  <link rel="stylesheet" href="./dashboard.css?v=aurora-lost-goods-cards-20261111c">
+  <link rel="stylesheet" href="./styles.css?v=aurora-lost-goods-cards-20261111d">
+  <link rel="stylesheet" href="./dashboard.css?v=aurora-lost-goods-cards-20261111d">
 </head>
 <body>
   <header class="topbar"><a class="brand" href="#" aria-label="AURORA E-RECEIPT PLATFORM"><span>AURORA E-RECEIPT PLATFORM</span></a><div class="topbar-actions"></div></header>
@@ -234,8 +234,8 @@
     </section>
 <section id="shop-lost-items-panel" class="shop-lost-items-panel hidden">
         <div id="lost-goods-cards" class="lost-goods-cards" aria-label="Lost Goods actions">
-          <button type="button" class="lost-goods-card lost-card-register" data-lost-section="register"><span class="lost-card-number">01</span><strong>Register Lost Goods</strong><small>Report a lost phone, electronic or valuable item</small></button>
-          <button type="button" class="lost-goods-card lost-card-found" data-lost-section="found"><span class="lost-card-number">02</span><strong>Mark as Found</strong><small>Find a registered item and remove it from the active lost register</small></button>
+          <button type="button" class="lost-goods-card lost-card-register" data-lost-owner-only data-lost-section="register"><span class="lost-card-number">01</span><strong>Register Lost Goods</strong><small>Report a lost phone, electronic or valuable item</small></button>
+          <button type="button" class="lost-goods-card lost-card-found" data-lost-owner-only data-lost-section="found"><span class="lost-card-number">02</span><strong>Mark as Found</strong><small>Find a registered item and remove it from the active lost register</small></button>
           <button type="button" class="lost-goods-card lost-card-check" data-lost-section="check"><span class="lost-card-number">03</span><strong>Check Before Purchase</strong><small>Check an IMEI or serial number before buying or selling</small></button>
         </div>
         <section class="panel lost-item-checker hidden" id="lost-item-checker" data-lost-panel="check"><h2>Check an IMEI before buying or selling</h2><p class="muted small">Check AURORA's lost-item register before accepting a second-hand phone.</p><form id="lost-item-check-form" class="lost-item-check-form"><label>IMEI / serial number<input id="lost-item-check-value" maxlength="40" autocomplete="off" required placeholder="Enter or scan IMEI / serial"></label><button class="btn btn-primary" type="submit">Check identifier</button></form><div id="lost-item-check-result" role="status" aria-live="assertive" class="lost-item-check-result hidden"></div><button id="lost-item-alarm-ack" type="button" class="btn btn-light btn-small hidden">Acknowledge alarm</button></section>
@@ -318,6 +318,6 @@
   <footer class="footer" aria-label="AURORA by E-tech"><span>AURORA</span></footer>
   <script src="./config.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script src="./app.js?v=aurora-lost-goods-cards-20261111c"></script>
+  <script src="./app.js?v=aurora-lost-goods-cards-20261111d"></script>
   <script src="./dashboard.js"></script>
 </body></html>
