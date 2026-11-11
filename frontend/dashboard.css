@@ -1459,3 +1459,9 @@ html body.workspace-active #receipts-home .receipt-actions-grid .receipt-choice{
 #shop-home .shop-add-product-entry{width:100%;min-height:64px;display:flex;align-items:center;justify-content:flex-start;text-align:left;box-sizing:border-box;cursor:pointer;font:inherit;color:inherit;background:#fff;border:1px solid #e5eaf1;border-radius:16px;padding:0 16px;margin:14px 0;box-shadow:0 5px 18px rgba(30,60,90,.06)}
 #shop-home .shop-add-product-entry .shop-directory-heading{display:flex;align-items:center;width:100%;margin:0;padding:15px 2px}
 #shop-home .shop-add-product-entry #shop-directory-title{font-size:19px;font-weight:800;color:#26384d}
+
+/* AURORA Shop: single, non-expandable creamy-pink Add Product action card. */
+#shop-home button.shop-add-product-entry{background:#f9e3e8!important;border:1px solid #efc6d1!important;color:#65414b!important;box-shadow:0 4px 12px rgba(150,85,105,.10)!important;border-radius:16px!important;min-height:64px!important;}
+#shop-home button.shop-add-product-entry:hover,#shop-home button.shop-add-product-entry:focus-visible{background:#f5d7df!important;}
+#shop-home button.shop-add-product-entry #shop-directory-title{color:#704653!important;}
+#shop-home button.shop-add-product-entry small{display:none!important;}
