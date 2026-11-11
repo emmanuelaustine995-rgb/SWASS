@@ -279,7 +279,7 @@
     const modalOpen=['checkout-modal','receipt-modal','receipt-recovery-modal'].some(id=>$(id)&&!$(id).classList.contains('hidden'));
     const workspaceOpen=!!$('workspace-nav')&&!$('workspace-nav').classList.contains('hidden');
     const nested=modalOpen||secondhandVisible||(posVisible&&$('pos-view')?.classList.contains('workspace-issue-mode'));
-    const hasBack=!!state.token&&workspaceOpen;
+    const hasBack=!!state.token&&workspaceOpen&&state.currentWorkspace!=='dashboard';
     button.classList.toggle('hidden',!hasBack);
     const previous=state.workspaceHistory[state.workspaceHistory.length-1];
     button.textContent=modalOpen?'← Back':secondhandVisible?'← Receipts':nested?'← Back':previous?('← '+({dashboard:'Home',receipts:'Receipts',profile:'Profile',shop:'Shop',subscription:'Subscription','lost-goods':'Lost Goods'}[previous]||'Back')):'← Back';
@@ -318,7 +318,7 @@
     if(!$('shop-home')?.classList.contains('hidden')){
       if($('shop-product-results')&&!$('shop-product-results').classList.contains('hidden')){$('shop-product-results').classList.add('hidden');syncGlobalBackButton();return;}
     }
-    if(!goBackWorkspace()){const fallback=state.currentWorkspace==='dashboard'?'receipts':'dashboard';showWorkspaceScreen(fallback,{fromBack:true});}syncGlobalBackButton();
+    if(!goBackWorkspace()){showWorkspaceScreen('dashboard',{fromBack:true});}syncGlobalBackButton();
   });
   function showWorkspaceScreen(screen,options={}){
     if(!state.token){showLogin();return;}
