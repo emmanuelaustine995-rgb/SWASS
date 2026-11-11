@@ -1322,7 +1322,7 @@ body.workspace-active #referral-card #referral-message{font-size:11px!important;
 #owner-home .owner-home-card{border:1px solid #cfe4f5!important;border-radius:20px!important;background:linear-gradient(135deg,#f1f8ff 0%,#e5f3ff 48%,#fff8ee 100%)!important;box-shadow:0 12px 28px rgba(21,75,119,.12)!important}
 #owner-home .referral-earn-card{background:linear-gradient(135deg,#d9edff,#8fcaff 55%,#edf7ff)!important;border:1px solid #a8d5f4!important;box-shadow:0 12px 28px rgba(20,95,155,.15)!important}
 #owner-home .referral-balance-card{background:linear-gradient(135deg,#d9ffeb,#8ee3b7 55%,#f2fff7)!important;border:1px solid #a8e8c4!important;box-shadow:0 12px 28px rgba(22,130,80,.14)!important}
-#owner-home .referral-scan-card{background:linear-gradient(135deg,#fff0d8,#ffc879 55%,#fff9ed)!important;border:1px solid #f0cf9d!important;box-shadow:0 12px 28px rgba(156,99,28,.14)!important}
+#owner-home .referral-invite-card{background:linear-gradient(135deg,#fff0d8,#ffc879 55%,#fff9ed)!important;border:1px solid #f0cf9d!important;box-shadow:0 12px 28px rgba(156,99,28,.14)!important}
 #owner-home .referral-area>article{border-radius:20px!important;overflow:hidden!important}
 #owner-home .referral-area h2{font-weight:850!important;letter-spacing:-.02em!important}
 #owner-home .referral-area button{border-radius:12px!important;box-shadow:0 5px 14px rgba(18,60,95,.12)!important}
