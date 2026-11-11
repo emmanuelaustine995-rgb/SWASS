@@ -137,7 +137,9 @@ export class ReceiptsService {
       const protectedProducts=productIds.length?await this.db.pool.query('SELECT id,requires_buyer_id FROM products WHERE id=ANY($1::uuid[]) AND tenant_id=$2 AND store_id=$3',[productIds,user.tenantId,user.storeId]):{rows:[] as any[]};
       const protectedIds=new Set(protectedProducts.rows.filter((p:any)=>p.requires_buyer_id).map((p:any)=>p.id));
       for(const line of dto.items||[]){
-        const requiresIdentifier=!!line.requiresBuyerId||(!!line.productId&&protectedIds.has(line.productId));
+        const productName=String(line.name||'').toLowerCase();
+        const isIdentifierTrackedProduct=/\b(phone|mobile|smartphone|iphone|ipad|tablet|laptop|notebook|computer|desktop|television|tv|camera|watch|console|electronics?)\b/.test(productName);
+        const requiresIdentifier=!!line.requiresBuyerId||(!!line.productId&&protectedIds.has(line.productId))||isIdentifierTrackedProduct;
         const identifier=String(line.serialNo||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
         if(requiresIdentifier&&(identifier.length<6||line.qty!==1)){
           throw new BadRequestException('AURORA lost-item protection: enter a separate IMEI / serial number for every protected phone or electronic item before issuing the receipt.');
