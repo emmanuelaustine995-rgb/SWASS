@@ -1740,3 +1740,35 @@ body:before{
 @media(prefers-reduced-motion:reduce){
   body,body:before{animation:none!important}
 }
+
+
+/* AURORA global page background: soft creamy yellow across login and every page. */
+@keyframes auroraCreamyYellowFade{
+  0%,100%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+}
+html,body{
+  min-height:100%;
+  background:linear-gradient(125deg,#fff8df 0%,#fff1c2 28%,#fff6d9 55%,#ffefb8 78%,#fff8df 100%)!important;
+  background-size:240% 240%!important;
+  animation:auroraCreamyYellowFade 32s ease-in-out infinite!important;
+}
+body.workspace-active,
+body:not(.workspace-active),
+body.workspace-active .shell,
+.shell{
+  background:transparent!important;
+}
+body:before,
+body.workspace-active:before{
+  background:transparent!important;
+  animation:none!important;
+}
+.topbar{
+  background:transparent!important;
+  border-color:transparent!important;
+  box-shadow:none!important;
+}
+@media(prefers-reduced-motion:reduce){
+  html,body{animation:none!important;background-position:50% 50%!important}
+}
