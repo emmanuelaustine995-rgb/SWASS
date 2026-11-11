@@ -134,8 +134,8 @@ export class ReceiptsService {
       // Resolve catalogue protection flags on the server. Every protected unit must
       // carry its own IMEI/serial before a receipt can be issued.
       const productIds=[...new Set((dto.items||[]).map(i=>i.productId).filter((v):v is string=>!!v))];
-      const protectedProducts=productIds.length?await this.db.pool.query('SELECT id,requires_buyer_id FROM products WHERE id=ANY($1::uuid[]) AND tenant_id=$2 AND store_id=$3',[productIds,user.tenantId,user.storeId]):{rows:[] as any[]};
-      const protectedIds=new Set(protectedProducts.rows.filter((p:any)=>p.requires_buyer_id).map((p:any)=>p.id));
+      const protectedProducts=productIds.length?await this.db.pool.query('SELECT id,name,requires_buyer_id FROM products WHERE id=ANY($1::uuid[]) AND tenant_id=$2 AND store_id=$3',[productIds,user.tenantId,user.storeId]):{rows:[] as any[]};
+      const protectedIds=new Set(protectedProducts.rows.filter((p:any)=>p.requires_buyer_id||/\\b(phone|mobile|smartphone|iphone|ipad|tablet|laptop|notebook|computer|desktop|television|tv|camera|watch|console|electronics?)\\b/i.test(String(p.name||''))).map((p:any)=>p.id));
       for(const line of dto.items||[]){
         const productName=String(line.name||'').toLowerCase();
         const isIdentifierTrackedProduct=/\b(phone|mobile|smartphone|iphone|ipad|tablet|laptop|notebook|computer|desktop|television|tv|camera|watch|console|electronics?)\b/.test(productName);
