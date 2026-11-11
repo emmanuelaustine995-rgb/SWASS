@@ -1444,3 +1444,13 @@ html body.workspace-active #receipts-home .receipt-actions-grid .receipt-choice{
   body.workspace-active #owner-home .referral-redeem-btn{min-height:30px!important;padding:5px 10px!important;font-size:10px!important}
   body.workspace-active #owner-home #referral-message{font-size:9px!important;line-height:1.15!important;margin:2px 0 0!important}
 }
+
+
+/* Shop: keep product entry fields collapsed until the Add Products card is tapped. */
+.shop-add-product-disclosure{margin-top:10px;border:0!important;border-radius:12px;background:rgba(255,255,255,.58);overflow:hidden}
+.shop-add-product-disclosure>summary{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:48px;padding:11px 14px;list-style:none;cursor:pointer;color:#155b91;font-weight:750}
+.shop-add-product-disclosure>summary::-webkit-details-marker{display:none}
+.shop-add-product-disclosure>summary:after{content:"＋";font-size:19px;font-weight:800}
+.shop-add-product-disclosure[open]>summary:after{content:"−"}
+.shop-add-product-disclosure>summary small{margin-left:auto;color:#718096;font-size:11px;font-weight:500}
+.shop-add-product-disclosure .shop-add-products{padding:4px 14px 14px}
