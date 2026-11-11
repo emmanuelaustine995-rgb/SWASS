@@ -1675,29 +1675,30 @@ body.workspace-active:has(#shop-lost-items-panel:not(.hidden)) .shell{
 #shop-lost-items-panel .lost-goods-card.lost-card-active small{color:#557487!important}
 
 
-/* AURORA workspace: rich, softly fading purple backdrop across every page. */
+/* Muted deep-purple fade on workspace pages, excluding the Shop page. */
 @keyframes auroraMainPurpleFade{
-  0%,100%{background-position:0% 50%;filter:saturate(1) brightness(1)}
-  50%{background-position:100% 50%;filter:saturate(1.12) brightness(1.04)}
+  0%,100%{background-position:0% 50%;opacity:.94}
+  50%{background-position:100% 50%;opacity:1}
 }
 body.workspace-active{
-  background:linear-gradient(125deg,#eee5ff 0%,#d9c5ff 28%,#f4eaff 52%,#cdb2ff 76%,#eee5ff 100%)!important;
-  background-size:300% 300%!important;
-  animation:auroraMainPurpleFade 16s ease-in-out infinite!important;
+  background:linear-gradient(125deg,#24152f 0%,#30203e 27%,#3b2850 50%,#291b38 76%,#24152f 100%)!important;
+  background-size:240% 240%!important;
+  animation:auroraMainPurpleFade 24s ease-in-out infinite!important;
 }
 body.workspace-active:before{
-  content:""!important;
-  display:block!important;
-  position:fixed!important;
-  inset:0!important;
-  z-index:-1!important;
-  pointer-events:none!important;
-  background:linear-gradient(135deg,rgba(221,199,255,.42),rgba(245,232,255,.2) 48%,rgba(190,157,255,.36))!important;
-  background-size:300% 300%!important;
-  animation:auroraMainPurpleFade 16s ease-in-out infinite!important;
+  content:""!important;display:block!important;position:fixed!important;inset:0!important;
+  z-index:-1!important;pointer-events:none!important;
+  background:linear-gradient(120deg,rgba(91,57,119,.10),rgba(35,23,48,.06) 50%,rgba(105,69,132,.10))!important;
+  background-size:240% 240%!important;
+  animation:auroraMainPurpleFade 24s ease-in-out infinite!important;
 }
-body.workspace-active .shell{
-  background:transparent!important;
+body.workspace-active .shell{background:transparent!important}
+/* Shop keeps its original clean white background. */
+@supports selector(body:has(#shop-home:not(.hidden))){
+  body.workspace-active:has(#shop-home:not(.hidden)){
+    background:#f9fafb!important;animation:none!important;
+  }
+  body.workspace-active:has(#shop-home:not(.hidden)):before{display:none!important;animation:none!important}
 }
 @media(prefers-reduced-motion:reduce){
   body.workspace-active,body.workspace-active:before{animation:none!important}
