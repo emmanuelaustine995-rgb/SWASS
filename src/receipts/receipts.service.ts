@@ -141,7 +141,7 @@ export class ReceiptsService {
           const lost=match.rows[0];
           const {rows:searcherRows}=await this.db.pool.query('SELECT full_name AS name,phone FROM users WHERE id=$1 LIMIT 1',[user.sub]);
           const searcher=searcherRows[0]||{};
-          await this.db.pool.query('INSERT INTO lost_item_searches(item_code,identifier,searched_by_user_id,searched_by_phone,searched_by_name) VALUES($1,$2,$3,$4,$5)',[lost.itemCode,ids[0],String(user.sub||''),searcher.phone||null,searcher.name||null]);
+          await this.db.pool.query('INSERT INTO lost_item_searches(item_code,identifier,searched_by_user_id,searched_by_phone,searched_by_name,presented_by_name,presented_by_phone) VALUES($1,$2,$3,$4,$5,$6,$7)',[lost.itemCode,ids[0],String(user.sub||''),searcher.phone||null,searcher.name||null,String(dto.customer?.fullName||'').trim().slice(0,120)||null,String(dto.customer?.phone||'').trim().slice(0,40)||null]);
           const warning=`AURORA ALERT: ${lost.itemName||'A product'} (reference ${lost.itemCode}) is recorded as LOST. Do not complete this sale until ownership is verified with the relevant authorities.`;
           const tasks:Promise<any>[]=[];
           if(lost.registeredByEmail)tasks.push(this.emailVerification.sendLostItemAlert({to:lost.registeredByEmail,recipientName:lost.registeredByName||'AURORA user',itemName:lost.itemName||'Product',itemCode:lost.itemCode,warning}));
