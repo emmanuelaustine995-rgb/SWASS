@@ -11,7 +11,7 @@ import { WhatsAppReceiptService } from '../notifications/whatsapp-receipt.servic
 export class LostItemsController {
   constructor(private db: DbService, private email: EmailVerificationService, private whatsapp: WhatsAppReceiptService) {}
   private scope(user:any){if(!user.tenantId||!user.storeId)throw new BadRequestException('Shop details are unavailable');return [user.tenantId,user.storeId];}
-  @Get('check') @Roles('owner','manager','cashier','vendor','freelancer','customer')
+  @Get('check') @Roles('owner','manager','cashier','vendor','freelancer')
   async checkIdentifier(@Req() req:any,@Query('identifier') identifier?:string,@Query('presenterName') presenterName?:string,@Query('presenterPhone') presenterPhone?:string){
     const normalized=String(identifier||'').trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
     if(normalized.length<6||normalized.length>40)throw new BadRequestException('Enter a valid IMEI or serial number (at least 6 characters).');
