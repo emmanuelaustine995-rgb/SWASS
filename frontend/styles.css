@@ -1572,3 +1572,35 @@ html body.workspace-active #pos-view.workspace-issue-mode .receipt-product-actio
   50%{background:linear-gradient(115deg,#d8c0ff,#b995f2,#e2d0ff);box-shadow:0 8px 25px rgba(104,58,170,.28)}
 }
 @media(prefers-reduced-motion:reduce){#shop-lost-items-panel .lost-items-intro{animation:none}}
+
+
+/* AURORA layout: remove the title from the upper strip on every page,
+   while retaining a calm creamy spacer of the same height. */
+.topbar{
+  height:72px!important;
+  min-height:72px!important;
+  background:#fff0d8!important;
+  border:0!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+}
+.topbar .brand,
+.topbar .topbar-actions{
+  display:none!important;
+}
+@media(max-width:430px){.topbar{height:64px!important;min-height:64px!important;background:#fff0d8!important}}
+
+/* Flagged Items page background fades gently between warm red shades. */
+#shop-lost-items-panel{
+  background:linear-gradient(125deg,#fff0f0,#ffd6d6,#fff5f2,#ffcaca)!important;
+  background-size:300% 300%!important;
+  animation:auroraFlaggedPageFade 6s ease-in-out infinite!important;
+  border:1px solid rgba(220,38,38,.22)!important;
+  border-radius:16px!important;
+  padding:14px!important;
+}
+@keyframes auroraFlaggedPageFade{
+  0%,100%{background-position:0% 50%;box-shadow:0 5px 18px rgba(185,28,28,.08)}
+  50%{background-position:100% 50%;box-shadow:0 8px 25px rgba(185,28,28,.2)}
+}
+@media(prefers-reduced-motion:reduce){#shop-lost-items-panel{animation:none!important;background:#ffe3e3!important}}
