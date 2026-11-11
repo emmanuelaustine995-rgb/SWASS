@@ -377,6 +377,9 @@
       }
     }else if(screen==='receipts'){
       receiptHome?.classList.remove('hidden');
+      // Receipt history lives inside the Receipts workspace. The global workspace
+      // reset hides nested panels, so explicitly restore it whenever Receipts opens.
+      history?.classList.remove('hidden');
       if(state.role==='cashier'){staffSummary?.classList.remove('hidden');void loadStaffSalesSummary();}
       $('open-recover-receipt')?.classList.remove('hidden');
       $('secondhand-open-card')?.classList.toggle('hidden',state.role!=='owner');
