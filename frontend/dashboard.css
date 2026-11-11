@@ -1481,3 +1481,34 @@ html body.workspace-active #receipts-home .receipt-actions-grid .receipt-choice{
   outline:0!important;
   box-shadow:0 0 0 1px rgba(128,166,198,.20),0 5px 16px rgba(31,73,108,.14)!important;
 }
+
+
+/* Shop cards: matching wider touch targets and a larger, consistent card height. */
+#shop-home details.shop-add-product-entry,
+#shop-home details.loan-items-card{
+  width:100%!important;
+  min-height:88px!important;
+  box-sizing:border-box!important;
+  border-radius:18px!important;
+}
+#shop-home details.shop-add-product-entry>summary,
+#shop-home details.loan-items-card>summary{
+  min-height:88px!important;
+  box-sizing:border-box!important;
+  padding:18px 16px!important;
+  align-content:center!important;
+}
+#shop-home details.shop-add-product-entry>summary>div,
+#shop-home details.loan-items-card>summary{
+  gap:6px!important;
+}
+#shop-home details.shop-add-product-entry #shop-directory-title,
+#shop-home details.loan-items-card>summary strong{
+  font-size:20px!important;
+  line-height:1.25!important;
+}
+#shop-home details.shop-add-product-entry>summary small,
+#shop-home details.loan-items-card>summary small{
+  font-size:13px!important;
+  line-height:1.4!important;
+}
