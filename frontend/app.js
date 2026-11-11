@@ -633,7 +633,8 @@
     // the receipt payload can never fall back to an older product price.
     priceInputs.forEach(input=>{const row=state.cart.get(input.dataset.price);if(row)row.unitPriceKes=Number(input.value);});
     const t=totals(); const needsBuyer=true;
-    if(items.some(r=>r.product.requiresBuyerId&&!((Array.isArray(r.serials)&&r.serials.some(v=>String(v||'').trim()))||String(r.imei||'').trim()))){$('checkout-error').textContent='Enter the IMEI / serial number for each item that requires buyer identification.';return;}
+    const needsIdentifier=p=>!!p.requiresBuyerId||/\b(phone|mobile|smartphone|iphone|ipad|tablet|laptop|notebook|computer|desktop|television|tv|camera|watch|console|electronics?)\b/i.test(String(p.name||''));
+    if(items.some(r=>needsIdentifier(r.product)&&!((Array.isArray(r.serials)&&r.serials.some(v=>String(v||'').trim()))||String(r.imei||'').trim()))){$('checkout-error').textContent='Enter the IMEI / serial number for every phone or identifiable electronic item before issuing the receipt.';return;}
     const customer={fullName:$('buyer-name').value.trim(),phone:$('buyer-phone').value.trim(),...($('buyer-email').value.trim()?{email:$('buyer-email').value.trim()}:{}),...($('buyer-id').value.trim()?{nationalId:$('buyer-id').value.trim()}:{})};
     if(!customer.fullName||!customer.phone){ $('checkout-error').textContent='Enter the customer full name and phone number to continue.';return; }
     const emailField=$('buyer-email');if(!customer.email||!emailField.checkValidity()){ $('checkout-error').textContent='Enter a valid customer email address so the receipt can be emailed.';emailField.focus();return; }
@@ -875,10 +876,13 @@
     e.preventDefault(); $('product-error').textContent='';
     const btn=$('product-form').querySelector('button[type="submit"]'); btn.disabled=true; btn.textContent='Adding item…';
     const serialValue=$('product-serial-1').value.trim();
+    const productName=$('product-name').value.trim();
+    const requiresIdentifier=/\b(phone|mobile|smartphone|iphone|ipad|tablet|laptop|notebook|computer|desktop|television|tv|camera|watch|console|electronics?)\b/i.test(productName);
+    if(requiresIdentifier&&serialValue.replace(/[^A-Za-z0-9]/g,'').length<6){$('product-error').textContent='This phone or electronic item needs its IMEI / serial number. Enter it or scan the code before adding the product.';$('product-serial-1').focus();btn.disabled=false;btn.textContent='＋ Add product';return;}
     const serials=serialValue?[serialValue]:[];
     const qty=1,price=Number($('product-price').value);
     if(!Number.isSafeInteger(price)||price<1){$('product-error').textContent='Enter a valid selling price.';btn.disabled=false;btn.textContent='＋ Add product';return;}
-    const id='direct-'+uuid(),product={id,name:$('product-name').value.trim(),priceKes:price,costKes:0,stockQty:qty,reorderLevel:0,requiresBuyerId:$('product-buyer-id').checked};
+    const id='direct-'+uuid(),product={id,name:productName,priceKes:price,costKes:0,stockQty:qty,reorderLevel:0,requiresBuyerId:$('product-buyer-id').checked||requiresIdentifier};
     state.cart.set(id,{product,qty,unitPriceKes:price,serials,imei:serials[0]||'',directSale:true});
     $('product-form').reset();$('product-stock').value='1';$('product-reorder').value='1';
     renderCart();closeSaleItemForm();showNotice('Product added. Add another product or select Issue Receipt to enter customer details.');
