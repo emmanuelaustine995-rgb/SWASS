@@ -1410,3 +1410,37 @@ html body.workspace-active #receipts-home .receipt-actions-grid .receipt-choice{
   border:0!important;
   outline:0!important;
 }
+
+
+/* Home referral order and compact phone layout: 1 Earn, 2 Invite, 3 Redeem. */
+#owner-home .referral-area{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:8px!important}
+#owner-home .referral-invite-card{grid-column:auto!important}
+@media(max-width:600px){
+  body.workspace-active #owner-home{overflow:hidden!important;overscroll-behavior:none!important}
+  body.workspace-active #owner-home .referral-area{
+    min-height:0!important;height:100%!important;max-height:100%!important;
+    display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+    grid-template-rows:repeat(3,minmax(0,1fr))!important;gap:5px!important;
+    overflow:hidden!important;margin:0!important;
+  }
+  body.workspace-active #owner-home .referral-area>.panel{
+    min-height:0!important;height:100%!important;max-height:100%!important;
+    padding:7px 9px!important;border-radius:12px!important;
+    display:flex!important;flex-direction:column!important;justify-content:center!important;
+    overflow:hidden!important;box-shadow:none!important;
+  }
+  body.workspace-active #owner-home .referral-area h2{font-size:14px!important;line-height:1.15!important;margin:2px 0!important}
+  body.workspace-active #owner-home .referral-earn-card>p:not(.eyebrow){font-size:10px!important;line-height:1.25!important;margin:2px 0!important}
+  body.workspace-active #owner-home .referral-conversion-note{font-size:9px!important;margin-top:3px!important;padding:3px 6px!important}
+  body.workspace-active #owner-home .referral-simple-icon{width:22px!important;height:22px!important;font-size:13px!important;margin:0 0 2px!important}
+  body.workspace-active #owner-home .referral-invite-head{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:7px!important}
+  body.workspace-active #owner-home .referral-qr{width:48px!important;height:48px!important;flex:0 0 48px!important}
+  body.workspace-active #owner-home .referral-share-row{display:flex!important;flex-direction:row!important;gap:5px!important;margin:4px 0 0!important}
+  body.workspace-active #owner-home .referral-share-row input{min-width:0!important;min-height:30px!important;padding:4px 6px!important;font-size:9px!important}
+  body.workspace-active #owner-home .referral-share-row button{width:auto!important;min-height:30px!important;padding:4px 7px!important;font-size:9px!important;white-space:nowrap!important}
+  body.workspace-active #owner-home .referral-balance-number strong{font-size:23px!important;line-height:1!important}
+  body.workspace-active #owner-home .referral-balance-number span,
+  body.workspace-active #owner-home .referral-balance-caption{font-size:9px!important;margin:2px 0!important}
+  body.workspace-active #owner-home .referral-redeem-btn{min-height:30px!important;padding:5px 10px!important;font-size:10px!important}
+  body.workspace-active #owner-home #referral-message{font-size:9px!important;line-height:1.15!important;margin:2px 0 0!important}
+}
