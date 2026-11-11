@@ -217,7 +217,7 @@
       $('referral-available').textContent=money(data.availableKes);
       if($('referral-remainder'))$('referral-remainder').textContent=money(data.rewardRemainderKes);
       $('referral-receipts-available').textContent=Math.floor(Math.max(0,Number(data.availableKes)||0)/4).toLocaleString('en-KE');
-      $('referral-link').value=data.referralLink||'';
+      $('referral-link').value=data.referralLink||'';const qr=$('referral-qr');if(qr){qr.innerHTML='';if(data.referralLink&&window.QRCode){new QRCode(qr,{text:data.referralLink,width:144,height:144,correctLevel:QRCode.CorrectLevel.M});}}
       $('referral-message').textContent='Earn 50% after a referred shop owner’s first successful subscription and 50% of each paid KSh 50 vendor activation. Every full KSh 4 redeems one receipt; any smaller balance stays in your reward balance.';
       const history=await request('/api/v1/referrals/transactions');
       const earningsList=$('referral-earning-history');
