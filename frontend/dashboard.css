@@ -1150,3 +1150,86 @@ body.workspace-active #owner-home>#referral-card{
  body.workspace-active #owner-home>.owner-home-card{padding:12px!important}
  body.workspace-active #owner-home>#referral-card{padding:11px!important}
 }
+
+
+/* AURORA owner home: clear hierarchy, concise rewards and no duplicate metrics. */
+body.workspace-active #owner-home{
+  display:flex!important;flex-direction:column!important;justify-content:flex-start!important;
+  align-content:initial!important;gap:10px!important;height:auto!important;min-height:0!important;
+  max-height:none!important;overflow:visible!important;padding:0 2px 18px!important;
+}
+body.workspace-active #owner-home>.dashboard-login-return-row{
+  order:0!important;display:flex!important;justify-content:flex-end!important;
+  margin:0!important;padding:0!important;min-height:0!important
+}
+body.workspace-active #owner-home>.owner-home-card{
+  order:1!important;display:block!important;min-height:0!important;height:auto!important;
+  padding:15px 16px!important;border-radius:18px!important;
+  background:linear-gradient(135deg,#ffffff 0%,#f1f8ff 100%)!important;
+  border:1px solid #dceaf4!important;box-shadow:0 8px 24px rgba(24,68,104,.08)!important
+}
+body.workspace-active #owner-home>.owner-home-card .owner-home-topline{
+  display:flex!important;align-items:center!important;justify-content:space-between!important;
+  gap:10px!important;margin:0 0 13px!important
+}
+body.workspace-active #owner-home>.owner-home-card .eyebrow{
+  color:#4285c5!important;font-size:10px!important;letter-spacing:.14em!important;font-weight:850!important
+}
+body.workspace-active #owner-home>.owner-home-card h1{
+  color:#172b40!important;font-size:clamp(22px,5vw,28px)!important;
+  font-weight:850!important;line-height:1.16!important;margin:0!important
+}
+body.workspace-active #owner-home>.owner-home-card p{
+  color:#728091!important;font-size:13px!important;line-height:1.35!important;margin:5px 0 0!important
+}
+body.workspace-active #owner-home .owner-subscription-tab{
+  flex:0 0 auto!important;min-height:38px!important;padding:8px 13px!important;
+  border-radius:999px!important;font-size:12px!important;font-weight:800!important;
+  box-shadow:0 4px 12px rgba(65,113,160,.10)!important
+}
+body.workspace-active #owner-home>#referral-card{
+  order:2!important;display:flex!important;flex-direction:column!important;gap:9px!important;
+  height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;
+  padding:14px!important;margin:0!important;border:1px solid #e4e8f2!important;
+  border-radius:18px!important;background:linear-gradient(145deg,#fff 0%,#f7f8ff 58%,#f1fbff 100%)!important;
+  box-shadow:0 8px 24px rgba(58,66,116,.07)!important;animation:none!important
+}
+body.workspace-active #referral-card:before{display:none!important}
+body.workspace-active #referral-card .referral-heading{align-items:center!important;gap:8px!important}
+body.workspace-active #referral-card .referral-heading .eyebrow{font-size:10px!important;letter-spacing:.15em!important;margin:0 0 3px!important}
+body.workspace-active #referral-card .referral-heading h2{font-size:17px!important;line-height:1.2!important;margin:0!important;color:#27365b!important}
+body.workspace-active #referral-card .referral-heading .muted{font-size:11px!important;line-height:1.35!important;margin:4px 0 0!important;color:#758095!important}
+body.workspace-active #referral-card .referral-glow-mark{
+  flex:0 0 40px!important;width:40px!important;height:40px!important;
+  border-radius:13px!important;box-shadow:none!important
+}
+body.workspace-active #referral-card .referral-share-row{display:flex!important;gap:7px!important;margin:0!important}
+body.workspace-active #referral-card .referral-share-row input{min-width:0!important;min-height:38px!important;font-size:11px!important;border-radius:10px!important}
+body.workspace-active #referral-card .referral-share-row button{min-height:38px!important;border-radius:10px!important;font-size:11px!important}
+body.workspace-active #referral-card .referral-stats{
+  display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:7px!important;margin:0!important
+}
+body.workspace-active #referral-card .referral-stats article{
+  padding:9px!important;border:1px solid #e5eaf3!important;border-radius:11px!important;background:#fff!important
+}
+body.workspace-active #referral-card .referral-stats span{font-size:10px!important;line-height:1.2!important}
+body.workspace-active #referral-card .referral-stats strong{font-size:16px!important;color:#4d5d96!important;margin-top:3px!important}
+body.workspace-active #referral-card .referral-redemption-panel{
+  display:flex!important;flex-wrap:wrap!important;align-items:center!important;justify-content:space-between!important;
+  gap:8px!important;padding:11px!important;margin:0!important;border-radius:13px!important;
+  border:1px solid #cfe4f4!important;background:linear-gradient(120deg,#eaf6ff,#f1f8ff)!important
+}
+body.workspace-active #referral-card .referral-redemption-panel>div{font-size:11px!important;line-height:1.3!important}
+body.workspace-active #referral-card .referral-redemption-panel>div>strong{font-size:25px!important;line-height:1!important;color:#176d9b!important}
+body.workspace-active #referral-card #referral-redeem{min-height:40px!important;padding:9px 13px!important;border-radius:11px!important;font-size:11px!important}
+body.workspace-active #referral-card #referral-message{font-size:10px!important;margin:0!important}
+body.workspace-active #referral-card .referral-history{margin-top:2px!important}
+@media(max-width:600px){
+ body.workspace-active #owner-home{gap:8px!important;padding-bottom:20px!important}
+ body.workspace-active #owner-home>.owner-home-card{padding:13px!important}
+ body.workspace-active #owner-home .owner-subscription-tab{min-height:34px!important;padding:7px 10px!important;font-size:11px!important}
+ body.workspace-active #referral-card .referral-stats{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ body.workspace-active #referral-card .referral-redemption-panel{align-items:stretch!important}
+ body.workspace-active #referral-card #referral-redeem{width:100%!important}
+}
