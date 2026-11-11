@@ -1118,3 +1118,35 @@ html body.workspace-active #subscription-home .subscription-expiry-countdown str
 html body.workspace-active #subscription-home .subscription-payment-view{max-width:520px!important;margin:10px auto!important;padding:18px!important;border:1px solid #d6e6f5!important;border-radius:19px!important;background:linear-gradient(145deg,#f7fbff,#e9f5ff)!important;box-shadow:0 12px 35px rgba(25,76,125,.12)!important}
 @keyframes auroraSubscriptionFade{0%,100%{background-position:0% 50%;filter:saturate(.96) brightness(1)}50%{background-position:100% 50%;filter:saturate(1.12) brightness(1.035)}}
 @media(prefers-reduced-motion:reduce){html body.workspace-active #subscription-home .subscription-choice-card{animation:none!important}}
+
+
+/* Owner dashboard: remove excess vertical space and make the return action intentional. */
+body.workspace-active #owner-home>.dashboard-login-return-row{
+  display:flex!important;justify-content:flex-end!important;align-items:center!important;
+  min-height:0!important;margin:0 0 2px!important;padding:0!important;
+}
+body.workspace-active #owner-home .dashboard-back-to-login{
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  min-height:36px!important;padding:7px 14px!important;margin:0!important;border-radius:12px!important;
+  border:1px solid #b9d8ec!important;background:linear-gradient(135deg,#eaf6ff,#d6ebfb)!important;
+  color:#20577d!important;font-size:12px!important;font-weight:800!important;
+  box-shadow:0 3px 10px rgba(31,91,133,.08)!important;
+}
+body.workspace-active #owner-home>.owner-home-card{
+  min-height:0!important;height:auto!important;max-height:none!important;
+  padding:13px 15px!important;margin:0!important;border-radius:17px!important;
+  box-shadow:0 5px 18px rgba(27,61,91,.07)!important;
+}
+body.workspace-active #owner-home>.owner-home-card .owner-home-topline{align-items:center!important;margin-bottom:8px!important}
+body.workspace-active #owner-home>.owner-home-card .eyebrow{font-size:10px!important;letter-spacing:.15em!important}
+body.workspace-active #owner-home>.owner-home-card h1{font-size:clamp(20px,4vw,25px)!important;line-height:1.2!important;margin:0!important}
+body.workspace-active #owner-home>.owner-home-card p{font-size:13px!important;line-height:1.35!important;margin:4px 0 0!important}
+body.workspace-active #owner-home>#referral-card{
+  margin:0!important;border-radius:17px!important;padding:13px!important;
+  box-shadow:0 6px 20px rgba(71,83,130,.09)!important;
+}
+@media(max-width:600px){
+ body.workspace-active #owner-home>.dashboard-login-return-row{margin-top:-4px!important;margin-bottom:0!important}
+ body.workspace-active #owner-home>.owner-home-card{padding:12px!important}
+ body.workspace-active #owner-home>#referral-card{padding:11px!important}
+}
