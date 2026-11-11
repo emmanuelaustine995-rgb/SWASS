@@ -1465,3 +1465,7 @@ html body.workspace-active #receipts-home .receipt-actions-grid .receipt-choice{
 #shop-home button.shop-add-product-entry:hover,#shop-home button.shop-add-product-entry:focus-visible{background:#f5d7df!important;}
 #shop-home button.shop-add-product-entry #shop-directory-title{color:#704653!important;}
 #shop-home button.shop-add-product-entry small{display:none!important;}
+
+/* Align Sales Declaration Form content to the left like the other receipt cards. */
+html body.workspace-active #receipts-home .receipt-actions-grid .declaration-choice{display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:flex-start!important;text-align:left!important;}
+html body.workspace-active #receipts-home .receipt-actions-grid .declaration-choice strong,html body.workspace-active #receipts-home .receipt-actions-grid .declaration-choice small{display:block!important;width:100%!important;text-align:left!important;margin-left:0!important;margin-right:0!important;}
