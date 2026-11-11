@@ -98,9 +98,14 @@
     <nav id="workspace-nav" class="bottom-nav hidden" aria-label="Main navigation"><button type="button" data-workspace="dashboard" class="nav-dashboard"><span class="nav-icon" aria-hidden="true">⌂</span><span>Home</span></button><button type="button" data-workspace="receipts" class="receipt-nav"><span class="nav-icon" aria-hidden="true">▤</span><span>Receipt</span></button><button type="button" data-workspace="shop" class="nav-shop"><span class="nav-icon" aria-hidden="true">◇</span><span>Shop</span></button><button type="button" data-workspace="lost-goods" class="nav-lost-goods"><span class="nav-icon" aria-hidden="true">⌕</span><span>Lost Goods</span></button></nav>
     <section id="shop-home" class="shop-home hidden" aria-label="Shop">
       <nav class="shop-section-tabs" aria-label="Shop sections"><button type="button" class="active" data-shop-tab="products">Products</button><button type="button" data-shop-tab="profile">Profile</button></nav>
-      <button id="shop-add-receipt-card" class="shop-directory-card shop-add-product-entry" type="button">
-        <span class="shop-directory-heading"><strong id="shop-directory-title">Add Product</strong></span>
-      </button>
+      <details id="shop-find-products-card" class="shop-search-directory-card shop-search-disclosure shop-add-product-entry">
+        <summary class="shop-directory-heading"><div><strong id="shop-directory-title">Find Products</strong><small>Search for an item and find shops that have it.</small></div></summary>
+        <form id="shop-product-search-form" class="shop-product-search-form">
+          <label>Search by product name<input id="shop-product-search" type="search" maxlength="100" placeholder="Type a product name…" autocomplete="off"></label>
+          <button class="btn btn-primary full" type="submit">Find Shops</button>
+        </form>
+        <section id="shop-product-results" class="shop-product-results hidden" aria-live="polite"></section>
+      </details>
       <details class="loan-items-card">
         <summary><strong>Loan an Item</strong><small>Record goods issued temporarily and track returns</small></summary>
         <div class="loan-card-body">
@@ -117,14 +122,6 @@
           <div class="loan-items-list-head"><strong>Loan register</strong><button id="loan-refresh" class="btn btn-light btn-small" type="button">Refresh</button></div>
           <div id="loan-items-list"><p class="muted small">Loading loan records…</p></div>
         </div>
-      </details>
-      <details class="shop-search-directory-card shop-search-disclosure">
-        <summary class="shop-directory-heading"><div><h2>Find Products</h2><p class="muted small">Tap to search products listed by other shops.</p></div></summary>
-        <form id="shop-product-search-form" class="shop-product-search-form">
-          <label>Search by product name<input id="shop-product-search" type="search" maxlength="100" placeholder="Type a product name…" autocomplete="off"></label>
-          <button class="btn btn-primary full" type="submit">Find Shops</button>
-        </form>
-        <section id="shop-product-results" class="shop-product-results hidden" aria-live="polite"></section>
       </details>
       <details class="profile-shop-card profile-card panel shop-business-details-card hidden"><summary class="profile-card-summary"><span><strong>Shop Details</strong><small>Business information, branding and shop photos</small></span><span class="profile-card-chevron" aria-hidden="true">⌄</span></summary><div class="profile-card-body"><p id="profile-readonly-note" class="profile-readonly-note hidden">Viewing mode · Shop owners can edit these details. Vendors and freelancers can view them only.</p><form id="profile-form">
 <div class="profile-logo-row"><img id="logo-preview" alt="Business logo preview" class="logo-preview hidden"><label>Business logo (optional)<input id="business-logo" type="file" accept="image/png,image/jpeg,image/webp"></label></div>
