@@ -1382,14 +1382,20 @@ html body.workspace-active #receipts-home .receipt-choice small{font-size:clamp(
 }
 
 
-/* Desktop receipt layout: one card centered above two cards side by side. */
+/* Desktop receipt hierarchy: Issue Receipt is expanded across the top;
+   Verify Receipt and Sales Declaration Form sit side by side underneath. */
 @media(min-width:601px){
   html body.workspace-active #receipts-home .receipt-actions-grid{
+    display:grid!important;
     grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    grid-auto-flow:row!important;
+    align-items:stretch!important;
   }
   html body.workspace-active #receipts-home .receipt-actions-grid #open-issue-receipt{
     grid-column:1 / -1!important;
-    width:50%!important;
-    justify-self:center!important;
+    width:100%!important;
+    justify-self:stretch!important;
+    min-height:clamp(145px,21vh,190px)!important;
+    height:auto!important;
   }
 }
