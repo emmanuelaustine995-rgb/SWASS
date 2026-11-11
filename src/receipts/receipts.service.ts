@@ -131,25 +131,46 @@ export class ReceiptsService {
 
     const existingReceipt=await this.db.pool.query('SELECT id FROM receipts WHERE tenant_id=$1 AND client_uuid=$2 LIMIT 1',[user.tenantId,dto.clientUuid]);
     if(!existingReceipt.rowCount){
+      // Resolve catalogue protection flags on the server. Every protected unit must
+      // carry its own IMEI/serial before a receipt can be issued.
+      const productIds=[...new Set((dto.items||[]).map(i=>i.productId).filter((v):v is string=>!!v))];
+      const protectedProducts=productIds.length?await this.db.pool.query('SELECT id,requires_buyer_id FROM products WHERE id=ANY($1::uuid[]) AND tenant_id=$2 AND store_id=$3',[productIds,user.tenantId,user.storeId]):{rows:[] as any[]};
+      const protectedIds=new Set(protectedProducts.rows.filter((p:any)=>p.requires_buyer_id).map((p:any)=>p.id));
+      for(const line of dto.items||[]){
+        const requiresIdentifier=!!line.requiresBuyerId||(!!line.productId&&protectedIds.has(line.productId));
+        const identifier=String(line.serialNo||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+        if(requiresIdentifier&&(identifier.length<6||line.qty!==1)){
+          throw new BadRequestException('AURORA lost-item protection: enter a separate IMEI / serial number for every protected phone or electronic item before issuing the receipt.');
+        }
+      }
       const ids=[...new Set((dto.items||[]).map(i=>String(i.serialNo||'').toUpperCase().replace(/[^A-Z0-9]/g,'')).filter(v=>v.length>=6))];
       if(ids.length){
-        const match=await this.db.pool.query(`SELECT li.item_code AS "itemCode",li.item_name AS "itemName",u.full_name AS "registeredByName",u.email AS "registeredByEmail",u.phone AS "registeredByPhone",t.name AS "registeredShop",s.name AS "registeredBranch",s.location AS "registeredLocation"
-          FROM lost_items li LEFT JOIN users u ON u.id=li.registered_by LEFT JOIN tenants t ON t.id=li.tenant_id LEFT JOIN stores s ON s.id=li.store_id AND s.tenant_id=li.tenant_id WHERE li.status='lost' AND (
-            upper(regexp_replace(COALESCE(li.imei_1,''),'[^A-Za-z0-9]','','g'))=ANY($1::text[]) OR upper(regexp_replace(COALESCE(li.imei_2,''),'[^A-Za-z0-9]','','g'))=ANY($1::text[]) OR upper(regexp_replace(COALESCE(li.serial_number,''),'[^A-Za-z0-9]','','g'))=ANY($1::text[])
+        const match=await this.db.pool.query(`SELECT li.item_code AS "itemCode",li.item_name AS "itemName",u.full_name AS "registeredByName",u.email AS "registeredByEmail",u.phone AS "registeredByPhone",t.id AS "registeredTenantId",t.name AS "registeredShop",s.name AS "registeredBranch",s.location AS "registeredLocation",candidate.identifier AS "matchedIdentifier"
+          FROM lost_items li
+          CROSS JOIN LATERAL unnest($1::text[]) AS candidate(identifier)
+          LEFT JOIN users u ON u.id=li.registered_by LEFT JOIN tenants t ON t.id=li.tenant_id LEFT JOIN stores s ON s.id=li.store_id AND s.tenant_id=li.tenant_id
+          WHERE li.status='lost' AND (
+            upper(regexp_replace(COALESCE(li.imei_1,''),'[^A-Za-z0-9]','','g'))=candidate.identifier OR upper(regexp_replace(COALESCE(li.imei_2,''),'[^A-Za-z0-9]','','g'))=candidate.identifier OR upper(regexp_replace(COALESCE(li.serial_number,''),'[^A-Za-z0-9]','','g'))=candidate.identifier
           ) ORDER BY li.lost_at DESC NULLS LAST LIMIT 1`,[ids]);
         if(match.rows[0]){
           const lost=match.rows[0];
           const {rows:searcherRows}=await this.db.pool.query('SELECT full_name AS name,phone FROM users WHERE id=$1 LIMIT 1',[user.sub]);
           const searcher=searcherRows[0]||{};
-          await this.db.pool.query('INSERT INTO lost_item_searches(item_code,identifier,searched_by_user_id,searched_by_phone,searched_by_name,presented_by_name,presented_by_phone) VALUES($1,$2,$3,$4,$5,$6,$7)',[lost.itemCode,ids[0],String(user.sub||''),searcher.phone||null,searcher.name||null,String(dto.customer?.fullName||'').trim().slice(0,120)||null,String(dto.customer?.phone||'').trim().slice(0,40)||null]);
-          const warning=`AURORA ALERT: ${lost.itemName||'A product'} (reference ${lost.itemCode}) is recorded as LOST. Do not complete this sale until ownership is verified with the relevant authorities.`;
+          await this.db.pool.query('INSERT INTO lost_item_searches(item_code,identifier,searched_by_user_id,searched_by_phone,searched_by_name,presented_by_name,presented_by_phone) VALUES($1,$2,$3,$4,$5,$6,$7)',[lost.itemCode,lost.matchedIdentifier,String(user.sub||''),searcher.phone||null,searcher.name||null,String(dto.customer?.fullName||'').trim().slice(0,120)||null,String(dto.customer?.phone||'').trim().slice(0,40)||null]);
+          const warning=`AURORA ALERT: ${lost.itemName||'A product'} (reference ${lost.itemCode}) is recorded as LOST. Attempted identifier: ${lost.matchedIdentifier}. Do not complete this sale until ownership is verified with the relevant authorities.`;
           const tasks:Promise<any>[]=[];
-          if(lost.registeredByEmail)tasks.push(this.emailVerification.sendLostItemAlert({to:lost.registeredByEmail,recipientName:lost.registeredByName||'AURORA user',itemName:lost.itemName||'Product',itemCode:lost.itemCode,warning}));
-          if(lost.registeredByPhone)tasks.push(this.whatsapp.sendText({to:lost.registeredByPhone,text:warning}));
+          const {rows:shopContacts}=await this.db.pool.query(`SELECT full_name AS name,email,phone FROM users WHERE tenant_id=$1 AND role IN ('owner','manager') ORDER BY CASE WHEN role='owner' THEN 0 ELSE 1 END LIMIT 5`,[lost.registeredTenantId]);
+          const recipients=new Map<string,{name:string,email?:string|null,phone?:string|null}>();
+          if(lost.registeredByEmail||lost.registeredByPhone)recipients.set(String(lost.registeredByEmail||lost.registeredByPhone),{name:lost.registeredByName||'AURORA user',email:lost.registeredByEmail,phone:lost.registeredByPhone});
+          for(const contact of shopContacts){if(contact.email||contact.phone)recipients.set(String(contact.email||contact.phone),contact);}
+          for(const recipient of recipients.values()){
+            if(recipient.email)tasks.push(this.emailVerification.sendLostItemAlert({to:recipient.email,recipientName:recipient.name||'Registered shop',itemName:lost.itemName||'Product',itemCode:lost.itemCode,warning}));
+            if(recipient.phone)tasks.push(this.whatsapp.sendText({to:recipient.phone,text:warning}));
+          }
           if(dto.customer?.email)tasks.push(this.emailVerification.sendLostItemAlert({to:dto.customer.email,recipientName:dto.customer.fullName,itemName:lost.itemName||'Product',itemCode:lost.itemCode,warning}));
           if(dto.customer?.phone)tasks.push(this.whatsapp.sendText({to:dto.customer.phone,text:warning}));
           await Promise.allSettled(tasks);
-          throw new ConflictException('AURORA RED ALERT: '+(lost.itemName||'Item')+' is recorded as LOST (reference '+lost.itemCode+'). Person presenting the item: '+(dto.customer?.fullName||'Not supplied')+' · '+(dto.customer?.phone||'Phone not supplied')+'. Registered by: '+(lost.registeredByName||'Not available')+' · '+(lost.registeredByPhone||'Phone unavailable')+'. Registered shop: '+(lost.registeredShop||'Not available')+' · '+(lost.registeredBranch||'Branch not supplied')+'. Registered shop location: '+(lost.registeredLocation||'Not supplied')+'. Stop the sale and verify ownership with the relevant authorities. Alert delivery was attempted through the available contact channels.');
+          throw new ConflictException('⚠️ AURORA RED ALERT: '+(lost.itemName||'Item')+' is recorded as LOST (reference '+lost.itemCode+'). Matched IMEI / serial: '+lost.matchedIdentifier+'. Person presenting the item: '+(dto.customer?.fullName||'Not supplied')+' · '+(dto.customer?.phone||'Phone not supplied')+'. Registered by: '+(lost.registeredByName||'Not available')+' · '+(lost.registeredByPhone||'Phone unavailable')+'. Registered shop: '+(lost.registeredShop||'Not available')+' · '+(lost.registeredBranch||'Branch not supplied')+'. Registered shop location: '+(lost.registeredLocation||'Not supplied')+'. Sale blocked. Verify ownership with the relevant authorities.');
         }
       }
     }
