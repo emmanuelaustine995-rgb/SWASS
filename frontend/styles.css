@@ -1703,3 +1703,40 @@ body.workspace-active .shell{background:transparent!important}
 @media(prefers-reduced-motion:reduce){
   body.workspace-active,body.workspace-active:before{animation:none!important}
 }
+
+
+/* One continuous, softly fading sky-blue background from login through every workspace page. */
+@keyframes auroraSkyBlueFade{
+  0%,100%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+}
+html,body{
+  background:#244c68!important;
+}
+body,body.workspace-active,body:not(.workspace-active){
+  background:linear-gradient(125deg,#244b68 0%,#315f7e 30%,#3b7090 52%,#2d5876 76%,#244b68 100%)!important;
+  background-size:260% 260%!important;
+  animation:auroraSkyBlueFade 30s ease-in-out infinite!important;
+}
+body:before{
+  content:""!important;
+  display:block!important;
+  position:fixed!important;
+  inset:0!important;
+  z-index:-1!important;
+  pointer-events:none!important;
+  background:linear-gradient(125deg,rgba(31,72,101,.12),rgba(91,145,176,.08) 50%,rgba(36,79,108,.12))!important;
+  background-size:260% 260%!important;
+  animation:auroraSkyBlueFade 30s ease-in-out infinite!important;
+}
+.topbar{
+  background:transparent!important;
+  color:#fff!important;
+  border:0!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+}
+.shell{background:transparent!important}
+@media(prefers-reduced-motion:reduce){
+  body,body:before{animation:none!important}
+}
