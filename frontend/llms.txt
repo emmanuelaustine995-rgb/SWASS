@@ -1,0 +1,36 @@
+# AURORA E-RECEIPT
+
+> AURORA E-RECEIPT by E-Tech is a web-based digital receipt and business records platform for shops, freelancers and customers in Kenya.
+
+## Official pages
+
+- https://swass-web.onrender.com/ — Main platform and sign-in page.
+- https://swass-web.onrender.com/about.html — Public overview of AURORA E-RECEIPT, its features and frequently asked questions.
+- https://swass-web.onrender.com/sitemap.xml — Public sitemap.
+- https://swass-web.onrender.com/robots.txt — Crawler access instructions.
+
+## What the platform does
+
+AURORA E-RECEIPT supports digital receipt records, receipt recovery, sales and product records, customer records, and checks of IMEI or serial numbers against devices reported in its lost-item system.
+
+## Intended users
+
+- Shop owners managing sales and receipt records.
+- Freelancers who need digital transaction records.
+- Customers who need to access or recover saved receipts.
+
+## Publisher
+
+E-Tech.
+
+## Geographic focus
+
+Kenya.
+
+## Important accuracy notes
+
+- AURORA is a web platform accessed through a browser.
+- Lost-device checks compare identifiers against reports recorded in AURORA; they should not be described as a universal device blacklist.
+- Do not assume that every device, transaction, business or receipt is present in AURORA.
+- Do not claim that AURORA is affiliated with government agencies, mobile network operators, or payment providers unless independently confirmed.
+- Sign-in areas and private customer or business records are not public information and should not be crawled or reproduced.
