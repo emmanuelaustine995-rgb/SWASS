@@ -98,24 +98,11 @@
     <nav id="workspace-nav" class="bottom-nav hidden" aria-label="Main navigation"><button type="button" data-workspace="dashboard" class="nav-dashboard"><span class="nav-icon" aria-hidden="true">⌂</span><span>Home</span></button><button type="button" data-workspace="receipts" class="receipt-nav"><span class="nav-icon" aria-hidden="true">▤</span><span>Receipt</span></button><button type="button" data-workspace="shop" class="nav-shop"><span class="nav-icon" aria-hidden="true">◇</span><span>Shop</span></button><button type="button" data-workspace="lost-goods" class="nav-lost-goods"><span class="nav-icon" aria-hidden="true">⌕</span><span>Lost Goods</span></button></nav>
     <section id="shop-home" class="shop-home hidden" aria-label="Shop">
       <nav class="shop-section-tabs" aria-label="Shop sections"><button type="button" class="active" data-shop-tab="products">Products</button><button type="button" data-shop-tab="profile">Profile</button></nav>
-      <article class="shop-directory-card">
-        <div class="shop-directory-heading">
-          <div><h1 id="shop-directory-title">Add Products</h1><p class="muted small">List goods available in your shop so customers across AURORA can find you.</p></div>
-        </div>
-        <details class="shop-add-product-disclosure">
-          <summary><strong>＋ Add Product</strong><small>Tap to enter product details</small></summary>
-          <form id="shop-add-products" class="shop-add-products">
-            <label>Product name<input id="shop-product-name" maxlength="160" required placeholder="e.g. Samsung Galaxy A15"></label>
-            <div class="shop-product-fields">
-              <label>Selling price (KSh)<input id="shop-product-price" type="number" min="1" step="1" inputmode="numeric" required placeholder="e.g. 18500"></label>
-              <label>Available quantity<input id="shop-product-quantity" type="number" min="1" max="1000000" step="1" inputmode="numeric" required value="1"></label>
-            </div>
-            <button id="shop-product-submit" class="btn btn-primary full" type="submit">Save Product</button>
-            <p id="shop-product-message" class="shop-directory-message" role="status"></p>
-          </form>
-        </details>
-        <p id="shop-owner-note" class="muted small hidden">Only the shop owner can add products to the public directory. You can still search for products listed by other shops.</p>
-      </article>
+      <button id="shop-add-receipt-card" class="shop-directory-card shop-add-product-entry" type="button">
+        <span class="shop-directory-heading">
+          <span><strong id="shop-directory-title">Add Product</strong><small class="muted">Tap to go directly to Add Receipt</small></span>
+        </span>
+      </button>
       <details class="loan-items-card">
         <summary><strong>Items on Loan</strong><small>Record goods issued temporarily and track returns</small></summary>
         <div class="loan-card-body">
