@@ -147,24 +147,27 @@ export class ReceiptsService {
       }
       const ids=[...new Set((dto.items||[]).map(i=>String(i.serialNo||'').toUpperCase().replace(/[^A-Z0-9]/g,'')).filter(v=>v.length>=6))];
       if(ids.length){
-        const match=await this.db.pool.query(`SELECT li.item_code AS "itemCode",li.item_name AS "itemName",u.full_name AS "registeredByName",u.email AS "registeredByEmail",u.phone AS "registeredByPhone",t.id AS "registeredTenantId",t.name AS "registeredShop",s.name AS "registeredBranch",s.location AS "registeredLocation",candidate.identifier AS "matchedIdentifier"
+        const match=await this.db.pool.query(`SELECT li.item_code AS "itemCode",li.item_name AS "itemName",u.full_name AS "registeredByName",u.email AS "registeredByEmail",u.phone AS "registeredByPhone",t.id AS "registeredTenantId",t.name AS "registeredShop",s.name AS "registeredBranch",s.location AS "registeredLocation",candidate.identifier AS "matchedIdentifier",checking_tenant.name AS "checkingShop",checking_tenant.phone AS "checkingShopPhone",checking_tenant.email AS "checkingShopEmail",checking_store.name AS "checkingBranch",checking_store.location AS "checkingLocation"
           FROM lost_items li
           CROSS JOIN LATERAL unnest($1::text[]) AS candidate(identifier)
           LEFT JOIN users u ON u.id=li.registered_by LEFT JOIN tenants t ON t.id=li.tenant_id LEFT JOIN stores s ON s.id=li.store_id AND s.tenant_id=li.tenant_id
+          LEFT JOIN tenants checking_tenant ON checking_tenant.id=$2
+          LEFT JOIN stores checking_store ON checking_store.id=$3 AND checking_store.tenant_id=checking_tenant.id
           WHERE li.status='lost' AND (
             upper(regexp_replace(COALESCE(li.imei_1,''),'[^A-Za-z0-9]','','g'))=candidate.identifier OR upper(regexp_replace(COALESCE(li.imei_2,''),'[^A-Za-z0-9]','','g'))=candidate.identifier OR upper(regexp_replace(COALESCE(li.serial_number,''),'[^A-Za-z0-9]','','g'))=candidate.identifier
-          ) ORDER BY li.lost_at DESC NULLS LAST LIMIT 1`,[ids]);
+          ) ORDER BY li.lost_at DESC NULLS LAST LIMIT 1`,[ids,user.tenantId,user.storeId]);
         if(match.rows[0]){
           const lost=match.rows[0];
           const {rows:searcherRows}=await this.db.pool.query('SELECT full_name AS name,phone FROM users WHERE id=$1 LIMIT 1',[user.sub]);
           const searcher=searcherRows[0]||{};
           await this.db.pool.query('INSERT INTO lost_item_searches(item_code,identifier,searched_by_user_id,searched_by_phone,searched_by_name,presented_by_name,presented_by_phone) VALUES($1,$2,$3,$4,$5,$6,$7)',[lost.itemCode,lost.matchedIdentifier,String(user.sub||''),searcher.phone||null,searcher.name||null,String(dto.customer?.fullName||'').trim().slice(0,120)||null,String(dto.customer?.phone||'').trim().slice(0,40)||null]);
-          const warning=`AURORA ALERT: ${lost.itemName||'A product'} (reference ${lost.itemCode}) is recorded as LOST. Attempted identifier: ${lost.matchedIdentifier}. Do not complete this sale until ownership is verified with the relevant authorities.`;
+          const warning=`URGENT AURORA LOST ITEM ALERT. ${lost.itemName||'A product'} (reference ${lost.itemCode}) is recorded as LOST. Matched IMEI/serial: ${lost.matchedIdentifier}. Registered shop: ${lost.registeredShop||'not available'} / ${lost.registeredBranch||'branch unavailable'} at ${lost.registeredLocation||'location unavailable'}. Attempting shop: ${lost.checkingShop||'not available'} / ${lost.checkingBranch||'branch unavailable'} at ${lost.checkingLocation||'location unavailable'}. Attempting seller/staff: ${searcher.name||'not recorded'} · ${searcher.phone||'phone unavailable'}. Person presenting: ${dto.customer?.fullName||'not supplied'} · ${dto.customer?.phone||'phone unavailable'}. Receipt issuance has been blocked. Do not confront anyone; preserve the details and contact the appropriate authorities.`;
           const tasks:Promise<any>[]=[];
           const {rows:shopContacts}=await this.db.pool.query(`SELECT full_name AS name,email,phone FROM users WHERE tenant_id=$1 AND role IN ('owner','manager') ORDER BY CASE WHEN role='owner' THEN 0 ELSE 1 END LIMIT 5`,[lost.registeredTenantId]);
           const recipients=new Map<string,{name:string,email?:string|null,phone?:string|null}>();
           if(lost.registeredByEmail||lost.registeredByPhone)recipients.set(String(lost.registeredByEmail||lost.registeredByPhone),{name:lost.registeredByName||'AURORA user',email:lost.registeredByEmail,phone:lost.registeredByPhone});
           for(const contact of shopContacts){if(contact.email||contact.phone)recipients.set(String(contact.email||contact.phone),contact);}
+          if(lost.checkingShopEmail||lost.checkingShopPhone)recipients.set(String(lost.checkingShopEmail||lost.checkingShopPhone),{name:lost.checkingShop||'Shop attempting sale',email:lost.checkingShopEmail,phone:lost.checkingShopPhone});
           for(const recipient of recipients.values()){
             if(recipient.email)tasks.push(this.emailVerification.sendLostItemAlert({to:recipient.email,recipientName:recipient.name||'Registered shop',itemName:lost.itemName||'Product',itemCode:lost.itemCode,warning}));
             if(recipient.phone)tasks.push(this.whatsapp.sendText({to:recipient.phone,text:warning}));
