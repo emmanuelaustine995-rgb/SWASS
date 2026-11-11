@@ -1636,3 +1636,30 @@ body.workspace-active #shop-lost-items-panel:not(.hidden){
     background:transparent!important;
   }
 }
+
+
+/* Flagged Items: restore the clean white page and highlight Log Lost Item in red. */
+body.workspace-active #shop-lost-items-panel:not(.hidden){
+  background:#fff!important;
+  background-image:none!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  animation:none!important;
+}
+body.workspace-active:has(#shop-lost-items-panel:not(.hidden)),
+body.workspace-active:has(#shop-lost-items-panel:not(.hidden)) .shell{
+  background:#fff!important;
+  background-image:none!important;
+  animation:none!important;
+}
+#shop-lost-items-panel .lost-goods-card.lost-card-register{
+  background:#dc2626!important;
+  border:1px solid #b91c1c!important;
+  box-shadow:0 6px 18px rgba(185,28,28,.18)!important;
+}
+#shop-lost-items-panel .lost-goods-card.lost-card-register strong,
+#shop-lost-items-panel .lost-goods-card.lost-card-register small{
+  color:#fff!important;
+}
+@media(max-width:430px){.topbar{background:#fff!important}}
