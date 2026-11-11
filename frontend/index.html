@@ -98,6 +98,20 @@
     <nav id="workspace-nav" class="bottom-nav hidden" aria-label="Main navigation"><button type="button" data-workspace="dashboard" class="nav-dashboard"><span class="nav-icon" aria-hidden="true">⌂</span><span>Home</span></button><button type="button" data-workspace="receipts" class="receipt-nav"><span class="nav-icon" aria-hidden="true">▤</span><span>Receipt</span></button><button type="button" data-workspace="shop" class="nav-shop"><span class="nav-icon" aria-hidden="true">◇</span><span>Shop</span></button><button type="button" data-workspace="lost-goods" class="nav-lost-goods"><span class="nav-icon" aria-hidden="true">⌕</span><span>Lost Goods</span></button></nav>
     <section id="shop-home" class="shop-home hidden" aria-label="Shop">
       <nav class="shop-section-tabs" aria-label="Shop sections"><button type="button" class="active" data-shop-tab="products">Products</button><button type="button" data-shop-tab="profile">Profile</button></nav>
+      <details id="shop-register-product-card" class="shop-register-product-card">
+        <summary><strong>Add Product</strong><small>Register goods in your shop so customers can find them.</small></summary>
+        <div class="shop-register-product-body">
+          <form id="shop-add-products" class="shop-add-products-form">
+            <label>Product name<input id="shop-product-name" required maxlength="160" placeholder="Enter product name"></label>
+            <div class="form-two">
+              <label>Price (KSh)<input id="shop-product-price" type="number" min="1" step="1" required inputmode="numeric" placeholder="Enter price"></label>
+              <label>Available quantity<input id="shop-product-quantity" type="number" min="1" step="1" required value="1" inputmode="numeric"></label>
+            </div>
+            <button id="shop-product-submit" class="btn btn-primary full" type="submit">＋ Add Product</button>
+            <p id="shop-product-message" class="muted small" role="status"></p>
+          </form>
+        </div>
+      </details>
       <details id="shop-find-products-card" class="shop-search-directory-card shop-search-disclosure shop-add-product-entry">
         <summary class="shop-directory-heading"><div><strong id="shop-directory-title">Find Products</strong><small>Search for an item and find shops that have it.</small></div></summary>
         <form id="shop-product-search-form" class="shop-product-search-form">
