@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /*?lostItem=
+Disallow: /*&lostItem=
+
+Sitemap: https://swass-web.onrender.com/sitemap.xml
