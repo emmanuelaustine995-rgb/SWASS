@@ -400,6 +400,7 @@
     }else if(screen==='lost-goods'){
       $('shop-lost-items-panel')?.classList.remove('hidden');
       document.querySelectorAll('[data-lost-owner-only]').forEach(el=>el.classList.toggle('hidden',!['owner','manager'].includes(state.role)));
+      document.querySelectorAll('[data-lost-panel]').forEach(el=>el.classList.add('hidden'));
       if(['owner','manager'].includes(state.role))void loadLostItems();
     }else if(screen==='profile'){
       renderAccountProfile();
