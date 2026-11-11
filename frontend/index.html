@@ -133,14 +133,14 @@
           <div id="loan-items-list"><p class="muted small">Loading loan records…</p></div>
         </div>
       </details>
-      <article class="shop-search-directory-card">
-        <div class="shop-directory-heading"><div><p class="eyebrow">AURORA SHOP DIRECTORY</p><h2>Find Products</h2><p class="muted small">Search products listed by other shops.</p></div><button id="shop-search-toggle" class="shop-search-toggle" type="button">Search Product</button></div>
-        <form id="shop-product-search-form" class="shop-product-search-form hidden">
+      <details class="shop-search-directory-card shop-search-disclosure">
+        <summary class="shop-directory-heading"><div><h2>Find Products</h2><p class="muted small">Tap to search products listed by other shops.</p></div></summary>
+        <form id="shop-product-search-form" class="shop-product-search-form">
           <label>Search by product name<input id="shop-product-search" type="search" maxlength="100" placeholder="Type a product name…" autocomplete="off"></label>
           <button class="btn btn-primary full" type="submit">Find Shops</button>
         </form>
         <section id="shop-product-results" class="shop-product-results hidden" aria-live="polite"></section>
-      </article>
+      </details>
       <details class="profile-shop-card profile-card panel shop-business-details-card hidden"><summary class="profile-card-summary"><span><strong>Shop Details</strong><small>Business information, branding and shop photos</small></span><span class="profile-card-chevron" aria-hidden="true">⌄</span></summary><div class="profile-card-body"><p id="profile-readonly-note" class="profile-readonly-note hidden">Viewing mode · Shop owners can edit these details. Vendors and freelancers can view them only.</p><form id="profile-form">
 <div class="profile-logo-row"><img id="logo-preview" alt="Business logo preview" class="logo-preview hidden"><label>Business logo (optional)<input id="business-logo" type="file" accept="image/png,image/jpeg,image/webp"></label></div>
 <div class="form-two"><label>Company / trading name<input id="profile-business-name" maxlength="120" required></label><label>Support telephone number<input id="profile-business-phone" maxlength="30" required></label></div>
