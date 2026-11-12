@@ -15,8 +15,8 @@ async function bootstrap() {
   }
 
   const app = await NestFactory.create(AppModule, { bodyParser: false });
-  app.use(json({ limit: '512kb' }));
-  app.use(urlencoded({ extended: true, limit: '512kb' }));
+  app.use(json({ limit: '2mb' }));
+  app.use(urlencoded({ extended: true, limit: '2mb' }));
   // Always allow the production SWASS frontend. CORS_ORIGINS may add
   // custom domains, but a missing/empty Render variable must not block the app.
   const allowedOrigins = new Set([
