@@ -2441,3 +2441,35 @@ body.registration-open .registration-sticky-footer{position:sticky!important;bot
  body.registration-open #register-form:not(.hidden),
  body.registration-open #freelancer-register-form:not(.hidden){inset:64px 0 0!important;height:calc(100dvh - 64px)!important;padding:15px 14px 14px!important}
 }
+
+
+/* Freelancer identity uploads: give the file controls a clear, comfortable tap area. */
+#freelancer-register-form input[type="file"] {
+  display:block!important;
+  width:100%!important;
+  min-width:0!important;
+  min-height:58px!important;
+  margin-top:8px!important;
+  padding:12px!important;
+  box-sizing:border-box!important;
+  border:1px solid #c8d7e5!important;
+  border-radius:10px!important;
+  background:#f7fbff!important;
+  color:#20384b!important;
+  font-size:14px!important;
+  line-height:1.5!important;
+}
+#freelancer-register-form label {
+  display:block!important;
+  margin-bottom:15px!important;
+}
+#freelancer-register-form input[type="file"]::file-selector-button {
+  min-height:34px!important;
+  margin-right:10px!important;
+  padding:7px 12px!important;
+  border:0!important;
+  border-radius:7px!important;
+  background:#087be8!important;
+  color:#fff!important;
+  font-weight:700!important;
+}
