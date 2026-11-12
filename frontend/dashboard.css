@@ -2367,16 +2367,16 @@ html body.workspace-active #shop-lost-items-panel:not(.hidden) #lost-goods-cards
 /* AURORA receipt cards: reduce the oversized cards slightly without changing their colours. */
 @media(min-width:601px){
   html body.workspace-active #receipts-home .receipt-actions-grid .receipt-choice{
-    min-height:clamp(100px,13vh,124px)!important;
+    min-height:clamp(92px,11vh,106px)!important;
     height:auto!important;
     padding:clamp(9px,1.3vw,15px)!important;
   }
 }
 @media(max-width:600px){
   html body.workspace-active #receipts-home .receipt-actions-grid .receipt-choice{
-    min-height:clamp(78px,11.5vh,94px)!important;
-    height:clamp(78px,11.5vh,94px)!important;
-    padding:8px 11px!important;
+    min-height:clamp(70px,10vh,84px)!important;
+    height:clamp(70px,10vh,84px)!important;
+    padding:7px 10px!important;
   }
 }
 
