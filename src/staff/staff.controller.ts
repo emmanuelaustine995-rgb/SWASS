@@ -67,7 +67,7 @@ export class StaffController {
          FROM users u
          LEFT JOIN tenants t ON t.id=u.tenant_id
         WHERE u.role='owner' AND u.is_active=true
-          AND lower(regexp_replace(trim(coalesce(u.full_name,'')),'\s+',' ','g'))=lower($1)
+          AND lower(regexp_replace(trim(coalesce(u.full_name,'')),'[[:space:]]+',' ','g'))=lower($1)
           AND (
             regexp_replace(coalesce(u.phone,''),'[^0-9]','','g') IN ($2,$3,$4)
             OR regexp_replace(coalesce(t.phone,''),'[^0-9]','','g') IN ($2,$3,$4)
