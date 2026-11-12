@@ -2167,3 +2167,16 @@ body:not(.workspace-active) #login-view .aurora-tagline strong{font-weight:850!i
     }
   }
 }
+/* AURORA desktop workspace: remove the empty strip below the top header. */
+@media(min-width:761px){
+  body.workspace-active .shell{
+    margin-top:0!important;
+    margin-bottom:0!important;
+    height:calc(100dvh - 72px)!important;
+    min-height:0!important;
+    max-height:calc(100dvh - 72px)!important;
+    box-sizing:border-box!important;
+    border-top-left-radius:0!important;
+    border-top-right-radius:0!important;
+  }
+}
