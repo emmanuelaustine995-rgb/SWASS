@@ -2123,3 +2123,47 @@ body:not(.workspace-active) #login-view .aurora-tagline strong{font-weight:850!i
     }
   }
 }
+
+
+/* HARD OVERRIDE: remove every creamy-yellow layer from the Shop working area.
+   Only the distant desktop page surround is purple; Shop header, shell and page
+   canvas stay sky blue. Feature cards keep their own authored backgrounds. */
+@supports selector(body:has(#shop-home:not(.hidden))){
+  html:has(body.workspace-active #shop-home:not(.hidden)),
+  body.workspace-active:has(#shop-home:not(.hidden)){
+    background:#eee7ff!important;
+    background-color:#eee7ff!important;
+    background-image:linear-gradient(135deg,#f4efff 0%,#eee7ff 52%,#e8ddff 100%)!important;
+    animation:none!important;
+  }
+  html body.workspace-active:has(#shop-home:not(.hidden)) .topbar,
+  html body.workspace-active:has(#shop-home:not(.hidden)) .shell,
+  html body.workspace-active:has(#shop-home:not(.hidden)) .shell > #shop-home:not(.hidden){
+    background:#eaf7ff!important;
+    background-color:#eaf7ff!important;
+    background-image:linear-gradient(145deg,#eaf7ff 0%,#dff1ff 52%,#eaf6ff 100%)!important;
+    background-repeat:no-repeat!important;
+    box-shadow:none!important;
+  }
+  html body.workspace-active:has(#shop-home:not(.hidden)) .shell{
+    border:1px solid #c9e4f5!important;
+  }
+  html body.workspace-active:has(#shop-home:not(.hidden)) #shop-home:not(.hidden){
+    border-radius:14px!important;
+    min-width:0!important;
+  }
+}
+@media(max-width:760px){
+  @supports selector(body:has(#shop-home:not(.hidden))){
+    html:has(body.workspace-active #shop-home:not(.hidden)),
+    html body.workspace-active:has(#shop-home:not(.hidden)),
+    html body.workspace-active:has(#shop-home:not(.hidden)) .topbar,
+    html body.workspace-active:has(#shop-home:not(.hidden)) .shell,
+    html body.workspace-active:has(#shop-home:not(.hidden)) .shell > #shop-home:not(.hidden){
+      background:#eaf7ff!important;
+      background-color:#eaf7ff!important;
+      background-image:linear-gradient(145deg,#eaf7ff 0%,#dff1ff 52%,#eaf6ff 100%)!important;
+      animation:none!important;
+    }
+  }
+}
