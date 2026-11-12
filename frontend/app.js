@@ -186,7 +186,7 @@
     $('account-profile-business').textContent=business.businessName||'Business details not added';
     const readOnlyProfile=['vendor','freelancer'].includes(state.role);
     $('account-profile-photo-area').classList.toggle('hidden',state.role!=='cashier');
-    $('account-profile-business-edit').classList.toggle('hidden',!['owner','manager','freelancer'].includes(state.role));
+    $('account-profile-business-edit').classList.toggle('hidden',!['owner','manager'].includes(state.role));
     const profileForm=$('profile-form');
     if(profileForm){profileForm.querySelectorAll('input,select,textarea,button').forEach(control=>{control.disabled=readOnlyProfile;});const save=profileForm.querySelector('button[type="submit"]');if(save)save.classList.toggle('hidden',readOnlyProfile);}
     $('profile-panel')?.classList.toggle('profile-readonly',readOnlyProfile);
