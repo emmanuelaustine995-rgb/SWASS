@@ -13,6 +13,26 @@ export class StaffController {
     return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
   }
 
+  private async sendOwnerApprovalOtp(to: string, code: string): Promise<void> {
+    const token = process.env.TALKSASA_API_TOKEN?.trim();
+    if (!token) throw new BadRequestException('SMS approval is not configured. Set TALKSASA_API_TOKEN in the API hosting settings.');
+    const configured = (process.env.TALKSASA_API_URL || 'https://bulksms.talksasa.com/api/v3/sms/send').trim();
+    const endpoint = /\/sms\/send\/?$/i.test(configured) ? configured : `${configured.replace(/\/+$/, '')}/sms/send`;
+    const response = await fetch(endpoint, {
+      method: 'POST', signal: AbortSignal.timeout(15000),
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ recipient: `+${to}`, sender_id: process.env.TALKSASA_SENDER_ID || 'TALK-SASA', type: 'plain',
+        message: `AURORA freelancer approval code: ${code}. It expires in 5 minutes. Do not share this code.` }),
+    });
+    const raw = await response.text();
+    let result: any = {}; try { result = raw ? JSON.parse(raw) : {}; } catch {}
+    const status = String(result?.status ?? result?.data?.status ?? '').toLowerCase();
+    if (!response.ok || !(status === 'success' || status === 'accepted' || status === 'queued' || result?.success === true || result?.status === true)) {
+      console.error('[AURORA] Freelancer approval SMS rejected:', response.status, String(result?.message ?? result?.error ?? raw).slice(0, 180));
+      throw new BadRequestException('Could not send the owner approval code. Check TalkSasa credentials, sender ID and SMS balance.');
+    }
+  }
+
   @Post('invitations/accept')
   async acceptInvitation(@Body() body: { token?: string; password?: string }) {
     const token = String(body?.token ?? '');
@@ -80,13 +100,25 @@ export class StaffController {
     );
     if (exists.rowCount) throw new BadRequestException('A user with this phone number or email already exists.');
     const token = randomBytes(32).toString('base64url');
+    const approvalCode = String(randomBytes(4).readUInt32BE(0) % 1000000).padStart(6, '0');
     const expiresAt = new Date(Date.now() + 7 * 86400000);
+    const owner = await this.db.pool.query('SELECT phone FROM users WHERE id=$1 AND tenant_id=$2 AND role=\'owner\' AND is_active=true', [user.sub,user.tenantId]);
+    if (!owner.rowCount) throw new BadRequestException('The shop owner account could not be verified.');
+    const ownerPhone = String(owner.rows[0].phone).replace(/\D/g, '');
     const saved = await this.db.pool.query(
       `INSERT INTO staff_email_invitations
-       (tenant_id,store_id,created_by,full_name,email,phone,job_title,token_hash,expires_at)
-       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id,expires_at`,
-      [user.tenantId,user.storeId,user.sub,fullName,email,phone,jobTitle,this.hash(token),expiresAt],
+       (tenant_id,store_id,created_by,full_name,email,phone,job_title,token_hash,expires_at,approval_code_hash,approval_expires_at,approval_attempts)
+       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,now()+interval '5 minutes',0) RETURNING id,expires_at`,
+      [user.tenantId,user.storeId,user.sub,fullName,email,phone,jobTitle,this.hash(token),expiresAt,this.hash(approvalCode)],
     );
+    try {
+      await this.sendOwnerApprovalOtp(ownerPhone, approvalCode);
+    } catch (error) {
+      await this.db.pool.query('DELETE FROM staff_email_invitations WHERE id=$1', [saved.rows[0].id]);
+      throw error;
+    }
+    return { approvalRequired: true, invitationId: saved.rows[0].id, ownerPhoneHint: ownerPhone.slice(-4),
+      message: 'A six-digit approval code has been sent to the shop owner’s registered phone.' };
     const apiKey = process.env.BREVO_API_KEY?.trim();
     const from = process.env.BREVO_FROM_EMAIL?.trim();
     if (!apiKey || !from) {
@@ -114,6 +146,52 @@ export class StaffController {
       throw new BadRequestException('Invitation email could not be sent. Check that your email sender is verified and the email provider credentials are correct.');
     }
     return { invitation: { id: saved.rows[0].id, fullName, email, phone, role: jobTitle, expiresAt: saved.rows[0].expires_at, emailSent: true } };
+  }
+
+  @Post('invitations/approve')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('owner')
+  async approveInvitation(@Req() req: any, @Body() body: { invitationId?: string; code?: string }) {
+    const id = String(body?.invitationId ?? '');
+    const code = String(body?.code ?? '').trim();
+    if (!/^[0-9a-f-]{36}$/i.test(id) || !/^\d{6}$/.test(code)) throw new BadRequestException('Enter the six-digit approval code.');
+    const result = await this.db.pool.query(
+      `SELECT i.*,u.phone AS owner_phone FROM staff_email_invitations i
+         JOIN users u ON u.id=i.created_by AND u.tenant_id=i.tenant_id
+        WHERE i.id=$1 AND i.tenant_id=$2 AND i.store_id=$3 AND i.created_by=$4
+          AND i.accepted_at IS NULL AND i.revoked_at IS NULL AND i.expires_at>now()
+          AND i.approval_expires_at>now() AND i.approval_attempts<5
+        LIMIT 1`, [id,req.user.tenantId,req.user.storeId,req.user.sub],
+    );
+    const invite = result.rows[0];
+    if (!invite) throw new BadRequestException('Approval request expired or was already used. Send a new invitation.');
+    if (this.hash(code) !== invite.approval_code_hash) {
+      await this.db.pool.query('UPDATE staff_email_invitations SET approval_attempts=approval_attempts+1 WHERE id=$1', [id]);
+      throw new BadRequestException('The approval code is incorrect.');
+    }
+    const apiKey = process.env.BREVO_API_KEY?.trim();
+    const from = process.env.BREVO_FROM_EMAIL?.trim();
+    if (!apiKey || !from) throw new BadRequestException('Brevo email is not configured. Set BREVO_API_KEY and BREVO_FROM_EMAIL in the API hosting settings.');
+    const base = (process.env.PUBLIC_APP_URL || 'https://swass-web.onrender.com').replace(/\/$/,'');
+    const inviteUrl = base + '/staff-invite.html?token=' + encodeURIComponent(String(invite.token_hash ? '' : ''));
+    // Recover the original invitation token is intentionally impossible from its hash; create a fresh one after approval.
+    const token = randomBytes(32).toString('base64url');
+    await this.db.pool.query('UPDATE staff_email_invitations SET token_hash=$1,approval_code_hash=NULL,approval_expires_at=NULL WHERE id=$2', [this.hash(token),id]);
+    const safeName = this.escape(invite.full_name), safeRole = this.escape(invite.job_title);
+    const secureUrl = base + '/staff-invite.html?token=' + encodeURIComponent(token);
+    const html = `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#172033;padding:24px"><h2>Welcome to AURORA E-RECEIPT</h2><p>Hello ${safeName},</p><p>You have been invited to join a shop workspace as <strong>${safeRole}</strong>. You will have access to the shop workspace except inviting other vendors or freelancers.</p><p>The shop owner approved this invitation using a code sent to their registered phone. Use the secure button below to create your own private password. The link expires in 7 days and can only be used once.</p><p><a href="${secureUrl}" style="display:inline-block;background:#176bce;color:white;padding:14px 22px;border-radius:8px;text-decoration:none">Create your AURORA password</a></p></div>`;
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST', signal: AbortSignal.timeout(15000),
+      headers: { 'api-key': apiKey, 'Content-Type': 'application/json', accept: 'application/json' },
+      body: JSON.stringify({ sender: { email: from, name: 'AURORA E-RECEIPT' }, to: [{ email: invite.email, name: invite.full_name }],
+        subject: 'Your approved invitation to AURORA E-RECEIPT', htmlContent: html }),
+    });
+    const providerReply = await response.text();
+    if (!response.ok) {
+      console.error('[AURORA] Approved freelancer invitation email rejected:', response.status, providerReply.slice(0,180));
+      throw new BadRequestException('Owner approval succeeded, but the invitation email could not be sent. Check the verified Brevo sender.');
+    }
+    return { approved: true, message: 'Owner approval confirmed. The freelancer invitation email has been sent.' };
   }
 
   @Get('invitations')
