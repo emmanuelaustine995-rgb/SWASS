@@ -2146,3 +2146,63 @@ body.customer-account-active #workspace-nav.bottom-nav button:nth-child(3).activ
 @media(prefers-reduced-motion:reduce){
   body.customer-account-active #workspace-nav.bottom-nav button.active{animation:none!important;transform:none!important}
 }
+
+
+/* Registration: one continuous, top-starting scroll area on every screen size.
+   All account fields, optional details, verification controls and submit buttons
+   remain reachable without being clipped by the login card. */
+html body:not(.workspace-active) #login-view .login-card{
+  display:flex!important;flex-direction:column!important;align-items:stretch!important;
+  min-height:0!important;max-height:calc(100dvh - 12px)!important;
+  overflow-x:hidden!important;overflow-y:auto!important;
+  -webkit-overflow-scrolling:touch!important;overscroll-behavior-y:contain!important;
+  scroll-padding-top:10px!important;
+}
+html body:not(.workspace-active) #login-view #register-form,
+html body:not(.workspace-active) #login-view #freelancer-register-form{
+  flex:0 0 auto!important;width:100%!important;min-height:max-content!important;
+  max-height:none!important;overflow:visible!important;
+  padding-bottom:24px!important;scroll-margin-top:8px!important;
+}
+html body:not(.workspace-active) #login-view #owner-signup-fields,
+html body:not(.workspace-active) #login-view #register-fields{align-content:start!important}
+html body:not(.workspace-active) #login-view .compact-extra-fields[open]{
+  max-height:none!important;overflow:visible!important;
+}
+html body:not(.workspace-active) #login-view #register-form button,
+html body:not(.workspace-active) #login-view #freelancer-register-form button{
+  flex-shrink:0!important;min-height:42px!important;
+}
+@media(max-width:760px){
+  html body:not(.workspace-active) #login-view .login-card{
+    max-height:calc(100dvh - 8px)!important;padding:12px 12px 20px!important;
+  }
+  html body:not(.workspace-active) #login-view #register-form,
+  html body:not(.workspace-active) #login-view #freelancer-register-form{
+    gap:12px!important;
+  }
+}
+
+/* Customer has exactly three navigation items: equal-width tabs in a compact black dock. */
+body.customer-account-active #workspace-nav.bottom-nav{
+  display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  width:100%!important;max-width:100%!important;box-sizing:border-box!important;
+  min-height:0!important;height:auto!important;
+  padding:3px 7px calc(3px + env(safe-area-inset-bottom))!important;
+  gap:5px!important;background:#050505!important;
+}
+body.customer-account-active #workspace-nav.bottom-nav button{
+  width:100%!important;min-width:0!important;max-width:none!important;
+  min-height:37px!important;height:37px!important;padding:3px 2px!important;
+  margin:0!important;font-size:10px!important;line-height:1.1!important;
+  white-space:nowrap!important;overflow:hidden!important;
+}
+body.customer-account-active #workspace-nav.bottom-nav [data-workspace="shop"]{display:none!important}
+@media(max-width:760px){
+  body.customer-account-active #workspace-nav.bottom-nav{
+    padding:2px 5px calc(2px + env(safe-area-inset-bottom))!important;gap:4px!important;
+  }
+  body.customer-account-active #workspace-nav.bottom-nav button{
+    min-height:35px!important;height:35px!important;font-size:9px!important;
+  }
+}
