@@ -136,7 +136,7 @@
 
   function activateOwnerWorkspace(session){
     state.token=session?.token||null;state.role=session?.role||null;
-    if(!state.token||!['owner','manager'].includes(state.role))return;
+    if(!state.token||!['owner','manager','freelancer'].includes(state.role))return;
     $('owner-dashboard-view').classList.remove('hidden');
     $('owner-dashboard-view').classList.remove('workspace-accounting','workspace-console');
     $('owner-dashboard-view').classList.add('workspace-dashboard');
@@ -159,11 +159,12 @@
       const claims=JSON.parse(atob(payload.replace(/-/g,'+').replace(/_/g,'/')));
       if(!claims.exp||claims.exp*1000<=Date.now())return;
       const role=saved.role||claims.role;
-      if(['owner','manager'].includes(role))activateOwnerWorkspace({token:saved.token,role});
+      if(['owner','manager','freelancer'].includes(role))activateOwnerWorkspace({token:saved.token,role});
     }catch(error){console.warn('[SWASS] Could not restore dashboard session:',error?.message||error);}
   }
   restoreDashboardSession();
   window.addEventListener('swass:sale-issued',()=>{void loadDashboard();});
+  window.addEventListener('swass:dashboard-open',()=>{if(state.token&&['owner','manager','freelancer'].includes(state.role)){void loadDashboard();loadCustomers();}});
   window.addEventListener('swass:logout',()=>{state.token=null;state.role=null;state.lastDashboardData=null;try{sessionStorage.removeItem(DASHBOARD_CACHE_KEY);}catch{}$('owner-dashboard-view').classList.add('hidden');});
   // Refresh the dashboard automatically while the workspace is open. Avoid
   // background traffic when the tab is hidden or the device is offline.
