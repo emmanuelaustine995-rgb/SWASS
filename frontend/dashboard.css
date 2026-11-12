@@ -1812,12 +1812,12 @@ html body.workspace-active #shop-home:not(.hidden) .shop-register-product-card,
 html body.workspace-active #shop-home:not(.hidden) .panel,
 html body.workspace-active #shop-home:not(.hidden) .shop-product-card,
 html body.workspace-active #shop-lost-items-panel:not(.hidden) .panel,
-html body.workspace-active #shop-lost-items-panel:not(.hidden) .lost-goods-card,
 html body.workspace-active #shop-lost-items-panel:not(.hidden) .lost-items-list-head,
 html body.workspace-active #shop-lost-items-panel:not(.hidden) #lost-items-list{
   background-color:#fff!important;
   background-image:none!important;
 }
+/* Preserve the original individual Flagged Items action-card colours. */
 html body.workspace-active #shop-home:not(.hidden) .shop-section-tabs,
 html body.workspace-active #shop-home:not(.hidden) .shop-register-product-card,
 html body.workspace-active #shop-home:not(.hidden) .panel,
