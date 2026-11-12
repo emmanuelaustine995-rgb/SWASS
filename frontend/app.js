@@ -88,9 +88,16 @@
   function enforceCustomerReceiptActions(){
     if(state.role!=='customer')return;
     document.body.classList.add('customer-account-active');
-    // Remove the action itself for customer sessions; do not rely on CSS alone.
-    document.querySelectorAll('#receipts-home #open-issue-receipt').forEach(el=>{el.remove();});
-    $('open-issue-receipt')?.remove();
+    // Keep the owner action intact for future owner logins, but remove it
+    // completely from the customer's visible Receipts page.
+    const issueCard=$('open-issue-receipt');
+    if(issueCard){
+      const hide=state.role==='customer';
+      issueCard.hidden=hide;
+      issueCard.classList.toggle('hidden',hide);
+      issueCard.style.setProperty('display',hide?'none':'','important');
+      issueCard.setAttribute('aria-hidden',hide?'true':'false');
+    }
   }
 
   function renderDashboardBusinessProfile(){
@@ -1505,8 +1512,7 @@
     $('sh-shop-acknowledged').required=!isCustomer;
     $('secondhand-submit').textContent=isCustomer?'Submit Sales Declaration for Review':'Issue Sales Declaration PDF & Send to Both Parties';
     $('secondhand-history-toggle').textContent=isCustomer?'My Declaration Submissions':'View Sales Declaration History';
-    $('secondhand-panel-heading-copy')?.replaceChildren();
-    const copy=$('secondhand-panel-heading-copy');
+    const copy=$('secondhand-panel-heading-copy')?.querySelector('.muted');
     if(copy)copy.textContent=isCustomer?'Complete your details and submit your declaration securely. It will be marked pending review.':'Complete the seller, buyer and product details before issuing the signed sales declaration.';
     $('receipts-home')?.classList.remove('hidden');
     $('receipts-home')?.classList.add('secondhand-active');
