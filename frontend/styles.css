@@ -1964,3 +1964,22 @@ html body.workspace-active .shell>*{
     height:calc(100dvh - 66px - env(safe-area-inset-bottom))!important;
   }
 }
+
+
+/* AURORA HOME BOTTOM GAP FIX: the top bar is hidden, so do not reserve
+   its old 66px height. The blue app shell must extend to the bottom edge. */
+html body.workspace-active .shell{
+  height:100dvh!important;
+  min-height:100dvh!important;
+  max-height:100dvh!important;
+  padding-bottom:0!important;
+  box-sizing:border-box!important;
+}
+@media(max-width:760px){
+  html body.workspace-active .shell{
+    height:100dvh!important;
+    min-height:100dvh!important;
+    max-height:100dvh!important;
+    padding-bottom:env(safe-area-inset-bottom)!important;
+  }
+}
