@@ -14,7 +14,7 @@ export class ReceiptsController {
   }
 
   @Get(':id/pdf')
-  @Roles('cashier', 'manager', 'owner')
+  @Roles('cashier', 'manager', 'owner', 'freelancer')
   async pdf(@Req() req: any, @Param('id') id: string, @Res() res: any) {
     const result = await this.receipts.pdf(req.user, id);
     res.setHeader('Content-Type', 'application/pdf');
@@ -24,14 +24,14 @@ export class ReceiptsController {
   }
 
   @Post()
-  @Roles('cashier', 'manager', 'owner')
+  @Roles('cashier', 'manager', 'owner', 'freelancer')
   create(@Req() req: any, @Body() dto: CreateReceiptDto) {
     return this.receipts.create(req.user, dto);
   }
 
   /** Uploads receipts made offline; each one is idempotent on clientUuid. */
   @Post('sync')
-  @Roles('cashier', 'manager', 'owner')
+  @Roles('cashier', 'manager', 'owner', 'freelancer')
   async sync(@Req() req: any, @Body() body: { receipts: CreateReceiptDto[] }) {
     if (!Array.isArray(body?.receipts) || body.receipts.length === 0 || body.receipts.length > 100) {
       throw new BadRequestException('receipts must contain between 1 and 100 sales');
