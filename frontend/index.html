@@ -84,13 +84,15 @@
         <p id="freelancer-register-entry" class="muted small hidden" style="text-align:center"><button id="show-freelancer-register" type="button" class="text-btn">Create freelancer account</button></p>
         <form id="freelancer-register-form" class="hidden">
           <p class="eyebrow">CREATE FREELANCER ACCOUNT</p>
-          <p class="muted small">Enter the shop owner’s registered phone and email. We will send an approval code to the owner’s phone. The owner must share that code with you before your account is activated.</p>
-          <label>Shop registration permit number<input id="freelancer-shop-permit" type="text" maxlength="100" required autocomplete="off" placeholder="Enter shop registration permit number"></label>
-          <label>Shop owner’s registered phone<input id="freelancer-owner-phone" type="tel" inputmode="tel" required placeholder="07XX XXX XXX"></label>
-          <label>Shop owner’s registered email<input id="freelancer-owner-email" type="email" required placeholder="owner@example.com"></label>
+          <p class="muted small">Enter your details and the shop owner’s name and registered phone. The owner must approve your request using a code sent to their phone. Once approved, your account will be linked to that shop for receipt details.</p>
           <label>Your full name<input id="freelancer-full-name" maxlength="120" required autocomplete="name"></label>
           <label>Your phone number<input id="freelancer-phone" type="tel" inputmode="tel" required placeholder="07XX XXX XXX"></label>
           <label>Your email address<input id="freelancer-email" type="email" required autocomplete="email"></label>
+          <label>Your National ID number<input id="freelancer-national-id" type="text" inputmode="numeric" maxlength="12" pattern="[0-9]{6,12}" required placeholder="Enter National ID number"></label>
+          <label>Upload National ID photo (JPG, PNG or WebP; max 180 KB)<input id="freelancer-id-photo" type="file" accept="image/jpeg,image/png,image/webp" required></label>
+          <label>Upload your profile photo (JPG, PNG or WebP; max 40 KB)<input id="freelancer-profile-photo" type="file" accept="image/jpeg,image/png,image/webp" required></label>
+          <label>Shop owner’s full name<input id="freelancer-owner-name" type="text" maxlength="120" required autocomplete="name" placeholder="Name registered on the shop-owner account"></label>
+          <label>Shop owner’s registered phone number<input id="freelancer-owner-phone" type="tel" inputmode="tel" required placeholder="07XX XXX XXX"></label>
           <div id="freelancer-register-otp" class="hidden">
             <label>Owner approval code<input id="freelancer-owner-code" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" required placeholder="6-digit code"></label>
             <label>Create your password<input id="freelancer-new-password" type="password" minlength="10" maxlength="128" required autocomplete="new-password"></label>
