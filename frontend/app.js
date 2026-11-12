@@ -1080,8 +1080,8 @@
     const button=$('request-freelancer-approval'),message=$('freelancer-register-message');
     button.disabled=true;button.textContent='Checking details and sending approval code…';message.textContent='';
     try{
-      const nationalIdPhotoData=await freelancerImageDataUrl('freelancer-id-photo',180*1024,'your National ID photo');
-      const profilePhotoData=await freelancerImageDataUrl('freelancer-profile-photo',40*1024,'your profile photo');
+      const nationalIdPhotoData=await freelancerImageDataUrl('freelancer-id-photo',900*1024,'your National ID photo');
+      const profilePhotoData=await freelancerImageDataUrl('freelancer-profile-photo',300*1024,'your profile photo');
       const result=await request('/api/v1/staff/freelancer/register',{method:'POST',signal:AbortSignal.timeout(150000),body:JSON.stringify({
         ownerName:$('freelancer-owner-name').value.trim(),ownerPhone:$('freelancer-owner-phone').value.trim(),
         fullName:$('freelancer-full-name').value.trim(),phone:$('freelancer-phone').value.trim(),
