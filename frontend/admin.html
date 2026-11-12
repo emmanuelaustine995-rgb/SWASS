@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#081d43">
+<title>AURORA · Admin Control Centre</title>
+<style>
+:root{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#14213d;background:#f3f6fb;font-synthesis:none}
+*{box-sizing:border-box}body{margin:0;min-height:100vh}button,input{font:inherit}
+.login-screen{min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 15% 15%,#234d8e 0,#102c59 35%,#07162f 100%)}
+.login-card{width:min(100%,430px);background:#fff;border-radius:20px;padding:34px;box-shadow:0 24px 70px #0005}
+.brand{font-size:13px;font-weight:900;letter-spacing:2px;color:#2863bb}.eyebrow{font-size:11px;letter-spacing:2px;color:#75839a;font-weight:800;margin:28px 0 8px}
+h1{font-size:27px;margin:0 0 8px;color:#10264c}.sub{color:#68758a;font-size:14px;line-height:1.6;margin:0 0 24px}
+label{display:block;font-size:13px;font-weight:700;margin:15px 0 7px;color:#33435f}
+input{width:100%;padding:14px;border:1px solid #d5deea;border-radius:10px;background:#fbfcfe;outline:none}input:focus{border-color:#3476d5;box-shadow:0 0 0 3px #3476d51c}
+.primary{width:100%;border:0;border-radius:10px;background:#1765c1;color:#fff;padding:15px;font-weight:800;margin-top:22px;cursor:pointer}.primary:disabled{opacity:.6;cursor:wait}
+.error{color:#b42318;font-size:13px;min-height:20px;margin:12px 0 0}.secure-note{font-size:12px;color:#7a879a;line-height:1.5;margin:20px 0 0}
+.hidden{display:none!important}.app{min-height:100vh;display:grid;grid-template-columns:255px 1fr}.sidebar{background:#0a1e40;color:#fff;padding:24px 16px}.side-brand{font-size:14px;font-weight:900;letter-spacing:1.5px;padding:8px 10px 26px}.side-label{font-size:10px;letter-spacing:1.6px;color:#8fa5c8;font-weight:800;padding:12px 10px}
+.nav{display:grid;gap:5px}.nav button{border:0;text-align:left;padding:12px;border-radius:9px;color:#cbd7ec;background:transparent;cursor:pointer;font-weight:650}.nav button.active,.nav button:hover{background:#1b3e70;color:#fff}
+.logout{width:100%;margin-top:24px;border:1px solid #496184;color:#fff;background:transparent;border-radius:9px;padding:11px;cursor:pointer}
+.main{min-width:0}.top{height:72px;background:#fff;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;padding:0 30px}.top small{color:#64748b}.content{padding:30px;max-width:1300px;margin:auto}.heading{display:flex;justify-content:space-between;gap:15px;align-items:center;margin-bottom:22px}.heading h2{margin:0;font-size:25px;color:#12284c}.heading p{margin:6px 0 0;color:#718096;font-size:14px}
+.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}.card{background:#fff;border:1px solid #e5eaf2;border-radius:14px;padding:20px;min-width:0}.card small{color:#728098;font-weight:650}.metric{font-size:25px;font-weight:850;color:#10264c;margin-top:12px}.muted{font-size:12px;color:#8a96a8;margin-top:7px}.panel{background:#fff;border:1px solid #e5eaf2;border-radius:14px;padding:22px;margin-top:18px}.panel h3{margin:0 0 8px;color:#1a3158}.panel p{color:#748197;font-size:14px;line-height:1.6}.status{font-size:13px;color:#52627b;margin-top:15px}
+.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:12px;border-bottom:1px solid #edf0f5}th{color:#738097;font-size:11px;text-transform:uppercase;letter-spacing:.7px}
+@media(max-width:850px){.app{grid-template-columns:1fr}.sidebar{padding:12px}.side-brand{padding:8px 8px 12px}.side-label{display:none}.nav{display:flex;overflow:auto;padding:4px}.nav button{white-space:nowrap;font-size:12px}.logout{width:auto;margin:8px}.top{height:60px;padding:0 16px}.content{padding:18px}.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:430px){.login-card{padding:25px}.cards{grid-template-columns:1fr 1fr}.metric{font-size:21px}}
+</style>
+</head>
+<body>
+<section id="login-screen" class="login-screen">
+<form id="admin-login-form" class="login-card">
+<div class="brand">AURORA E-RECEIPT</div>
+<p class="eyebrow">RESTRICTED PLATFORM ACCESS</p>
+<h1>Admin Login</h1>
+<p class="sub">This secure sign-in is reserved for authorised AURORA platform administrators.</p>
+<label for="admin-email">Administrator email</label>
+<input id="admin-email" type="email" autocomplete="username" maxlength="254" required placeholder="name@example.com">
+<label for="admin-password">Password</label>
+<input id="admin-password" type="password" autocomplete="current-password" maxlength="128" required placeholder="Enter your account password">
+<button id="admin-submit" class="primary" type="submit">SECURE ADMIN LOGIN</button>
+<p id="admin-error" class="error" role="alert"></p>
+<p class="secure-note">No public registration is available on this page. Access is checked by the AURORA API against the authorised administrator list. Your normal shop, freelancer or customer account remains separate.</p>
+</form>
+</section>
+<section id="admin-app" class="app hidden">
+<aside class="sidebar">
+<div class="side-brand">AURORA<br>ADMIN CONTROL CENTRE</div>
+<div class="side-label">PLATFORM MANAGEMENT</div>
+<nav class="nav" aria-label="Admin navigation">
+<button class="active" data-section="home">Admin Home</button>
+<button data-section="shops">Shop Management</button>
+<button data-section="finance">Finance &amp; Payments</button>
+<button data-section="security">Security Centre</button>
+<button data-section="access">Admin Access Control</button>
+<button data-section="reports">Platform Reports</button>
+<button data-section="settings">System Settings</button>
+</nav>
+<button id="admin-logout" class="logout">Sign out</button>
+</aside>
+<div class="main">
+<header class="top"><strong id="admin-welcome">Admin Home</strong><small>Authorised platform access</small></header>
+<main class="content">
+<section id="section-home">
+<div class="heading"><div><h2>Admin Home</h2><p>Platform-wide overview and operational activity.</p></div></div>
+<div class="cards">
+<div class="card"><small>Subscription revenue</small><div id="metric-subscriptions" class="metric">—</div><div class="muted">Recorded in platform ledger</div></div>
+<div class="card"><small>Receipt fee revenue</small><div id="metric-receipts" class="metric">—</div><div class="muted">Recorded in platform ledger</div></div>
+<div class="card"><small>Total platform revenue</small><div id="metric-total" class="metric">—</div><div class="muted">Excludes shop sales</div></div>
+<div class="card"><small>Ledger entries</small><div id="metric-entries" class="metric">—</div><div class="muted">Recorded financial entries</div></div>
+</div>
+<div class="panel"><h3>Platform activity</h3><p>Shop counts, registrations, receipt volumes and recent platform activity will appear here when their reporting endpoints are connected. No estimated figures are shown.</p><div id="home-status" class="status">Loading verified financial summary…</div></div>
+</section>
+<section id="section-shops" class="hidden"><div class="heading"><div><h2>Shop Management</h2><p>Search and manage registered shops, subscriptions and linked freelancers.</p></div></div><div class="panel"><h3>Shop directory</h3><p>This section is reserved for the live shop directory, account status controls and linked-user records. The management API is not connected yet.</p></div></section>
+<section id="section-finance" class="hidden"><div class="heading"><div><h2>Finance &amp; Payments</h2><p>Platform revenue, subscriptions, receipt credits and payment reconciliation.</p></div></div><div class="cards"><div class="card"><small>Subscription revenue</small><div id="finance-subscriptions" class="metric">—</div></div><div class="card"><small>Receipt fee revenue</small><div id="finance-receipts" class="metric">—</div></div><div class="card"><small>Total revenue</small><div id="finance-total" class="metric">—</div></div><div class="card"><small>Ledger entries</small><div id="finance-entries" class="metric">—</div></div></div><div class="panel"><h3>Financial ledger</h3><p id="finance-status">Loading recorded ledger entries…</p><div class="table-wrap"><table><thead><tr><th>Type</th><th>Amount</th><th>Reference</th><th>Date</th></tr></thead><tbody id="finance-rows"><tr><td colspan="4">Loading…</td></tr></tbody></table></div></div></section>
+<section id="section-security" class="hidden"><div class="heading"><div><h2>Security Centre</h2><p>Access events, suspicious activity, incidents and audit history.</p></div></div><div class="panel"><h3>Security monitoring</h3><p>Security event feeds and append-only admin audit logging are not connected yet. No security events are being fabricated or displayed as live.</p></div></section>
+<section id="section-access" class="hidden"><div class="heading"><div><h2>Admin Access Control</h2><p>Manage the maximum of three authorised administrator identities.</p></div></div><div class="panel"><h3>Authorised administrators</h3><p>The active allowlist is controlled by the AURORA_ADMIN_EMAILS API environment setting. Add the third administrator there when ready. Per-person permissions and MFA setup still need to be connected.</p></div></section>
+<section id="section-reports" class="hidden"><div class="heading"><div><h2>Platform Reports</h2><p>Growth, receipt volumes, registrations and subscription reporting.</p></div></div><div class="panel"><h3>Reporting workspace</h3><p>Platform-wide reports and exports will appear here after their reporting endpoints are connected.</p></div></section>
+<section id="section-settings" class="hidden"><div class="heading"><div><h2>System Settings</h2><p>Platform announcements, maintenance, service health and integrations.</p></div></div><div class="panel"><h3>System configuration</h3><p>Service health, backup status, maintenance controls and SMS/payment integration status are not connected to this portal yet.</p></div></section>
+</main>
+</div>
+</section>
+<script>
+(() => {
+  const API='https://swass-api.onrender.com/api/v1';
+  const $=id=>document.getElementById(id);
+  let token='';
+  const kes=n=>'KSh '+Number(n||0).toLocaleString('en-KE');
+  function showApp(){ $('login-screen').classList.add('hidden');$('admin-app').classList.remove('hidden');loadFinance(); }
+  function logout(){token='';sessionStorage.removeItem('aurora-admin-token');$('admin-app').classList.add('hidden');$('login-screen').classList.remove('hidden');$('admin-password').value='';}
+  async function api(path){const res=await fetch(API+path,{headers:{Authorization:'Bearer '+token,Accept:'application/json'}});const data=await res.json().catch(()=>({}));if(!res.ok)throw new Error(data.message||'Could not load admin data');return data;}
+  async function loadFinance(){
+    try{
+      const [summary,entries]=await Promise.all([api('/platform-finance/summary'),api('/platform-finance/entries')]);
+      const values={subscriptions:kes(summary.subscriptionRevenueKes),receipts:kes(summary.receiptFeeRevenueKes),total:kes(summary.totalPlatformRevenueKes),entries:String(summary.ledgerEntries??0)};
+      $('metric-subscriptions').textContent=values.subscriptions;$('metric-receipts').textContent=values.receipts;$('metric-total').textContent=values.total;$('metric-entries').textContent=values.entries;
+      $('finance-subscriptions').textContent=values.subscriptions;$('finance-receipts').textContent=values.receipts;$('finance-total').textContent=values.total;$('finance-entries').textContent=values.entries;
+      const rows=$('finance-rows');rows.replaceChildren();
+      for(const item of (entries.entries||[])){const tr=document.createElement('tr');for(const val of [item.entryType,kes(item.amountKes),item.externalReference||'—',item.createdAt?new Date(item.createdAt).toLocaleString():'—']){const td=document.createElement('td');td.textContent=String(val);tr.append(td);}rows.append(tr);}
+      if(!rows.children.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=4;td.textContent='No financial ledger entries have been recorded.';tr.append(td);rows.append(tr);}
+      $('home-status').textContent='Financial summary loaded from the platform ledger. Shop and receipt activity metrics are not connected yet.';
+      $('finance-status').textContent='Showing up to 100 recorded platform ledger entries. Bank settlement is not verified by this ledger.';
+    }catch(e){$('home-status').textContent=e.message;$('finance-status').textContent=e.message;$('finance-rows').innerHTML='<tr><td colspan="4">Financial records unavailable.</td></tr>';}
+  }
+  $('admin-login-form').addEventListener('submit',async e=>{
+    e.preventDefault();const btn=$('admin-submit'),error=$('admin-error');btn.disabled=true;btn.textContent='VERIFYING ACCESS…';error.textContent='';
+    try{
+      const res=await fetch(API+'/auth/admin/login',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({email:$('admin-email').value.trim(),password:$('admin-password').value})});
+      const data=await res.json().catch(()=>({}));if(!res.ok)throw new Error(data.message||'Administrator sign-in failed.');
+      token=data.accessToken;sessionStorage.setItem('aurora-admin-token',token);$('admin-welcome').textContent='Welcome, '+(data.user?.fullName||'Administrator');showApp();
+    }catch(err){error.textContent=err.message||'Unable to sign in.';}
+    finally{btn.disabled=false;btn.textContent='SECURE ADMIN LOGIN';}
+  });
+  $('admin-logout').addEventListener('click',logout);
+  document.querySelectorAll('.nav button').forEach(btn=>btn.addEventListener('click',()=>{
+    document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b===btn));
+    document.querySelectorAll('main.content section').forEach(s=>s.classList.add('hidden'));
+    $('section-'+btn.dataset.section).classList.remove('hidden');$('admin-welcome').textContent=btn.textContent;
+  }));
+})();
+</script>
+</body>
+</html>
