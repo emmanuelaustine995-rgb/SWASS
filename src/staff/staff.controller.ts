@@ -62,7 +62,8 @@ export class StaffController {
     const ownerNationalPhone = ownerPhone.slice(3);
     const ownerLocalPhone = '0' + ownerNationalPhone;
     const owner = await this.db.pool.query(
-      `SELECT u.id,u.tenant_id,u.store_id,u.phone
+      `SELECT u.id,u.tenant_id,u.store_id,
+               CASE WHEN regexp_replace(coalesce(u.phone,''),'[^0-9]','','g') IN ($2,$3,$4) THEN u.phone ELSE t.phone END AS phone
          FROM users u
          LEFT JOIN tenants t ON t.id=u.tenant_id
         WHERE u.role='owner' AND u.is_active=true
