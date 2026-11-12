@@ -974,6 +974,7 @@
     button.disabled=true;button.textContent='Sending owner approval code…';message.textContent='';
     try{
       const result=await request('/api/v1/staff/freelancer/register',{method:'POST',signal:AbortSignal.timeout(150000),body:JSON.stringify({
+        shopRegistrationPermit:$('freelancer-shop-permit').value.trim(),
         ownerPhone:$('freelancer-owner-phone').value.trim(),ownerEmail:$('freelancer-owner-email').value.trim(),
         fullName:$('freelancer-full-name').value.trim(),phone:$('freelancer-phone').value.trim(),email:$('freelancer-email').value.trim()
       })});
