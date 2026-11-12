@@ -426,6 +426,11 @@ export class AuthController {
     return this.emailVerification.verify(String(body?.token ?? ''));
   }
 
+  @Post('admin/email-verification/verify')
+  async verifyAdminEmail(@Body() body: { token?: string }) {
+    return this.emailVerification.verifyAdmin(String(body?.token ?? ''));
+  }
+
   @Post('admin/register')
   async adminRegister(@Body() body: { fullName?: string; nationalId?: string; email?: string; phone?: string; password?: string }) {
     const identities = configuredAdminIdentities();
@@ -454,10 +459,11 @@ export class AuthController {
     );
     if (existingUser.rowCount) {
       const account = existingUser.rows[0];
-      if (!['owner','manager'].includes(account.role) || !account.is_active ||
-          String(account.email || '').trim().toLowerCase() !== email) {
-        throw new UnauthorizedException('This phone is already linked to an account with a different email or account type. Use the email already on that shop-owner account, or contact platform support.');
+      if (!['owner','manager'].includes(account.role) || !account.is_active) {
+        throw new UnauthorizedException('This authorised phone is linked to an inactive account or an unsupported account type. Contact platform support.');
       }
+      // Admin email is an independently approved identity alias. Do not require
+      // it to match, or overwrite, the existing shop owner's login email.
     }
     const duplicate = await this.db.pool.query(
       `SELECT 1 FROM users WHERE lower(email)=$1 AND ($4::text IS NULL OR id::text<>$4)
@@ -522,14 +528,11 @@ export class AuthController {
       let adminUser;
       if (existing.rowCount) {
         const account = existing.rows[0];
-        if (!['owner','manager'].includes(account.role) || !account.is_active ||
-            String(account.email || '').trim().toLowerCase() !== email) {
-          throw new UnauthorizedException('The existing shop account does not match this authorised administrator email.');
+        if (!['owner','manager'].includes(account.role) || !account.is_active) {
+          throw new UnauthorizedException('The authorised phone is linked to an inactive account or an unsupported account type.');
         }
         adminUser = account;
       } else {
-        const emailUsed = await client.query('SELECT 1 FROM users WHERE lower(email)=$1 LIMIT 1', [email]);
-        if (emailUsed.rowCount) throw new UnauthorizedException('This email is already attached to another account.');
         const created = await client.query(
           `INSERT INTO users (tenant_id,store_id,full_name,phone,email,password_hash,role)
            VALUES(NULL,NULL,$1,$2,$3,$4,'super_admin') RETURNING id,full_name,email`,
@@ -537,21 +540,30 @@ export class AuthController {
         );
         adminUser = created.rows[0];
       }
+      // Keep the admin contact email separate from the shop owner's account email.
+      // It must not already belong to a different platform user.
+      const emailUsed = await client.query(
+        'SELECT 1 FROM users WHERE lower(email)=$1 AND id::text<>$2 LIMIT 1',
+        [email, String(adminUser.id)],
+      );
+      if (emailUsed.rowCount) throw new UnauthorizedException('This administrator email is already attached to another account.');
       const idExists = await client.query(
         'SELECT 1 FROM aurora_admin_identity_records WHERE national_id_hash=$1 OR person_id=$2 OR user_id=$3 LIMIT 1',
         [row.national_id_hash, row.person_id, adminUser.id],
       );
       if (idExists.rowCount) throw new UnauthorizedException('This administrator identity has already been registered.');
       await client.query(
-        'INSERT INTO aurora_admin_identity_records(person_id,user_id,national_id_hash,admin_password_hash) VALUES($1,$2,$3,$4)',
-        [row.person_id, adminUser.id, row.national_id_hash, row.password_hash],
+        `INSERT INTO aurora_admin_identity_records
+         (person_id,user_id,national_id_hash,admin_password_hash,admin_email,admin_email_verified_at)
+         VALUES($1,$2,$3,$4,$5,NULL)`,
+        [row.person_id, adminUser.id, row.national_id_hash, row.password_hash, email],
       );
       await client.query('UPDATE aurora_admin_registration_otps SET consumed_at=now() WHERE id=$1', [row.id]);
       return adminUser;
     });
     let emailVerificationSent = false;
     try {
-      const emailResult = await this.emailVerification.send(user.id, email, user.full_name);
+      const emailResult = await this.emailVerification.sendAdmin(identity.personId, email, user.full_name);
       emailVerificationSent = Boolean(emailResult?.sent);
     } catch (error) {
       console.error('[AURORA] Admin verification email delivery failed:', error instanceof Error ? error.message : error);
@@ -575,17 +587,18 @@ export class AuthController {
       throw new UnauthorizedException('Invalid administrator email or password.');
     }
     const found = await this.db.pool.query(
-      `SELECT u.id,u.full_name,u.email,r.admin_password_hash AS password_hash,u.is_active,u.email_verified_at
+      `SELECT u.id,u.full_name,r.admin_email,r.admin_password_hash AS password_hash,
+              u.is_active,r.admin_email_verified_at
          FROM users u JOIN aurora_admin_identity_records r ON r.user_id=u.id
-        WHERE r.person_id=$1 LIMIT 1`, [identity.personId],
+        WHERE r.person_id=$1 AND lower(r.admin_email)=$2 LIMIT 1`, [identity.personId, email],
     );
     const account = found.rows[0];
     let passwordOk = false;
     if (account?.password_hash) {
       try { passwordOk = await argon2.verify(account.password_hash, password); } catch { passwordOk = false; }
     }
-    if (!account || !account.is_active || !account.email_verified_at || !passwordOk) {
-      throw new UnauthorizedException('Invalid administrator email or password, or email verification is still pending.');
+    if (!account || !account.is_active || !account.admin_email_verified_at || !passwordOk) {
+      throw new UnauthorizedException('Invalid administrator email or password, or administrator email verification is still pending.');
     }
     const payload: AuthUser & { adminEmail: string; adminPersonId: string } = {
       sub: account.id, tenantId: null, storeId: null, role: 'super_admin',
