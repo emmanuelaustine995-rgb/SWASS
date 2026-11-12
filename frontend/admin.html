@@ -14,7 +14,7 @@ h1{font-size:27px;margin:0 0 8px;color:#10264c}.sub{color:#68758a;font-size:14px
 label{display:block;font-size:13px;font-weight:700;margin:15px 0 7px;color:#33435f}
 input{width:100%;padding:14px;border:1px solid #d5deea;border-radius:10px;background:#fbfcfe;outline:none}input:focus{border-color:#3476d5;box-shadow:0 0 0 3px #3476d51c}
 .primary{width:100%;border:0;border-radius:10px;background:#1765c1;color:#fff;padding:15px;font-weight:800;margin-top:22px;cursor:pointer}.primary:disabled{opacity:.6;cursor:wait}
-.error{color:#b42318;font-size:13px;min-height:20px;margin:12px 0 0}.secure-note{font-size:12px;color:#7a879a;line-height:1.5;margin:20px 0 0}
+.error{color:#b42318;font-size:13px;min-height:20px;margin:12px 0 0}.secondary{width:100%;border:1px solid #cbd5e1;border-radius:10px;background:#fff;color:#16477f;padding:12px;font-weight:750;margin-top:12px;cursor:pointer}.secure-note{font-size:12px;color:#7a879a;line-height:1.5;margin:20px 0 0}
 .hidden{display:none!important}.app{min-height:100vh;display:grid;grid-template-columns:255px 1fr}.sidebar{background:#0a1e40;color:#fff;padding:24px 16px}.side-brand{font-size:14px;font-weight:900;letter-spacing:1.5px;padding:8px 10px 26px}.side-label{font-size:10px;letter-spacing:1.6px;color:#8fa5c8;font-weight:800;padding:12px 10px}
 .nav{display:grid;gap:5px}.nav button{border:0;text-align:left;padding:12px;border-radius:9px;color:#cbd7ec;background:transparent;cursor:pointer;font-weight:650}.nav button.active,.nav button:hover{background:#1b3e70;color:#fff}
 .logout{width:100%;margin-top:24px;border:1px solid #496184;color:#fff;background:transparent;border-radius:9px;padding:11px;cursor:pointer}
@@ -38,7 +38,29 @@ input{width:100%;padding:14px;border:1px solid #d5deea;border-radius:10px;backgr
 <input id="admin-password" type="password" autocomplete="current-password" maxlength="128" required placeholder="Enter your account password">
 <button id="admin-submit" class="primary" type="submit">SECURE ADMIN LOGIN</button>
 <p id="admin-error" class="error" role="alert"></p>
-<p class="secure-note">No public registration is available on this page. Access is checked by the AURORA API against the authorised administrator list. Your normal shop, freelancer or customer account remains separate.</p>
+<p class="secure-note">Only pre-authorised administrators can register. Your normal shop, freelancer or customer account remains separate.</p>
+<button id="show-admin-register" class="secondary" type="button">REGISTER AUTHORISED ADMIN</button>
+</form>
+<form id="admin-register-form" class="login-card hidden">
+<div class="brand">AURORA E-RECEIPT</div><p class="eyebrow">RESTRICTED PLATFORM ACCESS</p><h1>Admin Registration</h1>
+<p class="sub">Your email and phone must match the administrator details approved by the platform owner.</p>
+<label for="reg-admin-name">Full name</label><input id="reg-admin-name" maxlength="120" autocomplete="name" required placeholder="Enter your full legal name">
+<label for="reg-admin-id">National ID number</label><input id="reg-admin-id" inputmode="numeric" maxlength="9" autocomplete="off" required placeholder="Enter your National ID number">
+<label for="reg-admin-email">Authorised email address</label><input id="reg-admin-email" type="email" maxlength="254" autocomplete="email" required placeholder="Approved email address">
+<label for="reg-admin-phone">Authorised phone number</label><input id="reg-admin-phone" type="tel" maxlength="16" autocomplete="tel" required placeholder="07XXXXXXXX or 2547XXXXXXXX">
+<label for="reg-admin-password">Create password</label><input id="reg-admin-password" type="password" minlength="12" maxlength="128" autocomplete="new-password" required placeholder="At least 12 characters">
+<button id="admin-register-submit" class="primary" type="submit">CONTINUE TO PHONE VERIFICATION</button>
+<p id="admin-register-error" class="error" role="alert"></p>
+<button id="back-admin-login" class="secondary" type="button">BACK TO ADMIN LOGIN</button>
+<p class="secure-note">Your National ID is not displayed in the dashboard. The server stores a protected verification hash, not the ID number itself.</p>
+</form>
+<form id="admin-otp-form" class="login-card hidden">
+<div class="brand">AURORA E-RECEIPT</div><p class="eyebrow">PHONE VERIFICATION</p><h1>Verify administrator phone</h1>
+<p class="sub">Enter the six-digit code sent to the authorised phone number.</p>
+<label for="admin-otp-code">Verification code</label><input id="admin-otp-code" inputmode="numeric" maxlength="6" autocomplete="one-time-code" required placeholder="6-digit code">
+<button id="admin-otp-submit" class="primary" type="submit">VERIFY AND REGISTER</button>
+<p id="admin-otp-error" class="error" role="alert"></p>
+<button id="back-admin-register" class="secondary" type="button">BACK TO REGISTRATION</button>
 </form>
 </section>
 <section id="admin-app" class="app hidden">
@@ -125,6 +147,32 @@ input{width:100%;padding:14px;border:1px solid #d5deea;border-radius:10px;backgr
       $('finance-status').textContent='Showing up to 100 recorded platform ledger entries. Bank settlement is not verified by this ledger.';
     }catch(e){$('home-status').textContent=e.message;$('finance-status').textContent=e.message;$('finance-rows').innerHTML='<tr><td colspan="4">Financial records unavailable.</td></tr>';}
   }
+  let pendingAdminEmail='',pendingAdminPhone='';
+  function showAdminForm(id){['admin-login-form','admin-register-form','admin-otp-form'].forEach(x=>$(x).classList.toggle('hidden',x!==id));}
+  $('show-admin-register').addEventListener('click',()=>showAdminForm('admin-register-form'));
+  $('back-admin-login').addEventListener('click',()=>showAdminForm('admin-login-form'));
+  $('back-admin-register').addEventListener('click',()=>showAdminForm('admin-register-form'));
+  $('admin-register-form').addEventListener('submit',async e=>{
+    e.preventDefault();const btn=$('admin-register-submit'),error=$('admin-register-error');btn.disabled=true;btn.textContent='CHECKING AUTHORISATION…';error.textContent='';
+    try{
+      const payload={fullName:$('reg-admin-name').value.trim(),nationalId:$('reg-admin-id').value.trim(),email:$('reg-admin-email').value.trim(),phone:$('reg-admin-phone').value.trim(),password:$('reg-admin-password').value};
+      const res=await fetch(API+'/auth/admin/register',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify(payload)});
+      const data=await res.json().catch(()=>({}));if(!res.ok)throw new Error(data.message||'Administrator registration failed.');
+      pendingAdminEmail=payload.email;pendingAdminPhone=payload.phone;$('admin-otp-code').value='';$('admin-otp-error').textContent='';showAdminForm('admin-otp-form');
+    }catch(err){error.textContent=err.message||'Unable to register administrator.';}
+    finally{btn.disabled=false;btn.textContent='CONTINUE TO PHONE VERIFICATION';}
+  });
+  $('admin-otp-form').addEventListener('submit',async e=>{
+    e.preventDefault();const btn=$('admin-otp-submit'),error=$('admin-otp-error');btn.disabled=true;btn.textContent='VERIFYING…';error.textContent='';
+    try{
+      const res=await fetch(API+'/auth/admin/register/verify-otp',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({email:pendingAdminEmail,phone:pendingAdminPhone,code:$('admin-otp-code').value.trim()})});
+      const data=await res.json().catch(()=>({}));if(!res.ok)throw new Error(data.message||'Phone verification failed.');
+      showAdminForm('admin-login-form');$('admin-error').textContent=data.message||'Registration complete. Verify your email before signing in.';
+      $('admin-email').value=pendingAdminEmail;$('admin-password').value='';
+      $('admin-register-form').reset();$('admin-otp-form').reset();
+    }catch(err){error.textContent=err.message||'Unable to verify code.';}
+    finally{btn.disabled=false;btn.textContent='VERIFY AND REGISTER';}
+  });
   $('admin-login-form').addEventListener('submit',async e=>{
     e.preventDefault();const btn=$('admin-submit'),error=$('admin-error');btn.disabled=true;btn.textContent='VERIFYING ACCESS…';error.textContent='';
     try{
