@@ -1928,3 +1928,31 @@ body:not(.workspace-active) #login-view .aurora-tagline strong{
 }
 body:not(.workspace-active) #login-view .aurora-tagline span{font-weight:750!important}
 body:not(.workspace-active) #login-view .aurora-tagline strong{font-weight:850!important}
+
+
+/* Desktop/phone split for Lost Goods: creamy outer surround on PC only,
+   blue shell and blue Lost Goods page on every screen. */
+@supports selector(body:has(#shop-lost-items-panel:not(.hidden))){
+  html:has(body.workspace-active #shop-lost-items-panel:not(.hidden)),
+  body.workspace-active:has(#shop-lost-items-panel:not(.hidden)){
+    background:linear-gradient(135deg,#fffdf4 0%,#fffbed 52%,#fff9e9 100%)!important;
+    background-color:#fffbed!important;
+    background-image:linear-gradient(135deg,#fffdf4 0%,#fffbed 52%,#fff9e9 100%)!important;
+    animation:none!important;
+  }
+  body.workspace-active:has(#shop-lost-items-panel:not(.hidden)) .shell{
+    background:linear-gradient(145deg,#eaf7ff 0%,#dff1ff 52%,#eaf6ff 100%)!important;
+    background-color:#eaf7ff!important;
+    background-image:linear-gradient(145deg,#eaf7ff 0%,#dff1ff 52%,#eaf6ff 100%)!important;
+  }
+}
+@media(max-width:600px){
+  @supports selector(body:has(#shop-lost-items-panel:not(.hidden))){
+    html:has(body.workspace-active #shop-lost-items-panel:not(.hidden)),
+    body.workspace-active:has(#shop-lost-items-panel:not(.hidden)){
+      background:linear-gradient(145deg,#eaf7ff 0%,#dff1ff 52%,#eaf6ff 100%)!important;
+      background-color:#eaf7ff!important;
+      background-image:linear-gradient(145deg,#eaf7ff 0%,#dff1ff 52%,#eaf6ff 100%)!important;
+    }
+  }
+}
