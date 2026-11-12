@@ -990,6 +990,7 @@
       const result=await request('/api/v1/staff/freelancer/register/verify-otp',{method:'POST',signal:AbortSignal.timeout(150000),body:JSON.stringify({
         invitationId:freelancerInvitationId,code:$('freelancer-owner-code').value.trim(),password
       })});
+      const freelancerPhone=$('freelancer-phone').value.trim();
       message.textContent=result.message||'Your freelancer account has been created. You can now sign in.';
       $('freelancer-register-otp').classList.add('hidden');
       $('freelancer-register-form').reset();
@@ -997,7 +998,7 @@
       $('freelancer-register-form').classList.add('hidden');
       $('login-form').classList.remove('hidden');
       $('login-account-type').value='freelancer';updateLoginAccountType();
-      $('login-phone').value=$('freelancer-phone').value.trim();
+      $('login-phone').value=freelancerPhone;
     }catch(error){message.textContent=error.message||'Could not create your freelancer account.';}
     finally{button.disabled=false;button.textContent='Verify owner approval and create account';}
   });
