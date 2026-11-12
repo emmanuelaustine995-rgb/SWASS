@@ -513,9 +513,21 @@ export class AuthController {
       await client.query('UPDATE aurora_admin_registration_otps SET consumed_at=now() WHERE id=$1', [row.id]);
       return created.rows[0];
     });
-    void this.emailVerification.send(user.id, email, user.full_name)
-      .catch(error => console.error('[AURORA] Admin verification email delivery failed:', error instanceof Error ? error.message : error));
-    return { registered: true, emailVerificationRequired: true, message: 'Phone verified. Check your email and verify it before signing in to the Admin Control Centre.' };
+    let emailVerificationSent = false;
+    try {
+      const emailResult = await this.emailVerification.send(user.id, email, user.full_name);
+      emailVerificationSent = Boolean(emailResult?.sent);
+    } catch (error) {
+      console.error('[AURORA] Admin verification email delivery failed:', error instanceof Error ? error.message : error);
+    }
+    return {
+      registered: true,
+      emailVerificationRequired: true,
+      emailVerificationSent,
+      message: emailVerificationSent
+        ? 'Phone verified. Check your email and verify it before signing in to the Admin Control Centre.'
+        : 'Phone verified and account created, but email verification could not be sent. The platform owner must configure or restore the email service before this account can sign in.',
+    };
   }
 
   @Post('admin/login')
