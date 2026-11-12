@@ -22,6 +22,40 @@ export interface AuthUser {
 
 export const Roles = (...roles: Role[]) => SetMetadata('roles', roles);
 
+// Admin email aliases are grouped under no more than three people. Keep each
+// person's email addresses and phone together so credentials cannot be mixed
+// across different administrators.
+type AdminIdentityConfig = { personId: string; phone: string; emails: string[] };
+function configuredAdminIdentities(): AdminIdentityConfig[] {
+  const raw = process.env.AURORA_ADMIN_IDENTITIES || '';
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || parsed.length < 1 || parsed.length > 3) return [];
+    const seenEmails = new Set<string>();
+    const seenPhones = new Set<string>();
+    const identities: AdminIdentityConfig[] = [];
+    for (const item of parsed) {
+      const personId = String(item?.personId || '').trim();
+      const digits = String(item?.phone || '').replace(/\\D/g, '');
+      const phone = digits.startsWith('254') && digits.length === 12 ? digits :
+        digits.startsWith('0') && digits.length === 10 ? '254' + digits.slice(1) :
+        digits.length === 9 ? '254' + digits : '';
+      const emails = Array.isArray(item?.emails) ? item.emails.map((v: unknown) => String(v).trim().toLowerCase()) : [];
+      if (!personId || !phone || !emails.length || emails.some((e: string) => !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(e))) return [];
+      if (seenPhones.has(phone) || emails.some((e: string) => seenEmails.has(e))) return [];
+      seenPhones.add(phone);
+      emails.forEach((e: string) => seenEmails.add(e));
+      identities.push({ personId, phone, emails });
+    }
+    if (new Set(identities.map(x => x.personId)).size !== identities.length) return [];
+    return identities;
+  } catch { return []; }
+}
+function configuredAdminEmails(): string[] {
+  return configuredAdminIdentities().flatMap(x => x.emails);
+}
+
 /** Reads the Bearer token and attaches the user to the request. */
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -40,8 +74,8 @@ export class AuthGuard implements CanActivate {
 
     const user = req.user as AuthUser;
     if (user.role === 'super_admin') {
-      const allowed = (process.env.AURORA_ADMIN_EMAILS || '').split(',').map((v: string) => v.trim().toLowerCase()).filter(Boolean);
-      if (allowed.length > 4 || new Set(allowed).size !== allowed.length) throw new ForbiddenException('Administrator allowlist configuration is invalid.');
+      const allowed = configuredAdminEmails();
+      if (!allowed.length || new Set(allowed).size !== allowed.length) throw new ForbiddenException('Administrator allowlist configuration is invalid.');
       const adminEmail = String((req.user as any).adminEmail || '').trim().toLowerCase();
       if (!adminEmail || !allowed.includes(adminEmail)) throw new ForbiddenException('This administrator account is not authorised.');
       const verified = await this.db.pool.query(
@@ -390,11 +424,103 @@ export class AuthController {
     return this.emailVerification.verify(String(body?.token ?? ''));
   }
 
+  @Post('admin/register')
+  async adminRegister(@Body() body: { fullName?: string; nationalId?: string; email?: string; phone?: string; password?: string }) {
+    const identities = configuredAdminIdentities();
+    if (!identities.length) throw new ServiceUnavailableException('Administrator identity configuration is incomplete. Contact the platform owner.');
+    const email = String(body?.email || '').trim().toLowerCase();
+    const phone = this.normalizePhone(String(body?.phone || ''));
+    const fullName = String(body?.fullName || '').trim();
+    const nationalId = String(body?.nationalId || '').replace(/\\s+/g, '');
+    const password = String(body?.password || '');
+    const identity = identities.find(x => x.phone === phone && x.emails.includes(email));
+    if (!identity) throw new UnauthorizedException('The email and phone number do not match an authorised administrator.');
+    if (!fullName || fullName.length > 120) throw new BadRequestException('Enter your full name (maximum 120 characters).');
+    if (!/^[0-9]{7,9}$/.test(nationalId)) throw new BadRequestException('Enter a valid Kenyan National ID number.');
+    if (password.length < 12 || password.length > 128) throw new BadRequestException('Admin password must be at least 12 characters.');
+    const secret = process.env.SWASS_ID_SECRET;
+    if (!secret) throw new ServiceUnavailableException('Secure identity verification is not configured.');
+    const nationalIdHash = createHmac('sha256', secret).update('aurora-admin-national-id:' + nationalId).digest('hex');
+    const duplicate = await this.db.pool.query(
+      `SELECT 1 FROM users WHERE lower(email)=$1 OR phone=$2
+       UNION ALL SELECT 1 FROM aurora_admin_identity_records WHERE national_id_hash=$3 LIMIT 1`,
+      [email, phone, nationalIdHash],
+    );
+    if (duplicate.rowCount) throw new UnauthorizedException('This email, phone number or ID is already registered.');
+    const recent = await this.db.pool.query(
+      `SELECT count(*)::int AS n FROM aurora_admin_registration_otps
+       WHERE (phone=$1 OR ip_address=$2::inet) AND created_at>now()-interval '15 minutes'`,
+      [phone, null],
+    );
+    if (Number(recent.rows[0]?.n || 0) >= 3) throw new BadRequestException('Too many registration attempts. Try again in 15 minutes.');
+    const code = String(randomBytes(4).readUInt32BE(0) % 1000000).padStart(6, '0');
+    const passwordHash = await argon2.hash(password);
+    const codeHash = createHmac('sha256', secret).update('aurora-admin-otp:' + code).digest('hex');
+    await this.db.pool.query(
+      `INSERT INTO aurora_admin_registration_otps
+       (person_id,full_name,email,phone,national_id_hash,password_hash,code_hash,expires_at)
+       VALUES($1,$2,$3,$4,$5,$6,$7,now()+interval '5 minutes')`,
+      [identity.personId, fullName, email, phone, nationalIdHash, passwordHash, codeHash],
+    );
+    await this.sendSignupSms(phone, `Your AURORA administrator verification code is ${code}. It expires in 5 minutes. Do not share it.`);
+    return { otpRequired: true, expiresInSeconds: 300, message: 'A verification code has been sent to the authorised phone number.' };
+  }
+
+  @Post('admin/register/verify-otp')
+  async verifyAdminRegistration(@Body() body: { email?: string; phone?: string; code?: string }) {
+    const email = String(body?.email || '').trim().toLowerCase();
+    const phone = this.normalizePhone(String(body?.phone || ''));
+    const code = String(body?.code || '').trim();
+    if (!/^\\d{6}$/.test(code)) throw new BadRequestException('Enter the six-digit verification code.');
+    const secret = process.env.SWASS_ID_SECRET;
+    if (!secret) throw new ServiceUnavailableException('Secure identity verification is not configured.');
+    const pending = await this.db.pool.query(
+      `SELECT * FROM aurora_admin_registration_otps
+       WHERE lower(email)=$1 AND phone=$2 AND consumed_at IS NULL AND expires_at>now()
+       ORDER BY created_at DESC LIMIT 1`, [email, phone],
+    );
+    const row = pending.rows[0];
+    if (!row || Number(row.attempts) >= 5) throw new BadRequestException('The code is invalid or expired. Register again.');
+    const supplied = createHmac('sha256', secret).update('aurora-admin-otp:' + code).digest('hex');
+    const a = Buffer.from(supplied, 'hex'), b = Buffer.from(row.code_hash, 'hex');
+    if (a.length !== b.length || !timingSafeEqual(a, b)) {
+      await this.db.pool.query('UPDATE aurora_admin_registration_otps SET attempts=attempts+1 WHERE id=$1 AND attempts<5', [row.id]);
+      throw new BadRequestException('That verification code is incorrect.');
+    }
+    const identities = configuredAdminIdentities();
+    const identity = identities.find(x => x.personId === row.person_id && x.phone === phone && x.emails.includes(email));
+    if (!identity) throw new UnauthorizedException('This administrator is no longer authorised.');
+    const user = await this.db.tx(async client => {
+      await client.query('SELECT pg_advisory_xact_lock(731904222)');
+      const locked = await client.query(
+        'SELECT * FROM aurora_admin_registration_otps WHERE id=$1 AND consumed_at IS NULL AND expires_at>now() FOR UPDATE', [row.id],
+      );
+      if (!locked.rowCount || Number(locked.rows[0].attempts) >= 5) throw new BadRequestException('The code is invalid or expired.');
+      const exists = await client.query('SELECT 1 FROM users WHERE lower(email)=$1 OR phone=$2 LIMIT 1', [email, phone]);
+      const idExists = await client.query('SELECT 1 FROM aurora_admin_identity_records WHERE national_id_hash=$1 OR person_id=$2 LIMIT 1', [row.national_id_hash, row.person_id]);
+      if (exists.rowCount || idExists.rowCount) throw new UnauthorizedException('This administrator identity has already been registered.');
+      const created = await client.query(
+        `INSERT INTO users (tenant_id,store_id,full_name,phone,email,password_hash,role)
+         VALUES(NULL,NULL,$1,$2,$3,$4,'super_admin') RETURNING id,full_name,email`,
+        [row.full_name, phone, email, row.password_hash],
+      );
+      await client.query(
+        'INSERT INTO aurora_admin_identity_records(person_id,user_id,national_id_hash) VALUES($1,$2,$3)',
+        [row.person_id, created.rows[0].id, row.national_id_hash],
+      );
+      await client.query('UPDATE aurora_admin_registration_otps SET consumed_at=now() WHERE id=$1', [row.id]);
+      return created.rows[0];
+    });
+    void this.emailVerification.send(user.id, email, user.full_name)
+      .catch(error => console.error('[AURORA] Admin verification email delivery failed:', error instanceof Error ? error.message : error));
+    return { registered: true, emailVerificationRequired: true, message: 'Phone verified. Check your email and verify it before signing in to the Admin Control Centre.' };
+  }
+
   @Post('admin/login')
   async adminLogin(@Body() body: { email?: string; password?: string }) {
     const email = String(body?.email || '').trim().toLowerCase();
     const password = String(body?.password || '');
-    const allowed = (process.env.AURORA_ADMIN_EMAILS || '').split(',').map(v => v.trim().toLowerCase()).filter(Boolean);
+    const allowed = configuredAdminEmails();
     if (allowed.length > 4 || new Set(allowed).size !== allowed.length) throw new UnauthorizedException('Administrator access is not configured correctly.');
     if (!email || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) || !password || password.length > 128 || !allowed.includes(email)) {
       throw new UnauthorizedException('Invalid administrator email or password.');
