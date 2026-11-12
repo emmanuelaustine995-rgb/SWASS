@@ -2276,3 +2276,89 @@ html body.workspace-active #shop-lost-items-panel:not(.hidden) #lost-goods-cards
     padding:13px 16px!important;
   }
 }
+
+/* FINAL Flagged Items containment: anchor the page to the workspace, not the viewport.
+   This prevents the fixed Lost Goods panel from escaping the blue shell on PC. */
+@media(min-width:761px){
+  html body.workspace-active .shell{
+    position:relative!important;
+    overflow:hidden!important;
+  }
+  html body.workspace-active #shop-lost-items-panel:not(.hidden){
+    position:absolute!important;
+    inset:0 12px 62px 12px!important;
+    left:12px!important;
+    right:12px!important;
+    top:0!important;
+    bottom:62px!important;
+    transform:none!important;
+    width:auto!important;
+    max-width:none!important;
+    max-height:none!important;
+    height:auto!important;
+    margin:0!important;
+    padding:0 4px 10px!important;
+    display:block!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    overscroll-behavior:contain!important;
+    box-sizing:border-box!important;
+    z-index:10!important;
+  }
+  html body.workspace-active #shop-lost-items-panel:not(.hidden) #lost-goods-cards{
+    width:100%!important;
+    max-width:100%!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:8px!important;
+    margin:0 0 8px!important;
+  }
+  html body.workspace-active #shop-lost-items-panel:not(.hidden) #lost-goods-cards>.lost-goods-card{
+    min-height:82px!important;
+    height:auto!important;
+    padding:10px 14px!important;
+    border-radius:13px!important;
+  }
+}
+@media(max-width:760px){
+  html body.workspace-active #shop-lost-items-panel:not(.hidden){
+    position:fixed!important;
+    top:64px!important;
+    bottom:calc(66px + env(safe-area-inset-bottom))!important;
+    left:0!important;
+    right:0!important;
+    transform:none!important;
+    width:100%!important;
+    max-width:none!important;
+    height:auto!important;
+    max-height:none!important;
+    margin:0!important;
+    padding:6px 9px 10px!important;
+    display:block!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    overscroll-behavior:contain!important;
+    box-sizing:border-box!important;
+    z-index:20!important;
+  }
+  html body.workspace-active #shop-lost-items-panel:not(.hidden) #lost-goods-cards{
+    width:100%!important;
+    max-width:100%!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:7px!important;
+    margin:0 0 8px!important;
+  }
+  html body.workspace-active #shop-lost-items-panel:not(.hidden) #lost-goods-cards>.lost-goods-card{
+    min-height:70px!important;
+    padding:9px 11px!important;
+    border-radius:12px!important;
+    gap:4px!important;
+  }
+  html body.workspace-active #shop-lost-items-panel:not(.hidden) #lost-goods-cards>.lost-goods-card strong{
+    font-size:13px!important;
+    line-height:1.2!important;
+  }
+  html body.workspace-active #shop-lost-items-panel:not(.hidden) #lost-goods-cards>.lost-goods-card small{
+    font-size:10.5px!important;
+    line-height:1.3!important;
+  }
+}
