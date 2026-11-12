@@ -9,7 +9,7 @@ import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypt
 import { DbService } from '../db/db.service';
 import { EmailVerificationService } from '../notifications/email-verification.service';
 
-export type Role = 'super_admin' | 'owner' | 'manager' | 'cashier' | 'vendor' | 'freelancer';
+export type Role = 'super_admin' | 'owner' | 'manager' | 'cashier' | 'vendor' | 'freelancer' | 'customer';
 
 export interface AuthUser {
   sub: string;
@@ -493,11 +493,95 @@ export class AuthController {
     return { changed: true, message: 'Your password has been created. Please sign in again using it.' };
   }
 
+  @Post('customer/register')
+  async registerCustomer(@Body() body: { fullName?: string; phone?: string; email?: string; password?: string }, @Req() req: any) {
+    const fullName = String(body?.fullName ?? '').trim();
+    const phone = this.normalizePhone(String(body?.phone ?? ''));
+    const email = String(body?.email ?? '').trim().toLowerCase() || null;
+    const password = String(body?.password ?? '');
+    if (!fullName || fullName.length > 120) throw new BadRequestException('Enter your full name (maximum 120 characters).');
+    if (email && (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) || email.length > 254)) throw new BadRequestException('Enter a valid email address.');
+    if (password.length < 10 || password.length > 128) throw new BadRequestException('Password must be at least 10 characters.');
+    const existing = await this.db.pool.query('SELECT 1 FROM customer_accounts WHERE phone=$1 LIMIT 1', [phone]);
+    if (existing.rowCount) throw new BadRequestException('A customer account already exists for this phone. Please sign in.');
+    const limits = await this.db.pool.query(
+      `SELECT count(*)::int AS n FROM customer_signup_otp_requests WHERE phone=$1 AND created_at>now()-interval '15 minutes'`,
+      [phone],
+    );
+    if (Number(limits.rows[0]?.n ?? 0) >= 3) throw new BadRequestException('Too many verification requests. Please wait 15 minutes.');
+    const passwordHash = await argon2.hash(password);
+    const code = String(randomBytes(4).readUInt32BE(0) % 1000000).padStart(6, '0');
+    await this.db.pool.query(
+      `UPDATE customer_signup_otp_requests SET expires_at=now() WHERE phone=$1 AND consumed_at IS NULL AND expires_at>now()`, [phone],
+    );
+    const saved = await this.db.pool.query(
+      `INSERT INTO customer_signup_otp_requests(phone,full_name,email,password_hash,code_hash,expires_at)
+       VALUES($1,$2,$3,$4,$5,now()+interval '5 minutes') RETURNING id`,
+      [phone,fullName,email,passwordHash,this.signupCodeHash(code)],
+    );
+    try {
+      await this.sendSignupSms(phone, `Your AURORA customer verification code is ${code}. It expires in 5 minutes. Do not share this code.`);
+    } catch {
+      await this.db.pool.query('UPDATE customer_signup_otp_requests SET expires_at=now() WHERE id=$1', [saved.rows[0].id]);
+      throw new ServiceUnavailableException('We could not send your verification code. Please try again.');
+    }
+    return process.env.NODE_ENV === 'production'
+      ? { otpRequired: true, expiresInSeconds: 300, message: 'A verification code has been sent to your phone.' }
+      : { otpRequired: true, expiresInSeconds: 300, developmentCode: code };
+  }
+
+  @Post('customer/register/verify-otp')
+  async verifyCustomerSignupOtp(@Body() body: { phone?: string; code?: string }) {
+    if (!body?.phone || !/^\\d{6}$/.test(String(body?.code ?? '').trim())) throw new BadRequestException('Enter your phone number and the six-digit code.');
+    const phone = this.normalizePhone(body.phone);
+    const pending = await this.db.pool.query(
+      `SELECT * FROM customer_signup_otp_requests WHERE phone=$1 AND consumed_at IS NULL AND expires_at>now()
+       ORDER BY created_at DESC LIMIT 1`, [phone],
+    );
+    const row = pending.rows[0];
+    if (!row || Number(row.attempts) >= 5) throw new BadRequestException('Code is invalid or expired. Request a new code.');
+    const supplied = Buffer.from(this.signupCodeHash(String(body.code).trim()), 'hex');
+    const expected = Buffer.from(row.code_hash, 'hex');
+    if (supplied.length !== expected.length || !timingSafeEqual(supplied, expected)) {
+      await this.db.pool.query('UPDATE customer_signup_otp_requests SET attempts=attempts+1 WHERE id=$1 AND attempts<5', [row.id]);
+      throw new BadRequestException('That code is incorrect. Check the SMS and try again.');
+    }
+    const account = await this.db.tx(async c => {
+      const locked = await c.query(
+        `SELECT * FROM customer_signup_otp_requests WHERE id=$1 AND consumed_at IS NULL AND expires_at>now() AND attempts<5 FOR UPDATE`, [row.id],
+      );
+      if (!locked.rowCount) throw new BadRequestException('Code has expired. Request a new one.');
+      const created = await c.query(
+        `INSERT INTO customer_accounts(full_name,phone,email,password_hash)
+         VALUES($1,$2,$3,$4) RETURNING id,full_name,phone,email`,
+        [row.full_name,row.phone,row.email,row.password_hash],
+      );
+      await c.query('UPDATE customer_signup_otp_requests SET consumed_at=now() WHERE id=$1', [row.id]);
+      return created.rows[0];
+    });
+    const payload: AuthUser = { sub: account.id, tenantId: null, storeId: null, role: 'customer', fullName: account.full_name };
+    return { accessToken: await this.jwt.signAsync(payload, { expiresIn: '30d' }), phoneVerified: true, user: { fullName: account.full_name, phone: account.phone, email: account.email, role: 'customer' } };
+  }
+
   @Post('login')
   async login(@Body() body: { phone?: string; password?: string; accountType?: string }) {
     const { password } = body ?? {};
     if (!body?.phone || !password) throw new UnauthorizedException();
     const phone = this.normalizePhone(body.phone);
+
+    if (body.accountType === 'customer') {
+      const customer = await this.db.pool.query(
+        `SELECT id,full_name,phone,email,password_hash,is_active FROM customer_accounts WHERE phone=$1 LIMIT 1`, [phone],
+      );
+      const account = customer.rows[0];
+      let passwordOk = false;
+      if (account?.password_hash) {
+        try { passwordOk = await argon2.verify(account.password_hash, password); } catch { passwordOk = false; }
+      }
+      if (!account || !account.is_active || !passwordOk) throw new UnauthorizedException('Invalid customer phone number or password.');
+      const payload: AuthUser = { sub: account.id, tenantId: null, storeId: null, role: 'customer', fullName: account.full_name };
+      return { accessToken: await this.jwt.signAsync(payload, { expiresIn: '30d' }), user: { fullName: account.full_name, phone: account.phone, email: account.email, role: 'customer' } };
+    }
 
     const localPhone = '0' + phone.slice(3);
     const phoneVariants = [phone, localPhone];
