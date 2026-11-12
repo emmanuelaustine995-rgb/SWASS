@@ -1016,7 +1016,7 @@
     }
   }
   $('show-register')?.addEventListener('click',()=>{
-    $('login-form').classList.add('hidden');$('password-reset-form')?.classList.add('hidden');$('first-password-form')?.classList.add('hidden');$('owner-register-entry').classList.add('hidden');$('register-form').classList.remove('hidden');$('register-error').textContent='';$('signup-otp-message').textContent='';updateSignupAccountType();
+    document.body.classList.add('registration-open');$('login-form').classList.add('hidden');$('password-reset-form')?.classList.add('hidden');$('first-password-form')?.classList.add('hidden');$('owner-register-entry').classList.add('hidden');$('register-form').classList.remove('hidden');$('register-error').textContent='';$('signup-otp-message').textContent='';updateSignupAccountType();
     // Start the customer registration screen at its top so the first fields
     // and the small Back control are visible on desktop.
     const card=document.querySelector('#login-view .login-card');
@@ -1028,6 +1028,7 @@
   function returnFromSignupToLogin(){
     if(signupResendTimer){clearInterval(signupResendTimer);signupResendTimer=null;}
     signupResendSeconds=0;
+    document.body.classList.remove('registration-open');
     $('register-form').classList.add('hidden');
     $('signup-otp-panel').classList.add('hidden');
     $('register-fields').classList.remove('hidden');
@@ -1049,7 +1050,7 @@
   // Hidden OTP/password inputs must not block the first freelancer registration step.
   ['freelancer-owner-code','freelancer-new-password','freelancer-confirm-password'].forEach(id=>{const field=$(id);if(field)field.required=false;});
   $('show-freelancer-register')?.addEventListener('click',()=>{
-    $('login-form').classList.add('hidden');$('password-reset-form')?.classList.add('hidden');
+    document.body.classList.add('registration-open');$('login-form').classList.add('hidden');$('password-reset-form')?.classList.add('hidden');
     $('freelancer-register-entry')?.classList.add('hidden');$('freelancer-register-form')?.classList.remove('hidden');
     $('freelancer-register-message').textContent='';
     const card=document.querySelector('#login-view .login-card');
@@ -1059,7 +1060,7 @@
     requestAnimationFrame(()=>{if(card)card.scrollTo({top:0,behavior:'instant'});if(form)form.scrollTo({top:0,behavior:'instant'});});
   });
   $('freelancer-back-login')?.addEventListener('click',()=>{
-    $('freelancer-register-form')?.classList.add('hidden');$('login-form').classList.remove('hidden');
+    document.body.classList.remove('registration-open');$('freelancer-register-form')?.classList.add('hidden');$('login-form').classList.remove('hidden');
     ['freelancer-owner-code','freelancer-new-password','freelancer-confirm-password'].forEach(id=>{const field=$(id);if(field)field.required=false;});
     $('freelancer-register-entry')?.classList.remove('hidden');$('login-account-type').value='freelancer';updateLoginAccountType();
   });
