@@ -1849,3 +1849,88 @@ body:not(.workspace-active) #login-view .aurora-tagline strong{color:#334b68}
   body:not(.workspace-active) #login-view .aurora-brand-lockup{padding:9px 9px 11px;margin-bottom:13px;border-radius:16px}
   body:not(.workspace-active) #login-view .aurora-login-logo{width:min(100%,275px)}
 }
+
+
+/* ROOT CAUSE FIX: remove inherited top offsets across every authenticated page.
+   Keep the header and bottom navigation; start each page immediately beneath them. */
+html body.workspace-active{
+  padding-top:0!important;
+  margin-top:0!important;
+  overflow:hidden!important;
+}
+html body.workspace-active .topbar{
+  position:relative!important;
+  top:0!important;
+  margin:0!important;
+  height:54px!important;
+  min-height:54px!important;
+  max-height:54px!important;
+  animation:none!important;
+  background:#fff!important;
+  box-shadow:none!important;
+}
+html body.workspace-active .global-back-row{
+  height:auto!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:0 10px!important;
+}
+html body.workspace-active .shell{
+  position:relative!important;
+  top:0!important;
+  margin:0 auto!important;
+  padding:0 10px 6px!important;
+  height:calc(100dvh - 54px - 66px - env(safe-area-inset-bottom))!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow:hidden!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:flex-start!important;
+  align-items:stretch!important;
+  gap:0!important;
+}
+html body.workspace-active .shell>*{
+  margin-top:0!important;
+}
+html body.workspace-active .shell>#workspace-nav{
+  order:20!important;
+}
+html body.workspace-active .shell>#welcome-back-banner:not(.hidden){
+  flex:0 0 auto!important;
+  margin:0 0 5px!important;
+}
+html body.workspace-active .shell>#owner-home:not(.hidden),
+html body.workspace-active .shell>#receipts-home:not(.hidden),
+html body.workspace-active .shell>#pos-view:not(.hidden),
+html body.workspace-active .shell>#shop-home:not(.hidden),
+html body.workspace-active .shell>#subscription-home:not(.hidden),
+html body.workspace-active .shell>#owner-dashboard-view.profile-workspace-mode:not(.hidden),
+html body.workspace-active .shell>#lost-goods-view:not(.hidden){
+  flex:1 1 auto!important;
+  align-self:stretch!important;
+  justify-content:flex-start!important;
+  align-content:flex-start!important;
+  min-height:0!important;
+  max-height:100%!important;
+  margin:0!important;
+  padding-top:0!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  overscroll-behavior:contain!important;
+}
+html body.workspace-active .shell>#owner-home:not(.hidden){
+  overflow:hidden!important;
+}
+html body.workspace-active .shell .page-heading,
+html body.workspace-active .shell .section-heading{
+  margin-top:0!important;
+  padding-top:0!important;
+}
+@media(max-width:760px){
+ html body.workspace-active .topbar{height:52px!important;min-height:52px!important;max-height:52px!important}
+ html body.workspace-active .shell{
+   height:calc(100dvh - 52px - 66px - env(safe-area-inset-bottom))!important;
+   padding:0 9px 4px!important;
+ }
+}
