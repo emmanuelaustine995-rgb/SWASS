@@ -449,8 +449,8 @@ export class AuthController {
     if (duplicate.rowCount) throw new UnauthorizedException('This email, phone number or ID is already registered.');
     const recent = await this.db.pool.query(
       `SELECT count(*)::int AS n FROM aurora_admin_registration_otps
-       WHERE (phone=$1 OR ip_address=$2::inet) AND created_at>now()-interval '15 minutes'`,
-      [phone, null],
+       WHERE phone=$1 AND created_at>now()-interval '15 minutes'`,
+      [phone],
     );
     if (Number(recent.rows[0]?.n || 0) >= 3) throw new BadRequestException('Too many registration attempts. Try again in 15 minutes.');
     const code = String(randomBytes(4).readUInt32BE(0) % 1000000).padStart(6, '0');
