@@ -29,6 +29,8 @@ services:
         generateValue: true
       - key: CORS_ORIGINS
         value: https://swass-web.onrender.com
+      - key: AURORA_ADMIN_IDENTITIES
+        sync: false
       - key: CASHIER_MAX_DISCOUNT_PCT
         value: "5"
       - key: MPESA_ENV
