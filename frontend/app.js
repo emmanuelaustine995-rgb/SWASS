@@ -20,7 +20,7 @@
     state.userPhone=saved.userPhone||'';state.userEmail=saved.userEmail||'';
     lastSessionWrite=Number(saved.lastActivity)||Date.now();
     showPOS();
-    const allowed=['dashboard','receipts','profile','shop','subscription','lost-goods'];
+    const allowed=['dashboard','receipts','profile','shop','subscription','lost-goods','customers'];
     let screen='dashboard';try{const remembered=localStorage.getItem('swass-active-workspace-v1');if(allowed.includes(remembered))screen=remembered;}catch{}
     showWorkspaceScreen(screen);
     window.dispatchEvent(new CustomEvent('swass:login',{detail:{token:state.token,role:state.role,restored:true}}));
@@ -433,7 +433,12 @@
         dashboardBusinessCard?.classList.add('hidden');
         $('platform-referral-admin')?.classList.remove('hidden');
         void loadPlatformReferralAdmin();
-      }else if(['owner','manager','vendor','freelancer'].includes(state.role)){
+      }else if(state.role==='freelancer'){
+        $('owner-dashboard-view')?.classList.remove('hidden');
+        ownerHome?.classList.add('hidden');
+        window.dispatchEvent(new Event('swass:dashboard-open'));
+        void loadStaffSalesSummary();
+      }else if(['owner','manager','vendor'].includes(state.role)){
         ownerHome?.classList.remove('hidden');
         void loadOwnerHomeSummary();
       }else if(state.role!=='customer'){
@@ -462,7 +467,7 @@
       history?.classList.remove('hidden');
       // Receipt history was nested inside the hidden business-profile panel. Move it into Receipts.
       if(history&&receiptHome&&history.parentElement!==receiptHome)receiptHome.appendChild(history);
-      if(state.role==='cashier'){staffSummary?.classList.remove('hidden');void loadStaffSalesSummary();}
+      if(['cashier','freelancer'].includes(state.role)){staffSummary?.classList.remove('hidden');void loadStaffSalesSummary();}
       $('open-recover-receipt')?.classList.remove('hidden');
       $('secondhand-open-card')?.classList.toggle('hidden',!['owner','customer'].includes(state.role));
     }else if(screen==='shop'){
@@ -492,6 +497,12 @@
       document.querySelectorAll('[data-lost-owner-only]').forEach(el=>el.classList.toggle('hidden',!['owner','manager','freelancer'].includes(state.role)));
       document.querySelectorAll('[data-lost-panel]').forEach(el=>el.classList.add('hidden'));
       if(['owner','manager','freelancer'].includes(state.role))void loadLostItems();
+    }else if(screen==='customers'){
+      if(!['owner','manager','freelancer'].includes(state.role)){showWorkspaceScreen('dashboard',{fromBack:true});return;}
+      $('owner-customers-section')?.classList.remove('hidden');
+      $('owner-dashboard-view')?.classList.remove('hidden');
+      $('owner-dashboard-view')?.scrollIntoView({behavior:'smooth',block:'start'});
+      window.dispatchEvent(new Event('swass:dashboard-open'));
     }else if(screen==='profile'){
       renderAccountProfile();
       if(['owner','manager','vendor','freelancer'].includes(state.role)){
@@ -1259,7 +1270,7 @@
     }
     if(!signedIn)return;
     // Open the workspace immediately after authentication. No product catalogue is loaded.
-    const landingScreen = state.role==='freelancer' ? 'shop' : 'dashboard';
+    const landingScreen = 'dashboard';
     showWorkspaceScreen(landingScreen);
     const backgroundLoads = [];
     if(['owner','manager','vendor','freelancer'].includes(state.role)){
