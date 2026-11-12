@@ -1795,3 +1795,32 @@ body.workspace-active .shell > section:not(.hidden){
 @media(prefers-reduced-motion:reduce){
   html:has(body.workspace-active),body.workspace-active{animation:none!important}
 }
+
+
+/* AURORA FIX: Shop and Flagged Items must use the same blue inner canvas.
+   Keep their individual action/content cards white, never creamy yellow. */
+html body.workspace-active #shop-home:not(.hidden),
+html body.workspace-active #shop-lost-items-panel:not(.hidden){
+  box-sizing:border-box!important;
+  background:linear-gradient(145deg,#eaf7ff 0%,#dff1ff 52%,#eaf6ff 100%)!important;
+  background-color:#eaf7ff!important;
+  background-image:linear-gradient(145deg,#eaf7ff 0%,#dff1ff 52%,#eaf6ff 100%)!important;
+  border-radius:14px!important;
+}
+html body.workspace-active #shop-home:not(.hidden) .shop-section-tabs,
+html body.workspace-active #shop-home:not(.hidden) .shop-register-product-card,
+html body.workspace-active #shop-home:not(.hidden) .panel,
+html body.workspace-active #shop-home:not(.hidden) .shop-product-card,
+html body.workspace-active #shop-lost-items-panel:not(.hidden) .panel,
+html body.workspace-active #shop-lost-items-panel:not(.hidden) .lost-goods-card,
+html body.workspace-active #shop-lost-items-panel:not(.hidden) .lost-items-list-head,
+html body.workspace-active #shop-lost-items-panel:not(.hidden) #lost-items-list{
+  background-color:#fff!important;
+  background-image:none!important;
+}
+html body.workspace-active #shop-home:not(.hidden) .shop-section-tabs,
+html body.workspace-active #shop-home:not(.hidden) .shop-register-product-card,
+html body.workspace-active #shop-home:not(.hidden) .panel,
+html body.workspace-active #shop-lost-items-panel:not(.hidden) .panel{
+  border-color:#e7edf2!important;
+}
