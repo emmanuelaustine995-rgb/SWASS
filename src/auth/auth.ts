@@ -443,12 +443,28 @@ export class AuthController {
     const secret = process.env.SWASS_ID_SECRET;
     if (!secret) throw new ServiceUnavailableException('Secure identity verification is not configured.');
     const nationalIdHash = createHmac('sha256', secret).update('aurora-admin-national-id:' + nationalId).digest('hex');
-    const duplicate = await this.db.pool.query(
-      `SELECT 1 FROM users WHERE lower(email)=$1 OR phone=$2
-       UNION ALL SELECT 1 FROM aurora_admin_identity_records WHERE national_id_hash=$3 LIMIT 1`,
-      [email, phone, nationalIdHash],
+    // An authorised administrator may already have a shop-owner account.
+    // Link that exact account; never create a duplicate user or overwrite its
+    // shop password. The admin password is stored separately on the identity record.
+    const existingUser = await this.db.pool.query(
+      `SELECT id, full_name, email, role, is_active FROM users
+       WHERE regexp_replace(phone, '[^0-9]', '', 'g') IN ($1,$2)
+       LIMIT 1`,
+      [phone, '0' + phone.slice(3)],
     );
-    if (duplicate.rowCount) throw new UnauthorizedException('This email, phone number or ID is already registered.');
+    if (existingUser.rowCount) {
+      const account = existingUser.rows[0];
+      if (!['owner','manager'].includes(account.role) || !account.is_active ||
+          String(account.email || '').trim().toLowerCase() !== email) {
+        throw new UnauthorizedException('This phone is already linked to an account with a different email or account type. Use the email already on that shop-owner account, or contact platform support.');
+      }
+    }
+    const duplicate = await this.db.pool.query(
+      `SELECT 1 FROM users WHERE lower(email)=$1 AND id<>COALESCE($4::uuid,'00000000-0000-0000-0000-000000000000'::uuid)
+       UNION ALL SELECT 1 FROM aurora_admin_identity_records WHERE national_id_hash=$3 OR person_id=$5 LIMIT 1`,
+      [email, phone, nationalIdHash, existingUser.rows[0]?.id || null, identity.personId],
+    );
+    if (duplicate.rowCount) throw new UnauthorizedException('This administrator identity or National ID is already registered.');
     const recent = await this.db.pool.query(
       `SELECT count(*)::int AS n FROM aurora_admin_registration_otps
        WHERE phone=$1 AND created_at>now()-interval '15 minutes'`,
@@ -498,20 +514,40 @@ export class AuthController {
         'SELECT * FROM aurora_admin_registration_otps WHERE id=$1 AND consumed_at IS NULL AND expires_at>now() FOR UPDATE', [row.id],
       );
       if (!locked.rowCount || Number(locked.rows[0].attempts) >= 5) throw new BadRequestException('The code is invalid or expired.');
-      const exists = await client.query('SELECT 1 FROM users WHERE lower(email)=$1 OR phone=$2 LIMIT 1', [email, phone]);
-      const idExists = await client.query('SELECT 1 FROM aurora_admin_identity_records WHERE national_id_hash=$1 OR person_id=$2 LIMIT 1', [row.national_id_hash, row.person_id]);
-      if (exists.rowCount || idExists.rowCount) throw new UnauthorizedException('This administrator identity has already been registered.');
-      const created = await client.query(
-        `INSERT INTO users (tenant_id,store_id,full_name,phone,email,password_hash,role)
-         VALUES(NULL,NULL,$1,$2,$3,$4,'super_admin') RETURNING id,full_name,email`,
-        [row.full_name, phone, email, row.password_hash],
+      const existing = await client.query(
+        `SELECT id,full_name,email,role,is_active FROM users
+         WHERE regexp_replace(phone, '[^0-9]', '', 'g') IN ($1,$2) LIMIT 1 FOR UPDATE`,
+        [phone, '0' + phone.slice(3)],
       );
+      let adminUser;
+      if (existing.rowCount) {
+        const account = existing.rows[0];
+        if (!['owner','manager'].includes(account.role) || !account.is_active ||
+            String(account.email || '').trim().toLowerCase() !== email) {
+          throw new UnauthorizedException('The existing shop account does not match this authorised administrator email.');
+        }
+        adminUser = account;
+      } else {
+        const emailUsed = await client.query('SELECT 1 FROM users WHERE lower(email)=$1 LIMIT 1', [email]);
+        if (emailUsed.rowCount) throw new UnauthorizedException('This email is already attached to another account.');
+        const created = await client.query(
+          `INSERT INTO users (tenant_id,store_id,full_name,phone,email,password_hash,role)
+           VALUES(NULL,NULL,$1,$2,$3,$4,'super_admin') RETURNING id,full_name,email`,
+          [row.full_name, phone, email, row.password_hash],
+        );
+        adminUser = created.rows[0];
+      }
+      const idExists = await client.query(
+        'SELECT 1 FROM aurora_admin_identity_records WHERE national_id_hash=$1 OR person_id=$2 OR user_id=$3 LIMIT 1',
+        [row.national_id_hash, row.person_id, adminUser.id],
+      );
+      if (idExists.rowCount) throw new UnauthorizedException('This administrator identity has already been registered.');
       await client.query(
-        'INSERT INTO aurora_admin_identity_records(person_id,user_id,national_id_hash) VALUES($1,$2,$3)',
-        [row.person_id, created.rows[0].id, row.national_id_hash],
+        'INSERT INTO aurora_admin_identity_records(person_id,user_id,national_id_hash,admin_password_hash) VALUES($1,$2,$3,$4)',
+        [row.person_id, adminUser.id, row.national_id_hash, row.password_hash],
       );
       await client.query('UPDATE aurora_admin_registration_otps SET consumed_at=now() WHERE id=$1', [row.id]);
-      return created.rows[0];
+      return adminUser;
     });
     let emailVerificationSent = false;
     try {
@@ -539,7 +575,7 @@ export class AuthController {
       throw new UnauthorizedException('Invalid administrator email or password.');
     }
     const found = await this.db.pool.query(
-      `SELECT u.id,u.full_name,u.email,u.password_hash,u.is_active,u.email_verified_at
+      `SELECT u.id,u.full_name,u.email,r.admin_password_hash AS password_hash,u.is_active,u.email_verified_at
          FROM users u JOIN aurora_admin_identity_records r ON r.user_id=u.id
         WHERE r.person_id=$1 LIMIT 1`, [identity.personId],
     );
