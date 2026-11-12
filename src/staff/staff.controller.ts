@@ -56,8 +56,8 @@ export class StaffController {
     if (!/^254\\d{9}$/.test(phone)) throw new BadRequestException('Enter a valid Kenyan phone number.');
     if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) || email.length > 254) throw new BadRequestException('Enter a valid email address.');
     if (!/^\\d{6,12}$/.test(nationalIdNumber)) throw new BadRequestException('Enter a valid National ID number.');
-    if (!/^data:image\\/(jpeg|png|webp);base64,/.test(nationalIdPhotoData) || nationalIdPhotoData.length > 250000) throw new BadRequestException('Upload a clear JPG, PNG or WebP National ID photo (maximum 180 KB).');
-    if (!/^data:image\\/(jpeg|png|webp);base64,/.test(profilePhotoData) || profilePhotoData.length > 60000) throw new BadRequestException('Upload a JPG, PNG or WebP profile photo (maximum 40 KB).');
+    if (!/^data:image\\/(jpeg|png|webp);base64,/.test(nationalIdPhotoData) || nationalIdPhotoData.length > 1250000) throw new BadRequestException('Upload a clear JPG, PNG or WebP National ID photo (maximum 900 KB).');
+    if (!/^data:image\\/(jpeg|png|webp);base64,/.test(profilePhotoData) || profilePhotoData.length > 420000) throw new BadRequestException('Upload a JPG, PNG or WebP profile photo (maximum 300 KB).');
 
     const ownerNationalPhone = ownerPhone.slice(3);
     const ownerLocalPhone = '0' + ownerNationalPhone;
