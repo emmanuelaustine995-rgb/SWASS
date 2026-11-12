@@ -542,7 +542,7 @@ export class AuthController {
 
   @Post('customer/register/verify-otp')
   async verifyCustomerSignupOtp(@Body() body: { phone?: string; code?: string }) {
-    if (!body?.phone || !/^\\d{6}$/.test(String(body?.code ?? '').trim())) throw new BadRequestException('Enter your phone number and the six-digit code.');
+    if (!body?.phone || !/^\d{6}$/.test(String(body?.code ?? '').trim())) throw new BadRequestException('Enter your phone number and the six-digit code.');
     const phone = this.normalizePhone(body.phone);
     const pending = await this.db.pool.query(
       `SELECT * FROM customer_signup_otp_requests WHERE phone=$1 AND consumed_at IS NULL AND expires_at>now()
