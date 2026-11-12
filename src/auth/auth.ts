@@ -563,8 +563,8 @@ export class AuthController {
       );
       if (!locked.rowCount) throw new BadRequestException('Code has expired. Request a new one.');
       const created = await c.query(
-        \`INSERT INTO customer_accounts(full_name,phone,email,password_hash,referral_code)
-         VALUES($1,$2,$3,$4,$5) RETURNING id,full_name,phone,email\`,
+        `INSERT INTO customer_accounts(full_name,phone,email,password_hash,referral_code)
+         VALUES($1,$2,$3,$4,$5) RETURNING id,full_name,phone,email`,
         [row.full_name,row.phone,row.email,row.password_hash,randomBytes(6).toString('hex').toUpperCase()],
       );
       if(row.referral_code){
