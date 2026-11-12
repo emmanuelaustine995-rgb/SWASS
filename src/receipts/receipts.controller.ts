@@ -8,7 +8,7 @@ export class ReceiptsController {
   constructor(private receipts: ReceiptsService) {}
 
   @Get()
-  @Roles('cashier', 'manager', 'owner')
+  @Roles('cashier', 'manager', 'owner', 'freelancer')
   list(@Req() req: any, @Query('q') q?: string, @Query('from') from?: string, @Query('to') to?: string, @Query('limit') limit?: string) {
     return this.receipts.list(req.user, { q, from, to, limit });
   }
