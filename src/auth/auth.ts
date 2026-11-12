@@ -416,12 +416,16 @@ export class AuthController {
   }
 
   @Post('password-reset/request')
-  async requestPasswordReset(@Body() body: { phone?: string }) {
+  async requestPasswordReset(@Body() body: { phone?: string; accountType?: string }) {
     const phone = this.normalizePhone(String(body?.phone ?? ''));
     const generic = { message: 'If an account matches that phone number, a password reset code has been sent.' };
     const found = await this.db.pool.query(
-      `SELECT id FROM users WHERE regexp_replace(phone, '[^0-9]', '', 'g') IN ($1,$2) AND is_active=true LIMIT 1`,
-      [phone, '0' + phone.slice(3)],
+      `SELECT id FROM users
+         WHERE regexp_replace(phone, '[^0-9]', '', 'g') IN ($1,$2)
+           AND is_active=true
+           AND ($3::text IS NULL OR role=$3)
+         LIMIT 1`,
+      [phone, '0' + phone.slice(3), body?.accountType === 'freelancer' ? 'freelancer' : null],
     );
     if (!found.rowCount) return generic;
     const userId = found.rows[0].id;
@@ -452,7 +456,7 @@ export class AuthController {
   }
 
   @Post('password-reset/confirm')
-  async confirmPasswordReset(@Body() body: { phone?: string; code?: string; newPassword?: string }) {
+  async confirmPasswordReset(@Body() body: { phone?: string; code?: string; newPassword?: string; accountType?: string }) {
     const phone = this.normalizePhone(String(body?.phone ?? ''));
     const code = String(body?.code ?? '').trim();
     const newPassword = String(body?.newPassword ?? '');
@@ -464,7 +468,9 @@ export class AuthController {
       `SELECT pr.id,pr.user_id,pr.code_hash,pr.attempts
        FROM password_reset_requests pr JOIN users u ON u.id=pr.user_id
        WHERE pr.phone=$1 AND pr.used_at IS NULL AND pr.expires_at>now() AND u.is_active=true
-       ORDER BY pr.created_at DESC LIMIT 1`, [phone],
+         AND ($2::text IS NULL OR u.role=$2)
+       ORDER BY pr.created_at DESC LIMIT 1`,
+      [phone, body?.accountType === 'freelancer' ? 'freelancer' : null],
     );
     const row = pending.rows[0];
     if (!row || Number(row.attempts) >= 5) throw new BadRequestException('Reset code is invalid or expired. Request a new code.');
