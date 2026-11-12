@@ -460,7 +460,7 @@ export class AuthController {
       }
     }
     const duplicate = await this.db.pool.query(
-      `SELECT 1 FROM users WHERE lower(email)=$1 AND id<>COALESCE($4::uuid,'00000000-0000-0000-0000-000000000000'::uuid)
+      `SELECT 1 FROM users WHERE lower(email)=$1 AND ($4::text IS NULL OR id::text<>$4)
        UNION ALL SELECT 1 FROM aurora_admin_identity_records WHERE national_id_hash=$3 OR person_id=$5 LIMIT 1`,
       [email, phone, nationalIdHash, existingUser.rows[0]?.id || null, identity.personId],
     );
