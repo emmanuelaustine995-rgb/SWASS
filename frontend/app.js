@@ -1082,8 +1082,8 @@
     if(password!==confirm){message.textContent='The passwords do not match.';return;}
     button.disabled=true;button.textContent='Creating your account…';message.textContent='';
     try{
-      const nationalIdPhotoData=await freelancerImageDataUrl('freelancer-id-photo',900*1024,'your National ID photo');
-      const profilePhotoData=await freelancerImageDataUrl('freelancer-profile-photo',300*1024,'your profile photo');
+      const nationalIdPhotoData=await freelancerImageDataUrl('freelancer-id-photo',2*1024*1024,'your National ID photo');
+      const profilePhotoData=await freelancerImageDataUrl('freelancer-profile-photo',1024*1024,'your profile photo');
       const result=await request('/api/v1/staff/freelancer/register',{method:'POST',signal:AbortSignal.timeout(150000),body:JSON.stringify({
         ownerName:$('freelancer-owner-name').value.trim(),ownerPhone:$('freelancer-owner-phone').value.trim(),
         fullName:$('freelancer-full-name').value.trim(),phone:$('freelancer-phone').value.trim(),
