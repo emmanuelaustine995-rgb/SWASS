@@ -1540,3 +1540,118 @@ html body.workspace-active #receipts-home .receipt-actions-grid .receipt-choice{
 #shop-home .shop-register-product-card[hidden],
 #shop-home .shop-register-product-card.hidden{display:none!important}
 @media(max-width:520px){#shop-home .shop-add-products-form .form-two{grid-template-columns:1fr}}
+
+
+/* FINAL HOME CANVAS FIX — soft creamy yellow stays outside the cards only. */
+html:has(body.workspace-active), body.workspace-active{
+  background:linear-gradient(135deg,#fffdf4 0%,#fffbed 52%,#fff9e9 100%)!important;
+  background-color:#fffdf4!important;
+  background-image:linear-gradient(135deg,#fffdf4 0%,#fffbed 52%,#fff9e9 100%)!important;
+  animation:none!important;
+}
+body.workspace-active:before{display:none!important;content:none!important}
+body.workspace-active .shell{
+  background:transparent!important;
+  background-image:none!important;
+  box-shadow:none!important;
+  border:0!important;
+  height:calc(100dvh - 126px)!important;
+  min-height:0!important;
+  max-height:none!important;
+  margin:0 auto!important;
+  padding:5px 12px 4px!important;
+  overflow:hidden!important;
+  display:flex!important;
+  flex-direction:column!important;
+  gap:5px!important;
+}
+body.workspace-active #owner-home:not(.hidden){
+  display:flex!important;
+  flex:1 1 auto!important;
+  flex-direction:column!important;
+  justify-content:flex-start!important;
+  align-content:initial!important;
+  gap:7px!important;
+  width:100%!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:100%!important;
+  margin:0!important;
+  padding:0 1px!important;
+  overflow:hidden!important;
+  overscroll-behavior:none!important;
+}
+body.workspace-active #owner-home>.dashboard-login-return-row{
+  flex:0 0 auto!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:0!important;
+}
+body.workspace-active #owner-home>.owner-home-card{
+  flex:0 0 auto!important;
+  margin:0!important;
+  padding:10px 13px!important;
+  background:#fff!important;
+  border:1px solid #edf0f3!important;
+  border-radius:14px!important;
+  box-shadow:0 3px 12px rgba(45,65,82,.055)!important;
+}
+body.workspace-active #owner-home>.owner-home-card h1{color:#203246!important}
+body.workspace-active #owner-home>.owner-home-card p{color:#758293!important}
+body.workspace-active #owner-home .referral-area{
+  display:grid!important;
+  flex:0 0 auto!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:auto!important;
+  gap:7px!important;
+  width:100%!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:visible!important;
+}
+body.workspace-active #owner-home .referral-area>.panel{
+  display:flex!important;
+  flex:0 0 auto!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+  width:100%!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  margin:0!important;
+  padding:10px 12px!important;
+  overflow:visible!important;
+  color:#263648!important;
+  background:#fff!important;
+  border:1px solid #edf0f3!important;
+  border-radius:14px!important;
+  box-shadow:0 3px 12px rgba(45,65,82,.055)!important;
+}
+body.workspace-active #owner-home .referral-earn-card h2,
+body.workspace-active #owner-home .referral-invite-card h2{color:#263648!important}
+body.workspace-active #owner-home .referral-earn-card>p:not(.eyebrow){color:#647386!important}
+body.workspace-active #owner-home .referral-conversion-note{
+  color:#4b6380!important;background:#f5f9fd!important;border:1px solid #e7eef5!important;
+}
+body.workspace-active #owner-home .referral-balance-card .referral-balance-caption,
+body.workspace-active #owner-home .referral-balance-card #referral-message{color:#647386!important}
+body.workspace-active #owner-home .referral-qr{background:#fff!important}
+body.workspace-active #workspace-nav{flex:0 0 auto!important;margin:0!important}
+html,body.workspace-active{overscroll-behavior:none!important}
+@media(max-width:600px){
+  body.workspace-active .shell{
+    height:calc(100dvh - 116px)!important;
+    padding:4px 10px 3px!important;
+    gap:5px!important;
+  }
+  body.workspace-active #owner-home:not(.hidden){gap:6px!important}
+  body.workspace-active #owner-home>.owner-home-card{padding:9px 11px!important}
+  body.workspace-active #owner-home .referral-area{gap:6px!important}
+  body.workspace-active #owner-home .referral-area>.panel{padding:8px 10px!important;border-radius:12px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  html:has(body.workspace-active),body.workspace-active{animation:none!important}
+}
