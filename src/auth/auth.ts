@@ -502,11 +502,12 @@ export class AuthController {
   }
 
   @Post('customer/register')
-  async registerCustomer(@Body() body: { fullName?: string; phone?: string; email?: string; password?: string }, @Req() req: any) {
+  async registerCustomer(@Body() body: { fullName?: string; phone?: string; email?: string; password?: string; referralCode?: string }, @Req() req: any) {
     const fullName = String(body?.fullName ?? '').trim();
     const phone = this.normalizePhone(String(body?.phone ?? ''));
     const email = String(body?.email ?? '').trim().toLowerCase() || null;
     const password = String(body?.password ?? '');
+    const referralCode = String(body?.referralCode ?? '').trim().toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,20) || null;
     if (!fullName || fullName.length > 120) throw new BadRequestException('Enter your full name (maximum 120 characters).');
     if (email && (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254)) throw new BadRequestException('Enter a valid email address.');
     if (password.length < 10 || password.length > 128) throw new BadRequestException('Password must be at least 10 characters.');
@@ -523,9 +524,9 @@ export class AuthController {
       `UPDATE customer_signup_otp_requests SET expires_at=now() WHERE phone=$1 AND consumed_at IS NULL AND expires_at>now()`, [phone],
     );
     const saved = await this.db.pool.query(
-      `INSERT INTO customer_signup_otp_requests(phone,full_name,email,password_hash,code_hash,expires_at)
-       VALUES($1,$2,$3,$4,$5,now()+interval '5 minutes') RETURNING id`,
-      [phone,fullName,email,passwordHash,this.signupCodeHash(code)],
+      `INSERT INTO customer_signup_otp_requests(phone,full_name,email,password_hash,code_hash,expires_at,referral_code)
+       VALUES($1,$2,$3,$4,$5,now()+interval '5 minutes',$6) RETURNING id`,
+      [phone,fullName,email,passwordHash,this.signupCodeHash(code),referralCode],
     );
     try {
       await this.sendSignupSms(phone, `Your AURORA customer verification code is ${code}. It expires in 5 minutes. Do not share this code.`);
@@ -562,10 +563,16 @@ export class AuthController {
       );
       if (!locked.rowCount) throw new BadRequestException('Code has expired. Request a new one.');
       const created = await c.query(
-        `INSERT INTO customer_accounts(full_name,phone,email,password_hash)
-         VALUES($1,$2,$3,$4) RETURNING id,full_name,phone,email`,
-        [row.full_name,row.phone,row.email,row.password_hash],
+        \`INSERT INTO customer_accounts(full_name,phone,email,password_hash,referral_code)
+         VALUES($1,$2,$3,$4,$5) RETURNING id,full_name,phone,email\`,
+        [row.full_name,row.phone,row.email,row.password_hash,randomBytes(6).toString('hex').toUpperCase()],
       );
+      if(row.referral_code){
+        const referrer=await c.query('SELECT id FROM customer_accounts WHERE referral_code=$1 FOR UPDATE',[row.referral_code]);
+        if(referrer.rowCount && referrer.rows[0].id!==created.rows[0].id){
+          await c.query('INSERT INTO customer_referrals(referrer_customer_id,referred_customer_id,referral_code) VALUES($1,$2,$3) ON CONFLICT(referred_customer_id) DO NOTHING',[referrer.rows[0].id,created.rows[0].id,row.referral_code]);
+        }
+      }
       await c.query('UPDATE customer_signup_otp_requests SET consumed_at=now() WHERE id=$1', [row.id]);
       return created.rows[0];
     });
