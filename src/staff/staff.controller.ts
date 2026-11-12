@@ -45,6 +45,7 @@ export class StaffController {
     const rawPhone = String(body?.phone ?? '').trim();
     const digits = rawPhone.replace(/\D/g, '');
     const phone = digits.startsWith('0') ? '254' + digits.slice(1) : digits.startsWith('254') ? digits : '254' + digits;
+    if (!shopRegistrationPermit || shopRegistrationPermit.length > 100) throw new BadRequestException('Enter a valid shop registration permit number.');
     if (!/^254\d{9}$/.test(ownerPhone) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(ownerEmail)) throw new BadRequestException('Enter the shop owner’s registered phone number and email address.');
     if (!fullName || fullName.length > 120) throw new BadRequestException('Enter your full name.');
     if (!/^254\d{9}$/.test(phone)) throw new BadRequestException('Enter a valid Kenyan phone number.');
