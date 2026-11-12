@@ -111,14 +111,16 @@ export class StaffController {
        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,now()+interval '5 minutes',0) RETURNING id,expires_at`,
       [user.tenantId,user.storeId,user.sub,fullName,email,phone,jobTitle,this.hash(token),expiresAt,this.hash(approvalCode)],
     );
-    try {
-      await this.sendOwnerApprovalOtp(ownerPhone, approvalCode);
-    } catch (error) {
-      await this.db.pool.query('DELETE FROM staff_email_invitations WHERE id=$1', [saved.rows[0].id]);
-      throw error;
+    if (jobTitle === 'Freelancer') {
+      try {
+        await this.sendOwnerApprovalOtp(ownerPhone, approvalCode);
+      } catch (error) {
+        await this.db.pool.query('DELETE FROM staff_email_invitations WHERE id=$1', [saved.rows[0].id]);
+        throw error;
+      }
+      return { approvalRequired: true, invitationId: saved.rows[0].id, ownerPhoneHint: ownerPhone.slice(-4),
+        message: 'A six-digit approval code has been sent to the shop owner’s registered phone.' };
     }
-    return { approvalRequired: true, invitationId: saved.rows[0].id, ownerPhoneHint: ownerPhone.slice(-4),
-      message: 'A six-digit approval code has been sent to the shop owner’s registered phone.' };
     const apiKey = process.env.BREVO_API_KEY?.trim();
     const from = process.env.BREVO_FROM_EMAIL?.trim();
     if (!apiKey || !from) {
