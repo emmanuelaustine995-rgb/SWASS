@@ -1956,3 +1956,72 @@ body:not(.workspace-active) #login-view .aurora-tagline strong{font-weight:850!i
     }
   }
 }
+
+
+/* AURORA desktop navigation: dock the four tabs INSIDE the blue workspace.
+   The phone keeps its existing full-width bottom navigation behaviour. */
+@media(min-width:761px){
+  html body.workspace-active .shell{
+    position:relative!important;
+    box-sizing:border-box!important;
+    padding-bottom:66px!important;
+  }
+  html body.workspace-active #workspace-nav.bottom-nav{
+    position:absolute!important;
+    left:50%!important;
+    right:auto!important;
+    bottom:9px!important;
+    top:auto!important;
+    transform:translateX(-50%)!important;
+    z-index:30!important;
+    display:grid!important;
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    align-items:center!important;
+    gap:6px!important;
+    width:calc(100% - 24px)!important;
+    max-width:420px!important;
+    margin:0!important;
+    padding:5px 7px!important;
+    box-sizing:border-box!important;
+    border:1px solid rgba(151,190,218,.55)!important;
+    border-radius:14px!important;
+    background:rgba(255,255,255,.94)!important;
+    box-shadow:0 3px 12px rgba(36,86,120,.12)!important;
+    backdrop-filter:blur(10px)!important;
+    overflow:visible!important;
+  }
+  html body.workspace-active #workspace-nav.bottom-nav button,
+  html body.workspace-active #workspace-nav.bottom-nav button.receipt-nav{
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:2px!important;
+    min-width:0!important;
+    width:100%!important;
+    max-width:none!important;
+    min-height:42px!important;
+    height:42px!important;
+    margin:0!important;
+    padding:4px 3px!important;
+    border-radius:9px!important;
+    font-size:10px!important;
+    line-height:1.1!important;
+    box-shadow:none!important;
+    transform:none!important;
+  }
+  html body.workspace-active #workspace-nav.bottom-nav .nav-icon{
+    font-size:16px!important;
+    line-height:1!important;
+  }
+  html body.workspace-active #workspace-nav.bottom-nav button>span:not(.nav-icon){
+    display:block!important;
+    font-size:9px!important;
+    line-height:1.1!important;
+    white-space:nowrap!important;
+  }
+  html body.workspace-active #workspace-nav.bottom-nav button.active{
+    transform:translateY(-1px)!important;
+    box-shadow:0 2px 7px rgba(30,80,120,.14)!important;
+  }
+}
