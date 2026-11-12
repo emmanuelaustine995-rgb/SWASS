@@ -548,14 +548,21 @@
       const ownerPaymentPhone=$('owner-mpesa-phone')?.value.trim()||'';
       if(payload.role==='Vendor'&&!ownerPaymentPhone)throw new Error('Enter the business owner’s M-Pesa phone number in the dashboard payment section before inviting a Vendor.');
       const data=await request('/api/v1/staff/invitations',{method:'POST',body:JSON.stringify(payload)});
-      if(payload.role==='Vendor'){
+      if(payload.role==='Freelancer' && data.approvalRequired){
+        message.textContent='Owner approval code sent to the registered phone ending '+data.ownerPhoneHint+'.';
+        const code=window.prompt('Enter the 6-digit code sent to the SHOP OWNER\'S registered phone to approve this freelancer:');
+        if(!code)throw new Error('Freelancer invitation cancelled. Owner approval is required.');
+        message.textContent='Verifying shop owner approval…';
+        const approved=await request('/api/v1/staff/invitations/approve',{method:'POST',body:JSON.stringify({invitationId:data.invitationId,code:code.trim()})});
+        message.textContent=approved.message||'Owner approved the freelancer. Invitation email sent.';
+      }else if(payload.role==='Vendor'){
         message.textContent='Requesting the one-time KSh 50 vendor fee…';
         const pay=await request('/api/v1/mpesa/stk-push',{method:'POST',body:JSON.stringify({purpose:'vendor_fee',invitationId:data.invitation.id,phone:ownerPaymentPhone})});
         message.textContent='KSh 50 STK prompt sent to '+pay.phone+'. Enter your M-Pesa PIN to complete the one-time vendor fee.';
         const deadline=Date.now()+90000;let feePaid=false,feeReceipt='';
         while(Date.now()<deadline){await new Promise(resolve=>setTimeout(resolve,3000));const status=await request('/api/v1/mpesa/payments/'+encodeURIComponent(pay.paymentId));if(status.status==='success'){feePaid=true;feeReceipt=status.receiptNumber||'';break;}if(status.status==='failed')break;}
         message.textContent=feePaid?'Vendor fee paid successfully'+(feeReceipt?' · M-Pesa receipt '+feeReceipt:'')+'. The invitation is active.':'Invitation sent, but KSh 50 payment is not confirmed yet. The vendor cannot activate until payment succeeds.';
-      }else message.textContent='Freelancer invitation email sent to '+data.invitation.email+'. Freelancers are not charged.';
+      }else if(payload.role==='Freelancer') message.textContent='Freelancer invitation email sent. Freelancers are not charged.';
       $('staff-invite-form').reset();setStaffInviteOpen(false);await loadStaffInvitations();
     }catch(err){message.textContent=err.message||'Could not send the staff invitation.';}
     finally{btn.disabled=false;btn.textContent='Send email invitation';}
