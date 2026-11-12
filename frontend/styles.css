@@ -2206,3 +2206,28 @@ body.customer-account-active #workspace-nav.bottom-nav [data-workspace="shop"]{d
     min-height:35px!important;height:35px!important;font-size:9px!important;
   }
 }
+
+
+/* Final customer navigation dock: compact black strip with three equal tabs. */
+html body.customer-account-active #workspace-nav.bottom-nav{
+  display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  align-items:center!important;justify-content:stretch!important;
+  height:39px!important;min-height:39px!important;max-height:39px!important;
+  padding:2px 5px!important;gap:4px!important;box-sizing:border-box!important;
+  background:#050505!important;background-color:#050505!important;background-image:none!important;
+  border-top:1px solid #222!important;box-shadow:none!important;backdrop-filter:none!important;
+  overflow:hidden!important;
+}
+html body.customer-account-active #workspace-nav.bottom-nav button,
+html body.customer-account-active #workspace-nav.bottom-nav button.receipt-nav{
+  display:flex!important;position:static!important;flex:1 1 0!important;
+  width:100%!important;max-width:none!important;min-width:0!important;
+  height:31px!important;min-height:31px!important;max-height:31px!important;
+  margin:0!important;padding:1px 2px!important;gap:1px!important;
+  border:0!important;border-radius:6px!important;background:#111!important;
+  color:#fff!important;box-shadow:none!important;transform:none!important;
+  font-size:9px!important;line-height:1!important;white-space:nowrap!important;
+}
+html body.customer-account-active #workspace-nav.bottom-nav button .nav-icon{font-size:13px!important;line-height:1!important}
+html body.customer-account-active #workspace-nav.bottom-nav button.active{background:#222!important;color:#fff!important;box-shadow:inset 0 0 0 1px #555!important;transform:none!important;animation:none!important}
+html body.customer-account-active #workspace-nav.bottom-nav [data-workspace="shop"]{display:none!important}
