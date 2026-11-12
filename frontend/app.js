@@ -897,6 +897,7 @@
   let customerSignupMode = false;
   function updateSignupAccountType(){
     customerSignupMode = $('login-account-type').value === 'customer';
+    $('signup-back-btn')?.classList.toggle('hidden', !customerSignupMode);
     if($('reg-account-type'))$('reg-account-type').value=customerSignupMode?'customer':'owner';
     $('owner-signup-fields').classList.toggle('hidden',customerSignupMode);
     $('reg-business').required=!customerSignupMode;
@@ -926,9 +927,22 @@
   $('show-register')?.addEventListener('click',()=>{
     $('login-form').classList.add('hidden');$('password-reset-form')?.classList.add('hidden');$('first-password-form')?.classList.add('hidden');$('owner-register-entry').classList.add('hidden');$('register-form').classList.remove('hidden');$('register-error').textContent='';$('signup-otp-message').textContent='';updateSignupAccountType();
   });
-  $('show-login')?.addEventListener('click',()=>{
-    $('register-form').classList.add('hidden');$('signup-otp-panel').classList.add('hidden');$('register-fields').classList.remove('hidden');$('register-submit').classList.remove('hidden');$('login-form').classList.remove('hidden');$('owner-register-entry').classList.toggle('hidden',$('login-account-type').value==='staff');$('register-error').textContent='';$('login-error').textContent='';
-  });
+  function returnFromSignupToLogin(){
+    if(signupResendTimer){clearInterval(signupResendTimer);signupResendTimer=null;}
+    signupResendSeconds=0;
+    $('register-form').classList.add('hidden');
+    $('signup-otp-panel').classList.add('hidden');
+    $('register-fields').classList.remove('hidden');
+    $('register-submit').classList.remove('hidden');
+    $('register-submit').disabled=false;
+    $('login-form').classList.remove('hidden');
+    $('owner-register-entry').classList.toggle('hidden',$('login-account-type').value==='staff');
+    $('register-error').textContent='';
+    $('signup-otp-message').textContent='';
+    $('login-error').textContent='';
+  }
+  $('show-login')?.addEventListener('click',returnFromSignupToLogin);
+  $('signup-back-btn')?.addEventListener('click',returnFromSignupToLogin);
   $('login-account-type').addEventListener('change', updateLoginAccountType);
   document.querySelectorAll('[data-login-role]').forEach(tab=>tab.addEventListener('click',()=>{ $('login-account-type').value=tab.dataset.loginRole; updateLoginAccountType(); }));
   updateLoginAccountType();
