@@ -973,6 +973,13 @@
   }
   $('show-register')?.addEventListener('click',()=>{
     $('login-form').classList.add('hidden');$('password-reset-form')?.classList.add('hidden');$('first-password-form')?.classList.add('hidden');$('owner-register-entry').classList.add('hidden');$('register-form').classList.remove('hidden');$('register-error').textContent='';$('signup-otp-message').textContent='';updateSignupAccountType();
+    // Start the customer registration screen at its top so the first fields
+    // and the small Back control are visible on desktop.
+    const card=document.querySelector('#login-view .login-card');
+    const form=$('register-form');
+    if(card)card.scrollTop=0;
+    if(form)form.scrollTop=0;
+    requestAnimationFrame(()=>{if(card)card.scrollTo({top:0,behavior:'instant'});if(form)form.scrollTo({top:0,behavior:'instant'});});
   });
   function returnFromSignupToLogin(){
     if(signupResendTimer){clearInterval(signupResendTimer);signupResendTimer=null;}
@@ -990,6 +997,7 @@
   }
   $('show-login')?.addEventListener('click',returnFromSignupToLogin);
   $('signup-back-btn')?.addEventListener('click',returnFromSignupToLogin);
+  $('signup-back-btn')?.classList.toggle('hidden',!customerSignupMode);
   $('login-account-type').addEventListener('change', updateLoginAccountType);
   document.querySelectorAll('[data-login-role]').forEach(tab=>tab.addEventListener('click',()=>{ $('login-account-type').value=tab.dataset.loginRole; updateLoginAccountType(); }));
   updateLoginAccountType();
