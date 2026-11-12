@@ -33,40 +33,39 @@ export class StaffController {
     }
   }
 
-  // Public freelancer self-registration. The owner approves by OTP sent to the phone registered on the matched owner account.
+  // Public freelancer self-registration. Match the shop owner by exact registered name and phone, then link the freelancer directly to that shop without an approval OTP.
   @Post('freelancer/register')
-  async startFreelancerRegistration(@Body() body: {
+  async registerFreelancer(@Body() body: {
     ownerName?: string; ownerPhone?: string; fullName?: string; phone?: string; email?: string;
-    nationalIdNumber?: string; nationalIdPhotoData?: string; profilePhotoData?: string;
+    nationalIdNumber?: string; nationalIdPhotoData?: string; profilePhotoData?: string; password?: string;
   }) {
     const normalizePhone = (value: unknown) => {
-      const digits = String(value ?? '').replace(/\D/g, '');
+      const digits = String(value ?? '').replace(/\\D/g, '');
       return digits.startsWith('0') ? '254' + digits.slice(1) : digits.startsWith('254') ? digits : '254' + digits;
     };
     const ownerPhone = normalizePhone(body?.ownerPhone);
-    const ownerName = String(body?.ownerName ?? '').trim().replace(/\s+/g,' ');
+    const ownerName = String(body?.ownerName ?? '').trim().replace(/\\s+/g,' ');
     const fullName = String(body?.fullName ?? '').trim();
     const email = String(body?.email ?? '').trim().toLowerCase();
     const phone = normalizePhone(body?.phone);
-    const nationalIdNumber = String(body?.nationalIdNumber ?? '').replace(/\s+/g,'').trim();
+    const password = String(body?.password ?? '');
+    const nationalIdNumber = String(body?.nationalIdNumber ?? '').replace(/\\s+/g,'').trim();
     const nationalIdPhotoData = String(body?.nationalIdPhotoData ?? '');
     const profilePhotoData = String(body?.profilePhotoData ?? '');
-    if (!ownerName || ownerName.length > 120 || !/^254\d{9}$/.test(ownerPhone)) throw new BadRequestException('Enter the shop owner’s full name and registered phone number.');
+    if (!ownerName || ownerName.length > 120 || !/^254\\d{9}$/.test(ownerPhone)) throw new BadRequestException('Enter the shop owner’s full name and registered phone number.');
     if (!fullName || fullName.length > 120) throw new BadRequestException('Enter your full name.');
-    if (!/^254\d{9}$/.test(phone)) throw new BadRequestException('Enter a valid Kenyan phone number.');
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) throw new BadRequestException('Enter a valid email address.');
-    if (!/^\d{6,12}$/.test(nationalIdNumber)) throw new BadRequestException('Enter a valid National ID number.');
+    if (!/^254\\d{9}$/.test(phone)) throw new BadRequestException('Enter a valid Kenyan phone number.');
+    if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) || email.length > 254) throw new BadRequestException('Enter a valid email address.');
+    if (password.length < 10 || password.length > 128) throw new BadRequestException('Choose a password of at least 10 characters.');
+    if (!/^\\d{6,12}$/.test(nationalIdNumber)) throw new BadRequestException('Enter a valid National ID number.');
     const isSupportedImageData = (value: string) => ['data:image/jpeg;base64,', 'data:image/png;base64,', 'data:image/webp;base64,'].some(prefix => value.startsWith(prefix));
     if (!isSupportedImageData(nationalIdPhotoData) || nationalIdPhotoData.length > 1250000) throw new BadRequestException('Upload a clear JPG, PNG or WebP National ID photo (maximum 900 KB).');
     if (!isSupportedImageData(profilePhotoData) || profilePhotoData.length > 420000) throw new BadRequestException('Upload a JPG, PNG or WebP profile photo (maximum 300 KB).');
-
-    const ownerNationalPhone = ownerPhone.slice(3);
-    const ownerLocalPhone = '0' + ownerNationalPhone;
+    const ownerDigits = ownerPhone.slice(3);
+    const ownerLocalPhone = '0' + ownerDigits;
     const owner = await this.db.pool.query(
-      `SELECT u.id,u.tenant_id,u.store_id,
-               CASE WHEN regexp_replace(coalesce(u.phone,''),'[^0-9]','','g') IN ($2,$3,$4) THEN u.phone ELSE t.phone END AS phone
-         FROM users u
-         LEFT JOIN tenants t ON t.id=u.tenant_id
+      `SELECT u.id,u.tenant_id,u.store_id
+         FROM users u LEFT JOIN tenants t ON t.id=u.tenant_id
         WHERE u.role='owner' AND u.is_active=true
           AND lower(regexp_replace(trim(coalesce(u.full_name,'')),'[[:space:]]+',' ','g'))=lower($1)
           AND (
@@ -74,9 +73,9 @@ export class StaffController {
             OR regexp_replace(coalesce(t.phone,''),'[^0-9]','','g') IN ($2,$3,$4)
           )
         LIMIT 1`,
-      [ownerName,ownerPhone,ownerLocalPhone,ownerNationalPhone],
+      [ownerName,ownerPhone,ownerLocalPhone,ownerDigits],
     );
-    if (!owner.rowCount) throw new BadRequestException('No active shop-owner account matched that name and phone number. Check the details with the owner.');
+    if (!owner.rowCount) throw new BadRequestException('No active shop-owner account matched that name and registered phone number. Check the details and try again.');
     const duplicate = await this.db.pool.query(
       `SELECT 1 FROM users
         WHERE regexp_replace(phone,'[^0-9]','','g') IN ($1,$2)
@@ -86,75 +85,14 @@ export class StaffController {
       [phone,'0'+phone.slice(3),email,nationalIdNumber],
     );
     if (duplicate.rowCount) throw new BadRequestException('This freelancer phone, email or National ID is already registered. Sign in or contact support.');
-    const recent = await this.db.pool.query(
-      `SELECT count(*)::int AS total FROM staff_email_invitations
-        WHERE created_by=$1 AND job_title='Freelancer' AND created_at>now()-interval '15 minutes'`,
-      [owner.rows[0].id],
-    );
-    if (Number(recent.rows[0]?.total || 0) >= 3) throw new BadRequestException('Too many registration requests for this shop. Please wait 15 minutes or ask the owner to invite you directly.');
-    const code = String(randomBytes(4).readUInt32BE(0) % 1000000).padStart(6,'0');
-    const token = randomBytes(32).toString('base64url');
-    const saved = await this.db.pool.query(
-      `INSERT INTO staff_email_invitations
-       (tenant_id,store_id,created_by,full_name,email,phone,job_title,token_hash,expires_at,approval_code_hash,approval_expires_at,approval_attempts,national_id_number,national_id_photo_data,profile_photo_data)
-       VALUES($1,$2,$3,$4,$5,$6,'Freelancer',$7,now()+interval '30 minutes',$8,now()+interval '5 minutes',0,$9,$10,$11)
+    const passwordHash = await argon2.hash(password);
+    const created = await this.db.pool.query(
+      `INSERT INTO users (tenant_id,store_id,full_name,phone,email,password_hash,role,must_change_password,staff_title,profile_photo_data,national_id_number,national_id_photo_data)
+       VALUES($1,$2,$3,$4,$5,$6,'freelancer',false,'Freelancer',$7,$8,$9)
        RETURNING id`,
-      [owner.rows[0].tenant_id,owner.rows[0].store_id,owner.rows[0].id,fullName,email,phone,this.hash(token),this.hash(code),nationalIdNumber,nationalIdPhotoData,profilePhotoData],
+      [owner.rows[0].tenant_id,owner.rows[0].store_id,fullName,phone,email,passwordHash,profilePhotoData,nationalIdNumber,nationalIdPhotoData],
     );
-    try {
-      const normalizedOwnerPhone = String(owner.rows[0].phone).replace(/\D/g,'');
-      await this.sendOwnerApprovalOtp(normalizedOwnerPhone,code);
-    } catch (error) {
-      await this.db.pool.query('DELETE FROM staff_email_invitations WHERE id=$1',[saved.rows[0].id]);
-      throw error;
-    }
-    return { approvalRequired:true, invitationId:saved.rows[0].id, ownerPhoneHint:String(owner.rows[0].phone).replace(/\D/g,'').slice(-4),
-      message:'The shop owner must approve your registration using the code sent to their registered phone.' };
-  }
-
-  @Post('freelancer/register/verify-otp')
-  async finishFreelancerRegistration(@Body() body: { invitationId?: string; code?: string; password?: string }) {
-    const id = String(body?.invitationId ?? '');
-    const code = String(body?.code ?? '').trim();
-    const password = String(body?.password ?? '');
-    if (!/^[0-9a-f-]{36}$/i.test(id) || !/^\d{6}$/.test(code)) throw new BadRequestException('Enter the six-digit owner approval code.');
-    if (password.length < 10 || password.length > 128) throw new BadRequestException('Choose a password of at least 10 characters.');
-    const result = await this.db.tx(async c => {
-      const found = await c.query(
-        `SELECT i.* FROM staff_email_invitations i
-          JOIN users u ON u.id=i.created_by AND u.tenant_id=i.tenant_id
-         WHERE i.id=$1 AND i.job_title='Freelancer' AND u.role='owner' AND u.is_active=true
-           AND i.accepted_at IS NULL AND i.revoked_at IS NULL AND i.expires_at>now()
-           AND i.approval_expires_at>now() AND i.approval_attempts<5
-         FOR UPDATE OF i`,[id],
-      );
-      const invite = found.rows[0];
-      if (!invite) throw new BadRequestException('The approval request has expired or was already used. Start registration again.');
-      if (this.hash(code) !== invite.approval_code_hash) {
-        await c.query('UPDATE staff_email_invitations SET approval_attempts=approval_attempts+1 WHERE id=$1',[id]);
-        return { wrongCode:true as const };
-      }
-      const phoneDigits=String(invite.phone).replace(/\D/g,'');
-      const phone=phoneDigits.startsWith('0')?'254'+phoneDigits.slice(1):phoneDigits.startsWith('254')?phoneDigits:'254'+phoneDigits;
-      const duplicate=await c.query(
-        `SELECT 1 FROM users WHERE regexp_replace(phone,'[^0-9]','','g') IN ($1,$2) OR lower(email)=lower($3) LIMIT 1`,
-        [phone,'0'+phone.slice(3),invite.email],
-      );
-      if(duplicate.rowCount) throw new BadRequestException('This freelancer phone number or email is already registered. Contact the shop owner.');
-      const passwordHash=await argon2.hash(password);
-      const inserted=await c.query(
-        `INSERT INTO users (tenant_id,store_id,full_name,phone,email,password_hash,role,must_change_password,staff_title,profile_photo_data,national_id_number,national_id_photo_data)
-         VALUES($1,$2,$3,$4,$5,$6,'freelancer',false,'Freelancer',$7,$8,$9) RETURNING id`,
-        [invite.tenant_id,invite.store_id,invite.full_name,phone,invite.email,passwordHash,invite.profile_photo_data,invite.national_id_number,invite.national_id_photo_data],
-      );
-      await c.query(
-        'UPDATE staff_email_invitations SET accepted_by=$1,accepted_at=now(),approval_code_hash=NULL,approval_expires_at=NULL WHERE id=$2',
-        [inserted.rows[0].id,id],
-      );
-      return { created:true as const,message:'Your freelancer account is active. Sign in using the Freelancer tab with your phone number and password.' };
-    });
-    if ('wrongCode' in result && result.wrongCode) throw new BadRequestException('The owner approval code is incorrect.');
-    return result;
+    return { created:true, userId:created.rows[0].id, message:'Freelancer account created successfully and linked to the matched shop. You can now sign in freely.' };
   }
 
   @Post('invitations/accept')
