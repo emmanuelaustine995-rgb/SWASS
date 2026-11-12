@@ -27,7 +27,7 @@
   }
   </script>
   <link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./swass-icon.svg" type="image/svg+xml"><title>AURORA E-RECEIPT Kenya | Digital Receipts & Sales Records</title>
-  <link rel="stylesheet" href="./styles.css?v=aurora-registration-workspace-fix-20261112">
+  <link rel="stylesheet" href="./styles.css?v=aurora-registration-workspace-fix-20261112-freelancer-direct">
   <link rel="stylesheet" href="./dashboard.css?v=aurora-receipts-fixed-height-20261112">
 </head>
 <body>
@@ -84,7 +84,7 @@
         <p id="freelancer-register-entry" class="muted small hidden" style="text-align:center"><button id="show-freelancer-register" type="button" class="text-btn">CREATE FREELANCER ACCOUNT</button></p>
         <form id="freelancer-register-form" class="hidden">
           <p class="eyebrow">CREATE FREELANCER ACCOUNT</p>
-          <p class="muted small">Enter your details and the shop owner’s name and registered phone. The owner must approve your request using a code sent to their phone. Once approved, your account will be linked to that shop for receipt details.</p>
+          <p class="muted small">Enter your details and the shop owner’s exact registered name and phone number. Your account will connect automatically to that shop, and you can sign in immediately after registration.</p>
           <label>Your full name<input id="freelancer-full-name" maxlength="120" required autocomplete="name"></label>
           <label>Your phone number<input id="freelancer-phone" type="tel" inputmode="tel" required placeholder="07XX XXX XXX"></label>
           <label>Your email address<input id="freelancer-email" type="email" required autocomplete="email"></label>
@@ -93,13 +93,9 @@
           <label>Upload your profile photo (JPG, PNG or WebP; max 300 KB)<input id="freelancer-profile-photo" type="file" accept="image/jpeg,image/png,image/webp" required></label>
           <label>Shop owner’s full name<input id="freelancer-owner-name" type="text" maxlength="120" required autocomplete="name" placeholder="Name registered on the shop-owner account"></label>
           <label>Shop owner’s registered phone number<input id="freelancer-owner-phone" type="tel" inputmode="tel" required placeholder="07XX XXX XXX"></label>
-          <div id="freelancer-register-otp" class="hidden">
-            <label>Owner approval code<input id="freelancer-owner-code" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" required placeholder="6-digit code"></label>
-            <label>Create your password<input id="freelancer-new-password" type="password" minlength="10" maxlength="128" required autocomplete="new-password"></label>
-            <label>Confirm password<input id="freelancer-confirm-password" type="password" minlength="10" maxlength="128" required autocomplete="new-password"></label>
-            <button id="finish-freelancer-register" class="btn btn-primary full" type="button">Verify owner approval and create account</button>
-          </div>
-          <button id="request-freelancer-approval" class="btn btn-primary full" type="submit">Send approval code to shop owner</button>
+          <label>Create your password<input id="freelancer-new-password" type="password" minlength="10" maxlength="128" required autocomplete="new-password" placeholder="At least 10 characters"></label>
+          <label>Confirm password<input id="freelancer-confirm-password" type="password" minlength="10" maxlength="128" required autocomplete="new-password"></label>
+          <button id="request-freelancer-approval" class="btn btn-primary full" type="submit">CREATE FREELANCER ACCOUNT</button>
           <p id="freelancer-register-message" class="muted small" role="status"></p>
           <div class="registration-sticky-footer"><span>Already registered?</span><button id="freelancer-back-login" type="button" class="registration-back-button">← Back to sign in</button></div>
         </form>
