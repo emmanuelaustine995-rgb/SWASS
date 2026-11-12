@@ -1008,6 +1008,11 @@
     $('login-form').classList.add('hidden');$('password-reset-form')?.classList.add('hidden');
     $('freelancer-register-entry')?.classList.add('hidden');$('freelancer-register-form')?.classList.remove('hidden');
     $('freelancer-register-message').textContent='';
+    const card=document.querySelector('#login-view .login-card');
+    const form=$('freelancer-register-form');
+    if(card)card.scrollTop=0;
+    if(form)form.scrollTop=0;
+    requestAnimationFrame(()=>{if(card)card.scrollTo({top:0,behavior:'instant'});if(form)form.scrollTo({top:0,behavior:'instant'});});
   });
   $('freelancer-back-login')?.addEventListener('click',()=>{
     $('freelancer-register-form')?.classList.add('hidden');$('login-form').classList.remove('hidden');
