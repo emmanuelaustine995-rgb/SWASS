@@ -37,12 +37,12 @@ function configuredAdminIdentities(): AdminIdentityConfig[] {
     const identities: AdminIdentityConfig[] = [];
     for (const item of parsed) {
       const personId = String(item?.personId || '').trim();
-      const digits = String(item?.phone || '').replace(/\\D/g, '');
+      const digits = String(item?.phone || '').replace(/\D/g, '');
       const phone = digits.startsWith('254') && digits.length === 12 ? digits :
         digits.startsWith('0') && digits.length === 10 ? '254' + digits.slice(1) :
         digits.length === 9 ? '254' + digits : '';
       const emails = Array.isArray(item?.emails) ? item.emails.map((v: unknown) => String(v).trim().toLowerCase()) : [];
-      if (!personId || !phone || !emails.length || emails.some((e: string) => !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(e))) return [];
+      if (!personId || !phone || !emails.length || emails.some((e: string) => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e))) return [];
       if (seenPhones.has(phone) || emails.some((e: string) => seenEmails.has(e))) return [];
       seenPhones.add(phone);
       emails.forEach((e: string) => seenEmails.add(e));
@@ -433,7 +433,7 @@ export class AuthController {
     const email = String(body?.email || '').trim().toLowerCase();
     const phone = this.normalizePhone(String(body?.phone || ''));
     const fullName = String(body?.fullName || '').trim();
-    const nationalId = String(body?.nationalId || '').replace(/\\s+/g, '');
+    const nationalId = String(body?.nationalId || '').replace(/\s+/g, '');
     const password = String(body?.password || '');
     const identity = identities.find(x => x.phone === phone && x.emails.includes(email));
     if (!identity) throw new UnauthorizedException('The email and phone number do not match an authorised administrator.');
@@ -523,7 +523,7 @@ export class AuthController {
     const email = String(body?.email || '').trim().toLowerCase();
     const password = String(body?.password || '');
     const identity = configuredAdminIdentities().find(x => x.emails.includes(email));
-    if (!email || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) || !password || password.length > 128 || !identity) {
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !password || password.length > 128 || !identity) {
       throw new UnauthorizedException('Invalid administrator email or password.');
     }
     const found = await this.db.pool.query(
