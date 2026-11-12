@@ -59,8 +59,8 @@ export class StaffController {
     if (password.length < 10 || password.length > 128) throw new BadRequestException('Choose a password of at least 10 characters.');
     if (!/^\\d{6,12}$/.test(nationalIdNumber)) throw new BadRequestException('Enter a valid National ID number.');
     const isSupportedImageData = (value: string) => ['data:image/jpeg;base64,', 'data:image/png;base64,', 'data:image/webp;base64,'].some(prefix => value.startsWith(prefix));
-    if (!isSupportedImageData(nationalIdPhotoData) || nationalIdPhotoData.length > 1250000) throw new BadRequestException('Upload a clear JPG, PNG or WebP National ID photo (maximum 900 KB).');
-    if (!isSupportedImageData(profilePhotoData) || profilePhotoData.length > 420000) throw new BadRequestException('Upload a JPG, PNG or WebP profile photo (maximum 300 KB).');
+    if (!isSupportedImageData(nationalIdPhotoData) || nationalIdPhotoData.length > 2800000) throw new BadRequestException('Upload a clear JPG, PNG or WebP National ID photo (maximum 2 MB).');
+    if (!isSupportedImageData(profilePhotoData) || profilePhotoData.length > 1400000) throw new BadRequestException('Upload a JPG, PNG or WebP profile photo (maximum 1 MB).');
     const ownerDigits = ownerPhone.slice(3);
     const ownerLocalPhone = '0' + ownerDigits;
     const owner = await this.db.pool.query(
