@@ -1048,9 +1048,6 @@
   $('login-account-type').addEventListener('change', updateLoginAccountType);
   document.querySelectorAll('[data-login-role]').forEach(tab=>tab.addEventListener('click',()=>{ $('login-account-type').value=tab.dataset.loginRole; updateLoginAccountType(); }));
   updateLoginAccountType();
-  let freelancerInvitationId = '';
-  // Hidden OTP/password inputs must not block the first freelancer registration step.
-  ['freelancer-owner-code','freelancer-new-password','freelancer-confirm-password'].forEach(id=>{const field=$(id);if(field)field.required=false;});
   $('show-freelancer-register')?.addEventListener('click',()=>{
     document.body.classList.add('registration-open');$('login-form').classList.add('hidden');$('password-reset-form')?.classList.add('hidden');
     $('freelancer-register-entry')?.classList.add('hidden');$('freelancer-register-form')?.classList.remove('hidden');
@@ -1063,7 +1060,6 @@
   });
   $('freelancer-back-login')?.addEventListener('click',()=>{
     document.body.classList.remove('registration-open');$('freelancer-register-form')?.classList.add('hidden');$('login-form').classList.remove('hidden');
-    ['freelancer-owner-code','freelancer-new-password','freelancer-confirm-password'].forEach(id=>{const field=$(id);if(field)field.required=false;});
     $('freelancer-register-entry')?.classList.remove('hidden');$('login-account-type').value='freelancer';updateLoginAccountType();
   });
   async function freelancerImageDataUrl(inputId,maxBytes,label){
@@ -1081,46 +1077,28 @@
   $('freelancer-register-form')?.addEventListener('submit',async e=>{
     e.preventDefault();
     const button=$('request-freelancer-approval'),message=$('freelancer-register-message');
-    button.disabled=true;button.textContent='Checking details and sending approval code…';message.textContent='';
+    const password=$('freelancer-new-password').value,confirm=$('freelancer-confirm-password').value;
+    if(password.length<10){message.textContent='Choose a password of at least 10 characters.';return;}
+    if(password!==confirm){message.textContent='The passwords do not match.';return;}
+    button.disabled=true;button.textContent='Creating your account…';message.textContent='';
     try{
       const nationalIdPhotoData=await freelancerImageDataUrl('freelancer-id-photo',900*1024,'your National ID photo');
       const profilePhotoData=await freelancerImageDataUrl('freelancer-profile-photo',300*1024,'your profile photo');
       const result=await request('/api/v1/staff/freelancer/register',{method:'POST',signal:AbortSignal.timeout(150000),body:JSON.stringify({
         ownerName:$('freelancer-owner-name').value.trim(),ownerPhone:$('freelancer-owner-phone').value.trim(),
         fullName:$('freelancer-full-name').value.trim(),phone:$('freelancer-phone').value.trim(),
-        email:$('freelancer-email').value.trim(),nationalIdNumber:$('freelancer-national-id').value.trim(),
-        nationalIdPhotoData,profilePhotoData
-      })});
-      freelancerInvitationId=result.invitationId;
-      $('freelancer-register-otp').classList.remove('hidden');
-      ['freelancer-owner-code','freelancer-new-password','freelancer-confirm-password'].forEach(id=>{const field=$(id);if(field)field.required=true;});
-      $('request-freelancer-approval').classList.add('hidden');
-      message.textContent='Owner account matched. Approval code sent to the registered shop-owner phone ending '+(result.ownerPhoneHint||'****')+'. Ask the owner to approve your registration.';
-    }catch(error){message.textContent=error.message||'Could not request owner approval.';}
-    finally{button.disabled=false;button.textContent='Send approval code to shop owner';}
-  });
-  $('finish-freelancer-register')?.addEventListener('click',async()=>{
-    const button=$('finish-freelancer-register'),message=$('freelancer-register-message');
-    const password=$('freelancer-new-password').value,confirm=$('freelancer-confirm-password').value;
-    if(password.length<10){message.textContent='Choose a password of at least 10 characters.';return;}
-    if(password!==confirm){message.textContent='The passwords do not match.';return;}
-    button.disabled=true;button.textContent='Creating your account…';message.textContent='';
-    try{
-      const result=await request('/api/v1/staff/freelancer/register/verify-otp',{method:'POST',signal:AbortSignal.timeout(150000),body:JSON.stringify({
-        invitationId:freelancerInvitationId,code:$('freelancer-owner-code').value.trim(),password
+        email:$('freelancer-email').value.trim(),password,
+        nationalIdNumber:$('freelancer-national-id').value.trim(),nationalIdPhotoData,profilePhotoData
       })});
       const freelancerPhone=$('freelancer-phone').value.trim();
-      message.textContent=result.message||'Your freelancer account has been created. You can now sign in.';
-      $('freelancer-register-otp').classList.add('hidden');
+      message.textContent=result.message||'Your account has been created and linked to the shop. You can now sign in.';
       $('freelancer-register-form').reset();
-      ['freelancer-owner-code','freelancer-new-password','freelancer-confirm-password'].forEach(id=>{const field=$(id);if(field)field.required=false;});
-      freelancerInvitationId='';
       $('freelancer-register-form').classList.add('hidden');
       $('login-form').classList.remove('hidden');
       $('login-account-type').value='freelancer';updateLoginAccountType();
       $('login-phone').value=freelancerPhone;
     }catch(error){message.textContent=error.message||'Could not create your freelancer account.';}
-    finally{button.disabled=false;button.textContent='Verify owner approval and create account';}
+    finally{button.disabled=false;button.textContent='CREATE FREELANCER ACCOUNT';}
   });
   let signupResendTimer = null;
   let signupResendSeconds = 0;
