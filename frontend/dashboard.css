@@ -1747,3 +1747,51 @@ html body.workspace-active #receipts-home.secondhand-active{
 @media(prefers-reduced-motion:reduce){
   html body.workspace-active #receipts-home:not(.hidden):not(.secondhand-active){animation:none!important}
 }
+
+
+/* GLOBAL AURORA WORKSPACE FRAME — apply the same phone-screen treatment to EVERY page.
+   Creamy yellow is the desktop surround; sky blue is the complete app canvas;
+   existing white cards and page-specific feature colours remain untouched. */
+html:has(body.workspace-active){
+  min-height:100%!important;
+  background:#fffbed!important;
+  background-image:linear-gradient(135deg,#fffdf4 0%,#fffbed 52%,#fff9e9 100%)!important;
+}
+body.workspace-active{
+  min-height:100dvh!important;
+  background:#fffbed!important;
+  background-image:linear-gradient(135deg,#fffdf4 0%,#fffbed 52%,#fff9e9 100%)!important;
+  color:#243b50!important;
+}
+body.workspace-active .shell{
+  box-sizing:border-box!important;
+  width:min(100% - 24px,460px)!important;
+  max-width:460px!important;
+  min-width:0!important;
+  margin:0 auto!important;
+  padding:8px!important;
+  background:linear-gradient(145deg,#eaf7ff 0%,#dff1ff 52%,#eaf6ff 100%)!important;
+  background-color:#eaf7ff!important;
+  border:1px solid #c9e4f5!important;
+  border-radius:20px!important;
+  box-shadow:0 8px 28px rgba(67,111,143,.10)!important;
+  overflow:hidden!important;
+}
+body.workspace-active .shell > :not(.hidden){
+  min-width:0!important;
+}
+body.workspace-active .shell > .panel:not(.hidden),
+body.workspace-active .shell > section:not(.hidden){
+  box-sizing:border-box!important;
+}
+@media(max-width:600px){
+  body.workspace-active .shell{
+    width:calc(100% - 12px)!important;
+    max-width:460px!important;
+    padding:5px!important;
+    border-radius:16px!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  html:has(body.workspace-active),body.workspace-active{animation:none!important}
+}
