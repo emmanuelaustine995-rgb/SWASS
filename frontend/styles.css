@@ -2363,3 +2363,43 @@ body.registration-open #freelancer-register-form [role=status]{margin:0!importan
     filter:brightness(1.02);
   }
 }
+
+
+/* Registration workspace reliability fix: keep either registration form as a true
+   full-screen white workspace below the fixed platform header. */
+body.registration-open #login-view>.login-card{overflow:visible!important}
+body.registration-open #register-form:not(.hidden),
+body.registration-open #freelancer-register-form:not(.hidden){
+  position:fixed!important;inset:62px 0 0!important;z-index:10000!important;
+  display:flex!important;flex-direction:column!important;align-items:stretch!important;
+  width:100vw!important;max-width:none!important;height:auto!important;max-height:none!important;
+  min-height:0!important;margin:0!important;padding:22px clamp(16px,4vw,42px) max(14px,env(safe-area-inset-bottom))!important;
+  overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior:contain!important;
+  background:#fff!important;color:#172b3a!important;border:0!important;border-radius:0!important;
+  box-shadow:none!important;
+}
+body.registration-open #register-form:not(.hidden)>*,
+body.registration-open #freelancer-register-form:not(.hidden)>*{flex-shrink:0}
+body.registration-open .registration-sticky-footer{position:sticky!important;bottom:-1px!important;margin-top:auto!important;padding:12px 0 max(12px,env(safe-area-inset-bottom))!important;background:#fff!important}
+body.registration-open #register-form input,
+body.registration-open #freelancer-register-form input{width:100%!important;max-width:100%!important}
+@media(max-width:600px){
+ body.registration-open #register-form:not(.hidden),
+ body.registration-open #freelancer-register-form:not(.hidden){inset:62px 0 0!important;padding:16px 15px max(12px,env(safe-area-inset-bottom))!important;gap:12px!important}
+}
+
+/* Both account types get the same clear blue registration entry button. */
+body:not(.workspace-active) #freelancer-register-entry #show-freelancer-register{
+ position:relative!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;
+ min-height:46px!important;min-width:210px!important;padding:11px 25px 14px!important;
+ border:2px solid #075fc4!important;border-radius:12px!important;background:#087be8!important;
+ color:#fff!important;font-size:15px!important;font-weight:850!important;line-height:1.2!important;
+ box-shadow:0 5px 0 #064b9b,0 8px 18px rgba(0,91,190,.22)!important;
+}
+body:not(.workspace-active) #freelancer-register-entry #show-freelancer-register::after{
+ content:'';position:absolute;right:9px;bottom:4px;width:25px;height:4px;border-radius:4px;background:#20b56b;
+}
+
+/* Login tagline: one polished, italic line separated by a comma. */
+#login-view .aurora-tagline{display:block!important;margin:0 auto!important;text-align:center!important}
+#login-view .aurora-tagline span{display:inline-block!important;font-style:italic!important;font-weight:750!important;letter-spacing:.015em!important}
