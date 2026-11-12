@@ -175,7 +175,7 @@ export class CustomersController {
   }
 
   @Post('lookup')
-  @Roles('owner', 'manager')
+  @Roles('owner', 'manager', 'freelancer')
   async lookup(@Req() req: any, @Body() body: { phone?: string; nationalId?: string }) {
     const { tenantId, storeId } = req.user ?? {};
     if (!tenantId || !storeId) throw new BadRequestException('User is not tied to a store');
@@ -217,7 +217,7 @@ export class CustomersController {
   }
 
   @Get()
-  @Roles('owner', 'manager')
+  @Roles('owner', 'manager', 'freelancer')
   async list(@Req() req: any, @Query('q') q?: string, @Query('limit') limit?: string) {
     const { tenantId, storeId } = req.user ?? {};
     if (!tenantId || !storeId) throw new BadRequestException('User is not tied to a store');
