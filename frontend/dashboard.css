@@ -2025,3 +2025,24 @@ body:not(.workspace-active) #login-view .aurora-tagline strong{font-weight:850!i
     box-shadow:0 2px 7px rgba(30,80,120,.14)!important;
   }
 }
+
+
+/* Flagged Items on PC: stack every action card vertically, in one column.
+   Keep each card's existing individual colour and leave the phone layout alone. */
+@media(min-width:761px){
+  html body.workspace-active #shop-lost-items-panel:not(.hidden) #lost-goods-cards{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    grid-template-rows:none!important;
+    grid-auto-flow:row!important;
+    grid-auto-rows:auto!important;
+    gap:12px!important;
+    width:100%!important;
+  }
+  html body.workspace-active #shop-lost-items-panel:not(.hidden) #lost-goods-cards>.lost-goods-card{
+    grid-column:1!important;
+    width:100%!important;
+    min-width:0!important;
+    box-sizing:border-box!important;
+  }
+}
