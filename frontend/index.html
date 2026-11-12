@@ -218,7 +218,7 @@
 
       <section id="secondhand-panel" class="secondhand-panel hidden" aria-label="Sales declaration form">
         <div class="secondhand-panel-heading">
-          <div><p class="eyebrow">AURORA · SPECIAL RECEIPT</p><h2>Sales Declaration Form</h2><p class="muted small">Complete the seller, buyer and product details before issuing the signed sales declaration.</p></div>
+          <div id="secondhand-panel-heading-copy"><p class="eyebrow">AURORA · SPECIAL RECEIPT</p><h2>Sales Declaration Form</h2><p class="muted small">Complete the seller, buyer and product details before issuing the signed sales declaration.</p></div>
           <button id="secondhand-back" class="btn btn-light" type="button">← Back to Receipts</button>
         </div>
         <div class="secondhand-warning"><strong>Important:</strong> Record any second-hand product only after checking the seller's identity, product details, ownership and signed record.</div>
@@ -255,7 +255,7 @@
             <div id="sh-biometric-status" class="secondhand-biometric-status" role="status">Checking whether this device has a built-in biometric authenticator…</div>
             <p class="tiny muted">A device may use fingerprint, face recognition or its screen lock. A normal browser cannot read or store fingerprint ridge data. A compatible external fingerprint reader and verified integration would be needed for actual fingerprint capture.</p>
           </fieldset>
-          <fieldset><legend>6 · Shop and witness record</legend>
+          <fieldset id="secondhand-shop-ack-fieldset"><legend>6 · Shop and witness record</legend>
             <div class="secondhand-fields"><label>Witness full name (optional)<input id="sh-witness-name" maxlength="160"></label><label>Witness phone (optional)<input id="sh-witness-phone" type="tel" maxlength="30"></label></div>
             <label class="secondhand-consent"><input id="sh-shop-acknowledged" type="checkbox" required><span>I, as the shop representative, confirm that I checked the seller's identification and compared the product identifiers with the item before accepting it.</span></label>
             <p class="tiny muted">AURORA records the logged-in shop account and the server's date and time when this declaration is submitted.</p>
@@ -366,6 +366,6 @@
   
   <script src="./config.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script src="./app.js?v=aurora-customer-logout-startpage-20261112"></script>
+  <script src="./app.js?v=aurora-customer-declaration-submission-20261112"></script>
   <script src="./dashboard.js"></script>
 </body></html>
