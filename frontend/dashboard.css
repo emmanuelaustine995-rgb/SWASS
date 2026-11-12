@@ -2046,3 +2046,54 @@ body:not(.workspace-active) #login-view .aurora-tagline strong{font-weight:850!i
     box-sizing:border-box!important;
   }
 }
+
+
+/* PC polish: purple belongs ONLY to the distant outer surround.
+   Keep the complete working shell and page canvases sky blue. */
+@media(min-width:761px){
+  html:has(body.workspace-active),
+  html body.workspace-active,
+  html:has(body.workspace-active #shop-lost-items-panel:not(.hidden)),
+  body.workspace-active:has(#shop-lost-items-panel:not(.hidden)){
+    background:#eee7ff!important;
+    background-color:#eee7ff!important;
+    background-image:linear-gradient(135deg,#f4efff 0%,#eee7ff 52%,#e8ddff 100%)!important;
+  }
+  html body.workspace-active .shell,
+  body.workspace-active:has(#shop-lost-items-panel:not(.hidden)) .shell{
+    background:linear-gradient(145deg,#eaf7ff 0%,#dff1ff 52%,#eaf6ff 100%)!important;
+    background-color:#eaf7ff!important;
+    background-image:linear-gradient(145deg,#eaf7ff 0%,#dff1ff 52%,#eaf6ff 100%)!important;
+  }
+
+  /* Prevent Flagged Items content and cards from overflowing the workspace. */
+  html body.workspace-active #shop-lost-items-panel:not(.hidden){
+    display:block!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    box-sizing:border-box!important;
+    overflow-x:hidden!important;
+  }
+  html body.workspace-active #shop-lost-items-panel:not(.hidden) #lost-goods-cards{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    grid-auto-flow:row!important;
+    gap:13px!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    box-sizing:border-box!important;
+    overflow:visible!important;
+  }
+  html body.workspace-active #shop-lost-items-panel:not(.hidden) #lost-goods-cards>.lost-goods-card{
+    display:flex!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    min-height:146px!important;
+    padding:18px!important;
+    box-sizing:border-box!important;
+    overflow-wrap:anywhere!important;
+  }
+}
