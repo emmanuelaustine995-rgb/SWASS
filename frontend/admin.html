@@ -67,12 +67,12 @@ input{width:100%;padding:14px;border:1px solid #d5deea;border-radius:10px;backgr
 <div class="card"><small>Total platform revenue</small><div id="metric-total" class="metric">—</div><div class="muted">Excludes shop sales</div></div>
 <div class="card"><small>Ledger entries</small><div id="metric-entries" class="metric">—</div><div class="muted">Recorded financial entries</div></div>
 </div>
-<div class="panel"><h3>Platform activity</h3><p>Shop counts, registrations, receipt volumes and recent platform activity will appear here when their reporting endpoints are connected. No estimated figures are shown.</p><div id="home-status" class="status">Loading verified financial summary…</div></div>
+<div class="cards" style="margin-top:16px"><div class="card"><small>Registered shops</small><div id="metric-shops" class="metric">—</div></div><div class="card"><small>Active subscriptions</small><div id="metric-active-subs" class="metric">—</div></div><div class="card"><small>Active freelancers</small><div id="metric-freelancers" class="metric">—</div></div><div class="card"><small>Issued receipts</small><div id="metric-issued" class="metric">—</div></div></div><div class="panel"><h3>Platform activity</h3><p>Live counts are read directly from the platform database. Shop sales are not counted as platform revenue.</p><div id="home-status" class="status">Loading verified platform summary…</div></div>
 </section>
-<section id="section-shops" class="hidden"><div class="heading"><div><h2>Shop Management</h2><p>Search and manage registered shops, subscriptions and linked freelancers.</p></div></div><div class="panel"><h3>Shop directory</h3><p>This section is reserved for the live shop directory, account status controls and linked-user records. The management API is not connected yet.</p></div></section>
+<section id="section-shops" class="hidden"><div class="heading"><div><h2>Shop Management</h2><p>Search registered shops and review their subscription and workspace activity.</p></div></div><div class="panel"><label for="shop-search">Search by business name, phone or email</label><input id="shop-search" type="search" placeholder="Search shops…" style="max-width:480px"><button id="shop-search-btn" class="primary" style="width:auto;padding:12px 20px;margin:10px 0">Search shops</button><p id="shops-status">Loading shop directory…</p><div class="table-wrap"><table><thead><tr><th>Business</th><th>Store</th><th>Phone</th><th>Active users</th><th>Receipts</th><th>Subscription</th><th>Ends</th></tr></thead><tbody id="shops-rows"><tr><td colspan="7">Loading…</td></tr></tbody></table></div></div></section>
 <section id="section-finance" class="hidden"><div class="heading"><div><h2>Finance &amp; Payments</h2><p>Platform revenue, subscriptions, receipt credits and payment reconciliation.</p></div></div><div class="cards"><div class="card"><small>Subscription revenue</small><div id="finance-subscriptions" class="metric">—</div></div><div class="card"><small>Receipt fee revenue</small><div id="finance-receipts" class="metric">—</div></div><div class="card"><small>Total revenue</small><div id="finance-total" class="metric">—</div></div><div class="card"><small>Ledger entries</small><div id="finance-entries" class="metric">—</div></div></div><div class="panel"><h3>Financial ledger</h3><p id="finance-status">Loading recorded ledger entries…</p><div class="table-wrap"><table><thead><tr><th>Type</th><th>Amount</th><th>Reference</th><th>Date</th></tr></thead><tbody id="finance-rows"><tr><td colspan="4">Loading…</td></tr></tbody></table></div></div></section>
 <section id="section-security" class="hidden"><div class="heading"><div><h2>Security Centre</h2><p>Access events, suspicious activity, incidents and audit history.</p></div></div><div class="panel"><h3>Security monitoring</h3><p>Security event feeds and append-only admin audit logging are not connected yet. No security events are being fabricated or displayed as live.</p></div></section>
-<section id="section-access" class="hidden"><div class="heading"><div><h2>Admin Access Control</h2><p>Manage the maximum of three authorised administrator identities.</p></div></div><div class="panel"><h3>Authorised administrators</h3><p>The active allowlist is controlled by the AURORA_ADMIN_EMAILS API environment setting. Add the third administrator there when ready. Per-person permissions and MFA setup still need to be connected.</p></div></section>
+<section id="section-access" class="hidden"><div class="heading"><div><h2>Admin Access Control</h2><p>Manage up to four authorised administrator email addresses. The final policy will group email aliases under no more than three individual people.</p></div></div><div class="panel"><h3>Authorised administrators</h3><p>The active email allowlist is controlled by AURORA_ADMIN_EMAILS in the API hosting settings. Up to four email addresses are accepted. Mapping multiple addresses to one person, per-person permissions and MFA are not yet connected.</p></div></section>
 <section id="section-reports" class="hidden"><div class="heading"><div><h2>Platform Reports</h2><p>Growth, receipt volumes, registrations and subscription reporting.</p></div></div><div class="panel"><h3>Reporting workspace</h3><p>Platform-wide reports and exports will appear here after their reporting endpoints are connected.</p></div></section>
 <section id="section-settings" class="hidden"><div class="heading"><div><h2>System Settings</h2><p>Platform announcements, maintenance, service health and integrations.</p></div></div><div class="panel"><h3>System configuration</h3><p>Service health, backup status, maintenance controls and SMS/payment integration status are not connected to this portal yet.</p></div></section>
 </main>
@@ -84,9 +84,34 @@ input{width:100%;padding:14px;border:1px solid #d5deea;border-radius:10px;backgr
   const $=id=>document.getElementById(id);
   let token='';
   const kes=n=>'KSh '+Number(n||0).toLocaleString('en-KE');
-  function showApp(){ $('login-screen').classList.add('hidden');$('admin-app').classList.remove('hidden');loadFinance(); }
+  function showApp(){ $('login-screen').classList.add('hidden');$('admin-app').classList.remove('hidden');loadFinance();loadOverview(); }
   function logout(){token='';sessionStorage.removeItem('aurora-admin-token');$('admin-app').classList.add('hidden');$('login-screen').classList.remove('hidden');$('admin-password').value='';}
   async function api(path){const res=await fetch(API+path,{headers:{Authorization:'Bearer '+token,Accept:'application/json'}});const data=await res.json().catch(()=>({}));if(!res.ok)throw new Error(data.message||'Could not load admin data');return data;}
+  async function loadOverview(){
+    try{
+      const data=await api('/platform-admin/overview');
+      $('metric-shops').textContent=Number(data.shops||0).toLocaleString();
+      $('metric-active-subs').textContent=Number(data.activeSubscriptions||0).toLocaleString();
+      $('metric-freelancers').textContent=Number(data.activeFreelancers||0).toLocaleString();
+      $('metric-issued').textContent=Number(data.issuedReceipts||0).toLocaleString();
+      $('home-status').textContent='Live database counts loaded: '+Number(data.stores||0).toLocaleString()+' stores, '+Number(data.activeOwners||0).toLocaleString()+' active shop owners, '+Number(data.activeCustomers||0).toLocaleString()+' active customers and '+Number(data.inactiveUsers||0).toLocaleString()+' inactive user accounts.';
+    }catch(e){$('home-status').textContent='Platform overview unavailable: '+e.message;}
+  }
+  async function loadShops(){
+    const status=$('shops-status'),rows=$('shops-rows');status.textContent='Loading shop records…';rows.replaceChildren();
+    try{
+      const term=$('shop-search').value.trim();
+      const data=await api('/platform-admin/shops?limit=100&search='+encodeURIComponent(term));
+      for(const shop of (data.shops||[])){
+        const tr=document.createElement('tr');
+        const values=[shop.businessName||'—',shop.storeName||'—',shop.businessPhone||'—',shop.activeUsers??0,shop.issuedReceipts??0,shop.subscriptionStatus||'No subscription',shop.subscriptionEndsAt?new Date(shop.subscriptionEndsAt).toLocaleDateString():'—'];
+        for(const value of values){const td=document.createElement('td');td.textContent=String(value);tr.append(td);}
+        rows.append(tr);
+      }
+      if(!rows.children.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=7;td.textContent='No matching shops found.';tr.append(td);rows.append(tr);}
+      status.textContent='Showing '+(data.shops||[]).length+' shop records (maximum 100).';
+    }catch(e){status.textContent='Could not load shops: '+e.message;const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=7;td.textContent='Shop records unavailable.';tr.append(td);rows.append(tr);}
+  }
   async function loadFinance(){
     try{
       const [summary,entries]=await Promise.all([api('/platform-finance/summary'),api('/platform-finance/entries')]);
@@ -110,10 +135,12 @@ input{width:100%;padding:14px;border:1px solid #d5deea;border-radius:10px;backgr
     finally{btn.disabled=false;btn.textContent='SECURE ADMIN LOGIN';}
   });
   $('admin-logout').addEventListener('click',logout);
+  $('shop-search-btn').addEventListener('click',loadShops);
+  $('shop-search').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();loadShops();}});
   document.querySelectorAll('.nav button').forEach(btn=>btn.addEventListener('click',()=>{
     document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b===btn));
     document.querySelectorAll('main.content section').forEach(s=>s.classList.add('hidden'));
-    $('section-'+btn.dataset.section).classList.remove('hidden');$('admin-welcome').textContent=btn.textContent;
+    $('section-'+btn.dataset.section).classList.remove('hidden');$('admin-welcome').textContent=btn.textContent;if(btn.dataset.section==='shops')loadShops();
   }));
 })();
 </script>
