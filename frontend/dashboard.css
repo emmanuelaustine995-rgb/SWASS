@@ -1655,3 +1655,95 @@ html,body.workspace-active{overscroll-behavior:none!important}
 @media(prefers-reduced-motion:reduce){
   html:has(body.workspace-active),body.workspace-active{animation:none!important}
 }
+
+
+/* AURORA receipt landing page: fixed phone-screen layout, no vertical scrolling.
+   The workspace canvas remains creamy yellow; the receipt surface is sky blue,
+   and each action card stays white. The declaration form can still scroll when opened. */
+html,body.workspace-active{
+  overflow:hidden!important;
+  overscroll-behavior:none!important;
+}
+body.workspace-active .shell{
+  overflow:hidden!important;
+  min-height:0!important;
+}
+html body.workspace-active #receipts-home:not(.hidden):not(.secondhand-active){
+  display:flex!important;
+  flex:1 1 0!important;
+  flex-direction:column!important;
+  justify-content:flex-start!important;
+  min-height:0!important;
+  height:100%!important;
+  max-height:100%!important;
+  margin:0!important;
+  padding:clamp(9px,1.5vh,16px)!important;
+  overflow:hidden!important;
+  overscroll-behavior:none!important;
+  background:linear-gradient(145deg,#eaf7ff 0%,#dff1ff 52%,#eaf6ff 100%)!important;
+  border:1px solid #c9e4f5!important;
+  border-radius:16px!important;
+  box-shadow:0 4px 16px rgba(48,105,145,.08)!important;
+}
+html body.workspace-active #receipts-home:not(.hidden):not(.secondhand-active) .section-head{
+  flex:0 0 auto!important;
+  margin:0 0 8px!important;
+  padding:0!important;
+}
+html body.workspace-active #receipts-home:not(.hidden):not(.secondhand-active) .receipt-actions-grid{
+  display:grid!important;
+  flex:1 1 0!important;
+  min-height:0!important;
+  height:100%!important;
+  max-height:100%!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:repeat(3,minmax(0,1fr))!important;
+  grid-auto-rows:minmax(0,1fr)!important;
+  gap:clamp(6px,1vh,10px)!important;
+  overflow:hidden!important;
+}
+html body.workspace-active #receipts-home:not(.hidden):not(.secondhand-active) .receipt-actions-grid .receipt-choice{
+  display:flex!important;
+  width:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  height:100%!important;
+  max-height:100%!important;
+  margin:0!important;
+  padding:clamp(8px,1.4vh,14px)!important;
+  gap:5px!important;
+  overflow:hidden!important;
+  background:#fff!important;
+  color:#243b50!important;
+  border:0!important;
+  border-radius:13px!important;
+  box-shadow:0 2px 9px rgba(39,88,122,.08)!important;
+}
+html body.workspace-active #receipts-home:not(.hidden):not(.secondhand-active) .receipt-actions-grid .receipt-choice>span{
+  width:clamp(27px,4vh,36px)!important;
+  height:clamp(27px,4vh,36px)!important;
+  flex:0 0 auto!important;
+  font-size:clamp(17px,2.6vh,23px)!important;
+}
+html body.workspace-active #receipts-home:not(.hidden):not(.secondhand-active) .receipt-actions-grid .receipt-choice strong{
+  font-size:clamp(12px,1.7vh,15px)!important;
+  line-height:1.15!important;
+}
+html body.workspace-active #receipts-home:not(.hidden):not(.secondhand-active) .receipt-actions-grid .receipt-choice small{
+  font-size:clamp(9px,1.35vh,11px)!important;
+  line-height:1.2!important;
+}
+html body.workspace-active #receipts-home:not(.hidden):not(.secondhand-active) .receipt-history-panel{
+  flex:0 0 auto!important;
+  margin:5px 0 0!important;
+}
+html body.workspace-active #receipts-home.secondhand-active{
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  min-height:0!important;
+  max-height:100%!important;
+  overscroll-behavior:contain!important;
+}
+@media(prefers-reduced-motion:reduce){
+  html body.workspace-active #receipts-home:not(.hidden):not(.secondhand-active){animation:none!important}
+}
