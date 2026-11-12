@@ -1983,3 +1983,13 @@ html body.workspace-active .shell{
     padding-bottom:env(safe-area-inset-bottom)!important;
   }
 }
+
+/* Customer portal home and referral QR */
+.customer-home{display:grid;gap:14px;max-width:900px;margin:0 auto;padding:16px}
+.customer-welcome-card,.customer-referral-card{border:1px solid #d8e8f4;border-radius:18px;background:#fff;padding:18px;box-shadow:0 8px 22px rgba(25,75,110,.06)}
+.customer-welcome-card h1{margin:5px 0;font-size:clamp(22px,4vw,30px);color:#173b56}
+.customer-welcome-card p:last-child,.customer-referral-copy p{color:#61788a;margin:6px 0 0}
+.customer-referral-card{display:flex;align-items:center;justify-content:space-between;gap:18px;background:linear-gradient(125deg,#f1f9ff,#fff)}
+.customer-referral-copy{min-width:0;flex:1}.customer-referral-copy h2{font-size:clamp(17px,3vw,22px);line-height:1.3;color:#174b70;margin:5px 0}.customer-referral-copy strong{display:inline-block;margin-top:12px;color:#176b9e;font-size:13px}
+.customer-referral-qr-wrap{flex:0 0 184px;display:grid;justify-items:center;gap:6px;padding:10px;background:#fff;border:1px solid #dceaf4;border-radius:14px}.customer-referral-qr-wrap #customer-referral-qr{min-height:164px;display:grid;place-items:center}.customer-referral-qr-wrap small{font-size:11px;color:#55748a;font-weight:700}
+@media(max-width:520px){.customer-home{padding:10px;gap:10px}.customer-welcome-card,.customer-referral-card{padding:14px}.customer-referral-card{align-items:stretch;flex-direction:column}.customer-referral-qr-wrap{align-self:center;width:100%;max-width:220px;flex-basis:auto}}
