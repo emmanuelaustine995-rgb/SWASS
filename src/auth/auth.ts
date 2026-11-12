@@ -473,7 +473,7 @@ export class AuthController {
     const email = String(body?.email || '').trim().toLowerCase();
     const phone = this.normalizePhone(String(body?.phone || ''));
     const code = String(body?.code || '').trim();
-    if (!/^\\d{6}$/.test(code)) throw new BadRequestException('Enter the six-digit verification code.');
+    if (!/^\d{6}$/.test(code)) throw new BadRequestException('Enter the six-digit verification code.');
     const secret = process.env.SWASS_ID_SECRET;
     if (!secret) throw new ServiceUnavailableException('Secure identity verification is not configured.');
     const pending = await this.db.pool.query(
