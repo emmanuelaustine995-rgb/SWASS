@@ -909,6 +909,7 @@
     $('owner-signup-fields').classList.toggle('hidden',customerSignupMode);
     $('reg-business').required=!customerSignupMode;
     $('reg-store').required=!customerSignupMode;
+    $('reg-location').required=!customerSignupMode;
     $('reg-password').required=true;
     $('reg-password-field').classList.remove('hidden');
     $('register-submit').textContent=customerSignupMode?'Create customer account · Send code':'Create business · Send verification code';
@@ -955,6 +956,8 @@
   document.querySelectorAll('[data-login-role]').forEach(tab=>tab.addEventListener('click',()=>{ $('login-account-type').value=tab.dataset.loginRole; updateLoginAccountType(); }));
   updateLoginAccountType();
   let freelancerInvitationId = '';
+  // Hidden OTP/password inputs must not block the first freelancer registration step.
+  ['freelancer-owner-code','freelancer-new-password','freelancer-confirm-password'].forEach(id=>{const field=$(id);if(field)field.required=false;});
   $('show-freelancer-register')?.addEventListener('click',()=>{
     $('login-form').classList.add('hidden');$('password-reset-form')?.classList.add('hidden');
     $('freelancer-register-entry')?.classList.add('hidden');$('freelancer-register-form')?.classList.remove('hidden');
@@ -962,6 +965,7 @@
   });
   $('freelancer-back-login')?.addEventListener('click',()=>{
     $('freelancer-register-form')?.classList.add('hidden');$('login-form').classList.remove('hidden');
+    ['freelancer-owner-code','freelancer-new-password','freelancer-confirm-password'].forEach(id=>{const field=$(id);if(field)field.required=false;});
     $('freelancer-register-entry')?.classList.remove('hidden');$('login-account-type').value='freelancer';updateLoginAccountType();
   });
   $('freelancer-register-form')?.addEventListener('submit',async e=>{
@@ -975,6 +979,7 @@
       })});
       freelancerInvitationId=result.invitationId;
       $('freelancer-register-otp').classList.remove('hidden');
+      ['freelancer-owner-code','freelancer-new-password','freelancer-confirm-password'].forEach(id=>{const field=$(id);if(field)field.required=true;});
       $('request-freelancer-approval').classList.add('hidden');
       message.textContent='Approval code sent to the shop owner’s registered phone ending '+(result.ownerPhoneHint||'****')+'. Ask the owner to share the code with you.';
     }catch(error){message.textContent=error.message||'Could not request owner approval.';}
@@ -994,6 +999,7 @@
       message.textContent=result.message||'Your freelancer account has been created. You can now sign in.';
       $('freelancer-register-otp').classList.add('hidden');
       $('freelancer-register-form').reset();
+      ['freelancer-owner-code','freelancer-new-password','freelancer-confirm-password'].forEach(id=>{const field=$(id);if(field)field.required=false;});
       freelancerInvitationId='';
       $('freelancer-register-form').classList.add('hidden');
       $('login-form').classList.remove('hidden');
