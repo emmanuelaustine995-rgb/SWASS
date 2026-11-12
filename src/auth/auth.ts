@@ -608,14 +608,20 @@ export class AuthController {
 
     const localPhone = '0' + phone.slice(3);
     const phoneVariants = [phone, localPhone];
+    const requestedType = body.accountType === 'freelancer' ? 'freelancer' : body.accountType === 'staff' ? 'staff' : 'owner';
     const { rows } = await this.db.pool.query(
       `SELECT u.id, u.tenant_id, u.store_id, u.role, u.full_name, u.staff_title, u.profile_photo_data, u.password_hash, u.is_active, u.must_change_password, t.status AS tenant_status
          FROM users u LEFT JOIN tenants t ON t.id = u.tenant_id
-        WHERE u.phone = ANY($1::text[])
-           OR regexp_replace(u.phone, '[^0-9]', '', 'g') = ANY($1::text[])
+        WHERE (u.phone = ANY($1::text[])
+           OR regexp_replace(u.phone, '[^0-9]', '', 'g') = ANY($1::text[]))
+          AND CASE
+            WHEN $3='freelancer' THEN u.role='freelancer'
+            WHEN $3='staff' THEN u.role IN ('cashier','vendor','freelancer')
+            ELSE u.role IN ('owner','manager','super_admin')
+          END
         ORDER BY CASE WHEN u.phone = $2 THEN 0 ELSE 1 END
         LIMIT 1`,
-      [phoneVariants, phone],
+      [phoneVariants, phone, requestedType],
     );
     const u = rows[0];
     // Same error for unknown phone, wrong password or disabled account.
@@ -625,7 +631,6 @@ export class AuthController {
     }
     const tenantIsUsable = !u?.tenant_id || u.tenant_status === 'active';
     const ok = u && u.is_active && tenantIsUsable && passwordOk;
-    const requestedType = body.accountType === 'freelancer' ? 'freelancer' : body.accountType === 'staff' ? 'staff' : 'owner';
     const roleMatches = requestedType === 'freelancer' ? u?.role === 'freelancer' : requestedType === 'staff' ? ['cashier','vendor','freelancer'].includes(u?.role) : ['owner','manager','super_admin'].includes(u?.role);
     if (!ok || !roleMatches) throw new UnauthorizedException('Invalid phone or password for this sign-in type');
 
