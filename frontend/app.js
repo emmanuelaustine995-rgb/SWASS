@@ -1328,7 +1328,7 @@
   prepareShopPhoto('profile-shop-inside','profile-shop-inside-preview','shopInsidePhotoDraft');
   prepareShopPhoto('profile-shop-outside','profile-shop-outside-preview','shopOutsidePhotoDraft');
   $('logout-btn').addEventListener('click',()=>{clearSession();window.dispatchEvent(new Event('swass:logout'));state.cart.clear();renderCart();$('profile-panel').classList.add('hidden');showLogin();});
-  function returnToAuroraLogin(){if(!state.token){showLogin();return;}if(!window.confirm('Return to the AURORA login screen? You will be signed out.'))return;clearSession();window.dispatchEvent(new Event('swass:logout'));state.cart.clear();renderCart();$('profile-panel')?.classList.add('hidden');showLogin();}
+  function returnToAuroraLogin(){if(!state.token){showLogin();return;}if(state.role!=='customer'&&!window.confirm('Return to the AURORA login screen? You will be signed out.'))return;clearSession();window.dispatchEvent(new Event('swass:logout'));state.cart.clear();renderCart();$('profile-panel')?.classList.add('hidden');showLogin();}
   $('back-to-login-btn')?.addEventListener('click',returnToAuroraLogin);$('customer-back-to-login')?.addEventListener('click',returnToAuroraLogin);
   $('dashboard-back-to-login')?.addEventListener('click',returnToAuroraLogin);
   // No saved shop products are available in the receipt workflow.
