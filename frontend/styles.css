@@ -1996,3 +1996,9 @@ html body.workspace-active .shell{
 
 /* Customer accounts must never display the Shop navigation item. */
 body.customer-account-active #workspace-nav [data-workspace="shop"]{display:none!important;visibility:hidden!important;width:0!important;min-width:0!important;max-width:0!important;flex:0 0 0!important;padding:0!important;margin:0!important;border:0!important;}
+
+
+/* Customer accounts: Issue Receipt is not an available action. Enforce at the page level so layout rules cannot reveal it. */
+body.customer-account-active #receipts-home #open-issue-receipt,
+body.customer-account-active #receipts-home #open-issue-receipt[hidden]{display:none!important;visibility:hidden!important;}
+body.customer-account-active #receipts-home .receipt-actions-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
