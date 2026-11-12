@@ -97,9 +97,9 @@
         customerNav.style.setProperty('border-color','#222','important');
         customerNav.style.setProperty('display','grid','important');
         customerNav.style.setProperty('grid-template-columns','repeat(3,minmax(0,1fr))','important');
-        customerNav.style.setProperty('height','43px','important');
-        customerNav.style.setProperty('min-height','43px','important');
-        customerNav.style.setProperty('padding','3px 6px','important');
+        customerNav.style.setProperty('height','39px','important');
+        customerNav.style.setProperty('min-height','39px','important');
+        customerNav.style.setProperty('padding','2px 5px','important');
         customerNav.style.setProperty('gap','4px','important');
         customerNav.style.setProperty('box-sizing','border-box','important');
         customerNav.querySelectorAll('button').forEach(button=>{
@@ -107,14 +107,16 @@
             button.style.setProperty('display','none','important');
             button.setAttribute('aria-hidden','true');
           }else{
-            button.style.setProperty('height','35px','important');
-            button.style.setProperty('min-height','35px','important');
-            button.style.setProperty('max-height','35px','important');
+            button.style.setProperty('height','31px','important');
+            button.style.setProperty('min-height','31px','important');
+            button.style.setProperty('max-height','31px','important');
             button.style.setProperty('width','100%','important');
             button.style.setProperty('min-width','0','important');
             button.style.setProperty('padding','2px','important');
             button.style.setProperty('margin','0','important');
             button.style.setProperty('background','#111','important');
+            button.style.setProperty('box-shadow','none','important');
+            button.style.setProperty('transform','none','important');
             button.style.setProperty('color','#fff','important');
             button.style.setProperty('font-size','10px','important');
             button.style.setProperty('border-radius','8px','important');
@@ -509,6 +511,8 @@
       }
     }
     document.querySelectorAll('#workspace-nav button').forEach(b=>b.classList.toggle('active',b.dataset.workspace===screen));
+    // Re-apply the customer dock after workspace visibility and active-tab updates.
+    if(state.role==='customer')enforceCustomerReceiptActions();
     syncGlobalBackButton();
   }
 
