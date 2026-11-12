@@ -133,9 +133,9 @@ export class StaffController {
     const html = `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#172033;padding:24px"><h2>Welcome to AURORA E-RECEIPT</h2><p>Hello ${safeName},</p><p>You have been invited to join the AURORA shop workspace as <strong>${safeRole}</strong>. You will have full workspace access except inviting other vendors or freelancers.</p><p>Use the secure button below to accept your invitation and create your own password. Your link expires in 7 days and can only be used once.</p><p><a href="${inviteUrl}" style="display:inline-block;background:#176bce;color:white;padding:14px 22px;border-radius:8px;text-decoration:none">Accept AURORA invitation</a></p><p>If you were not expecting this invitation, you can ignore this email.</p></div>`;
     const response = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST', signal: AbortSignal.timeout(15000),
-      headers: { 'api-key': apiKey, 'Content-Type': 'application/json', accept: 'application/json' },
+      headers: { 'api-key': String(apiKey), 'Content-Type': 'application/json', accept: 'application/json' },
       body: JSON.stringify({
-        sender: { email: from, name: 'AURORA E-RECEIPT' },
+        sender: { email: String(from), name: 'AURORA E-RECEIPT' },
         to: [{ email, name: fullName }],
         subject: 'You are invited to join a shop on AURORA E-RECEIPT',
         htmlContent: html,
@@ -184,8 +184,8 @@ export class StaffController {
     const html = `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#172033;padding:24px"><h2>Welcome to AURORA E-RECEIPT</h2><p>Hello ${safeName},</p><p>You have been invited to join a shop workspace as <strong>${safeRole}</strong>. You will have access to the shop workspace except inviting other vendors or freelancers.</p><p>The shop owner approved this invitation using a code sent to their registered phone. Use the secure button below to create your own private password. The link expires in 7 days and can only be used once.</p><p><a href="${secureUrl}" style="display:inline-block;background:#176bce;color:white;padding:14px 22px;border-radius:8px;text-decoration:none">Create your AURORA password</a></p></div>`;
     const response = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST', signal: AbortSignal.timeout(15000),
-      headers: { 'api-key': apiKey, 'Content-Type': 'application/json', accept: 'application/json' },
-      body: JSON.stringify({ sender: { email: from, name: 'AURORA E-RECEIPT' }, to: [{ email: invite.email, name: invite.full_name }],
+      headers: { 'api-key': String(apiKey), 'Content-Type': 'application/json', accept: 'application/json' },
+      body: JSON.stringify({ sender: { email: String(from), name: 'AURORA E-RECEIPT' }, to: [{ email: invite.email, name: invite.full_name }],
         subject: 'Your approved invitation to AURORA E-RECEIPT', htmlContent: html }),
     });
     const providerReply = await response.text();
