@@ -4,6 +4,7 @@
   const state = { token: null, role: null, userName: '', staffTitle: '', userPhotoData: '', userPhone: '', userEmail: '', products: [], cart: new Map(), lastReceipt: null, profileLogoData: undefined, businessProfile: {}, workspaceHistory: [], currentWorkspace: null, posReturnScreen: null };
   const SESSION_KEY = 'swass-auth-session-v1';
   const referralCodeFromUrl = new URLSearchParams(window.location.search).get('ref') || '';
+  const customerReferralCodeFromUrl = new URLSearchParams(window.location.search).get('customer_ref') || '';
   const SESSION_IDLE_MS = 5 * 60 * 60 * 1000;
   let lastSessionWrite = 0;
   function saveSession(){ if(!state.token)return; const now=Date.now(); localStorage.setItem(SESSION_KEY,JSON.stringify({token:state.token,role:state.role,userName:state.userName,staffTitle:state.staffTitle,userPhotoData:state.userPhotoData,userPhone:state.userPhone,userEmail:state.userEmail,lastActivity:now})); lastSessionWrite=now; }
@@ -204,6 +205,17 @@
     }catch(error){message.textContent=error.message||'Could not update withdrawal.';}
   }
   $('platform-referral-refresh')?.addEventListener('click',()=>void loadPlatformReferralAdmin());
+  async function loadCustomerReferralSummary(){
+    const message=$('customer-home-message'),qr=$('customer-referral-qr');
+    if(!message||state.role!=='customer')return;
+    try{
+      const data=await request('/api/v1/customers/referral-summary');
+      if($('customer-home-name'))$('customer-home-name').textContent=data.fullName||state.userName||'Welcome';
+      if($('customer-referral-count'))$('customer-referral-count').textContent=Number(data.totalReferrals||0).toLocaleString('en-KE')+' friends referred';
+      if(qr){qr.innerHTML='';if(data.referralLink&&window.QRCode)new QRCode(qr,{text:data.referralLink,width:164,height:164,correctLevel:QRCode.CorrectLevel.M});}
+      message.textContent=data.referralLink?'Share this QR code with friends.':'Your referral code is being prepared.';
+    }catch(error){message.textContent=error.message||'Your referral QR code could not be loaded.';}
+  }
   async function loadOwnerReferralSummary(){
     const card=$('referral-card');
     if(!card)return;
@@ -340,9 +352,10 @@
     const dashboardBusinessCard=$('dashboard-business-card');
     const subscriptionHome=$('subscription-home');
     const staffSummary=$('staff-sales-summary');
+    const customerHome=$('customer-home');
     // Hide every workspace root before opening exactly one destination.
     // This also prevents content retained by a previous tab from remaining visible.
-    [dashboardBusinessCard,ownerHome,receiptHome,pos,owner,$('platform-referral-admin'),$('shop-home'),$('shop-lost-items-panel'),subscriptionHome,staffSummary,$('staff-profile-panel'),$('account-profile-menu')].forEach(el=>el?.classList.add('hidden'));
+    [dashboardBusinessCard,ownerHome,customerHome,receiptHome,pos,owner,$('platform-referral-admin'),$('shop-home'),$('shop-lost-items-panel'),subscriptionHome,staffSummary,$('staff-profile-panel'),$('account-profile-menu')].forEach(el=>el?.classList.add('hidden'));
     dashboardBusinessCard?.classList.add('hidden');
     pos?.classList.remove('profile-workspace-mode');
     owner?.classList.remove('profile-workspace-mode');
@@ -353,7 +366,11 @@
     document.getElementById('staff-profile-panel')?.classList.add('hidden');
     staffSummary?.classList.add('hidden');
     if(screen==='dashboard'){
-      dashboardBusinessCard?.classList.remove('hidden');
+      if(state.role==='customer'){
+        dashboardBusinessCard?.classList.add('hidden');customerHome?.classList.remove('hidden');
+        if($('customer-home-name'))$('customer-home-name').textContent=state.userName||'Welcome';
+        void loadCustomerReferralSummary();
+      }else dashboardBusinessCard?.classList.remove('hidden');
       if(state.role==='super_admin'){
         dashboardBusinessCard?.classList.add('hidden');
         $('platform-referral-admin')?.classList.remove('hidden');
@@ -385,6 +402,7 @@
       $('open-recover-receipt')?.classList.remove('hidden');
       $('secondhand-open-card')?.classList.toggle('hidden',state.role!=='owner');
     }else if(screen==='shop'){
+      if(state.role==='customer'){showWorkspaceScreen('dashboard',{fromBack:true});return;}
       $('shop-home')?.classList.remove('hidden');
       setShopTab('products');
       void loadBusinessProfile().catch(err=>showNotice('Shop profile could not be loaded. '+(err.message||''),true));
@@ -434,7 +452,7 @@
     syncGlobalBackButton();
   }
 
-  function showPOS(){ if(!state.token){showLogin();return;} document.body.classList.add('workspace-active'); $('login-view').classList.add('hidden'); $('back-to-login-btn')?.classList.remove('hidden'); $('pos-view').classList.remove('hidden'); $('welcome-back-banner')?.classList.add('hidden'); $('profile-menu-btn')?.classList.remove('hidden'); $('logout-btn')?.classList.remove('hidden'); const label=$('user-label');label.textContent=state.userName||state.staffTitle||(state.role==='cashier'?'Shop Attendant':state.role?state.role.replace('_',' '):'Staff');if(state.userPhotoData){const avatar=document.createElement('img');avatar.src=state.userPhotoData;avatar.alt='Profile photo';avatar.style.cssText='width:30px;height:30px;object-fit:cover;border-radius:50%;vertical-align:middle;margin-right:8px';label.prepend(avatar);} $('dashboard-link').classList.toggle('hidden', !['owner','manager','vendor','freelancer'].includes(state.role));$('workspace-nav').classList.remove('hidden');syncGlobalBackButton();  }
+  function showPOS(){ if(!state.token){showLogin();return;} document.body.classList.add('workspace-active'); $('login-view').classList.add('hidden'); $('back-to-login-btn')?.classList.remove('hidden'); $('pos-view').classList.remove('hidden'); $('welcome-back-banner')?.classList.add('hidden'); $('profile-menu-btn')?.classList.remove('hidden'); $('logout-btn')?.classList.remove('hidden'); const label=$('user-label');label.textContent=state.userName||state.staffTitle||(state.role==='cashier'?'Shop Attendant':state.role?state.role.replace('_',' '):'Staff');if(state.userPhotoData){const avatar=document.createElement('img');avatar.src=state.userPhotoData;avatar.alt='Profile photo';avatar.style.cssText='width:30px;height:30px;object-fit:cover;border-radius:50%;vertical-align:middle;margin-right:8px';label.prepend(avatar);} $('dashboard-link').classList.toggle('hidden', !['owner','manager','vendor','freelancer'].includes(state.role));$('workspace-nav').classList.remove('hidden');document.querySelectorAll('#workspace-nav [data-workspace="shop"]').forEach(el=>el.classList.toggle('hidden',state.role==='customer'));syncGlobalBackButton();  }
   async function lookupCustomer(ev){
     ev.preventDefault();
     const phone=$('lookup-phone').value.trim();
@@ -1023,7 +1041,7 @@
       phone:$('reg-phone').value.trim(),
       email:$('reg-email').value.trim(),
       password:$('reg-password').value,
-      referralCode:referralCodeFromUrl
+      referralCode:customerSignupMode?(customerReferralCodeFromUrl||''):referralCodeFromUrl
     };
   }
   function startSignupResendCountdown(){
@@ -1160,6 +1178,7 @@
     const landingScreen = 'dashboard';
     showWorkspaceScreen(landingScreen);
     const backgroundLoads = [];
+    if(state.role==='customer')backgroundLoads.push(loadCustomerReferralSummary());
     if(['owner','manager','vendor','freelancer'].includes(state.role)){
       backgroundLoads.push(loadBusinessProfile().catch(err => {
         if(err.status === 402){
