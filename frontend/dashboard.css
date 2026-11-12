@@ -2167,19 +2167,8 @@ body:not(.workspace-active) #login-view .aurora-tagline strong{font-weight:850!i
     }
   }
 }
-/* AURORA desktop workspace: remove the empty strip below the top header. */
-@media(min-width:761px){
-  body.workspace-active .shell{
-    margin-top:0!important;
-    margin-bottom:0!important;
-    height:calc(100dvh - 72px)!important;
-    min-height:0!important;
-    max-height:calc(100dvh - 72px)!important;
-    box-sizing:border-box!important;
-    border-top-left-radius:0!important;
-    border-top-right-radius:0!important;
-  }
-}
+/* Desktop workspace: the authenticated canvas starts at the viewport's top edge.
+   The later fixed-position rule below anchors it independently of document flow. */
 
 /* Flagged Items: keep every action card inside the workspace on desktop and phone.
    The page itself scrolls internally; the cards never force the shell wider/taller. */
@@ -2449,5 +2438,44 @@ html body.workspace-active #shop-lost-items-panel:not(.hidden) #lost-goods-cards
     margin-top:0!important;
     padding-top:0!important;
     transform:translateY(0)!important;
+  }
+}
+
+
+/* FINAL PC TOP-EDGE ANCHOR: prevent any preceding wrapper or browser flow
+   from leaving a strip above the workspace. Preserve the existing desktop
+   workspace width and keep its internal navigation attached to the shell. */
+@media(min-width:761px){
+  html,body.workspace-active{
+    margin:0!important;
+    padding-top:0!important;
+  }
+  html body.workspace-active .shell{
+    position:fixed!important;
+    top:0!important;
+    bottom:0!important;
+    left:50%!important;
+    right:auto!important;
+    width:min(calc(100vw - 24px),460px)!important;
+    max-width:460px!important;
+    margin:0!important;
+    height:100dvh!important;
+    min-height:100dvh!important;
+    max-height:100dvh!important;
+    padding-top:0!important;
+    transform:translateX(-50%)!important;
+    box-sizing:border-box!important;
+  }
+  html body.workspace-active .global-back-row{
+    position:fixed!important;
+    top:0!important;
+    left:0!important;
+    right:0!important;
+    height:0!important;
+    min-height:0!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:visible!important;
+    z-index:100!important;
   }
 }
