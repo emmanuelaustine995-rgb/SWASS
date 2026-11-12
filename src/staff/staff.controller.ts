@@ -40,24 +40,24 @@ export class StaffController {
     nationalIdNumber?: string; nationalIdPhotoData?: string; profilePhotoData?: string; password?: string;
   }) {
     const normalizePhone = (value: unknown) => {
-      const digits = String(value ?? '').replace(/\\D/g, '');
+      const digits = String(value ?? '').replace(/\D/g, '');
       return digits.startsWith('0') ? '254' + digits.slice(1) : digits.startsWith('254') ? digits : '254' + digits;
     };
     const ownerPhone = normalizePhone(body?.ownerPhone);
-    const ownerName = String(body?.ownerName ?? '').trim().replace(/\\s+/g,' ');
+    const ownerName = String(body?.ownerName ?? '').trim().replace(/\s+/g,' ');
     const fullName = String(body?.fullName ?? '').trim();
     const email = String(body?.email ?? '').trim().toLowerCase();
     const phone = normalizePhone(body?.phone);
     const password = String(body?.password ?? '');
-    const nationalIdNumber = String(body?.nationalIdNumber ?? '').replace(/\\s+/g,'').trim();
+    const nationalIdNumber = String(body?.nationalIdNumber ?? '').replace(/\s+/g,'').trim();
     const nationalIdPhotoData = String(body?.nationalIdPhotoData ?? '');
     const profilePhotoData = String(body?.profilePhotoData ?? '');
-    if (!ownerName || ownerName.length > 120 || !/^254\\d{9}$/.test(ownerPhone)) throw new BadRequestException('Enter the shop owner’s full name and registered phone number.');
+    if (!ownerName || ownerName.length > 120 || !/^254\d{9}$/.test(ownerPhone)) throw new BadRequestException('Enter the shop owner’s full name and registered phone number.');
     if (!fullName || fullName.length > 120) throw new BadRequestException('Enter your full name.');
-    if (!/^254\\d{9}$/.test(phone)) throw new BadRequestException('Enter a valid Kenyan phone number.');
-    if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) || email.length > 254) throw new BadRequestException('Enter a valid email address.');
+    if (!/^254\d{9}$/.test(phone)) throw new BadRequestException('Enter a valid Kenyan phone number.');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) throw new BadRequestException('Enter a valid email address.');
     if (password.length < 10 || password.length > 128) throw new BadRequestException('Choose a password of at least 10 characters.');
-    if (!/^\\d{6,12}$/.test(nationalIdNumber)) throw new BadRequestException('Enter a valid National ID number.');
+    if (!/^\d{6,12}$/.test(nationalIdNumber)) throw new BadRequestException('Enter a valid National ID number.');
     const isSupportedImageData = (value: string) => ['data:image/jpeg;base64,', 'data:image/png;base64,', 'data:image/webp;base64,'].some(prefix => value.startsWith(prefix));
     if (!isSupportedImageData(nationalIdPhotoData) || nationalIdPhotoData.length > 2800000) throw new BadRequestException('Upload a clear JPG, PNG or WebP National ID photo (maximum 2 MB).');
     if (!isSupportedImageData(profilePhotoData) || profilePhotoData.length > 1400000) throw new BadRequestException('Upload a JPG, PNG or WebP profile photo (maximum 1 MB).');
