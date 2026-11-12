@@ -39,6 +39,16 @@ export class AuthGuard implements CanActivate {
     }
 
     const user = req.user as AuthUser;
+    if (user.role === 'super_admin') {
+      const allowed = (process.env.AURORA_ADMIN_EMAILS || '').split(',').map((v: string) => v.trim().toLowerCase()).filter(Boolean);
+      const adminEmail = String((req.user as any).adminEmail || '').trim().toLowerCase();
+      if (!adminEmail || !allowed.includes(adminEmail)) throw new ForbiddenException('This administrator account is not authorised.');
+      const verified = await this.db.pool.query(
+        `SELECT 1 FROM users WHERE id=$1 AND lower(email)=$2 AND is_active=true AND email_verified_at IS NOT NULL LIMIT 1`,
+        [user.sub, adminEmail],
+      );
+      if (!verified.rowCount) throw new ForbiddenException('Administrator access is no longer active or the email is not verified.');
+    }
     const path = String(req.originalUrl ?? req.url ?? '').split('?')[0];
     if (user.mustChangePassword && path !== '/api/v1/auth/change-password') throw new ForbiddenException('Please create your own password before using the shop workspace.');
     // Keep the payment portal usable when a subscription has expired or has
@@ -379,6 +389,36 @@ export class AuthController {
     return this.emailVerification.verify(String(body?.token ?? ''));
   }
 
+  @Post('admin/login')
+  async adminLogin(@Body() body: { email?: string; password?: string }) {
+    const email = String(body?.email || '').trim().toLowerCase();
+    const password = String(body?.password || '');
+    const allowed = (process.env.AURORA_ADMIN_EMAILS || '').split(',').map(v => v.trim().toLowerCase()).filter(Boolean);
+    if (!email || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) || !password || password.length > 128 || !allowed.includes(email)) {
+      throw new UnauthorizedException('Invalid administrator email or password.');
+    }
+    const found = await this.db.pool.query(
+      `SELECT id,full_name,email,password_hash,is_active,email_verified_at
+         FROM users WHERE lower(email)=$1 LIMIT 1`, [email],
+    );
+    const account = found.rows[0];
+    let passwordOk = false;
+    if (account?.password_hash) {
+      try { passwordOk = await argon2.verify(account.password_hash, password); } catch { passwordOk = false; }
+    }
+    if (!account || !account.is_active || !account.email_verified_at || !passwordOk) {
+      throw new UnauthorizedException('Invalid administrator email or password, or email verification is still pending.');
+    }
+    const payload: AuthUser & { adminEmail: string } = {
+      sub: account.id, tenantId: null, storeId: null, role: 'super_admin',
+      fullName: account.full_name, adminEmail: email,
+    };
+    return {
+      accessToken: await this.jwt.signAsync(payload, { expiresIn: '8h' }),
+      user: { fullName: account.full_name, role: 'super_admin', email },
+    };
+  }
+
   @Post('bootstrap-admin')
   async bootstrapAdmin(@Req() req: any, @Body() body: { fullName?: string; phone?: string; email?: string; password?: string }) {
     const configured = process.env.SWASS_ADMIN_BOOTSTRAP_TOKEN ?? '';
@@ -620,7 +660,7 @@ export class AuthController {
           AND CASE
             WHEN $3='freelancer' THEN u.role='freelancer'
             WHEN $3='staff' THEN u.role IN ('cashier','vendor','freelancer')
-            ELSE u.role IN ('owner','manager','super_admin')
+            ELSE u.role IN ('owner','manager')
           END
         ORDER BY CASE WHEN u.phone = $2 THEN 0 ELSE 1 END
         LIMIT 1`,
@@ -634,7 +674,7 @@ export class AuthController {
     }
     const tenantIsUsable = !u?.tenant_id || u.tenant_status === 'active';
     const ok = u && u.is_active && tenantIsUsable && passwordOk;
-    const roleMatches = requestedType === 'freelancer' ? u?.role === 'freelancer' : requestedType === 'staff' ? ['cashier','vendor','freelancer'].includes(u?.role) : ['owner','manager','super_admin'].includes(u?.role);
+    const roleMatches = requestedType === 'freelancer' ? u?.role === 'freelancer' : requestedType === 'staff' ? ['cashier','vendor','freelancer'].includes(u?.role) : ['owner','manager'].includes(u?.role);
     if (!ok || !roleMatches) throw new UnauthorizedException('Invalid phone or password for this sign-in type');
 
     const payload: AuthUser = { sub: u.id, tenantId: u.tenant_id, storeId: u.store_id, role: u.role, mustChangePassword: !!u.must_change_password, fullName: u.full_name };
