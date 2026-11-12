@@ -35,10 +35,11 @@ export class StaffController {
 
   // Public freelancer self-registration. The shop owner must approve by OTP sent to the owner's registered phone.
   @Post('freelancer/register')
-  async startFreelancerRegistration(@Body() body: { ownerPhone?: string; ownerEmail?: string; fullName?: string; phone?: string; email?: string }) {
+  async startFreelancerRegistration(@Body() body: { shopRegistrationPermit?: string; ownerPhone?: string; ownerEmail?: string; fullName?: string; phone?: string; email?: string }) {
     const ownerDigits = String(body?.ownerPhone ?? '').replace(/\D/g, '');
     const ownerPhone = ownerDigits.startsWith('0') ? '254' + ownerDigits.slice(1) : ownerDigits.startsWith('254') ? ownerDigits : '254' + ownerDigits;
     const ownerEmail = String(body?.ownerEmail ?? '').trim().toLowerCase();
+    const shopRegistrationPermit = String(body?.shopRegistrationPermit ?? '').trim();
     const fullName = String(body?.fullName ?? '').trim();
     const email = String(body?.email ?? '').trim().toLowerCase();
     const rawPhone = String(body?.phone ?? '').trim();
@@ -82,10 +83,10 @@ export class StaffController {
     const token = randomBytes(32).toString('base64url');
     const saved = await this.db.pool.query(
       `INSERT INTO staff_email_invitations
-       (tenant_id,store_id,created_by,full_name,email,phone,job_title,token_hash,expires_at,approval_code_hash,approval_expires_at,approval_attempts)
-       VALUES($1,$2,$3,$4,$5,$6,'Freelancer',$7,now()+interval '30 minutes',$8,now()+interval '5 minutes',0)
+       (tenant_id,store_id,created_by,full_name,email,phone,job_title,token_hash,expires_at,approval_code_hash,approval_expires_at,approval_attempts,shop_registration_permit)
+       VALUES($1,$2,$3,$4,$5,$6,'Freelancer',$7,now()+interval '30 minutes',$8,now()+interval '5 minutes',0,$9)
        RETURNING id`,
-      [owner.rows[0].tenant_id,owner.rows[0].store_id,owner.rows[0].id,fullName,email,phone,this.hash(token),this.hash(code)],
+      [owner.rows[0].tenant_id,owner.rows[0].store_id,owner.rows[0].id,fullName,email,phone,this.hash(token),this.hash(code),shopRegistrationPermit],
     );
     try {
       const normalizedOwnerPhone = String(owner.rows[0].phone).replace(/\D/g,'');
