@@ -1,4 +1,5 @@
 import { BadRequestException, Body, Controller, Get, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { randomBytes } from 'node:crypto';
 import { AuthGuard, Roles, RolesGuard } from '../auth/auth';
 import { DbService } from '../db/db.service';
 import { hashNationalId, normalisePhone } from '../receipts/receipts.service';
@@ -7,6 +8,23 @@ import { hashNationalId, normalisePhone } from '../receipts/receipts.service';
 @UseGuards(AuthGuard, RolesGuard)
 export class CustomersController {
   constructor(private db: DbService) {}
+
+  @Get('referral-summary')
+  @Roles('customer')
+  async customerReferralSummary(@Req() req: any) {
+    const customerId = req.user?.sub;
+    if (!customerId) throw new BadRequestException('Customer account required');
+    let account = await this.db.pool.query('SELECT id,full_name,referral_code FROM customer_accounts WHERE id=$1 AND is_active=true',[customerId]);
+    if (!account.rowCount) throw new BadRequestException('Customer account not found');
+    if (!account.rows[0].referral_code) {
+      const code = randomBytes(6).toString('hex').toUpperCase();
+      await this.db.pool.query('UPDATE customer_accounts SET referral_code=$1 WHERE id=$2 AND referral_code IS NULL',[code,customerId]);
+      account = await this.db.pool.query('SELECT id,full_name,referral_code FROM customer_accounts WHERE id=$1',[customerId]);
+    }
+    const counts = await this.db.pool.query('SELECT COUNT(*)::int AS total FROM customer_referrals WHERE referrer_customer_id=$1',[customerId]);
+    const baseUrl = (process.env.AURORA_WEB_URL || 'https://swass-web.onrender.com').replace(/\/$/,'');
+    return {fullName:account.rows[0].full_name,referralCode:account.rows[0].referral_code,referralLink:`${baseUrl}/?customer_ref=${encodeURIComponent(account.rows[0].referral_code)}`,totalReferrals:Number(counts.rows[0]?.total||0)};
+  }
 
   @Post('lookup')
   @Roles('owner', 'manager')
