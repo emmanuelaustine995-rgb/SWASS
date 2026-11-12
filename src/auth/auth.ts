@@ -129,11 +129,15 @@ export class AuthController {
         let result: any = {};
         try { result = raw ? JSON.parse(raw) : {}; } catch { result = {}; }
         // Log timing and provider acceptance only; never log the phone, OTP, token or message.
-        const accepted = response.ok && (result?.status === 'success' || result?.success === true);
-        console.info(`[SWASS] Signup OTP TalkSasa response: HTTP ${response.status}, accepted=${accepted}, durationMs=${Date.now() - providerStartedAt}`);
-        // The gateway returns status:"success" or status:"error"; HTTP 200 alone is not acceptance.
+        const gatewayStatus = String(result?.status ?? result?.data?.status ?? '').trim().toLowerCase();
+        const accepted = response.ok && (
+          gatewayStatus === 'success' || gatewayStatus === 'accepted' || gatewayStatus === 'queued' ||
+          result?.success === true || result?.status === true
+        );
+        console.info(`[SWASS] Signup OTP TalkSasa response: HTTP ${response.status}, status=${gatewayStatus || 'missing'}, accepted=${accepted}, durationMs=${Date.now() - providerStartedAt}`);
+        // Do not treat HTTP 200 alone as success: the gateway can return a JSON error.
         if (accepted) return;
-        const reason = String(result?.message ?? result?.error ?? raw ?? '').slice(0, 140);
+        const reason = String(result?.message ?? result?.error ?? result?.data?.message ?? raw ?? response.statusText ?? '').replace(/[\\r\\n]+/g, ' ').slice(0, 180);
         failures.push(`TalkSasa HTTP ${response.status}${reason ? `: ${reason}` : ''}`);
       } catch (error) {
         console.warn(`[SWASS] Signup OTP TalkSasa request failed after ${Date.now() - providerStartedAt}ms: ${error instanceof Error ? error.name : 'request failed'}`);
@@ -263,9 +267,9 @@ export class AuthController {
       console.info(`[SWASS][OTP_DIAG] SMS provider accepted signup OTP; total registration duration ${Date.now() - registrationStartedAt}ms`);
     } catch (error) {
       await this.db.pool.query('UPDATE signup_otp_requests SET expires_at=now() WHERE id=$1', [saved.rows[0].id]);
-      const reason = error instanceof Error ? error.message : 'SMS provider error';
+      const reason = (error instanceof Error ? error.message : 'SMS provider error').replace(/[\\r\\n]+/g, ' ').slice(0, 220);
       console.error(`[SWASS][OTP_DIAG] Signup OTP delivery failed after ${Date.now() - registrationStartedAt}ms:`, reason);
-      throw new ServiceUnavailableException('We could not send your verification code. Please check the phone number and try again.');
+      throw new ServiceUnavailableException(`We could not send your verification code. SMS gateway response: ${reason}`);
     }
     return process.env.NODE_ENV === 'production'
       ? { otpRequired: true, expiresInSeconds: 300, message: 'A 6-digit verification code has been sent to your phone.' }
@@ -527,8 +531,9 @@ export class AuthController {
       await this.sendSignupSms(phone, `Your AURORA customer verification code is ${code}. It expires in 5 minutes. Do not share this code.`);
     } catch (error) {
       await this.db.pool.query('UPDATE customer_signup_otp_requests SET expires_at=now() WHERE id=$1', [saved.rows[0].id]);
-      console.error('[AURORA] Customer signup SMS delivery failed:', error instanceof Error ? error.message : 'Unknown SMS provider error');
-      throw new ServiceUnavailableException('We could not send your verification code. Check the SMS gateway settings and try again.');
+      const reason = (error instanceof Error ? error.message : 'Unknown SMS provider error').replace(/[\\r\\n]+/g, ' ').slice(0, 220);
+      console.error('[AURORA] Customer signup SMS delivery failed:', reason);
+      throw new ServiceUnavailableException(`We could not send your verification code. SMS gateway response: ${reason}`);
     }
     return process.env.NODE_ENV === 'production'
       ? { otpRequired: true, expiresInSeconds: 300, message: 'A verification code has been sent to your phone.' }
