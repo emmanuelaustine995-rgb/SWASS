@@ -13,7 +13,7 @@ export class DashboardController {
   }
 
   @Get('summary')
-  @Roles('owner', 'manager')
+  @Roles('owner', 'manager', 'freelancer')
   async summary(@Req() req: any, @Query('from') from?: string, @Query('to') to?: string) {
     const [tenantId, storeId] = this.scope(req.user);
     const start = this.dateParam(from, 'from');
@@ -151,7 +151,7 @@ export class DashboardController {
   }
 
   @Get('comparison')
-  @Roles('owner', 'manager')
+  @Roles('owner', 'manager', 'freelancer')
   async comparison(@Req() req: any, @Query('from') from?: string, @Query('to') to?: string) {
     const [tenantId, storeId] = this.scope(req.user);
     const start = this.dateParam(from, 'from');
@@ -183,7 +183,7 @@ export class DashboardController {
   }
 
   @Get('expenses')
-  @Roles('owner', 'manager')
+  @Roles('owner', 'manager', 'freelancer')
   async listExpenses(@Req() req: any, @Query('limit') limit?: string) {
     const [tenantId, storeId] = this.scope(req.user);
     const n = limit === undefined ? 50 : Number(limit);
@@ -196,7 +196,7 @@ export class DashboardController {
   }
 
   @Post('expenses')
-  @Roles('owner', 'manager')
+  @Roles('owner', 'manager', 'freelancer')
   async addExpense(@Req() req: any, @Body() body: { amountKes?: number; category?: string; note?: string; spentAt?: string }) {
     const [tenantId, storeId] = this.scope(req.user);
     if (!Number.isSafeInteger(body?.amountKes) || body.amountKes! <= 0 || body.amountKes! > 100000000000) throw new BadRequestException('amountKes must be a positive whole number in Kenya shillings');
