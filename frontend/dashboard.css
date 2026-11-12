@@ -2097,3 +2097,29 @@ body:not(.workspace-active) #login-view .aurora-tagline strong{font-weight:850!i
     overflow-wrap:anywhere!important;
   }
 }
+
+
+/* AURORA SHOP PAGE BACKGROUND OVERRIDE — keep the PC surround purple,
+   but force the Shop working shell and Shop canvas to sky blue.
+   This outranks older :has() rules in styles.css that made the shell transparent. */
+@supports selector(body:has(#shop-home:not(.hidden))){
+  @media(min-width:761px){
+    html:has(body.workspace-active #shop-home:not(.hidden)),
+    body.workspace-active:has(#shop-home:not(.hidden)){
+      background:#eee7ff!important;
+      background-color:#eee7ff!important;
+      background-image:linear-gradient(135deg,#f4efff 0%,#eee7ff 52%,#e8ddff 100%)!important;
+      animation:none!important;
+    }
+    body.workspace-active:has(#shop-home:not(.hidden)) .shell,
+    html body.workspace-active .shell:has(> #shop-home:not(.hidden)),
+    body.workspace-active:has(#shop-home:not(.hidden)) .shell #shop-home:not(.hidden){
+      background:linear-gradient(145deg,#eaf7ff 0%,#dff1ff 52%,#eaf6ff 100%)!important;
+      background-color:#eaf7ff!important;
+      background-image:linear-gradient(145deg,#eaf7ff 0%,#dff1ff 52%,#eaf6ff 100%)!important;
+    }
+    body.workspace-active:has(#shop-home:not(.hidden)) .shell{
+      border-color:#c9e4f5!important;
+    }
+  }
+}
