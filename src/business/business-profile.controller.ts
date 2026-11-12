@@ -8,7 +8,7 @@ export class BusinessProfileController {
   constructor(private db: DbService) {}
 
   @Get()
-  @Roles('owner', 'manager')
+  @Roles('owner', 'manager', 'freelancer')
   async getProfile(@Req() req: any) {
     const u = req.user;
     if (!u?.tenantId || !u?.storeId) throw new BadRequestException('Business account required');
