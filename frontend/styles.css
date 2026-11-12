@@ -2029,3 +2029,56 @@ body.customer-account-active #receipts-home .receipt-actions-grid{grid-template-
   font-weight:700!important;
   cursor:pointer;
 }
+
+
+/* AURORA account registration: make the existing Create account control easy to find. */
+body:not(.workspace-active) #owner-register-entry #show-register{
+  position:relative!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  min-height:46px!important;min-width:180px!important;padding:11px 25px 14px!important;
+  border:2px solid #075fc4!important;border-radius:12px!important;
+  background:#087be8!important;color:#fff!important;font-size:15px!important;font-weight:850!important;
+  line-height:1.2!important;letter-spacing:.01em!important;text-decoration:none!important;
+  box-shadow:0 5px 0 #064b9b,0 8px 18px rgba(0,91,190,.22)!important;
+}
+body:not(.workspace-active) #owner-register-entry #show-register::after{
+  content:'';position:absolute;right:9px;bottom:4px;width:25px;height:4px;border-radius:4px;background:#20b56b;
+}
+
+/* Registration fields remain reachable by scrolling the card on desktop and mobile.
+   Avoid nested clipped forms: one continuous card scroll contains every field and button. */
+html body:not(.workspace-active) .shell{
+  min-height:100dvh!important;height:auto!important;max-height:none!important;overflow:visible!important;
+}
+html body:not(.workspace-active) #login-view{
+  min-height:100dvh!important;height:auto!important;max-height:none!important;
+  align-items:flex-start!important;justify-content:flex-start!important;overflow:visible!important;
+  padding-top:8px!important;padding-bottom:24px!important;
+}
+html body:not(.workspace-active) #login-view .login-card{
+  max-height:calc(100dvh - 16px)!important;height:auto!important;min-height:0!important;
+  overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior:contain!important;
+  -webkit-overflow-scrolling:touch!important;scrollbar-gutter:stable!important;
+}
+html body:not(.workspace-active) #login-view #register-form,
+html body:not(.workspace-active) #login-view #freelancer-register-form{
+  max-height:none!important;height:auto!important;min-height:0!important;
+  overflow:visible!important;overscroll-behavior:auto!important;
+  padding:2px 3px 18px!important;gap:11px!important;
+}
+html body:not(.workspace-active) #login-view #register-form label,
+html body:not(.workspace-active) #login-view #freelancer-register-form label{min-width:0!important}
+html body:not(.workspace-active) #login-view #register-form input,
+html body:not(.workspace-active) #login-view #freelancer-register-form input{
+  min-height:42px!important;font-size:14px!important;padding:9px 11px!important;
+}
+html body:not(.workspace-active) #login-view .compact-extra-fields{min-width:0!important}
+@media(max-width:760px){
+  html body:not(.workspace-active) .shell{padding:6px 10px 20px!important}
+  html body:not(.workspace-active) #login-view{padding:0 0 20px!important}
+  html body:not(.workspace-active) #login-view .login-card{
+    width:100%!important;max-width:520px!important;max-height:calc(100dvh - 12px)!important;
+    padding:14px 13px 18px!important;margin:0 auto!important;border-radius:16px!important;
+  }
+  html body:not(.workspace-active) #login-view #register-form,
+  html body:not(.workspace-active) #login-view #freelancer-register-form{gap:10px!important}
+}
