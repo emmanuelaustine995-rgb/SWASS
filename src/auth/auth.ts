@@ -41,6 +41,7 @@ export class AuthGuard implements CanActivate {
     const user = req.user as AuthUser;
     if (user.role === 'super_admin') {
       const allowed = (process.env.AURORA_ADMIN_EMAILS || '').split(',').map((v: string) => v.trim().toLowerCase()).filter(Boolean);
+      if (allowed.length > 3 || new Set(allowed).size !== allowed.length) throw new ForbiddenException('Administrator allowlist configuration is invalid.');
       const adminEmail = String((req.user as any).adminEmail || '').trim().toLowerCase();
       if (!adminEmail || !allowed.includes(adminEmail)) throw new ForbiddenException('This administrator account is not authorised.');
       const verified = await this.db.pool.query(
@@ -394,6 +395,7 @@ export class AuthController {
     const email = String(body?.email || '').trim().toLowerCase();
     const password = String(body?.password || '');
     const allowed = (process.env.AURORA_ADMIN_EMAILS || '').split(',').map(v => v.trim().toLowerCase()).filter(Boolean);
+    if (allowed.length > 3 || new Set(allowed).size !== allowed.length) throw new UnauthorizedException('Administrator access is not configured correctly.');
     if (!email || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) || !password || password.length > 128 || !allowed.includes(email)) {
       throw new UnauthorizedException('Invalid administrator email or password.');
     }
