@@ -30,6 +30,54 @@ export class EmailVerificationService {
     return { sent: true };
   }
 
+  async sendAdmin(personId: string, email: string, fullName: string) {
+    const apiKey = process.env.BREVO_API_KEY?.trim();
+    const from = process.env.BREVO_FROM_EMAIL?.trim();
+    if (!apiKey || !from) return { sent: false, reason: 'Brevo email provider is not configured' };
+    const token = randomBytes(32).toString('base64url');
+    const tokenHash = createHash('sha256').update(token).digest('hex');
+    await this.db.pool.query(
+      `INSERT INTO aurora_admin_email_verification_tokens(person_id,email,token_hash,expires_at)
+       VALUES($1,$2,$3,now()+interval '30 minutes')`,
+      [personId,email,tokenHash],
+    );
+    const verifyUrl = `${(process.env.PUBLIC_APP_URL || 'https://swass-web.onrender.com').replace(/\/$/,'')}/verify-email.html?type=admin&token=${encodeURIComponent(token)}`;
+    const esc = (value: unknown) => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST', signal: AbortSignal.timeout(15000),
+      headers: { 'api-key': apiKey, 'Content-Type': 'application/json', accept: 'application/json' },
+      body: JSON.stringify({
+        sender: { email: from, name: 'AURORA E-RECEIPT' },
+        to: [{ email }],
+        subject: 'Verify your AURORA administrator email',
+        htmlContent: `<div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;color:#17324d"><h2>Administrator email verification</h2><p>Hello ${esc(fullName)},</p><p>Confirm this email address for your authorised AURORA Admin Control Centre identity. This does not change your shop-owner login email.</p><p><a href="${verifyUrl}" style="display:inline-block;padding:13px 20px;background:#176bce;color:#fff;text-decoration:none;border-radius:8px">Verify administrator email</a></p><p>This link expires in 30 minutes. If you did not request this, ignore this message.</p></div>`,
+      }),
+    });
+    if (!response.ok) throw new Error('Administrator email verification message could not be sent');
+    return { sent: true };
+  }
+
+  async verifyAdmin(token: string) {
+    if (typeof token !== 'string' || token.length < 20 || token.length > 200) throw new BadRequestException('Invalid or expired administrator verification link');
+    const tokenHash = createHash('sha256').update(token).digest('hex');
+    return this.db.tx(async c => {
+      const found = await c.query(
+        `SELECT id,person_id,email FROM aurora_admin_email_verification_tokens
+         WHERE token_hash=$1 AND used_at IS NULL AND expires_at>now() FOR UPDATE`, [tokenHash],
+      );
+      const row = found.rows[0];
+      if (!row) throw new BadRequestException('Administrator verification link is invalid or has expired. Register again or contact platform support.');
+      const updated = await c.query(
+        `UPDATE aurora_admin_identity_records SET admin_email_verified_at=now()
+         WHERE person_id=$1 AND lower(admin_email)=lower($2) RETURNING person_id`,
+        [row.person_id,row.email],
+      );
+      if (!updated.rowCount) throw new BadRequestException('The administrator identity could not be verified.');
+      await c.query('UPDATE aurora_admin_email_verification_tokens SET used_at=now() WHERE id=$1',[row.id]);
+      return { verified: true, message: 'Your AURORA administrator email is verified. You can now sign in to the Admin Control Centre.' };
+    });
+  }
+
   async sendReceipt(input: {
     to:string; customerName:string; receiptNo:string; totalKes:number; pdf?:Buffer;
     issuedAt:string|Date; businessName:string; storeName:string;
