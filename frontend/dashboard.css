@@ -2379,3 +2379,42 @@ html body.workspace-active #shop-lost-items-panel:not(.hidden) #lost-goods-cards
     padding:8px 11px!important;
   }
 }
+
+
+/* PC workspace starts flush against the upper edge.
+   The top bar is hidden in the authenticated workspace, so do not reserve
+   its old 72px height. Keep the desktop navigation inside the shell. */
+@media(min-width:761px){
+  html,body.workspace-active{
+    margin-top:0!important;
+    padding-top:0!important;
+  }
+  html body.workspace-active .topbar{
+    display:none!important;
+    height:0!important;
+    min-height:0!important;
+    max-height:0!important;
+    margin:0!important;
+    padding:0!important;
+    border:0!important;
+  }
+  html body.workspace-active .global-back-row:not(:has(.global-back-dock:not(.hidden))){
+    display:none!important;
+    height:0!important;
+    min-height:0!important;
+    margin:0!important;
+    padding:0!important;
+  }
+  html body.workspace-active .shell{
+    position:relative!important;
+    top:0!important;
+    margin-top:0!important;
+    margin-bottom:0!important;
+    height:100dvh!important;
+    min-height:100dvh!important;
+    max-height:100dvh!important;
+    padding-top:0!important;
+    box-sizing:border-box!important;
+    transform:none!important;
+  }
+}
