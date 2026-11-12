@@ -2541,3 +2541,29 @@ body.registration-open .registration-sticky-footer{position:sticky!important;bot
 .aurora-policy-consent{display:flex!important;grid-template-columns:18px minmax(0,1fr);align-items:start;gap:9px!important;color:#26352e!important;font-size:12px!important;line-height:1.5;}
 .aurora-policy-consent input{width:17px!important;height:17px;margin:1px 0 0;accent-color:#075bd8;}
 .aurora-policy-consent a{color:#075bd8;font-weight:800;}
+
+
+/* Desktop: keep the registration workspace phone-width, centered, and square-edged.
+   The top edge stays perfectly straight with no rounded or curved corners. */
+@media (min-width:601px){
+ body.registration-open #login-view{
+  left:50%!important;right:auto!important;top:72px!important;bottom:0!important;
+  width:430px!important;max-width:430px!important;height:calc(100dvh - 72px)!important;
+  transform:translateX(-50%)!important;border-radius:0!important;
+  overflow:hidden!important;background:#fff!important;
+  box-shadow:none!important;
+ }
+ body.registration-open #login-view>.login-card{
+  width:100%!important;max-width:100%!important;border-radius:0!important;
+ }
+ body.registration-open #register-form:not(.hidden),
+ body.registration-open #freelancer-register-form:not(.hidden){
+  left:50%!important;right:auto!important;top:72px!important;bottom:0!important;
+  width:430px!important;max-width:430px!important;height:calc(100dvh - 72px)!important;
+  transform:translateX(-50%)!important;border-radius:0!important;
+  padding:20px 16px 18px!important;
+ }
+ body.registration-open .aurora-policy-center{
+  max-width:100%!important;border-radius:0!important;
+ }
+}
