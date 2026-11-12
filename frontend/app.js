@@ -977,8 +977,8 @@
     // and the small Back control are visible on desktop.
     const card=document.querySelector('#login-view .login-card');
     const form=$('register-form');
-    if(card)card.scrollTop=0;
-    if(form)form.scrollTop=0;
+    if(card){card.scrollTop=0;card.scrollTo({top:0,behavior:'instant'});}
+    if(form){form.scrollTop=0;form.scrollTo({top:0,behavior:'instant'});}
     requestAnimationFrame(()=>{if(card)card.scrollTo({top:0,behavior:'instant'});if(form)form.scrollTo({top:0,behavior:'instant'});});
   });
   function returnFromSignupToLogin(){
