@@ -427,6 +427,7 @@ export class AuthController {
          LIMIT 1`,
       [phone, '0' + phone.slice(3), body?.accountType === 'freelancer' ? 'freelancer' : null],
     );
+    console.info(`[AURORA] Freelancer password-reset lookup: matched=${Boolean(found.rowCount)}, accountType=${body?.accountType === 'freelancer' ? 'freelancer' : 'other'}`);
     if (!found.rowCount) return generic;
     const userId = found.rows[0].id;
     const recent = await this.db.pool.query(
@@ -450,7 +451,9 @@ export class AuthController {
       await this.sendSignupSms(phone, `Your SWASS password reset code is ${code}. It expires in 5 minutes. Do not share this code.`);
     } catch (error) {
       await this.db.pool.query('UPDATE password_reset_requests SET expires_at=now() WHERE id=$1', [saved.rows[0].id]);
-      throw new ServiceUnavailableException('We could not send the reset code. Please try again later.');
+      const reason = (error instanceof Error ? error.message : 'SMS provider error').replace(/[\\r\\n]+/g, ' ').slice(0, 180);
+      console.error('[AURORA] Freelancer password-reset SMS delivery failed:', reason);
+      throw new ServiceUnavailableException('The SMS gateway could not send your reset code. Please check the phone number and try again, or contact support.');
     }
     return generic;
   }
