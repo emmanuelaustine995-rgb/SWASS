@@ -48,12 +48,23 @@ export class StaffController {
     if (!fullName || fullName.length > 120) throw new BadRequestException('Enter your full name.');
     if (!/^254\d{9}$/.test(phone)) throw new BadRequestException('Enter a valid Kenyan phone number.');
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) throw new BadRequestException('Enter a valid email address.');
+    // Accept either the owner's login contacts or the business-profile contacts,
+    // but require the email and phone to belong to the same active owner/shop.
+    // Phone matching supports 07..., 2547..., +254 7..., and 7... formats.
+    const ownerNationalPhone = ownerPhone.slice(3);
+    const ownerLocalPhone = '0' + ownerNationalPhone;
     const owner = await this.db.pool.query(
-      `SELECT id,tenant_id,store_id,phone FROM users
-        WHERE role='owner' AND is_active=true AND lower(email)=lower($1)
-          AND regexp_replace(phone,'[^0-9]','','g') IN ($2,$3)
+      `SELECT u.id,u.tenant_id,u.store_id,u.phone
+         FROM users u
+         LEFT JOIN tenants t ON t.id=u.tenant_id
+        WHERE u.role='owner' AND u.is_active=true
+          AND (lower(coalesce(u.email,''))=lower($1) OR lower(coalesce(t.email,''))=lower($1))
+          AND (
+            regexp_replace(coalesce(u.phone,''),'[^0-9]','','g') IN ($2,$3,$4)
+            OR regexp_replace(coalesce(t.phone,''),'[^0-9]','','g') IN ($2,$3,$4)
+          )
         LIMIT 1`,
-      [ownerEmail,ownerPhone,'0'+ownerPhone.slice(3)],
+      [ownerEmail,ownerPhone,ownerLocalPhone,ownerNationalPhone],
     );
     if (!owner.rowCount) throw new BadRequestException('The shop owner details could not be verified. Check the registered owner phone and email.');
     const duplicate = await this.db.pool.query(
