@@ -499,6 +499,9 @@
       if(['owner','manager','freelancer'].includes(state.role))void loadLostItems();
     }else if(screen==='customers'){
       if(!['owner','manager','freelancer'].includes(state.role)){showWorkspaceScreen('dashboard',{fromBack:true});return;}
+      pos?.classList.remove('hidden');
+      posGrid?.classList.add('hidden');
+      $('customer-lookup-panel')?.classList.add('hidden');
       $('owner-customers-section')?.classList.remove('hidden');
       $('owner-dashboard-view')?.classList.remove('hidden');
       $('owner-dashboard-view')?.scrollIntoView({behavior:'smooth',block:'start'});
