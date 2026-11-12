@@ -378,7 +378,7 @@
       }else if(['owner','manager','vendor','freelancer'].includes(state.role)){
         ownerHome?.classList.remove('hidden');
         void loadOwnerHomeSummary();
-      }else{
+      }else if(state.role!=='customer'){
         staffSummary?.classList.remove('hidden');
         void loadStaffSalesSummary();
       }
@@ -1178,7 +1178,6 @@
     const landingScreen = 'dashboard';
     showWorkspaceScreen(landingScreen);
     const backgroundLoads = [];
-    if(state.role==='customer')backgroundLoads.push(loadCustomerReferralSummary());
     if(['owner','manager','vendor','freelancer'].includes(state.role)){
       backgroundLoads.push(loadBusinessProfile().catch(err => {
         if(err.status === 402){
