@@ -396,6 +396,16 @@
       }
     }else if(screen==='receipts'){
       receiptHome?.classList.remove('hidden');
+      // Re-apply account permissions every time the Receipts page is opened.
+      const isCustomerAccount=state.role==='customer';
+      document.body.classList.toggle('customer-account-active',isCustomerAccount);
+      const issueReceiptCard=$('open-issue-receipt');
+      if(issueReceiptCard){
+        issueReceiptCard.hidden=isCustomerAccount;
+        issueReceiptCard.classList.toggle('hidden',isCustomerAccount);
+        issueReceiptCard.style.setProperty('display',isCustomerAccount?'none':'','important');
+        issueReceiptCard.setAttribute('aria-hidden',isCustomerAccount?'true':'false');
+      }
       // Receipt history lives inside the Receipts workspace. The global workspace
       // reset hides nested panels, so explicitly restore it whenever Receipts opens.
       history?.classList.remove('hidden');
