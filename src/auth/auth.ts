@@ -110,7 +110,11 @@ export class AuthController {
     if (token) {
       const providerStartedAt = Date.now();
       try {
-        const response = await fetch(process.env.TALKSASA_API_URL || 'https://bulksms.talksasa.com/api/v3/sms/send', {
+        const configuredTalkSasaUrl = (process.env.TALKSASA_API_URL || 'https://bulksms.talksasa.com/api/v3/sms/send').trim();
+        const talkSasaEndpoint = /\/sms\/send\/?$/i.test(configuredTalkSasaUrl)
+          ? configuredTalkSasaUrl
+          : `${configuredTalkSasaUrl.replace(/\/+$/, '')}/sms/send`;
+        const response = await fetch(talkSasaEndpoint, {
           method: 'POST',
           signal: AbortSignal.timeout(12000),
           headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', 'Content-Type': 'application/json' },
@@ -500,7 +504,7 @@ export class AuthController {
     const email = String(body?.email ?? '').trim().toLowerCase() || null;
     const password = String(body?.password ?? '');
     if (!fullName || fullName.length > 120) throw new BadRequestException('Enter your full name (maximum 120 characters).');
-    if (email && (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) || email.length > 254)) throw new BadRequestException('Enter a valid email address.');
+    if (email && (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254)) throw new BadRequestException('Enter a valid email address.');
     if (password.length < 10 || password.length > 128) throw new BadRequestException('Password must be at least 10 characters.');
     const existing = await this.db.pool.query('SELECT 1 FROM customer_accounts WHERE phone=$1 LIMIT 1', [phone]);
     if (existing.rowCount) throw new BadRequestException('A customer account already exists for this phone. Please sign in.');
@@ -521,9 +525,10 @@ export class AuthController {
     );
     try {
       await this.sendSignupSms(phone, `Your AURORA customer verification code is ${code}. It expires in 5 minutes. Do not share this code.`);
-    } catch {
+    } catch (error) {
       await this.db.pool.query('UPDATE customer_signup_otp_requests SET expires_at=now() WHERE id=$1', [saved.rows[0].id]);
-      throw new ServiceUnavailableException('We could not send your verification code. Please try again.');
+      console.error('[AURORA] Customer signup SMS delivery failed:', error instanceof Error ? error.message : 'Unknown SMS provider error');
+      throw new ServiceUnavailableException('We could not send your verification code. Check the SMS gateway settings and try again.');
     }
     return process.env.NODE_ENV === 'production'
       ? { otpRequired: true, expiresInSeconds: 300, message: 'A verification code has been sent to your phone.' }
