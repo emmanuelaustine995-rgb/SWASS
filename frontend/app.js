@@ -88,6 +88,46 @@
   function enforceCustomerReceiptActions(){
     const isCustomer=state.role==='customer';
     document.body.classList.toggle('customer-account-active',isCustomer);
+    const customerNav=$('workspace-nav');
+    if(customerNav){
+      const setImportant=(el,prop,value)=>el?.style.setProperty(prop,value,'important');
+      if(isCustomer){
+        customerNav.style.setProperty('background','#050505','important');
+        customerNav.style.setProperty('background-color','#050505','important');
+        customerNav.style.setProperty('border-color','#222','important');
+        customerNav.style.setProperty('display','grid','important');
+        customerNav.style.setProperty('grid-template-columns','repeat(3,minmax(0,1fr))','important');
+        customerNav.style.setProperty('height','43px','important');
+        customerNav.style.setProperty('min-height','43px','important');
+        customerNav.style.setProperty('padding','3px 6px','important');
+        customerNav.style.setProperty('gap','4px','important');
+        customerNav.style.setProperty('box-sizing','border-box','important');
+        customerNav.querySelectorAll('button').forEach(button=>{
+          if(button.dataset.workspace==='shop'){
+            button.style.setProperty('display','none','important');
+            button.setAttribute('aria-hidden','true');
+          }else{
+            button.style.setProperty('height','35px','important');
+            button.style.setProperty('min-height','35px','important');
+            button.style.setProperty('max-height','35px','important');
+            button.style.setProperty('width','100%','important');
+            button.style.setProperty('min-width','0','important');
+            button.style.setProperty('padding','2px','important');
+            button.style.setProperty('margin','0','important');
+            button.style.setProperty('background','#111','important');
+            button.style.setProperty('color','#fff','important');
+            button.style.setProperty('font-size','10px','important');
+            button.style.setProperty('border-radius','8px','important');
+          }
+        });
+      }else{
+        customerNav.removeAttribute('style');
+        customerNav.querySelectorAll('button').forEach(button=>{
+          button.removeAttribute('style');
+          button.removeAttribute('aria-hidden');
+        });
+      }
+    }
     // Keep the owner action intact for future owner logins, but remove it
     // completely from the customer's visible Receipts page.
     const issueCard=$('open-issue-receipt');
