@@ -1853,3 +1853,78 @@ html body.workspace-active #shop-lost-items-panel:not(.hidden) .panel{
     overflow:hidden!important;
   }
 }
+
+
+/* AURORA correction: restore colour to the Home cards without changing their layout. */
+html body.workspace-active #owner-home>.owner-home-card{
+  background:linear-gradient(135deg,#ffffff 0%,#eaf4ff 100%)!important;
+  border:1px solid #cfe2f4!important;
+}
+html body.workspace-active #owner-home #referral-card>.referral-earn-card{
+  background:linear-gradient(135deg,#f3eaff 0%,#e5d5ff 100%)!important;
+  border:1px solid #d6c2f5!important;
+}
+html body.workspace-active #owner-home #referral-card>.referral-invite-card{
+  background:linear-gradient(135deg,#e8f7ff 0%,#d8edff 100%)!important;
+  border:1px solid #c6e2f5!important;
+}
+html body.workspace-active #owner-home #referral-card>.referral-balance-card{
+  background:linear-gradient(135deg,#e8fbf2 0%,#d5f4e5 100%)!important;
+  border:1px solid #bfe8d2!important;
+}
+
+/* Lost Goods page: the page canvas is sky blue, never the desktop creamy yellow.
+   Keep its red, blue, gold and purple feature cards individually coloured. */
+@supports selector(body:has(#shop-lost-items-panel:not(.hidden))){
+  html:has(body.workspace-active #shop-lost-items-panel:not(.hidden)),
+  body.workspace-active:has(#shop-lost-items-panel:not(.hidden)){
+    background:linear-gradient(145deg,#eaf7ff 0%,#dff1ff 52%,#eaf6ff 100%)!important;
+    background-color:#eaf7ff!important;
+    background-image:linear-gradient(145deg,#eaf7ff 0%,#dff1ff 52%,#eaf6ff 100%)!important;
+    animation:none!important;
+  }
+  body.workspace-active:has(#shop-lost-items-panel:not(.hidden)) .shell{
+    background:linear-gradient(145deg,#eaf7ff 0%,#dff1ff 52%,#eaf6ff 100%)!important;
+    background-color:#eaf7ff!important;
+    background-image:linear-gradient(145deg,#eaf7ff 0%,#dff1ff 52%,#eaf6ff 100%)!important;
+  }
+}
+html body.workspace-active #shop-lost-items-panel:not(.hidden){
+  background:linear-gradient(145deg,#eaf7ff 0%,#dff1ff 52%,#eaf6ff 100%)!important;
+  background-color:#eaf7ff!important;
+  background-image:linear-gradient(145deg,#eaf7ff 0%,#dff1ff 52%,#eaf6ff 100%)!important;
+  animation:none!important;
+}
+@media(max-width:600px){
+  html:has(body.workspace-active #shop-lost-items-panel:not(.hidden)),
+  body.workspace-active:has(#shop-lost-items-panel:not(.hidden)),
+  body.workspace-active:has(#shop-lost-items-panel:not(.hidden)) .shell{
+    background:linear-gradient(145deg,#eaf7ff 0%,#dff1ff 52%,#eaf6ff 100%)!important;
+    background-image:linear-gradient(145deg,#eaf7ff 0%,#dff1ff 52%,#eaf6ff 100%)!important;
+  }
+}
+
+/* Login tagline: keep both brand phrases on one elegant, centred line. */
+body:not(.workspace-active) #login-view .aurora-tagline{
+  display:flex!important;
+  flex-direction:row!important;
+  align-items:center!important;
+  justify-content:center!important;
+  flex-wrap:nowrap!important;
+  gap:5px!important;
+  width:100%!important;
+  white-space:nowrap!important;
+  text-align:center!important;
+  font-size:clamp(10px,2.65vw,13px)!important;
+  line-height:1.25!important;
+  letter-spacing:.015em!important;
+  margin:4px auto 0!important;
+}
+body:not(.workspace-active) #login-view .aurora-tagline span,
+body:not(.workspace-active) #login-view .aurora-tagline strong{
+  display:inline!important;
+  white-space:nowrap!important;
+  font-size:inherit!important;
+}
+body:not(.workspace-active) #login-view .aurora-tagline span{font-weight:750!important}
+body:not(.workspace-active) #login-view .aurora-tagline strong{font-weight:850!important}
