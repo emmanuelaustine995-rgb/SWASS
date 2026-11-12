@@ -74,13 +74,15 @@ export class AuthGuard implements CanActivate {
 
     const user = req.user as AuthUser;
     if (user.role === 'super_admin') {
-      const allowed = configuredAdminEmails();
-      if (!allowed.length || new Set(allowed).size !== allowed.length) throw new ForbiddenException('Administrator allowlist configuration is invalid.');
+      const identities = configuredAdminIdentities();
       const adminEmail = String((req.user as any).adminEmail || '').trim().toLowerCase();
-      if (!adminEmail || !allowed.includes(adminEmail)) throw new ForbiddenException('This administrator account is not authorised.');
+      const adminPersonId = String((req.user as any).adminPersonId || '').trim();
+      const identity = identities.find(x => x.personId === adminPersonId && x.emails.includes(adminEmail));
+      if (!identity) throw new ForbiddenException('This administrator account is not authorised.');
       const verified = await this.db.pool.query(
-        `SELECT 1 FROM users WHERE id=$1 AND lower(email)=$2 AND is_active=true AND email_verified_at IS NOT NULL LIMIT 1`,
-        [user.sub, adminEmail],
+        `SELECT 1 FROM users u JOIN aurora_admin_identity_records r ON r.user_id=u.id
+          WHERE u.id=$1 AND r.person_id=$2 AND u.is_active=true AND u.email_verified_at IS NOT NULL LIMIT 1`,
+        [user.sub, adminPersonId],
       );
       if (!verified.rowCount) throw new ForbiddenException('Administrator access is no longer active or the email is not verified.');
     }
@@ -520,14 +522,14 @@ export class AuthController {
   async adminLogin(@Body() body: { email?: string; password?: string }) {
     const email = String(body?.email || '').trim().toLowerCase();
     const password = String(body?.password || '');
-    const allowed = configuredAdminEmails();
-    if (allowed.length > 4 || new Set(allowed).size !== allowed.length) throw new UnauthorizedException('Administrator access is not configured correctly.');
-    if (!email || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) || !password || password.length > 128 || !allowed.includes(email)) {
+    const identity = configuredAdminIdentities().find(x => x.emails.includes(email));
+    if (!email || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) || !password || password.length > 128 || !identity) {
       throw new UnauthorizedException('Invalid administrator email or password.');
     }
     const found = await this.db.pool.query(
-      `SELECT id,full_name,email,password_hash,is_active,email_verified_at
-         FROM users WHERE lower(email)=$1 LIMIT 1`, [email],
+      `SELECT u.id,u.full_name,u.email,u.password_hash,u.is_active,u.email_verified_at
+         FROM users u JOIN aurora_admin_identity_records r ON r.user_id=u.id
+        WHERE r.person_id=$1 LIMIT 1`, [identity.personId],
     );
     const account = found.rows[0];
     let passwordOk = false;
@@ -537,9 +539,9 @@ export class AuthController {
     if (!account || !account.is_active || !account.email_verified_at || !passwordOk) {
       throw new UnauthorizedException('Invalid administrator email or password, or email verification is still pending.');
     }
-    const payload: AuthUser & { adminEmail: string } = {
+    const payload: AuthUser & { adminEmail: string; adminPersonId: string } = {
       sub: account.id, tenantId: null, storeId: null, role: 'super_admin',
-      fullName: account.full_name, adminEmail: email,
+      fullName: account.full_name, adminEmail: email, adminPersonId: identity.personId,
     };
     return {
       accessToken: await this.jwt.signAsync(payload, { expiresIn: '8h' }),
