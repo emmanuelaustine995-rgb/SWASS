@@ -1823,3 +1823,29 @@ body.workspace-active:before{
   }
   body.workspace-active:has(#shop-lost-items-panel:not(.hidden)) .shell{background:transparent!important;background-image:none!important}
 }
+
+
+/* AURORA refreshed login identity: vector mark on a creamy, almost-white sky-blue field. */
+body:not(.workspace-active) #login-view .aurora-brand-lockup{
+  width:min(100%,390px);
+  padding:12px 14px 13px;
+  margin:0 auto 17px;
+  border:1px solid rgba(139,190,224,.42);
+  border-radius:20px;
+  background:linear-gradient(145deg,#fbfeff 0%,#f2faff 48%,#eaf6ff 100%);
+  box-shadow:0 8px 24px rgba(37,104,158,.10),inset 0 1px 0 rgba(255,255,255,.95);
+}
+body:not(.workspace-active) #login-view .aurora-login-logo{
+  display:block;
+  width:min(100%,300px);
+  height:auto;
+  max-height:none;
+  margin:0 auto 5px;
+  filter:drop-shadow(0 5px 9px rgba(76,30,144,.12));
+}
+body:not(.workspace-active) #login-view .aurora-tagline span{color:#1979c8}
+body:not(.workspace-active) #login-view .aurora-tagline strong{color:#334b68}
+@media(max-width:480px){
+  body:not(.workspace-active) #login-view .aurora-brand-lockup{padding:9px 9px 11px;margin-bottom:13px;border-radius:16px}
+  body:not(.workspace-active) #login-view .aurora-login-logo{width:min(100%,275px)}
+}
