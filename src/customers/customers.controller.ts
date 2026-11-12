@@ -45,8 +45,8 @@ export class CustomersController {
         throw new BadRequestException('Please complete the required declaration details.');
       }
     }
-    if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(body.sellerEmail) ||
-        !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(body.buyerEmail)) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.sellerEmail) ||
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.buyerEmail)) {
       throw new BadRequestException('Enter valid seller and buyer email addresses.');
     }
     if (!['with_receipt','without_receipt'].includes(body.saleType)) throw new BadRequestException('Choose the original receipt status.');
