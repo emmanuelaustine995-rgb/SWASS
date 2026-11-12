@@ -26,13 +26,13 @@ export class LostItemsController {
     const {rows:lastRows}=await this.db.pool.query('SELECT searched_by_phone AS "lastSearchedByPhone",searched_by_name AS "lastSearchedByName",presented_by_name AS "presentedByName",presented_by_phone AS "presentedByPhone",searched_at AS "lastSearchedAt" FROM lost_item_searches WHERE item_code=$1 ORDER BY searched_at DESC LIMIT 1',[item.itemCode]);
     return {match:true,item:{...item,...(lastRows[0]||{})}};
   }
-  @Get() @Roles('owner','manager')
+  @Get() @Roles('owner','manager','freelancer')
   async list(@Req() req:any){
     const [t,s]=this.scope(req.user);
     const {rows}=await this.db.pool.query(`SELECT li.id,li.item_code AS "itemCode",li.item_name AS "itemName",li.brand,li.model,li.colour,li.description,li.imei_1 AS "imei1",li.imei_2 AS "imei2",li.serial_number AS "serialNumber",li.purchase_date AS "purchaseDate",li.receipt_reference AS "receiptReference",li.ob_number AS "obNumber",li.status,li.lost_at AS "lostAt",li.created_at AS "createdAt",COUNT(r.id)::int AS "reportCount" FROM lost_items li LEFT JOIN lost_item_reports r ON r.lost_item_id=li.id WHERE li.tenant_id=$1 AND li.store_id=$2 AND li.status='lost' GROUP BY li.id ORDER BY li.created_at DESC LIMIT 200`,[t,s]);
     return {items:rows};
   }
-  @Post() @Roles('owner','manager')
+  @Post() @Roles('owner','manager','freelancer')
   async create(@Req() req:any,@Body() b:any){
     const [t,s]=this.scope(req.user);
     for(const k of ['itemName'])if(typeof b?.[k]!=='string'||!b[k].trim())throw new BadRequestException('Item name is required');
@@ -56,13 +56,13 @@ export class LostItemsController {
     const qrDataUrl=await QRCode.toDataURL(publicUrl,{errorCorrectionLevel:'M',margin:2,width:420});
     return {item:rows[0],publicUrl,qrDataUrl,duplicates:duplicateMatches,message:duplicateMatches.length?'Registered, but a matching identifier already exists. Review the possible duplicate before proceeding.':'Item registered successfully.'};
   }
-  @Get(':id/reports') @Roles('owner','manager')
+  @Get(':id/reports') @Roles('owner','manager','freelancer')
   async reports(@Req() req:any,@Param('id') id:string){
     const [t,s]=this.scope(req.user);
     const {rows}=await this.db.pool.query(`SELECT r.id,r.reporter_name AS "reporterName",r.reporter_phone AS "reporterPhone",r.report_details AS details,r.latitude,r.longitude,r.accuracy_m AS accuracy,r.location_label AS "locationLabel",r.created_at AS "createdAt" FROM lost_item_reports r JOIN lost_items li ON li.id=r.lost_item_id WHERE li.id=$1 AND li.tenant_id=$2 AND li.store_id=$3 ORDER BY r.created_at DESC LIMIT 100`,[id,t,s]);
     return {reports:rows};
   }
-  @Patch(':id/status') @Roles('owner','manager')
+  @Patch(':id/status') @Roles('owner','manager','freelancer')
   async updateStatus(@Req() req:any,@Param('id') id:string,@Body() b:any){
     const [t,s]=this.scope(req.user);const status=String(b?.status||'');
     if(!['registered','lost','found','recovered','closed'].includes(status))throw new BadRequestException('Choose a valid item status');
