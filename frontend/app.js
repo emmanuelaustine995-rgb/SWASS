@@ -894,30 +894,30 @@
     catch(err){showNotice(err.message||'Could not clear catalogue.',true);}
     finally{btn.disabled=false;}
   });
+  let customerSignupMode = false;
   function updateSignupAccountType(){
-    if($('reg-account-type'))$('reg-account-type').value='owner';
-    $('owner-signup-fields').classList.remove('hidden');
-    $('reg-business').required=true;
-    $('reg-store').required=true;
+    customerSignupMode = $('login-account-type').value === 'customer';
+    if($('reg-account-type'))$('reg-account-type').value=customerSignupMode?'customer':'owner';
+    $('owner-signup-fields').classList.toggle('hidden',customerSignupMode);
+    $('reg-business').required=!customerSignupMode;
+    $('reg-store').required=!customerSignupMode;
     $('reg-password').required=true;
     $('reg-password-field').classList.remove('hidden');
-    $('register-submit').textContent='Create business · Send verification code';
+    $('register-submit').textContent=customerSignupMode?'Create customer account · Send code':'Create business · Send verification code';
+    const eyebrow=$('register-form').querySelector('.eyebrow');
+    if(eyebrow)eyebrow.textContent=customerSignupMode?'CREATE YOUR AURORA CUSTOMER ACCOUNT':'CREATE YOUR AURORA E-RECEIPT ACCOUNT';
   }
   updateSignupAccountType();
   function updateLoginAccountType(){
     const selected = $('login-account-type').value;
-    const staffSelected = selected !== 'owner';
+    const staffSelected = selected === 'freelancer';
     $('owner-register-entry').classList.toggle('hidden', staffSelected);
     document.querySelectorAll('[data-login-role]').forEach(tab=>{
       const active=tab.dataset.loginRole===selected;
       tab.classList.toggle('active',active);
       tab.setAttribute('aria-pressed',String(active));
     });
-    if(selected==='customer'){
-      $('login-error').textContent='Customer sign-in is not available yet. Customer accounts do not have passwords enabled.';
-    }else if($('login-error').textContent.startsWith('Customer sign-in')){
-      $('login-error').textContent='';
-    }
+    if($('login-error').textContent.startsWith('Customer sign-in'))$('login-error').textContent='';
     if(staffSelected && !$('register-form').classList.contains('hidden')){
       $('register-form').classList.add('hidden');
       $('login-form').classList.remove('hidden');
@@ -936,11 +936,11 @@
   let signupResendSeconds = 0;
   function signupPayload(){
     return {
-      accountType:'owner',
-      businessName:$('reg-business').value.trim(),
+      accountType:customerSignupMode?'customer':'owner',
+      businessName:customerSignupMode?'':$('reg-business').value.trim(),
       legalName:$('reg-legal-name').value.trim(),businessEmail:$('reg-business-email').value.trim(),
-      storeName:$('reg-store').value.trim(),
-      storeLocation:$('reg-location').value.trim(),
+      storeName:customerSignupMode?'':$('reg-store').value.trim(),
+      storeLocation:customerSignupMode?'':$('reg-location').value.trim(),
       houseName:$('reg-house-name').value.trim(),floor:$('reg-floor').value.trim(),houseNumber:$('reg-house-number').value.trim(),websiteUrl:$('reg-website').value.trim(),kraPin:$('reg-kra-pin').value.trim(),
       fullName:$('reg-name').value.trim(),
       phone:$('reg-phone').value.trim(),
@@ -972,7 +972,7 @@
       $('register-error').textContent='Connecting to AURORA…';
       void warmApi();
       $('register-error').textContent='';
-      const data=await request('/api/v1/auth/register',{method:'POST',signal:AbortSignal.timeout(150000),body:JSON.stringify(signupPayload())});
+      const data=await request(customerSignupMode?'/api/v1/auth/customer/register':'/api/v1/auth/register',{method:'POST',signal:AbortSignal.timeout(150000),body:JSON.stringify(signupPayload())});
       $('register-fields').classList.add('hidden');
       $('register-submit').classList.add('hidden');
       $('signup-otp-panel').classList.remove('hidden');
@@ -980,6 +980,8 @@
       $('signup-otp-message').textContent=data.developmentCode
         ? 'Development test code: '+data.developmentCode+' (production codes are sent only by SMS).'
         : 'Verification code sent. It expires in 5 minutes.';
+      const otpIntro=$('signup-otp-panel').querySelector('p');
+      if(otpIntro)otpIntro.textContent=customerSignupMode?'We sent a six-digit verification code to your phone. Enter it below to activate your customer account.':'We sent a 6-digit verification code by SMS to your phone. Enter it below to activate your business account.';
       startSignupResendCountdown();
     }catch(err){
       $('register-error').textContent=err.message||'Could not send the verification code. Please try again.';
@@ -1004,7 +1006,7 @@
     }
     btn.disabled=true;btn.textContent='Verifying phone…';
     try{
-      const data=await request('/api/v1/auth/register/verify-otp',{
+      const data=await request(customerSignupMode?'/api/v1/auth/customer/register/verify-otp':'/api/v1/auth/register/verify-otp',{
         method:'POST',
         body:JSON.stringify({phone:$('reg-phone').value.trim(),code})
       });
@@ -1022,7 +1024,7 @@
       showPOS();
       publishWorkspaceSession();
       showWorkspaceScreen('dashboard');
-      showNotice('Your business account is ready. Subscribe for KSh 100 per month (or KSh 900 per year), then top up your receipt wallet.');
+      showNotice(customerSignupMode?'Your customer account is ready. You can now sign in using the Customer tab.':'Your business account is ready. Subscribe for KSh 100 per month (or KSh 900 per year), then top up your receipt wallet.');
     }catch(err){
       $('signup-otp-message').textContent=err.message||'Verification failed. Check the code and try again.';
     }finally{btn.disabled=false;btn.textContent='Verify phone and create account';}
@@ -1042,7 +1044,6 @@
       const loginDigits=loginPhone.replace(/\D/g,'');
       if(!/^(?:254\d{9}|0\d{9}|\d{9})$/.test(loginDigits))throw new Error('Enter a valid Kenyan phone number, for example 0712345678.');
       if(!$('login-password').value)throw new Error('Enter your password to sign in.');
-      if($('login-account-type').value==='customer')throw new Error('Customer sign-in is not available yet. Please use the shop owner or freelancer account tab.');
       const data=await request('/api/v1/auth/login',{
         method:'POST',
         // Render free instances can take over 50 seconds to wake. Allow enough
