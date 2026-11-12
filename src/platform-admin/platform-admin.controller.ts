@@ -10,15 +10,15 @@ export class PlatformAdminController {
 
   @Get('overview')
   async overview() {
-    const [shops, stores, users, receipts, subscriptions] = await Promise.all([
+    const [shops, stores, users, customers, receipts, subscriptions] = await Promise.all([
       this.db.pool.query('SELECT COUNT(*)::int AS count FROM tenants'),
       this.db.pool.query('SELECT COUNT(*)::int AS count FROM stores'),
       this.db.pool.query(`SELECT
         COUNT(*) FILTER (WHERE role='owner' AND is_active=true)::int AS owners,
         COUNT(*) FILTER (WHERE role='freelancer' AND is_active=true)::int AS freelancers,
-        COUNT(*) FILTER (WHERE role='customer' AND is_active=true)::int AS customers,
         COUNT(*) FILTER (WHERE is_active=false)::int AS inactive
         FROM users`),
+      this.db.pool.query('SELECT COUNT(*) FILTER (WHERE is_active=true)::int AS active FROM customer_accounts'),
       this.db.pool.query(`SELECT COUNT(*)::int AS count FROM receipts WHERE status='issued'`),
       this.db.pool.query(`SELECT
         COUNT(*) FILTER (WHERE status='active' AND ends_at>now())::int AS active,
@@ -30,7 +30,7 @@ export class PlatformAdminController {
       stores: Number(stores.rows[0].count),
       activeOwners: Number(users.rows[0].owners),
       activeFreelancers: Number(users.rows[0].freelancers),
-      activeCustomers: Number(users.rows[0].customers),
+      activeCustomers: Number(customers.rows[0].active),
       inactiveUsers: Number(users.rows[0].inactive),
       issuedReceipts: Number(receipts.rows[0].count),
       activeSubscriptions: Number(subscriptions.rows[0].active),
