@@ -86,13 +86,13 @@
   }
 
   function enforceCustomerReceiptActions(){
-    if(state.role!=='customer')return;
-    document.body.classList.add('customer-account-active');
+    const isCustomer=state.role==='customer';
+    document.body.classList.toggle('customer-account-active',isCustomer);
     // Keep the owner action intact for future owner logins, but remove it
     // completely from the customer's visible Receipts page.
     const issueCard=$('open-issue-receipt');
     if(issueCard){
-      const hide=state.role==='customer';
+      const hide=isCustomer;
       issueCard.hidden=hide;
       issueCard.classList.toggle('hidden',hide);
       issueCard.style.setProperty('display',hide?'none':'','important');
