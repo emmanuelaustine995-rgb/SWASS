@@ -1934,3 +1934,33 @@ html body.workspace-active .shell .section-heading{
    padding:0 9px 4px!important;
  }
 }
+
+
+/* AURORA final top-strip removal: the blank header was reserving 72px on every page.
+   Hide that empty strip entirely and reclaim its height across the whole workspace. */
+html body.workspace-active .topbar{
+  display:none!important;
+  height:0!important;
+  min-height:0!important;
+  max-height:0!important;
+  padding:0!important;
+  margin:0!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+html body.workspace-active .shell{
+  margin-top:0!important;
+  padding-top:0!important;
+  height:calc(100dvh - 66px - env(safe-area-inset-bottom))!important;
+  min-height:0!important;
+}
+html body.workspace-active .shell>*{
+  margin-top:0!important;
+}
+@media(max-width:760px){
+  html body.workspace-active .shell{
+    margin-top:0!important;
+    padding-top:0!important;
+    height:calc(100dvh - 66px - env(safe-area-inset-bottom))!important;
+  }
+}
