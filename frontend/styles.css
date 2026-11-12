@@ -2006,6 +2006,10 @@ body.customer-account-active #receipts-home .receipt-actions-grid{grid-template-
 /* Desktop customer registration: keep the first fields and Back control in view. */
 @media(min-width:761px){
   body:not(.workspace-active) #login-view .login-card{max-height:calc(100dvh - 92px);overflow-y:auto;overscroll-behavior:contain;scroll-padding-top:0}
-  body:not(.workspace-active) #register-form{max-height:calc(100dvh - 190px);min-height:0;overflow-y:auto;overscroll-behavior:contain;scroll-padding-top:8px}
+  body:not(.workspace-active) #register-form,
+  body:not(.workspace-active) #freelancer-register-form{max-height:calc(100dvh - 190px);min-height:0;overflow-y:auto;overscroll-behavior:contain;scroll-padding-top:8px;padding:2px 3px 16px}
+  body:not(.workspace-active) #register-form{gap:8px!important;margin-top:10px!important}
+  body:not(.workspace-active) #register-form input,
+  body:not(.workspace-active) #freelancer-register-form input{min-height:36px;padding:7px 9px}
   body:not(.workspace-active) #signup-back-btn{position:sticky;top:0;z-index:5;align-self:flex-start;margin:0 0 4px;padding:5px 11px;font-size:11px;min-height:28px}
 }
