@@ -1,13 +1,15 @@
 import { BadRequestException, Body, Controller, Get, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { randomBytes } from 'node:crypto';
+import PDFDocument = require('pdfkit');
 import { AuthGuard, Roles, RolesGuard } from '../auth/auth';
 import { DbService } from '../db/db.service';
 import { hashNationalId, normalisePhone } from '../receipts/receipts.service';
+import { EmailVerificationService } from '../notifications/email-verification.service';
 
 @Controller('api/v1/customers')
 @UseGuards(AuthGuard, RolesGuard)
 export class CustomersController {
-  constructor(private db: DbService) {}
+  constructor(private db: DbService, private email: EmailVerificationService) {}
 
   @Get('referral-summary')
   @Roles('customer')
@@ -67,7 +69,94 @@ export class CustomersController {
        RETURNING id, declaration_ref AS "declarationRef", status, created_at AS "createdAt"`,
       [customerId, declarationRef, body.sellerName.trim(), body.productName.trim(), encoded],
     );
-    return { submission: saved.rows[0], message: 'Your declaration has been submitted securely for review. It is pending shop verification and is not yet an approved shop receipt.' };
+    const submission = saved.rows[0];
+    const declaration = { ...body, declarationRef, createdAt: submission.createdAt };
+    const pdf = await this.buildCustomerSalesDeclarationPdf(declaration);
+    const deliver = async (to: string, recipientName: string) => {
+      try {
+        await this.email.sendCustomerSalesDeclaration({
+          to, recipientName, reference: declarationRef,
+          productName: String(body.productName), sellerName: String(body.sellerName),
+          buyerName: String(body.buyerName), pdf,
+        });
+        return { sent: true, reason: null as string | null };
+      } catch (error) {
+        return { sent: false, reason: error instanceof Error ? error.message : 'Email delivery failed' };
+      }
+    };
+    const [sellerEmail, buyerEmail] = await Promise.all([
+      deliver(String(body.sellerEmail).trim().toLowerCase(), String(body.sellerName)),
+      deliver(String(body.buyerEmail).trim().toLowerCase(), String(body.buyerName)),
+    ]);
+    return {
+      submission,
+      pdfBase64: pdf.toString('base64'),
+      delivery: { seller: { email: sellerEmail }, buyer: { email: buyerEmail } },
+      message: 'Your complete declaration PDF has been created. Email delivery was attempted for both seller and buyer. The submission remains pending shop review and is not an approved shop receipt.',
+    };
+  }
+
+  private buildCustomerSalesDeclarationPdf(d: any): Promise<Buffer> {
+    return new Promise((resolve, reject) => {
+      const doc = new PDFDocument({ size: 'A4', margin: 46, info: { Title: 'AURORA Sales Declaration ' + d.declarationRef, Author: 'AURORA E-RECEIPT' } });
+      const chunks: Buffer[] = [];
+      doc.on('data', (chunk: Buffer) => chunks.push(Buffer.from(chunk)));
+      doc.on('error', reject);
+      doc.on('end', () => resolve(Buffer.concat(chunks)));
+      const line = (label: string, value: unknown) => {
+        doc.font('Helvetica-Bold').fontSize(9).fillColor('#17324d').text(label + ': ', { continued: true });
+        doc.font('Helvetica').text(String(value ?? '—'));
+      };
+      const heading = (value: string) => {
+        doc.moveDown(.7).font('Helvetica-Bold').fontSize(12).fillColor('#075b74').text(value);
+        doc.moveDown(.25);
+      };
+      doc.font('Helvetica-Bold').fontSize(19).fillColor('#075b74').text('AURORA E-RECEIPT');
+      doc.fontSize(15).fillColor('#172b45').text('SALES DECLARATION FORM');
+      doc.moveDown(.3).font('Helvetica').fontSize(9).fillColor('#526477').text('Declaration reference: ' + d.declarationRef);
+      doc.text('Submitted: ' + new Date(d.createdAt || Date.now()).toLocaleString('en-KE', { timeZone: 'Africa/Nairobi' }));
+      doc.roundedRect(46, doc.y + 8, 504, 38, 5).fill('#fff3cd');
+      doc.fillColor('#805b00').font('Helvetica-Bold').fontSize(9).text('CUSTOMER SUBMISSION · PENDING SHOP REVIEW · NOT AN APPROVED SHOP RECEIPT', 56, doc.y + 20, { width: 484, align: 'center' });
+      doc.moveDown(3);
+      doc.moveTo(46, doc.y).lineTo(550, doc.y).strokeColor('#9bb7c8').stroke();
+      heading('SELLER DETAILS');
+      line('Full name', d.sellerName); line('National ID / Passport', d.nationalId);
+      line('Phone', d.sellerPhone); line('Alternative phone', d.alternativePhone || 'Not supplied');
+      line('Email', d.sellerEmail); line('Residential address', d.residentialAddress);
+      heading('BUYER DETAILS');
+      line('Full name', d.buyerName); line('National ID / Passport', d.buyerNationalId);
+      line('Phone', d.buyerPhone); line('Email', d.buyerEmail);
+      heading('PRODUCT AND SALE DETAILS');
+      line('Product / make and model', d.productName || d.phoneMakeModel);
+      line('IMEI / identifier', d.imei1 || 'Not provided'); line('Second identifier', d.imei2 || 'Not provided');
+      line('Serial number', d.serialNumber || 'Not provided'); line('Condition', d.condition);
+      line('Agreed price', 'KSh ' + Number(d.purchasePriceKes || 0).toLocaleString('en-KE'));
+      line('Original purchase receipt', d.saleType === 'with_receipt' ? 'Provided' : 'Not provided');
+      if (d.saleType !== 'with_receipt') line('Reason receipt unavailable', d.noReceiptReason || 'Not supplied');
+      heading('SELLER OWNERSHIP DECLARATION');
+      doc.font('Helvetica').fontSize(9).fillColor('#263746').text('The seller declares that they are the lawful owner of the product recorded above or are authorised to sell it; that, to the best of their knowledge, it is not stolen, unlawfully obtained, fraudulently acquired or subject to an ownership dispute; and that the details supplied are true. The seller accepts responsibility for false statements or an unlawful ownership claim connected with this sale and agrees to cooperate with lawful investigations.');
+      heading('CONFIRMATION AND SIGNATURE');
+      line('Seller declaration accepted', d.declarationAccepted ? 'Yes' : 'No');
+      line('Witness', d.witnessName || 'Not supplied'); line('Witness phone', d.witnessPhone || 'Not supplied');
+      const addImage = (label: string, data?: string) => {
+        if (!data || !data.startsWith('data:image/')) return;
+        try {
+          const raw = Buffer.from(data.split(',')[1], 'base64');
+          if (doc.y > 640) doc.addPage();
+          doc.moveDown(.5).font('Helvetica-Bold').fontSize(9).fillColor('#17324d').text(label);
+          doc.image(raw, 46, doc.y, { fit: [230, 110] });
+          doc.moveDown(.5);
+        } catch {}
+      };
+      addImage('Seller signature', d.signatureData);
+      addImage('Seller thumbprint mark', d.thumbprintData);
+      addImage('Seller ID image', d.idPhotoData);
+      addImage('Seller photograph', d.sellerPhotoData);
+      addImage('Product photograph', d.phonePhotoData);
+      addImage('Original purchase receipt image', d.receiptPhotoData);
+      doc.moveDown().font('Helvetica').fontSize(8).fillColor('#65758a').text('This is the complete copy of the information and evidence submitted by the customer. It is pending shop review and is not an approved shop receipt. This record does not independently verify identity or establish legal ownership.');
+      doc.end();
+    });
   }
 
   @Get('sales-declarations')
