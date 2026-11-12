@@ -469,7 +469,7 @@
       if(history&&receiptHome&&history.parentElement!==receiptHome)receiptHome.appendChild(history);
       if(['cashier','freelancer'].includes(state.role)){staffSummary?.classList.remove('hidden');void loadStaffSalesSummary();}
       $('open-recover-receipt')?.classList.remove('hidden');
-      $('secondhand-open-card')?.classList.toggle('hidden',!['owner','customer'].includes(state.role));
+      $('secondhand-open-card')?.classList.toggle('hidden',!['owner','freelancer','customer'].includes(state.role));
     }else if(screen==='shop'){
       if(state.role==='customer'){showWorkspaceScreen('dashboard',{fromBack:true});return;}
       $('shop-home')?.classList.remove('hidden');
@@ -501,10 +501,10 @@
       if(!['owner','manager','freelancer'].includes(state.role)){showWorkspaceScreen('dashboard',{fromBack:true});return;}
       pos?.classList.remove('hidden');
       posGrid?.classList.add('hidden');
-      $('customer-lookup-panel')?.classList.add('hidden');
+      document.querySelector('.customer-lookup-panel')?.classList.add('hidden');
       $('owner-customers-section')?.classList.remove('hidden');
-      $('owner-dashboard-view')?.classList.remove('hidden');
-      $('owner-dashboard-view')?.scrollIntoView({behavior:'smooth',block:'start'});
+      $('owner-dashboard-view')?.classList.add('hidden');
+      $('owner-customers-section')?.scrollIntoView({behavior:'smooth',block:'start'});
       window.dispatchEvent(new Event('swass:dashboard-open'));
     }else if(screen==='profile'){
       renderAccountProfile();
@@ -541,7 +541,7 @@
     syncGlobalBackButton();
   }
 
-  function showPOS(){ if(!state.token){showLogin();return;} document.body.classList.add('workspace-active'); $('login-view').classList.add('hidden'); $('back-to-login-btn')?.classList.remove('hidden'); $('pos-view').classList.remove('hidden'); $('welcome-back-banner')?.classList.add('hidden'); $('profile-menu-btn')?.classList.remove('hidden'); $('logout-btn')?.classList.remove('hidden'); const label=$('user-label');label.textContent=state.userName||state.staffTitle||(state.role==='cashier'?'Shop Attendant':state.role?state.role.replace('_',' '):'Staff');if(state.userPhotoData){const avatar=document.createElement('img');avatar.src=state.userPhotoData;avatar.alt='Profile photo';avatar.style.cssText='width:30px;height:30px;object-fit:cover;border-radius:50%;vertical-align:middle;margin-right:8px';label.prepend(avatar);} $('dashboard-link').classList.toggle('hidden', !['owner','manager','vendor','freelancer'].includes(state.role));$('workspace-nav').classList.remove('hidden');const isCustomerAccount=state.role==='customer';document.body.classList.toggle('customer-account-active',isCustomerAccount);const canAccessShopTab=!isCustomerAccount&&['owner','freelancer'].includes(state.role);document.querySelectorAll('#workspace-nav [data-workspace="shop"]').forEach(el=>{el.hidden=!canAccessShopTab;el.classList.toggle('hidden',!canAccessShopTab);el.style.setProperty('display',canAccessShopTab?'':'none','important');el.setAttribute('aria-hidden',canAccessShopTab?'false':'true');});if(state.role==='customer')enforceCustomerReceiptActions();syncGlobalBackButton();  }
+  function showPOS(){ if(!state.token){showLogin();return;} document.body.classList.add('workspace-active'); $('login-view').classList.add('hidden'); $('back-to-login-btn')?.classList.remove('hidden'); $('pos-view').classList.remove('hidden'); $('welcome-back-banner')?.classList.add('hidden'); $('profile-menu-btn')?.classList.remove('hidden'); $('logout-btn')?.classList.remove('hidden'); const label=$('user-label');label.textContent=state.userName||state.staffTitle||(state.role==='cashier'?'Shop Attendant':state.role?state.role.replace('_',' '):'Staff');if(state.userPhotoData){const avatar=document.createElement('img');avatar.src=state.userPhotoData;avatar.alt='Profile photo';avatar.style.cssText='width:30px;height:30px;object-fit:cover;border-radius:50%;vertical-align:middle;margin-right:8px';label.prepend(avatar);} $('dashboard-link').classList.toggle('hidden', !['owner','manager','vendor','freelancer'].includes(state.role));$('workspace-nav').classList.remove('hidden');const isCustomerAccount=state.role==='customer';document.body.classList.toggle('customer-account-active',isCustomerAccount);const canAccessShopTab=!isCustomerAccount&&['owner','freelancer'].includes(state.role);document.querySelectorAll('#workspace-nav [data-workspace="shop"]').forEach(el=>{el.hidden=!canAccessShopTab;el.classList.toggle('hidden',!canAccessShopTab);el.style.setProperty('display',canAccessShopTab?'':'none','important');el.setAttribute('aria-hidden',canAccessShopTab?'false':'true');});const canAccessCustomersTab=['owner','manager','freelancer'].includes(state.role);document.querySelectorAll('#workspace-nav [data-workspace="customers"]').forEach(el=>{el.hidden=!canAccessCustomersTab;el.classList.toggle('hidden',!canAccessCustomersTab);el.style.setProperty('display',canAccessCustomersTab?'':'none','important');el.setAttribute('aria-hidden',canAccessCustomersTab?'false':'true');});if(state.role==='customer')enforceCustomerReceiptActions();syncGlobalBackButton();  }
   async function lookupCustomer(ev){
     ev.preventDefault();
     const phone=$('lookup-phone').value.trim();
