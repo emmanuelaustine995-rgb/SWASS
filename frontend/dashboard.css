@@ -1824,3 +1824,32 @@ html body.workspace-active #shop-home:not(.hidden) .panel,
 html body.workspace-active #shop-lost-items-panel:not(.hidden) .panel{
   border-color:#e7edf2!important;
 }
+
+
+/* AURORA PHONE VIEW: remove the desktop-only creamy surround entirely.
+   Keep the creamy yellow surround for wider PC screens only. */
+@media(max-width:600px){
+  html:has(body.workspace-active),
+  html body.workspace-active{
+    min-height:100dvh!important;
+    height:100dvh!important;
+    background:#eaf7ff!important;
+    background-image:linear-gradient(145deg,#eaf7ff 0%,#dff1ff 52%,#eaf6ff 100%)!important;
+    background-color:#eaf7ff!important;
+  }
+  html body.workspace-active .shell{
+    width:100%!important;
+    max-width:none!important;
+    min-height:100dvh!important;
+    height:100dvh!important;
+    max-height:100dvh!important;
+    margin:0!important;
+    padding:5px 8px calc(5px + env(safe-area-inset-bottom))!important;
+    border:0!important;
+    border-radius:0!important;
+    box-shadow:none!important;
+    background:linear-gradient(145deg,#eaf7ff 0%,#dff1ff 52%,#eaf6ff 100%)!important;
+    background-color:#eaf7ff!important;
+    overflow:hidden!important;
+  }
+}
