@@ -460,6 +460,8 @@
       // Receipt history lives inside the Receipts workspace. The global workspace
       // reset hides nested panels, so explicitly restore it whenever Receipts opens.
       history?.classList.remove('hidden');
+      // Receipt history was nested inside the hidden business-profile panel. Move it into Receipts.
+      if(history&&receiptHome&&history.parentElement!==receiptHome)receiptHome.appendChild(history);
       if(state.role==='cashier'){staffSummary?.classList.remove('hidden');void loadStaffSalesSummary();}
       $('open-recover-receipt')?.classList.remove('hidden');
       $('secondhand-open-card')?.classList.toggle('hidden',!['owner','customer'].includes(state.role));
@@ -467,6 +469,15 @@
       if(state.role==='customer'){showWorkspaceScreen('dashboard',{fromBack:true});return;}
       $('shop-home')?.classList.remove('hidden');
       setShopTab('products');
+      // Show the linked shop's actual stock catalogue in the freelancer/owner Shop workspace.
+      const inventoryPanel=$('products-panel');
+      if(inventoryPanel){
+        inventoryPanel.classList.remove('hidden');
+        inventoryPanel.setAttribute('aria-hidden','false');
+        const tabs=$('shop-home').querySelector('.shop-section-tabs');
+        if(tabs&&inventoryPanel.parentElement!==$('shop-home'))tabs.insertAdjacentElement('afterend',inventoryPanel);
+        void loadProducts();
+      }
       void loadBusinessProfile().catch(err=>showNotice('Shop profile could not be loaded. '+(err.message||''),true));
       
       const isShopOwner = ['owner','freelancer'].includes(state.role);
@@ -1248,7 +1259,7 @@
     }
     if(!signedIn)return;
     // Open the workspace immediately after authentication. No product catalogue is loaded.
-    const landingScreen = 'dashboard';
+    const landingScreen = state.role==='freelancer' ? 'shop' : 'dashboard';
     showWorkspaceScreen(landingScreen);
     const backgroundLoads = [];
     if(['owner','manager','vendor','freelancer'].includes(state.role)){
@@ -1286,6 +1297,7 @@
     finally{btn.disabled=false;btn.textContent='Save my password';}
   });
   $('show-password-reset').addEventListener('click',()=>{
+    $('reset-phone').value=$('login-phone').value.trim();
     $('login-form').classList.add('hidden');
     $('password-reset-form').classList.remove('hidden');
     $('password-reset-message').textContent='';
@@ -1301,7 +1313,7 @@
     btn.disabled=true;btn.textContent='Sending code…';
     $('password-reset-message').textContent='Requesting a secure reset code…';
     try{
-      const result=await request('/api/v1/auth/password-reset/request',{method:'POST',body:JSON.stringify({phone:$('reset-phone').value.trim()})});
+      const result=await request('/api/v1/auth/password-reset/request',{method:'POST',signal:AbortSignal.timeout(150000),body:JSON.stringify({phone:$('reset-phone').value.trim(),accountType:$('login-account-type').value})});
       $('password-reset-confirm-fields').classList.remove('hidden');
       $('password-reset-message').textContent=result.message||'If an account matches that phone number, a password reset code has been sent.';
     }catch(err){$('password-reset-message').textContent=err.message||'Could not request a reset code.';}
@@ -1315,7 +1327,8 @@
     btn.disabled=true;btn.textContent='Updating password…';
     $('password-reset-message').textContent='';
     try{
-      const result=await request('/api/v1/auth/password-reset/confirm',{method:'POST',body:JSON.stringify({
+      const result=await request('/api/v1/auth/password-reset/confirm',{method:'POST',signal:AbortSignal.timeout(150000),body:JSON.stringify({
+        accountType:$('login-account-type').value,
         phone:$('reset-phone').value.trim(),code:$('reset-code').value.trim(),newPassword:$('reset-new-password').value
       })});
       $('password-reset-message').textContent=result.message||'Password updated. You can now sign in.';
