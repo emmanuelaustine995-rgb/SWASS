@@ -1063,21 +1063,36 @@
     ['freelancer-owner-code','freelancer-new-password','freelancer-confirm-password'].forEach(id=>{const field=$(id);if(field)field.required=false;});
     $('freelancer-register-entry')?.classList.remove('hidden');$('login-account-type').value='freelancer';updateLoginAccountType();
   });
+  async function freelancerImageDataUrl(inputId,maxBytes,label){
+    const file=$(inputId)?.files?.[0];
+    if(!file)throw new Error('Please upload '+label+'.');
+    if(!['image/jpeg','image/png','image/webp'].includes(file.type))throw new Error(label+' must be JPG, PNG or WebP.');
+    if(file.size>maxBytes)throw new Error(label+' is too large. Maximum size is '+Math.round(maxBytes/1024)+' KB.');
+    return await new Promise((resolve,reject)=>{
+      const reader=new FileReader();
+      reader.onload=()=>resolve(String(reader.result||''));
+      reader.onerror=()=>reject(new Error('Could not read '+label+'. Please choose the image again.'));
+      reader.readAsDataURL(file);
+    });
+  }
   $('freelancer-register-form')?.addEventListener('submit',async e=>{
     e.preventDefault();
     const button=$('request-freelancer-approval'),message=$('freelancer-register-message');
-    button.disabled=true;button.textContent='Sending owner approval code…';message.textContent='';
+    button.disabled=true;button.textContent='Checking details and sending approval code…';message.textContent='';
     try{
+      const nationalIdPhotoData=await freelancerImageDataUrl('freelancer-id-photo',180*1024,'your National ID photo');
+      const profilePhotoData=await freelancerImageDataUrl('freelancer-profile-photo',40*1024,'your profile photo');
       const result=await request('/api/v1/staff/freelancer/register',{method:'POST',signal:AbortSignal.timeout(150000),body:JSON.stringify({
-        shopRegistrationPermit:$('freelancer-shop-permit').value.trim(),
-        ownerPhone:$('freelancer-owner-phone').value.trim(),ownerEmail:$('freelancer-owner-email').value.trim(),
-        fullName:$('freelancer-full-name').value.trim(),phone:$('freelancer-phone').value.trim(),email:$('freelancer-email').value.trim()
+        ownerName:$('freelancer-owner-name').value.trim(),ownerPhone:$('freelancer-owner-phone').value.trim(),
+        fullName:$('freelancer-full-name').value.trim(),phone:$('freelancer-phone').value.trim(),
+        email:$('freelancer-email').value.trim(),nationalIdNumber:$('freelancer-national-id').value.trim(),
+        nationalIdPhotoData,profilePhotoData
       })});
       freelancerInvitationId=result.invitationId;
       $('freelancer-register-otp').classList.remove('hidden');
       ['freelancer-owner-code','freelancer-new-password','freelancer-confirm-password'].forEach(id=>{const field=$(id);if(field)field.required=true;});
       $('request-freelancer-approval').classList.add('hidden');
-      message.textContent='Approval code sent to the shop owner’s registered phone ending '+(result.ownerPhoneHint||'****')+'. Ask the owner to share the code with you.';
+      message.textContent='Owner account matched. Approval code sent to the registered shop-owner phone ending '+(result.ownerPhoneHint||'****')+'. Ask the owner to approve your registration.';
     }catch(error){message.textContent=error.message||'Could not request owner approval.';}
     finally{button.disabled=false;button.textContent='Send approval code to shop owner';}
   });
