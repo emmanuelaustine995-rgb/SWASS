@@ -186,7 +186,7 @@
     $('account-profile-business').textContent=business.businessName||'Business details not added';
     const readOnlyProfile=['vendor','freelancer'].includes(state.role);
     $('account-profile-photo-area').classList.toggle('hidden',state.role!=='cashier');
-    $('account-profile-business-edit').classList.toggle('hidden',!['owner','manager'].includes(state.role));
+    $('account-profile-business-edit').classList.toggle('hidden',!['owner','manager','freelancer'].includes(state.role));
     const profileForm=$('profile-form');
     if(profileForm){profileForm.querySelectorAll('input,select,textarea,button').forEach(control=>{control.disabled=readOnlyProfile;});const save=profileForm.querySelector('button[type="submit"]');if(save)save.classList.toggle('hidden',readOnlyProfile);}
     $('profile-panel')?.classList.toggle('profile-readonly',readOnlyProfile);
@@ -441,7 +441,7 @@
         void loadStaffSalesSummary();
       }
     }else if(screen==='subscription'){
-      if(!['owner','manager'].includes(state.role)){
+      if(!['owner','manager','freelancer'].includes(state.role)){
         showNotice('Subscription and payment management is available to the business owner or manager.',true);
         screen='dashboard';
         ownerHome?.classList.remove('hidden');
@@ -469,7 +469,7 @@
       setShopTab('products');
       void loadBusinessProfile().catch(err=>showNotice('Shop profile could not be loaded. '+(err.message||''),true));
       
-      const isShopOwner = state.role === 'owner';
+      const isShopOwner = ['owner','freelancer'].includes(state.role);
       $('secondhand-panel')?.classList.add('hidden');
       document.querySelector('#shop-home > .shop-directory-card')?.classList.remove('hidden');
       $('shop-register-product-card')?.classList.toggle('hidden', !isShopOwner);
@@ -478,9 +478,9 @@
       if($('shop-product-results'))$('shop-product-results').classList.add('hidden');
     }else if(screen==='lost-goods'){
       $('shop-lost-items-panel')?.classList.remove('hidden');
-      document.querySelectorAll('[data-lost-owner-only]').forEach(el=>el.classList.toggle('hidden',!['owner','manager'].includes(state.role)));
+      document.querySelectorAll('[data-lost-owner-only]').forEach(el=>el.classList.toggle('hidden',!['owner','manager','freelancer'].includes(state.role)));
       document.querySelectorAll('[data-lost-panel]').forEach(el=>el.classList.add('hidden'));
-      if(['owner','manager'].includes(state.role))void loadLostItems();
+      if(['owner','manager','freelancer'].includes(state.role))void loadLostItems();
     }else if(screen==='profile'){
       renderAccountProfile();
       if(['owner','manager','vendor','freelancer'].includes(state.role)){
@@ -560,7 +560,7 @@
     try{
       const [ordinary,secondhand]=await Promise.all([
         request('/api/v1/receipts?'+p.toString()),
-        state.role==='owner'?request('/api/v1/second-hand-phone-declarations'):Promise.resolve({declarations:[]})
+        ['owner','freelancer'].includes(state.role)?request('/api/v1/second-hand-phone-declarations'):Promise.resolve({declarations:[]})
       ]);
       const rows=(ordinary.receipts||[]).map(r=>({kind:'ordinary',data:r}));
       const needle=q.toLowerCase();
@@ -753,7 +753,7 @@
       btn.textContent='Issuing receipt…';
       const receipt=await request('/api/v1/receipts',{method:'POST',body:JSON.stringify(payload)});
       state.lastReceipt=receipt; const sale={items:items.flatMap(r=>{const price=Number(r.unitPriceKes??r.product.priceKes);const codes=Array.isArray(r.serials)?r.serials.filter(Boolean):[];if(codes.length){const serialLines=codes.map(serialNo=>({name:r.product.name,qty:1,price,serialNo}));if(r.qty>codes.length)serialLines.push({name:r.product.name,qty:r.qty-codes.length,price,serialNo:null});return serialLines;}return [{name:r.product.name,qty:r.qty,price,serialNo:r.imei&&r.imei.trim()?r.imei.trim():null}];}),subtotal:Number(receipt.subtotalKes??t.subtotal),discount:Number(receipt.discountKes??t.discount),paymentMethod:payload.paymentMethod};
-      $('receipt-paper').innerHTML=makeReceiptMarkup(receipt,sale,payload.customer);if(window.QRCode){try{if(receipt.qrToken){const verifyUrl=new URL('verify.html',window.location.href).href+'?token='+encodeURIComponent(receipt.qrToken);new QRCode($('receipt-qr'),{text:verifyUrl,width:116,height:116,correctLevel:QRCode.CorrectLevel.M});}sale.items.forEach((item,index)=>{if(item.serialNo){const target=$('imei-qr-'+index);if(target)new QRCode(target,{text:item.serialNo,width:72,height:72,correctLevel:QRCode.CorrectLevel.M});}});}catch(error){console.warn('Receipt QR rendering failed:',error?.message||'unknown error');}}$('checkout-modal').classList.add('hidden');$('receipt-modal').classList.remove('hidden');$('receipt-modal').setAttribute('aria-hidden','false');state.cart.clear();$('discount').value='0';$('checkout-form').reset();renderCart();const emailStatus=$('receipt-email-status');if(emailStatus){emailStatus.textContent='Email: '+(receipt.emailDelivery?.message||(payload.customer?.email?'Delivery status unavailable.':'No customer email was provided.'))+' WhatsApp: '+(receipt.whatsappDelivery?.message||(payload.customer?.phone?'Delivery status unavailable.':'No customer phone was provided.'));emailStatus.classList.toggle('error',!!((payload.customer?.email&&!receipt.emailDelivery?.sent)||(payload.customer?.phone&&!receipt.whatsappDelivery?.sent)));}window.dispatchEvent(new CustomEvent('swass:sale-issued',{detail:{receiptNo:receipt.receiptNo,totalKes:receipt.totalKes}}));if(state.role==='cashier')await loadStaffSalesSummary();if(['owner','manager'].includes(state.role))void loadSubscriptionBalance();hideNotice();
+      $('receipt-paper').innerHTML=makeReceiptMarkup(receipt,sale,payload.customer);if(window.QRCode){try{if(receipt.qrToken){const verifyUrl=new URL('verify.html',window.location.href).href+'?token='+encodeURIComponent(receipt.qrToken);new QRCode($('receipt-qr'),{text:verifyUrl,width:116,height:116,correctLevel:QRCode.CorrectLevel.M});}sale.items.forEach((item,index)=>{if(item.serialNo){const target=$('imei-qr-'+index);if(target)new QRCode(target,{text:item.serialNo,width:72,height:72,correctLevel:QRCode.CorrectLevel.M});}});}catch(error){console.warn('Receipt QR rendering failed:',error?.message||'unknown error');}}$('checkout-modal').classList.add('hidden');$('receipt-modal').classList.remove('hidden');$('receipt-modal').setAttribute('aria-hidden','false');state.cart.clear();$('discount').value='0';$('checkout-form').reset();renderCart();const emailStatus=$('receipt-email-status');if(emailStatus){emailStatus.textContent='Email: '+(receipt.emailDelivery?.message||(payload.customer?.email?'Delivery status unavailable.':'No customer email was provided.'))+' WhatsApp: '+(receipt.whatsappDelivery?.message||(payload.customer?.phone?'Delivery status unavailable.':'No customer phone was provided.'));emailStatus.classList.toggle('error',!!((payload.customer?.email&&!receipt.emailDelivery?.sent)||(payload.customer?.phone&&!receipt.whatsappDelivery?.sent)));}window.dispatchEvent(new CustomEvent('swass:sale-issued',{detail:{receiptNo:receipt.receiptNo,totalKes:receipt.totalKes}}));if(state.role==='cashier')await loadStaffSalesSummary();if(['owner','manager','freelancer'].includes(state.role))void loadSubscriptionBalance();hideNotice();
     }catch(e){$('checkout-error').textContent=e.message;}
     finally{btn.disabled=false;btn.textContent='Issue receipt';}
   }
@@ -765,7 +765,7 @@
     tick();subscriptionCountdownTimer=window.setInterval(tick,1000);
   }
   async function loadSubscriptionBalance(){
-    if(!['owner','manager'].includes(state.role))return;
+    if(!['owner','manager','freelancer'].includes(state.role))return;
     const status=$('subscription-status'),remaining=$('subscription-receipts-remaining'),balance=$('subscription-wallet-balance'),expiry=$('subscription-expiry'),remainder=$('subscription-wallet-remainder'),message=$('subscription-balance-message');
     if(message)message.textContent='Refreshing subscription and receipt balance…';
     try{
@@ -1469,7 +1469,7 @@
   });
   $('shop-add-products')?.addEventListener('submit',async e=>{
     e.preventDefault();
-    if(state.role!=='owner'){ $('shop-product-message').textContent='Only the shop owner can add public products.';return; }
+    if(!['owner','freelancer'].includes(state.role)){ $('shop-product-message').textContent='This account cannot add shop products.';return; }
     const btn=$('shop-product-submit'),message=$('shop-product-message');
     const payload={
       name:$('shop-product-name').value.trim(),
@@ -1750,7 +1750,7 @@
   $('lost-goods-cards')?.addEventListener('click',e=>{const card=e.target.closest('[data-lost-section]');if(!card)return;const section=card.dataset.lostSection;document.querySelectorAll('[data-lost-panel]').forEach(panel=>panel.classList.toggle('hidden',section==='active'?panel.dataset.lostPanel!=='found':panel.dataset.lostPanel!==section));if(section==='register')$('lost-item-register').open=true;const target=section==='register'?'lost-item-register':(section==='found'||section==='active')?'lost-active-items-section':'lost-item-checker';$(target)?.scrollIntoView({behavior:'smooth',block:'start'});});
   $('lost-item-check-form')?.addEventListener('submit',async e=>{e.preventDefault();const value=$('lost-item-check-value').value.trim(),result=$('lost-item-check-result'),button=e.currentTarget.querySelector('button[type="submit"]'),presenterName=$('lost-item-presenter-name').value.trim(),presenterPhone=$('lost-item-presenter-phone').value.trim();button.disabled=true;stopLostAlarm();result.classList.remove('hidden');result.textContent='Checking AURORA lost-item records…';try{const data=await request('/api/v1/lost-items/check?identifier='+encodeURIComponent(value)+'&presenterName='+encodeURIComponent(presenterName)+'&presenterPhone='+encodeURIComponent(presenterPhone));if(data.match){const x=data.item;const alertText='AURORA RED ALERT — '+[x.itemName,x.brand,x.model,x.colour].filter(Boolean).join(' · ')+' is registered as LOST. Person presenting item: '+(x.presentedByName||presenterName||'Not supplied')+' ('+(x.presentedByPhone||presenterPhone||'phone unavailable')+'). Registered by: '+(x.registeredByName||'Not available')+' ('+(x.registeredByPhone||'phone unavailable')+'). Registered shop: '+(x.registeredShop||'Not available')+' / '+(x.registeredBranch||'branch not supplied')+'. Location: '+(x.registeredLocation||'not supplied')+'. Last AURORA account to check: '+(x.lastSearchedByName||'Not available')+' ('+(x.lastSearchedByPhone||'phone unavailable')+'). This is a last-check record, not proof of possession. OB: '+(x.obNumber||'not supplied')+'.'+lostSaleDetailsText(x);result.innerHTML='<strong>⚠ LOST ITEM MATCH — DO NOT BUY OR SELL</strong><p><b>Product:</b> '+escapeHtml([x.itemName,x.brand,x.model,x.colour].filter(Boolean).join(' · '))+'</p><p><b>Specifications:</b> '+escapeHtml(x.description||'Not supplied')+'</p><p><b>AURORA reference:</b> '+escapeHtml(x.itemCode)+' · <b>OB number:</b> '+escapeHtml(x.obNumber||'Not supplied')+'</p><p><b>Date lost:</b> '+escapeHtml(x.lostAt?new Date(x.lostAt).toLocaleDateString():'Not recorded')+'</p><p><b>Person presenting the item:</b> '+escapeHtml(x.presentedByName||presenterName||'Not supplied')+' · '+escapeHtml(x.presentedByPhone||presenterPhone||'Phone unavailable')+'</p><p><b>Registered by:</b> '+escapeHtml(x.registeredByName||'Not available')+' · '+escapeHtml(x.registeredByPhone||'Phone unavailable')+'</p><p><b>Registered shop:</b> '+escapeHtml(x.registeredShop||'Not available')+' · '+escapeHtml(x.registeredBranch||'Branch not supplied')+'</p><p><b>Shop location:</b> '+escapeHtml(x.registeredLocation||'Not supplied')+'</p><p><b>Last AURORA account to check:</b> '+escapeHtml(x.lastSearchedByName||'Not available')+' · '+escapeHtml(x.lastSearchedByPhone||'Phone unavailable')+'</p><p><b>Last checked:</b> '+escapeHtml(x.lastSearchedAt?new Date(x.lastSearchedAt).toLocaleString():'Not recorded')+'</p><p>This last-check record does not prove who currently possesses the item. Stop the transaction and verify ownership with the authorities.</p>'+lostSaleDetailsHtml(x);result.classList.add('lost-match-alert');ringLostAlarm(alertText);}else{result.textContent='No matching lost record was found in AURORA at this time. This is not proof of ownership.';}}catch(err){result.textContent=err.message||'The lost-item check failed. Do not proceed until the identifier can be checked.';result.classList.add('lost-match-alert');}finally{button.disabled=false;}});
   async function loadLostItems(){
-    const target=$('lost-items-list');if(!target||!['owner','manager'].includes(state.role))return;
+    const target=$('lost-items-list');if(!target||!['owner','manager','freelancer'].includes(state.role))return;
     target.innerHTML='<p class="muted small">Loading registered items…</p>';
     try{const data=await request('/api/v1/lost-items');const rows=data.items||[];
       target.innerHTML=rows.length?rows.map(x=>'<article class="lost-item-row"><div><strong>'+escapeHtml(x.itemName)+'</strong><small>'+escapeHtml([x.brand,x.model,x.colour].filter(Boolean).join(' · '))+'</small><small>ID: '+escapeHtml(x.itemCode)+' · '+escapeHtml(x.status.toUpperCase())+'</small><small>Date lost: '+escapeHtml(x.lostAt?new Date(x.lostAt).toLocaleDateString():'—')+' · OB: '+escapeHtml(x.obNumber||'—')+'</small><small>IMEI: '+escapeHtml(x.imei1||'—')+' · Serial: '+escapeHtml(x.serialNumber||'—')+'</small><small>Found reports: '+Number(x.reportCount||0)+'</small><div class="lost-item-report-details hidden"></div></div><div class="lost-item-actions"><button type="button" class="btn btn-light btn-small" data-lost-reports="'+escapeHtml(x.id)+'">View reports</button><button type="button" class="btn btn-light btn-small" data-lost-status="lost" data-lost-id="'+escapeHtml(x.id)+'">Mark lost</button><button type="button" class="btn btn-light btn-small" data-lost-status="found" data-lost-id="'+escapeHtml(x.id)+'">Mark as Found</button></div></article>').join(''):'<p class="muted small">No items registered yet. Start by registering a phone or other valuable item above.</p>';
