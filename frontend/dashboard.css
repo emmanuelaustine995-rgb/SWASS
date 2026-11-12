@@ -2418,3 +2418,36 @@ html body.workspace-active #shop-lost-items-panel:not(.hidden) #lost-goods-cards
     transform:none!important;
   }
 }
+
+
+/* DESKTOP TOP EDGE: remove the reserved height above the workspace.
+   Keep the optional Back control floating over the workspace instead of
+   allowing its wrapper to push the workspace down. */
+@media(min-width:761px){
+  html body.workspace-active .global-back-row{
+    position:absolute!important;
+    top:0!important;
+    left:0!important;
+    right:0!important;
+    width:100%!important;
+    height:0!important;
+    min-height:0!important;
+    max-height:0!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:visible!important;
+    z-index:50!important;
+  }
+  html body.workspace-active .global-back-row .global-back-dock:not(.hidden){
+    position:absolute!important;
+    top:8px!important;
+    left:12px!important;
+    margin:0!important;
+  }
+  html body.workspace-active .shell{
+    top:0!important;
+    margin-top:0!important;
+    padding-top:0!important;
+    transform:translateY(0)!important;
+  }
+}
