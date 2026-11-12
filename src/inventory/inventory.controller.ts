@@ -64,7 +64,7 @@ export class InventoryController {
   }
 
   @Get()
-  @Roles('cashier', 'manager', 'owner')
+  @Roles('cashier', 'manager', 'owner', 'freelancer')
   async list(@Req() req: any, @Query('q') q?: string, @Query('lowStock') lowStock?: string) {
     const user = req.user; this.requireStore(user);
     const search = typeof q === 'string' ? q.trim().slice(0, 100) : '';
@@ -80,7 +80,7 @@ export class InventoryController {
   }
 
   @Post()
-  @Roles('cashier', 'manager', 'owner')
+  @Roles('cashier', 'manager', 'owner', 'freelancer')
   async create(@Req() req: any, @Body() body: ProductInput) {
     const user = req.user; this.requireStore(user); const d = this.validate(body, true);
     try {
@@ -98,7 +98,7 @@ export class InventoryController {
   }
 
   @Post('archive-all')
-  @Roles('manager', 'owner')
+  @Roles('manager', 'owner', 'freelancer')
   async archiveAll(@Req() req: any) {
     const user = req.user; this.requireStore(user);
     return this.db.tx(async c => {
@@ -113,7 +113,7 @@ export class InventoryController {
   }
 
   @Patch(':id')
-  @Roles('manager', 'owner')
+  @Roles('manager', 'owner', 'freelancer')
   async update(@Req() req: any, @Param('id') id: string, @Body() body: ProductInput) {
     const user = req.user; this.requireStore(user);
     if (!UUID.test(id)) throw new BadRequestException('Invalid product ID');
@@ -134,7 +134,7 @@ export class InventoryController {
   }
 
   @Post(':id/stock-adjustments')
-  @Roles('manager', 'owner')
+  @Roles('manager', 'owner', 'freelancer')
   async adjustStock(@Req() req: any, @Param('id') id: string, @Body() body: { changeQty?: number; note?: string }) {
     const user = req.user; this.requireStore(user);
     if (!UUID.test(id)) throw new BadRequestException('Invalid product ID');
