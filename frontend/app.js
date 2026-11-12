@@ -1004,6 +1004,7 @@
     const staffSelected = selected === 'freelancer';
     $('owner-register-entry').classList.toggle('hidden', staffSelected);
     $('freelancer-register-entry')?.classList.toggle('hidden', !staffSelected);
+    $('owner-register-entry')?.classList.toggle('hidden', staffSelected);
     document.querySelectorAll('[data-login-role]').forEach(tab=>{
       const active=tab.dataset.loginRole===selected;
       tab.classList.toggle('active',active);
