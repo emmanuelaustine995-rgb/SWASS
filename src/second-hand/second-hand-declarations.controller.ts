@@ -21,7 +21,7 @@ export class SecondHandPhoneDeclarationsController {
   constructor(private db: DbService, private email: EmailVerificationService, private whatsapp: WhatsAppReceiptService) {}
 
   @Get()
-  @Roles('owner')
+  @Roles('owner','freelancer')
   async list(@Req() req: any) {
     const user = req.user;
     this.requireStore(user);
@@ -39,7 +39,7 @@ export class SecondHandPhoneDeclarationsController {
   }
 
   @Post()
-  @Roles('owner')
+  @Roles('owner','freelancer')
   async create(@Req() req: any, @Body() body: DeclarationInput) {
     const user = req.user;
     this.requireStore(user);
@@ -176,7 +176,7 @@ export class SecondHandPhoneDeclarationsController {
   }
 
   @Get(':id/pdf')
-  @Roles('owner')
+  @Roles('owner','freelancer')
   async pdf(@Req() req: any, @Param('id') id: string, @Res() res: any) {
     const user = req.user;
     this.requireStore(user);
@@ -211,7 +211,7 @@ export class SecondHandPhoneDeclarationsController {
   }
 
   @Get(':id')
-  @Roles('owner')
+  @Roles('owner','freelancer')
   async getOne(@Req() req: any, @Param('id') id: string) {
     const user = req.user;
     this.requireStore(user);
@@ -240,7 +240,7 @@ export class SecondHandPhoneDeclarationsController {
 
 
   @Get(':id/amendments')
-  @Roles('owner')
+  @Roles('owner','freelancer')
   async listAmendments(@Req() req: any, @Param('id') id: string) {
     const user = req.user;
     this.requireStore(user);
@@ -257,7 +257,7 @@ export class SecondHandPhoneDeclarationsController {
   }
 
   @Post(':id/amendments')
-  @Roles('owner')
+  @Roles('owner','freelancer')
   async amend(@Req() req: any, @Param('id') id: string, @Body() body: any) {
     const user = req.user;
     this.requireStore(user);
@@ -334,6 +334,6 @@ export class SecondHandPhoneDeclarationsController {
 
   private requireStore(user: any) {
     if (!user?.tenantId || !user?.storeId) throw new BadRequestException('This account is not linked to a shop.');
-    if (user.role !== 'owner') throw new BadRequestException('Only the shop owner can record second-hand phone purchases.');
+    if (!['owner','freelancer'].includes(user.role)) throw new BadRequestException('A linked shop account is required to record second-hand phone purchases.');
   }
 }
