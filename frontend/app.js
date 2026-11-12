@@ -85,6 +85,13 @@
     document.querySelectorAll('#workspace-nav button').forEach(button=>button.classList.remove('active'));
   }
 
+  function enforceCustomerReceiptActions(){
+    if(state.role!=='customer')return;
+    document.body.classList.add('customer-account-active');
+    // Remove the action itself for customer sessions; do not rely on CSS alone.
+    document.querySelectorAll('#receipts-home #open-issue-receipt').forEach(el=>el.remove());
+  }
+
   function renderDashboardBusinessProfile(){
     const p=state.businessProfile||{};
     const complete=!!(String(p.businessName||'').trim()&&String(p.businessPhone||'').trim()&&String(p.storeName||'').trim());
@@ -399,13 +406,7 @@
       // Re-apply account permissions every time the Receipts page is opened.
       const isCustomerAccount=state.role==='customer';
       document.body.classList.toggle('customer-account-active',isCustomerAccount);
-      const issueReceiptCard=$('open-issue-receipt');
-      if(issueReceiptCard){
-        issueReceiptCard.hidden=isCustomerAccount;
-        issueReceiptCard.classList.toggle('hidden',isCustomerAccount);
-        issueReceiptCard.style.setProperty('display',isCustomerAccount?'none':'','important');
-        issueReceiptCard.setAttribute('aria-hidden',isCustomerAccount?'true':'false');
-      }
+      if(isCustomerAccount)enforceCustomerReceiptActions();
       // Receipt history lives inside the Receipts workspace. The global workspace
       // reset hides nested panels, so explicitly restore it whenever Receipts opens.
       history?.classList.remove('hidden');
@@ -463,7 +464,7 @@
     syncGlobalBackButton();
   }
 
-  function showPOS(){ if(!state.token){showLogin();return;} document.body.classList.add('workspace-active'); $('login-view').classList.add('hidden'); $('back-to-login-btn')?.classList.remove('hidden'); $('pos-view').classList.remove('hidden'); $('welcome-back-banner')?.classList.add('hidden'); $('profile-menu-btn')?.classList.remove('hidden'); $('logout-btn')?.classList.remove('hidden'); const label=$('user-label');label.textContent=state.userName||state.staffTitle||(state.role==='cashier'?'Shop Attendant':state.role?state.role.replace('_',' '):'Staff');if(state.userPhotoData){const avatar=document.createElement('img');avatar.src=state.userPhotoData;avatar.alt='Profile photo';avatar.style.cssText='width:30px;height:30px;object-fit:cover;border-radius:50%;vertical-align:middle;margin-right:8px';label.prepend(avatar);} $('dashboard-link').classList.toggle('hidden', !['owner','manager','vendor','freelancer'].includes(state.role));$('workspace-nav').classList.remove('hidden');const isCustomerAccount=state.role==='customer';document.body.classList.toggle('customer-account-active',isCustomerAccount);const canAccessShopTab=!isCustomerAccount&&['owner','freelancer'].includes(state.role);document.querySelectorAll('#workspace-nav [data-workspace="shop"]').forEach(el=>{el.hidden=!canAccessShopTab;el.classList.toggle('hidden',!canAccessShopTab);el.style.setProperty('display',canAccessShopTab?'':'none','important');el.setAttribute('aria-hidden',canAccessShopTab?'false':'true');});const issueReceiptCard=$('open-issue-receipt');if(issueReceiptCard){const hideForCustomer=state.role==='customer';issueReceiptCard.hidden=hideForCustomer;issueReceiptCard.classList.toggle('hidden',hideForCustomer);issueReceiptCard.style.setProperty('display',hideForCustomer?'none':'','important');issueReceiptCard.setAttribute('aria-hidden',hideForCustomer?'true':'false');}syncGlobalBackButton();  }
+  function showPOS(){ if(!state.token){showLogin();return;} document.body.classList.add('workspace-active'); $('login-view').classList.add('hidden'); $('back-to-login-btn')?.classList.remove('hidden'); $('pos-view').classList.remove('hidden'); $('welcome-back-banner')?.classList.add('hidden'); $('profile-menu-btn')?.classList.remove('hidden'); $('logout-btn')?.classList.remove('hidden'); const label=$('user-label');label.textContent=state.userName||state.staffTitle||(state.role==='cashier'?'Shop Attendant':state.role?state.role.replace('_',' '):'Staff');if(state.userPhotoData){const avatar=document.createElement('img');avatar.src=state.userPhotoData;avatar.alt='Profile photo';avatar.style.cssText='width:30px;height:30px;object-fit:cover;border-radius:50%;vertical-align:middle;margin-right:8px';label.prepend(avatar);} $('dashboard-link').classList.toggle('hidden', !['owner','manager','vendor','freelancer'].includes(state.role));$('workspace-nav').classList.remove('hidden');const isCustomerAccount=state.role==='customer';document.body.classList.toggle('customer-account-active',isCustomerAccount);const canAccessShopTab=!isCustomerAccount&&['owner','freelancer'].includes(state.role);document.querySelectorAll('#workspace-nav [data-workspace="shop"]').forEach(el=>{el.hidden=!canAccessShopTab;el.classList.toggle('hidden',!canAccessShopTab);el.style.setProperty('display',canAccessShopTab?'':'none','important');el.setAttribute('aria-hidden',canAccessShopTab?'false':'true');});if(state.role==='customer')enforceCustomerReceiptActions();syncGlobalBackButton();  }
   async function lookupCustomer(ev){
     ev.preventDefault();
     const phone=$('lookup-phone').value.trim();
@@ -1339,7 +1340,18 @@
   prepareShopPhoto('profile-shop-inside','profile-shop-inside-preview','shopInsidePhotoDraft');
   prepareShopPhoto('profile-shop-outside','profile-shop-outside-preview','shopOutsidePhotoDraft');
   $('logout-btn').addEventListener('click',()=>{clearSession();window.dispatchEvent(new Event('swass:logout'));state.cart.clear();renderCart();$('profile-panel').classList.add('hidden');showLogin();});
-  function returnToAuroraLogin(){if(!state.token){showLogin();return;}if(state.role!=='customer'&&!window.confirm('Return to the AURORA login screen? You will be signed out.'))return;clearSession();window.dispatchEvent(new Event('swass:logout'));state.cart.clear();renderCart();$('profile-panel')?.classList.add('hidden');showLogin();}
+  function returnToAuroraLogin(){
+    const wasCustomer=state.role==='customer';
+    if(!state.token){showLogin();if(wasCustomer)window.location.replace('/');return;}
+    if(!wasCustomer&&!window.confirm('Return to the AURORA login screen? You will be signed out.'))return;
+    clearSession();
+    window.dispatchEvent(new Event('swass:logout'));
+    state.cart.clear();renderCart();
+    $('profile-panel')?.classList.add('hidden');
+    showLogin();
+    // Always return to the public AURORA start page, never a nested customer route.
+    window.location.replace('/');
+  }
   $('back-to-login-btn')?.addEventListener('click',returnToAuroraLogin);$('customer-back-to-login')?.addEventListener('click',returnToAuroraLogin);
   $('dashboard-back-to-login')?.addEventListener('click',returnToAuroraLogin);
   // No saved shop products are available in the receipt workflow.
