@@ -2333,3 +2333,33 @@ body.registration-open .registration-back-button{display:inline-flex!important;a
 body.registration-open #register-form .error,
 body.registration-open #freelancer-register-form [role=status]{margin:0!important}
 @media(max-width:600px){body.registration-open .shell{inset:62px 0 0!important;height:calc(100dvh - 62px)!important}body.registration-open #register-form:not(.hidden),body.registration-open #freelancer-register-form:not(.hidden){padding:16px 15px 0!important;gap:12px!important}body.registration-open #register-form input,body.registration-open #freelancer-register-form input{min-height:44px!important;font-size:14px!important}}
+
+
+/* Subtle pointer-follow card glow, consistent across every account workspace.
+   Touch devices retain the original card styling and do not get hover effects. */
+@media (hover:hover) and (pointer:fine){
+  :is(.card,.dashboard-card,.summary-card,.stat-card,.metric-card,.receipt-card,
+      .product-card,.customer-card,.staff-card,.shop-card,.item-card,.record-card,
+      .panel,.section-card,.content-card,.feature-card,.account-card,
+      .list-card,.data-card,.workspace-card,.activity-card,.report-card){
+    transition:box-shadow .22s ease,filter .22s ease,border-color .22s ease!important;
+  }
+  :is(.card,.dashboard-card,.summary-card,.stat-card,.metric-card,.receipt-card,
+      .product-card,.customer-card,.staff-card,.shop-card,.item-card,.record-card,
+      .panel,.section-card,.content-card,.feature-card,.account-card,
+      .list-card,.data-card,.workspace-card,.activity-card,.report-card):hover{
+    box-shadow:0 0 0 1px rgba(80,170,255,.22),
+               0 5px 18px rgba(35,135,235,.13),
+               0 0 14px rgba(70,160,255,.10)!important;
+    filter:brightness(1.025);
+  }
+  /* Also cover common nested cards without changing their colours or size. */
+  [class*="card"]:not(button):not(input):not(textarea):not(select){
+    transition:box-shadow .22s ease,filter .22s ease,border-color .22s ease;
+  }
+  [class*="card"]:not(button):not(input):not(textarea):not(select):hover{
+    box-shadow:0 0 0 1px rgba(80,170,255,.18),
+               0 4px 15px rgba(35,135,235,.11)!important;
+    filter:brightness(1.02);
+  }
+}
