@@ -1003,7 +1003,7 @@
     const selected = $('login-account-type').value;
     const staffSelected = selected === 'freelancer';
     $('owner-register-entry').classList.toggle('hidden', staffSelected);
-    $('freelancer-register-entry')?.classList.toggle('hidden', !staffSelected);
+    $('freelancer-register-entry')?.classList.toggle('hidden', selected !== 'freelancer');
     $('owner-register-entry')?.classList.toggle('hidden', staffSelected);
     document.querySelectorAll('[data-login-role]').forEach(tab=>{
       const active=tab.dataset.loginRole===selected;
@@ -1036,7 +1036,8 @@
     $('register-submit').classList.remove('hidden');
     $('register-submit').disabled=false;
     $('login-form').classList.remove('hidden');
-    $('owner-register-entry').classList.toggle('hidden',$('login-account-type').value==='staff');
+    $('owner-register-entry').classList.toggle('hidden',$('login-account-type').value==='freelancer');
+    $('freelancer-register-entry')?.classList.toggle('hidden',$('login-account-type').value!=='freelancer');
     $('register-error').textContent='';
     $('signup-otp-message').textContent='';
     $('login-error').textContent='';
