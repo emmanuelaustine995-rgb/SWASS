@@ -27,7 +27,7 @@
   }
   </script>
   <link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./swass-icon.svg" type="image/svg+xml"><title>AURORA E-RECEIPT Kenya | Digital Receipts & Sales Records</title>
-  <link rel="stylesheet" href="./styles.css?v=continuous-fading-sky-blue-20261111">>>>
+  <link rel="stylesheet" href="./styles.css?v=aurora-purple-skyblue-login-20261112">>>>
   <link rel="stylesheet" href="./dashboard.css?v=aurora-lost-goods-cards-20261111i">
 </head>
 <body>
@@ -43,7 +43,22 @@
   <main class="shell">
     <section id="login-view" class="login-wrap">
       <div class="login-card">
-        <div class="aurora-brand-lockup"><img class="aurora-login-logo" src="./assets/aurora-login.jpg" alt="AURORA E-RECEIPT logo"><p class="aurora-tagline"><span>Timeless receipts.</span><strong>Never lose your receipt.</strong></p></div>
+        <div class="aurora-brand-lockup" aria-label="AURORA E-RECEIPT">
+          <svg class="aurora-login-logo" viewBox="0 0 360 142" role="img" aria-labelledby="aurora-logo-title">
+            <title id="aurora-logo-title">AURORA E-RECEIPT</title>
+            <defs><linearGradient id="auroraPurple" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6500d8"/><stop offset="1" stop-color="#320078"/></linearGradient></defs>
+            <g transform="translate(8 5)" fill="none" stroke="url(#auroraPurple)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 16 Q20 8 31 8 H105 Q116 8 116 20 V91 L103 101 L91 93 L78 103 L65 94 L52 104 L39 95 L26 103 L13 94 Z" fill="#fff" />
+              <path d="M40 29 H89 M40 40 H78" stroke-width="5"/>
+              <path d="M37 78 L63 48 L91 78 H75 L63 61 L51 78 Z" fill="url(#auroraPurple)" stroke="none"/>
+              <path d="M32 86 H92" stroke-width="4"/>
+            </g>
+            <text x="145" y="70" fill="url(#auroraPurple)" font-size="49" font-weight="850" font-style="italic" letter-spacing="-2">Aurora</text>
+            <path d="M148 91 H337" stroke="#8b55cf" stroke-width="2.5" stroke-linecap="round"/>
+            <text x="150" y="119" fill="#4a168e" font-size="17" font-weight="800" letter-spacing="7">E-RECEIPT</text>
+          </svg>
+          <p class="aurora-tagline"><span>Timeless receipts.</span><strong>Never lose your receipt.</strong></p>
+        </div>
         <form id="login-form"><div class="login-role-tabs" role="group" aria-label="Choose account type"><button class="login-role-tab active" type="button" data-login-role="owner" aria-pressed="true">Shop Owner</button><button class="login-role-tab" type="button" data-login-role="freelancer" aria-pressed="false">Freelancer</button><button class="login-role-tab" type="button" data-login-role="customer" aria-pressed="false">Customer</button></div><select id="login-account-type" class="hidden" aria-hidden="true" tabindex="-1"><option value="owner">Shop Owner</option><option value="freelancer">Freelancer</option><option value="customer">Customer</option></select><label>Phone number<input id="login-phone" name="phone" autocomplete="username" inputmode="tel" placeholder="07XX XXX XXX" required></label><label>Password<input id="login-password" name="password" type="password" autocomplete="current-password" required></label><button class="btn btn-primary full login-submit-compact" type="submit">LOG IN</button><p id="login-error" class="error" role="alert"></p></form><p class="login-forgot-wrap"><button id="show-password-reset" class="text-btn login-forgot-btn" type="button">FORGOT PASSWORD</button></p>
         <form id="first-password-form" class="hidden">
           <p class="eyebrow">SECURE YOUR SHOP ACCOUNT</p><h3>Create your own password</h3>
