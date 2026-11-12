@@ -40,24 +40,24 @@ export class StaffController {
     nationalIdNumber?: string; nationalIdPhotoData?: string; profilePhotoData?: string;
   }) {
     const normalizePhone = (value: unknown) => {
-      const digits = String(value ?? '').replace(/\\D/g, '');
+      const digits = String(value ?? '').replace(/\D/g, '');
       return digits.startsWith('0') ? '254' + digits.slice(1) : digits.startsWith('254') ? digits : '254' + digits;
     };
     const ownerPhone = normalizePhone(body?.ownerPhone);
-    const ownerName = String(body?.ownerName ?? '').trim().replace(/\\s+/g,' ');
+    const ownerName = String(body?.ownerName ?? '').trim().replace(/\s+/g,' ');
     const fullName = String(body?.fullName ?? '').trim();
     const email = String(body?.email ?? '').trim().toLowerCase();
     const phone = normalizePhone(body?.phone);
-    const nationalIdNumber = String(body?.nationalIdNumber ?? '').replace(/\\s+/g,'').trim();
+    const nationalIdNumber = String(body?.nationalIdNumber ?? '').replace(/\s+/g,'').trim();
     const nationalIdPhotoData = String(body?.nationalIdPhotoData ?? '');
     const profilePhotoData = String(body?.profilePhotoData ?? '');
-    if (!ownerName || ownerName.length > 120 || !/^254\\d{9}$/.test(ownerPhone)) throw new BadRequestException('Enter the shop owner’s full name and registered phone number.');
+    if (!ownerName || ownerName.length > 120 || !/^254\d{9}$/.test(ownerPhone)) throw new BadRequestException('Enter the shop owner’s full name and registered phone number.');
     if (!fullName || fullName.length > 120) throw new BadRequestException('Enter your full name.');
-    if (!/^254\\d{9}$/.test(phone)) throw new BadRequestException('Enter a valid Kenyan phone number.');
-    if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) || email.length > 254) throw new BadRequestException('Enter a valid email address.');
-    if (!/^\\d{6,12}$/.test(nationalIdNumber)) throw new BadRequestException('Enter a valid National ID number.');
-    if (!/^data:image\\/(jpeg|png|webp);base64,/.test(nationalIdPhotoData) || nationalIdPhotoData.length > 1250000) throw new BadRequestException('Upload a clear JPG, PNG or WebP National ID photo (maximum 900 KB).');
-    if (!/^data:image\\/(jpeg|png|webp);base64,/.test(profilePhotoData) || profilePhotoData.length > 420000) throw new BadRequestException('Upload a JPG, PNG or WebP profile photo (maximum 300 KB).');
+    if (!/^254\d{9}$/.test(phone)) throw new BadRequestException('Enter a valid Kenyan phone number.');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) throw new BadRequestException('Enter a valid email address.');
+    if (!/^\d{6,12}$/.test(nationalIdNumber)) throw new BadRequestException('Enter a valid National ID number.');
+    if (!/^data:image\/(jpeg|png|webp);base64,/.test(nationalIdPhotoData) || nationalIdPhotoData.length > 1250000) throw new BadRequestException('Upload a clear JPG, PNG or WebP National ID photo (maximum 900 KB).');
+    if (!/^data:image\/(jpeg|png|webp);base64,/.test(profilePhotoData) || profilePhotoData.length > 420000) throw new BadRequestException('Upload a JPG, PNG or WebP profile photo (maximum 300 KB).');
 
     const ownerNationalPhone = ownerPhone.slice(3);
     const ownerLocalPhone = '0' + ownerNationalPhone;
@@ -67,7 +67,7 @@ export class StaffController {
          FROM users u
          LEFT JOIN tenants t ON t.id=u.tenant_id
         WHERE u.role='owner' AND u.is_active=true
-          AND lower(regexp_replace(trim(coalesce(u.full_name,'')),'\\s+',' ','g'))=lower($1)
+          AND lower(regexp_replace(trim(coalesce(u.full_name,'')),'\s+',' ','g'))=lower($1)
           AND (
             regexp_replace(coalesce(u.phone,''),'[^0-9]','','g') IN ($2,$3,$4)
             OR regexp_replace(coalesce(t.phone,''),'[^0-9]','','g') IN ($2,$3,$4)
@@ -101,13 +101,13 @@ export class StaffController {
       [owner.rows[0].tenant_id,owner.rows[0].store_id,owner.rows[0].id,fullName,email,phone,this.hash(token),this.hash(code),nationalIdNumber,nationalIdPhotoData,profilePhotoData],
     );
     try {
-      const normalizedOwnerPhone = String(owner.rows[0].phone).replace(/\\D/g,'');
+      const normalizedOwnerPhone = String(owner.rows[0].phone).replace(/\D/g,'');
       await this.sendOwnerApprovalOtp(normalizedOwnerPhone,code);
     } catch (error) {
       await this.db.pool.query('DELETE FROM staff_email_invitations WHERE id=$1',[saved.rows[0].id]);
       throw error;
     }
-    return { approvalRequired:true, invitationId:saved.rows[0].id, ownerPhoneHint:String(owner.rows[0].phone).replace(/\\D/g,'').slice(-4),
+    return { approvalRequired:true, invitationId:saved.rows[0].id, ownerPhoneHint:String(owner.rows[0].phone).replace(/\D/g,'').slice(-4),
       message:'The shop owner must approve your registration using the code sent to their registered phone.' };
   }
 
