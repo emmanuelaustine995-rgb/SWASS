@@ -115,6 +115,65 @@ export class PlatformAdminController {
     return { points: result.rows };
   }
 
+  @Get('system/status')
+  async systemStatus() {
+    const checks: Array<{ key: string; label: string; status: 'ready' | 'attention' | 'unknown'; detail: string }> = [];
+    const configured = (key: string, minLength = 1) => Boolean(process.env[key] && process.env[key]!.length >= minLength);
+    checks.push({
+      key: 'database-config', label: 'Database connection setting',
+      status: configured('DATABASE_URL') ? 'ready' : 'attention',
+      detail: configured('DATABASE_URL') ? 'Database connection string is present; its value is never exposed.' : 'DATABASE_URL is missing from the API environment.',
+    });
+    checks.push({
+      key: 'jwt-secret', label: 'JWT signing secret',
+      status: configured('JWT_SECRET', 32) ? 'ready' : 'attention',
+      detail: configured('JWT_SECRET', 32) ? 'Signing secret is present and meets the 32-character minimum.' : 'Missing or shorter than the 32-character minimum.',
+    });
+    checks.push({
+      key: 'id-secret', label: 'Identity encryption secret',
+      status: configured('SWASS_ID_SECRET', 32) ? 'ready' : 'attention',
+      detail: configured('SWASS_ID_SECRET', 32) ? 'Identity secret is present and meets the 32-character minimum.' : 'Missing or shorter than the 32-character minimum.',
+    });
+    let database = 'down';
+    try {
+      await this.db.pool.query('SELECT 1');
+      database = 'connected';
+    } catch {
+      database = 'unavailable';
+    }
+    checks.push({
+      key: 'database-live', label: 'Live database connectivity',
+      status: database === 'connected' ? 'ready' : 'attention',
+      detail: database === 'connected' ? 'The API completed a database health query.' : 'The API could not complete a database health query.',
+    });
+    let audit = 'unavailable';
+    try {
+      await this.db.ensureSecuritySchema();
+      await this.db.pool.query('SELECT id FROM aurora_security_events ORDER BY id DESC LIMIT 1');
+      audit = 'ready';
+    } catch {
+      audit = 'unavailable';
+    }
+    checks.push({
+      key: 'security-audit', label: 'Security event storage',
+      status: audit === 'ready' ? 'ready' : 'attention',
+      detail: audit === 'ready' ? 'Security event table is available for recording and review.' : 'Security event storage could not be verified.',
+    });
+    return {
+      environment: process.env.NODE_ENV || 'development',
+      runtime: 'Node.js / NestJS',
+      database,
+      securityAudit: audit,
+      checkedAt: new Date().toISOString(),
+      checks,
+      integrations: [
+        { key: 'sms', label: 'SMS / OTP provider', status: 'not_verified', detail: 'Provider credentials and delivery are not tested by this status check. Verify them in the hosting environment and with a real test OTP.' },
+        { key: 'payments', label: 'Payment gateway', status: 'not_verified', detail: 'Gateway credentials and live STK/payment callbacks are not tested here.' },
+        { key: 'backups', label: 'Database backups', status: 'not_connected', detail: 'Backup schedule and restore tests are managed outside this application and are not connected to this portal.' },
+      ],
+    };
+  }
+
   @Post('shops/:tenantId/deactivate')
   async deactivateShop(@Param('tenantId') tenantId: string, @Req() req: any) {
     const id = String(tenantId || '').trim();
