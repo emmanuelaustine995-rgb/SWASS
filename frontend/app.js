@@ -1653,7 +1653,7 @@
   }
   checkSecondhandBiometricSupport();
   $('secondhand-open-card')?.addEventListener('click',()=>{
-    if(!['owner','customer'].includes(state.role)){showNotice('This form is available to customer and shop-owner accounts.',true);return;}
+    if(!['owner','freelancer','customer'].includes(state.role)){showNotice('This form is available to customer, shop-owner and linked freelancer accounts.',true);return;}
     const isCustomer=state.role==='customer';
     $('secondhand-shop-ack-fieldset')?.classList.toggle('hidden',isCustomer);
     $('sh-shop-acknowledged').required=!isCustomer;
