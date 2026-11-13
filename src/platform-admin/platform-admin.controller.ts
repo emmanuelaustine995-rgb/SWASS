@@ -41,7 +41,7 @@ export class PlatformAdminController {
 
   @Get('reports')
   async platformReports(@Query('from') from = '', @Query('to') to = '') {
-    const validDate = (value: string) => /^\\d{4}-\\d{2}-\\d{2}$/.test(value) && !Number.isNaN(Date.parse(value + 'T00:00:00Z'));
+    const validDate = (value: string) => /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(Date.parse(value + 'T00:00:00Z'));
     const endDate = validDate(to) ? to : new Date().toISOString().slice(0, 10);
     const startDate = validDate(from) ? from : new Date(Date.now() - 29 * 86400000).toISOString().slice(0, 10);
     if (startDate > endDate) throw new BadRequestException('The report start date must be on or before the end date.');
