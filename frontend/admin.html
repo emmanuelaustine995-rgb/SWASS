@@ -23,6 +23,46 @@ input{width:100%;padding:14px;border:1px solid #d5deea;border-radius:10px;backgr
 .table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:12px;border-bottom:1px solid #edf0f5}th{color:#738097;font-size:11px;text-transform:uppercase;letter-spacing:.7px}
 @media(max-width:850px){.app{grid-template-columns:1fr}.sidebar{padding:12px}.side-brand{padding:8px 8px 12px}.side-label{display:none}.nav{display:flex;overflow:auto;padding:4px}.nav button{white-space:nowrap;font-size:12px}.logout{width:auto;margin:8px}.top{height:60px;padding:0 16px}.content{padding:18px}.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:430px){.login-card{padding:25px}.cards{grid-template-columns:1fr 1fr}.metric{font-size:21px}}
+
+/* AURORA responsive admin workspace */
+html,body{width:100%;min-height:100%;overflow-x:hidden}
+#admin-app.app{display:block;min-height:100vh;width:100%;background:#f4f7fc}
+#admin-app .main{width:100%;min-width:0}
+#admin-app .top{height:76px;position:sticky;top:0;z-index:30;padding:0 clamp(14px,3vw,42px);gap:14px;box-shadow:0 3px 16px #10264c0b}
+.top-left{display:flex;align-items:center;gap:14px;min-width:0}
+.top-brand{font-size:13px;font-weight:900;letter-spacing:1.2px;color:#12315e;white-space:nowrap}
+.top-title{font-size:14px;color:#52627b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.menu-toggle{width:44px;height:44px;border:1px solid #d8e1ef;border-radius:12px;background:#f7faff;color:#12315e;display:grid;place-content:center;gap:5px;cursor:pointer;flex:none}
+.menu-toggle span{display:block;width:19px;height:2px;border-radius:2px;background:currentColor}
+.menu-wrap{position:relative}
+.admin-menu{position:absolute;right:0;top:54px;width:min(310px,calc(100vw - 28px));padding:10px;background:#fff;border:1px solid #e1e8f2;border-radius:16px;box-shadow:0 18px 50px #0b21402b;display:grid;gap:4px;z-index:50}
+.admin-menu[hidden]{display:none}
+.admin-menu .nav{display:grid;gap:4px}
+.admin-menu .nav button{color:#263b5c;text-align:left;padding:13px 14px;border-radius:10px;font-size:14px}
+.admin-menu .nav button.active,.admin-menu .nav button:hover{background:#eaf2ff;color:#1456a5}
+.admin-menu .logout{margin:6px 0 0;width:100%;border-color:#d8e1ef;color:#a12a35;background:#fff}
+#admin-app .content{width:100%;max-width:none;margin:0;padding:clamp(16px,3vw,38px)}
+#admin-app .heading h2{font-size:clamp(21px,2vw,28px)}
+#admin-app .cards{grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr))}
+#admin-app .panel,#admin-app .card{box-shadow:0 4px 18px #152e5108}
+#admin-app .table-wrap{max-width:100%;overscroll-behavior-x:contain}
+#admin-app table{min-width:720px}
+@media(max-width:640px){
+ #admin-app .top{height:64px;padding:0 12px}
+ .top-brand{font-size:11px;letter-spacing:.7px}
+ .top-title{display:none}
+ #admin-app .content{padding:15px 12px 28px}
+ #admin-app .cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ #admin-app .card{padding:14px;border-radius:12px}
+ #admin-app .metric{font-size:clamp(17px,5vw,22px);overflow-wrap:anywhere}
+ #admin-app .panel{padding:15px;margin-top:12px}
+ #admin-app .heading{align-items:flex-start}
+ #admin-app .heading p{font-size:13px}
+ #admin-app .login-card{width:min(100%,430px);padding:24px}
+}
+@media(max-width:360px){#admin-app .cards{grid-template-columns:1fr}.top-brand{font-size:10px}}
+@media(min-width:641px){#admin-app .content{min-height:calc(100vh - 76px)}}
+
 </style>
 </head>
 <body>
@@ -64,22 +104,22 @@ input{width:100%;padding:14px;border:1px solid #d5deea;border-radius:10px;backgr
 </form>
 </section>
 <section id="admin-app" class="app hidden">
-<aside class="sidebar">
-<div class="side-brand">AURORA<br>ADMIN CONTROL CENTRE</div>
-<div class="side-label">PLATFORM MANAGEMENT</div>
-<nav class="nav" aria-label="Admin navigation">
-<button class="active" data-section="home">Admin Home</button>
-<button data-section="shops">Shop Management</button>
-<button data-section="finance">Finance &amp; Payments</button>
-<button data-section="security">Security Centre</button>
-<button data-section="access">Admin Access Control</button>
-<button data-section="reports">Platform Reports</button>
-<button data-section="settings">System Settings</button>
-</nav>
-<button id="admin-logout" class="logout">Sign out</button>
-</aside>
 <div class="main">
-<header class="top"><strong id="admin-welcome">Admin Home</strong><small>Authorised platform access</small></header>
+<header class="top">
+ <div class="top-left"><button id="admin-menu-toggle" class="menu-toggle" type="button" aria-label="Open admin navigation" aria-expanded="false"><span></span><span></span><span></span></button><div><div class="top-brand">AURORA · ADMIN CONTROL CENTRE</div><strong id="admin-welcome" class="top-title">Admin Home</strong></div></div>
+ <div class="menu-wrap"><div id="admin-menu" class="admin-menu" hidden>
+  <nav class="nav" aria-label="Admin navigation">
+   <button class="active" data-section="home">Admin Home</button>
+   <button data-section="shops">Shop Management</button>
+   <button data-section="finance">Finance &amp; Payments</button>
+   <button data-section="security">Security Centre</button>
+   <button data-section="access">Admin Access Control</button>
+   <button data-section="reports">Platform Reports</button>
+   <button data-section="settings">System Settings</button>
+  </nav><button id="admin-logout" class="logout" type="button">Sign out</button>
+ </div></div>
+ <small>Restricted · Secure session</small>
+</header>
 <main class="content">
 <section id="section-home">
 <div class="heading"><div><h2>Admin Home</h2><p>Platform-wide overview and operational activity.</p></div></div>
@@ -185,10 +225,13 @@ input{width:100%;padding:14px;border:1px solid #d5deea;border-radius:10px;backgr
   $('admin-logout').addEventListener('click',logout);
   $('shop-search-btn').addEventListener('click',loadShops);
   $('shop-search').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();loadShops();}});
+  const menu=$('admin-menu'),menuToggle=$('admin-menu-toggle');
+  menuToggle.addEventListener('click',()=>{const opening=menu.hidden;menu.hidden=!opening;menuToggle.setAttribute('aria-expanded',String(opening));});
+  document.addEventListener('click',e=>{if(!e.target.closest('.menu-wrap')&&!e.target.closest('#admin-menu-toggle')){menu.hidden=true;menuToggle.setAttribute('aria-expanded','false');}});
   document.querySelectorAll('.nav button').forEach(btn=>btn.addEventListener('click',()=>{
     document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b===btn));
     document.querySelectorAll('main.content section').forEach(s=>s.classList.add('hidden'));
-    $('section-'+btn.dataset.section).classList.remove('hidden');$('admin-welcome').textContent=btn.textContent;if(btn.dataset.section==='shops')loadShops();
+    $('section-'+btn.dataset.section).classList.remove('hidden');$('admin-welcome').textContent=btn.textContent;menu.hidden=true;menuToggle.setAttribute('aria-expanded','false');if(btn.dataset.section==='shops')loadShops();
   }));
 })();
 </script>
