@@ -438,8 +438,13 @@
         $('platform-referral-admin')?.classList.remove('hidden');
         void loadPlatformReferralAdmin();
       }else if(state.role==='freelancer'){
+        // The dashboard is nested inside #pos-view, so reveal its parent too.
+        pos?.classList.remove('hidden');
+        posGrid?.classList.add('hidden');
         $('owner-dashboard-view')?.classList.remove('hidden');
         ownerHome?.classList.add('hidden');
+        $('owner-payments-section')?.classList.add('hidden');
+        $('owner-staff-area')?.classList.add('hidden');
         window.dispatchEvent(new Event('swass:dashboard-open'));
         void loadStaffSalesSummary();
       }else if(['owner','manager','vendor'].includes(state.role)){
