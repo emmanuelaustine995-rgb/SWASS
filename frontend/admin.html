@@ -150,6 +150,12 @@ body{background:#eef3fb}
 
 
 .settings-hero{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:25px 28px;border-radius:18px;background:linear-gradient(120deg,#101b38,#173c63 62%,#075b70);color:#fff;margin:16px 0;box-shadow:0 14px 34px #071b3522}.settings-eyebrow{font-size:10px;letter-spacing:2px;font-weight:800;color:#72e4df}.settings-hero h3{font-size:23px;margin:9px 0 6px}.settings-hero p{margin:0;color:#c8d8ed;font-size:13px}.settings-hero-mark{font-size:58px;color:#69d9dc;opacity:.85}.settings-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:14px 0}.settings-summary-card{padding:16px;border:1px solid var(--border,#dce4ef);border-radius:14px;background:var(--panel,#fff);min-width:0}.settings-summary-card small,.settings-summary-card span{display:block;color:var(--muted,#68758a);font-size:11px}.settings-summary-card strong{display:block;font-size:20px;margin:8px 0 5px;overflow-wrap:anywhere}.settings-layout{display:grid;grid-template-columns:1.15fr .85fr;gap:14px;margin:14px 0}.settings-panel{min-width:0}.settings-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.settings-panel-head h3{margin:0 0 5px}.settings-panel-head p{font-size:12px;color:var(--muted,#68758a);margin:0 0 12px}.settings-live{font-size:9px;letter-spacing:1px;border-radius:20px;padding:6px 9px;background:#e5f8f2;color:#087a60;font-weight:800}.settings-check-list{display:grid;gap:9px}.settings-check{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:12px;border:1px solid var(--border,#e1e7ef);border-radius:11px}.settings-check b{display:block;font-size:13px;margin-bottom:4px}.settings-check p{font-size:11px;line-height:1.5;color:var(--muted,#68758a);margin:0}.settings-state{white-space:nowrap;font-size:10px;font-weight:800;border-radius:20px;padding:5px 8px;background:#edf1f6;color:#536174}.settings-state.ready{background:#e4f7ef;color:#087a55}.settings-state.attention{background:#fff0df;color:#a4540a}.settings-state.unknown{background:#edf1f6;color:#536174}.settings-guidance{margin-top:14px}.settings-guidance-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.settings-guidance-grid>div{padding:12px;border-radius:10px;background:var(--soft,#f5f7fb)}.settings-guidance-grid b{font-size:12px}.settings-guidance-grid p{font-size:11px;line-height:1.55;color:var(--muted,#68758a);margin:5px 0 0}.settings-loading,.settings-footnote{font-size:12px;color:var(--muted,#68758a);padding:10px}.settings-footnote{padding:12px 2px}@media(max-width:760px){.settings-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.settings-layout{grid-template-columns:1fr}.settings-hero{padding:19px}.settings-hero-mark{font-size:42px}.settings-guidance-grid{grid-template-columns:1fr}}
+
+.report-actions{display:flex;gap:8px;flex-wrap:wrap}.report-actions button{width:auto;padding:10px 14px}
+.report-filter{display:flex;align-items:end;gap:12px;flex-wrap:wrap;margin:14px 0}.report-filter>div{display:grid;gap:5px;min-width:150px}.report-filter label{font-size:11px;font-weight:800;color:var(--muted,#68758a)}.report-filter input{padding:10px;border:1px solid var(--border,#dce3ec);border-radius:9px;background:var(--surface,#fff);color:inherit}.report-filter p{font-size:11px;color:var(--muted,#68758a);margin:0 0 10px auto}
+.report-kpis{margin:14px 0}.report-kpis .card{min-width:0}.report-kpis .card span{font-size:11px;color:var(--muted,#68758a)}.report-grid{display:grid;grid-template-columns:1.25fr .75fr;gap:14px;margin-bottom:14px}.report-panel{min-width:0}.report-panel-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:12px}.report-panel-head h3{margin:0 0 5px}.report-panel-head p{font-size:11px;color:var(--muted,#68758a);margin:0}.report-tag{font-size:9px;font-weight:900;letter-spacing:1px;padding:6px 8px;border-radius:20px;background:#e8f1ff;color:#245db0;white-space:nowrap}
+.report-trend{display:flex;align-items:stretch;gap:5px;min-height:190px;overflow-x:auto;padding:8px 2px}.report-day{flex:1;min-width:24px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px}.report-bars{height:140px;width:100%;display:flex;align-items:flex-end;justify-content:center;gap:3px;border-bottom:1px solid var(--border,#dce3ec)}.report-bar{width:42%;min-height:2px;border-radius:4px 4px 0 0;background:#2878d0}.report-bar.users{background:#16a58b}.report-day small{font-size:9px;color:var(--muted,#68758a);white-space:nowrap}.report-day b{font-size:9px}.report-empty{font-size:12px;color:var(--muted,#68758a);padding:18px}.report-footnote{font-size:11px;line-height:1.6;color:var(--muted,#68758a);padding:12px 2px}
+@media(max-width:760px){.report-grid{grid-template-columns:1fr}.report-filter p{width:100%;margin:0}.report-actions{width:100%}.report-actions button{flex:1}.report-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.report-trend{min-height:170px}.report-bars{height:120px}}
 </style>
 </head>
 <body>
@@ -254,7 +260,24 @@ body{background:#eef3fb}
  <div class="panel"><h3>Security controls &amp; audit coverage</h3><div class="soc-control-grid"><div><b>HTTPS and browser security headers</b><span>Configured in API gateway application</span></div><div><b>Administrator-only endpoints</b><span>JWT authentication and super-admin role checks</span></div><div><b>Login event recording</b><span>Successful and failed customer, owner and admin sign-ins</span></div><div><b>Shop action audit</b><span>Shop deactivation events recorded with administrator identity</span></div></div></div>
 </section>
 <section id="section-access" class="hidden"><div class="heading"><div><h2>Admin Access Control</h2><p>Up to three authorised people, with multiple approved email aliases per person.</p></div></div><div class="cards"><div class="card"><small>Registered shops</small><div id="access-shops" class="metric">—</div></div><div class="card"><small>Active shop owners</small><div id="access-owners" class="metric">—</div></div><div class="card"><small>Active customer accounts</small><div id="access-customers" class="metric">—</div></div><div class="card"><small>Inactive user accounts</small><div id="access-inactive" class="metric">—</div></div></div><div class="chart-grid"><div class="chart-panel"><h3>Account security posture</h3><p>Live account counts from the platform database—not a threat-detection score</p><div class="chart-row"><span>Active owners</span><div class="chart-track"><div id="access-owner-fill" class="chart-fill"></div></div><strong id="access-owner-value" class="chart-value">—</strong></div><div class="chart-row"><span>Customers</span><div class="chart-track"><div id="access-customer-fill" class="chart-fill"></div></div><strong id="access-customer-value" class="chart-value">—</strong></div><div class="chart-row"><span>Inactive users</span><div class="chart-track"><div id="access-inactive-fill" class="chart-fill"></div></div><strong id="access-inactive-value" class="chart-value">—</strong></div><div id="access-chart-note" class="chart-empty">Waiting for verified platform counts…</div></div><div class="panel"><h3>Authorised administrator identities</h3><p>Registration is checked against the server-side AURORA_ADMIN_IDENTITIES configuration. Each person has one approved phone number and one or more approved email addresses. Phone verification and email verification are required before admin sign-in. National ID numbers are stored only as protected hashes. Individual permissions, login MFA, and append-only administrator audit history still require backend implementation.</p></div></div></section>
-<section id="section-reports" class="hidden"><div class="heading"><div><h2>Platform Reports</h2><p>Growth, receipt volumes, registrations and subscription reporting.</p></div></div><div class="panel"><h3>Reporting workspace</h3><p>Platform-wide reports and exports will appear here after their reporting endpoints are connected.</p></div></section>
+<section id="section-reports" class="hidden">
+<div class="heading"><div><h2>Platform Reports</h2><p>Evidence-based platform performance, growth, receipts and subscription reporting.</p></div><div class="report-actions"><button class="secondary" id="reports-refresh" type="button">↻ Run report</button><button class="primary" id="reports-export" type="button">↓ Export CSV</button></div></div>
+<div class="report-filter panel"><div><label for="reports-from">From date</label><input id="reports-from" type="date"></div><div><label for="reports-to">To date</label><input id="reports-to" type="date"></div><p id="reports-status" role="status">Choose a reporting period and run the report.</p></div>
+<div class="cards report-kpis">
+ <div class="card"><small>New shops in period</small><div class="metric" id="report-new-shops">—</div><span>All-time shops: <b id="report-shops-total">—</b></span></div>
+ <div class="card"><small>New user registrations</small><div class="metric" id="report-new-users">—</div><span>Active accounts: <b id="report-users-active">—</b></span></div>
+ <div class="card"><small>Receipts issued</small><div class="metric" id="report-receipts">—</div><span>Voided: <b id="report-voided">—</b> · Returned: <b id="report-returned">—</b></span></div>
+ <div class="card"><small>Gross issued receipt value</small><div class="metric" id="report-sales">—</div><span>Not platform revenue</span></div>
+ <div class="card"><small>Platform revenue</small><div class="metric" id="report-revenue">—</div><span>Verified ledger entries only</span></div>
+ <div class="card"><small>Active subscriptions</small><div class="metric" id="report-active-subs">—</div><span>New in period: <b id="report-new-subs">—</b></span></div>
+</div>
+<div class="report-grid">
+ <div class="panel report-panel"><div class="report-panel-head"><div><h3>Daily platform activity</h3><p>Receipts issued and new user registrations per day</p></div><span class="report-tag">DATE FILTERED</span></div><div id="report-trend" class="report-trend"><p class="report-empty">Run a report to load daily activity.</p></div></div>
+ <div class="panel report-panel"><div class="report-panel-head"><div><h3>Receipt payment mix</h3><p>Issued receipts grouped by payment method</p></div></div><div class="table-wrap"><table><thead><tr><th>Method</th><th>Receipts</th><th>Gross value</th></tr></thead><tbody id="report-payment-rows"><tr><td colspan="3">No report loaded.</td></tr></tbody></table></div></div>
+</div>
+<div class="panel report-panel"><div class="report-panel-head"><div><h3>Top shops by issued receipt value</h3><p>Ranked using receipts in the selected period, not subscription income</p></div></div><div class="table-wrap"><table><thead><tr><th>Rank</th><th>Business</th><th>Receipts</th><th>Gross receipt value</th></tr></thead><tbody id="report-shop-rows"><tr><td colspan="4">No report loaded.</td></tr></tbody></table></div></div>
+<div class="report-footnote" id="report-definitions">Reports use database records. Shop sales are separate from platform revenue; platform revenue is taken from the financial ledger.</div>
+</section>
 <section id="section-settings" class="hidden">
 <div class="heading"><div><h2>System Settings</h2><p>Security posture, runtime configuration and connected service verification.</p></div><button class="secondary" id="settings-refresh" type="button">↻ Refresh checks</button></div>
 <div class="settings-hero"><div><div class="settings-eyebrow">AURORA CONTROL PLANE · CONFIGURATION AUDIT</div><h3>System integrity &amp; configuration</h3><p>Read-only checks against the live API. Secret values are never returned to this page.</p></div><div class="settings-hero-mark">⌁</div></div>
@@ -435,7 +458,63 @@ body{background:#eef3fb}
       $('finance-status').textContent='Showing up to 100 recorded platform ledger entries. Bank settlement is not verified by this ledger.';
     }catch(e){$('home-status').textContent=e.message;$('finance-status').textContent=e.message;$('finance-rows').innerHTML='<tr><td colspan="4">Financial records unavailable.</td></tr>';}
   }
-  let pendingAdminEmail='',pendingAdminPhone='';
+
+  let latestPlatformReport=null;
+  function reportKes(value){return 'KSh '+Number(value||0).toLocaleString('en-KE');}
+  function setReportCell(id,value){$(id).textContent=String(value??0);}
+  async function loadReports(){
+    const from=$('reports-from').value,to=$('reports-to').value;
+    if(!from||!to){$('reports-status').textContent='Select both start and end dates.';return;}
+    $('reports-status').textContent='Querying live platform records…';
+    $('reports-refresh').disabled=true;
+    try{
+      const data=await api('/platform-admin/reports?from='+encodeURIComponent(from)+'&to='+encodeURIComponent(to));
+      latestPlatformReport=data;
+      const n=(v)=>Number(v||0).toLocaleString('en-KE');
+      setReportCell('report-new-shops',n(data.shops?.new_in_period));setReportCell('report-shops-total',n(data.shops?.total));
+      setReportCell('report-new-users',n(data.users?.new_in_period));setReportCell('report-users-active',n(data.users?.active));
+      setReportCell('report-receipts',n(data.receipts?.issued_in_period));setReportCell('report-voided',n(data.receipts?.voided));setReportCell('report-returned',n(data.receipts?.returned));
+      setReportCell('report-sales',reportKes(data.receipts?.issued_value_in_period_kes));setReportCell('report-revenue',reportKes(data.platformRevenue?.total_kes));
+      setReportCell('report-active-subs',n(data.subscriptions?.active_now));setReportCell('report-new-subs',n(data.subscriptions?.started_in_period));
+      const trend=$('report-trend');trend.replaceChildren();
+      const days=data.daily||[],max=Math.max(1,...days.map(d=>Number(d.receipts||0)),...days.map(d=>Number(d.registrations||0)));
+      for(const day of days){
+        const wrap=document.createElement('div');wrap.className='report-day';
+        const bars=document.createElement('div');bars.className='report-bars';
+        const receipt=document.createElement('div');receipt.className='report-bar';receipt.style.height=(Number(day.receipts||0)/max*100)+'%';receipt.title='Receipts: '+day.receipts;
+        const users=document.createElement('div');users.className='report-bar users';users.style.height=(Number(day.registrations||0)/max*100)+'%';users.title='Registrations: '+day.registrations;
+        bars.append(receipt,users);const count=document.createElement('b');count.textContent=n(day.receipts);
+        const label=document.createElement('small');label.textContent=new Date(day.day+'T00:00:00').toLocaleDateString('en-KE',{day:'2-digit',month:'short'});
+        wrap.append(bars,count,label);trend.append(wrap);
+      }
+      if(!days.length){const empty=document.createElement('p');empty.className='report-empty';empty.textContent='No daily activity in this period.';trend.append(empty);}
+      const paymentRows=$('report-payment-rows');paymentRows.replaceChildren();
+      for(const item of (data.paymentMethods||[])){const tr=document.createElement('tr');[String(item.paymentMethod||'—').toUpperCase(),n(item.receipts),reportKes(item.salesKes)].forEach((v,i)=>{const td=document.createElement('td');td.textContent=v;tr.append(td);});paymentRows.append(tr);}
+      if(!paymentRows.children.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=3;td.textContent='No issued receipts in this period.';tr.append(td);paymentRows.append(tr);}
+      const shopRows=$('report-shop-rows');shopRows.replaceChildren();
+      (data.topShops||[]).forEach((item,index)=>{const tr=document.createElement('tr');[String(index+1),item.businessName||'—',n(item.receipts),reportKes(item.salesKes)].forEach(v=>{const td=document.createElement('td');td.textContent=v;tr.append(td);});shopRows.append(tr);});
+      if(!shopRows.children.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=4;td.textContent='No shop activity in this period.';tr.append(td);shopRows.append(tr);}
+      $('report-definitions').textContent='Period '+data.period.from+' to '+data.period.to+'. Gross receipt value includes issued shop receipts only. Platform revenue includes subscription and receipt-fee ledger entries only; it excludes shop sales and is not proof of bank settlement.';
+      $('reports-status').textContent='Report generated '+new Date(data.generatedAt).toLocaleString()+' · '+days.length+' daily data points.';
+    }catch(e){latestPlatformReport=null;$('reports-status').textContent='Report could not be loaded: '+e.message;}
+    finally{$('reports-refresh').disabled=false;}
+  }
+  function exportPlatformReport(){
+    if(!latestPlatformReport){$('reports-status').textContent='Run a report before exporting.';return;}
+    const data=latestPlatformReport;
+    const rows=[['Date','Receipts issued','Gross receipt value KSh','New registrations','New shops']];
+    (data.daily||[]).forEach(d=>rows.push([d.day,d.receipts,d.salesKes,d.registrations,d.newShops]));
+    rows.push([],['Summary','Value'],['New shops',data.shops?.new_in_period],['New registrations',data.users?.new_in_period],['Issued receipts',data.receipts?.issued_in_period],['Gross receipt value KSh',data.receipts?.issued_value_in_period_kes],['Platform revenue KSh',data.platformRevenue?.total_kes],['Active subscriptions',data.subscriptions?.active_now]);
+    const csv=rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');
+    const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+    a.href=url;a.download='aurora-platform-report-'+data.period.from+'-to-'+data.period.to+'.csv';document.body.append(a);a.click();a.remove();URL.revokeObjectURL(url);
+  }
+  $('reports-refresh').addEventListener('click',loadReports);
+  $('reports-export').addEventListener('click',exportPlatformReport);
+  const reportToday=new Date(),reportEnd=reportToday.toISOString().slice(0,10),reportStart=new Date(reportToday.getTime()-29*86400000).toISOString().slice(0,10);
+  $('reports-from').value=reportStart;$('reports-to').value=reportEnd;
+
+    let pendingAdminEmail='',pendingAdminPhone='';
   function showAdminForm(id){['admin-login-form','admin-register-form','admin-otp-form'].forEach(x=>$(x).classList.toggle('hidden',x!==id));}
   $('show-admin-register').addEventListener('click',()=>showAdminForm('admin-register-form'));
   $('back-admin-login').addEventListener('click',()=>showAdminForm('admin-login-form'));
@@ -481,7 +560,7 @@ body{background:#eef3fb}
   document.querySelectorAll('.nav button').forEach(btn=>btn.addEventListener('click',()=>{
     document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b===btn));
     document.querySelectorAll('main.content section').forEach(s=>s.classList.add('hidden'));
-    $('section-'+btn.dataset.section).classList.remove('hidden');$('admin-welcome').textContent=btn.textContent;menu.hidden=true;menuToggle.setAttribute('aria-expanded','false');if(btn.dataset.section==='shops')loadShops();if(btn.dataset.section==='security')loadSecurity();if(btn.dataset.section==='settings')loadSettings();
+    $('section-'+btn.dataset.section).classList.remove('hidden');$('admin-welcome').textContent=btn.textContent;menu.hidden=true;menuToggle.setAttribute('aria-expanded','false');if(btn.dataset.section==='shops')loadShops();if(btn.dataset.section==='security')loadSecurity();if(btn.dataset.section==='reports')loadReports();if(btn.dataset.section==='settings')loadSettings();
   }));
 })();
 </script>
