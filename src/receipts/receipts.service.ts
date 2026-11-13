@@ -304,20 +304,7 @@ export class ReceiptsService {
     );
     if (!sub.rowCount) throw new HttpException('An active SWASS subscription is required. Pay KSh 100 for one month or KSh 900 for one year.', 402);
 
-    // 3. Receipt wallet is prepaid: KSh 4 must already be available.
-    const w = await c.query(
-      `SELECT balance_kes FROM wallets WHERE tenant_id = $1 FOR UPDATE`,
-      [tenantId],
-    );
-    if (!w.rowCount) throw new HttpException('No receipt wallet for this shop. Contact SWASS support.', 402);
-    if (BigInt(w.rows[0].balance_kes) < BigInt(RECEIPT_FEE_KES)) {
-      const balance = Number(w.rows[0].balance_kes);
-      const availableReceipts = Math.max(0, Math.floor(balance / RECEIPT_FEE_KES));
-      throw new HttpException(
-        `Receipt wallet balance is too low. Your balance can generate ${availableReceipts} more receipts. Top up your receipt wallet; KSh 4 is charged per receipt.`,
-        402,
-      );
-    }
+    // 3. Active monthly/yearly subscription includes unlimited receipts; no receipt wallet is required.
 
     // 4. Lock the products and price the sale from the database, never from the client.
     const ids = dto.items.map((i) => i.productId).filter((id): id is string => !!id);
@@ -382,19 +369,7 @@ export class ReceiptsService {
       }
     }
 
-    // 8. Charge the KSh 4 fee.
-    await c.query(`UPDATE wallets SET balance_kes = balance_kes - $1 WHERE tenant_id = $2`, [RECEIPT_FEE_KES, tenantId]);
-    await c.query(
-      `INSERT INTO wallet_transactions (tenant_id, change_kes, reason, receipt_id) VALUES ($1, $2, 'receipt_fee', $3)`,
-      [tenantId, -RECEIPT_FEE_KES, receipt.id],
-    );
-
-    // Record SWASS's earned processing fee separately from the shop's sales proceeds.
-    await c.query(
-      `INSERT INTO platform_financial_ledger (tenant_id, receipt_id, entry_type, amount_kes)
-       VALUES ($1, $2, 'receipt_fee_revenue', $3)`,
-      [tenantId, receipt.id, RECEIPT_FEE_KES],
-    );
+    // 8. No per-receipt charge: the active monthly/yearly subscription covers unlimited receipts.
 
     // 9. Loyalty points for identified buyers.
     let pointsEarned = 0;
