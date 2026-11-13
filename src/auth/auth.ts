@@ -135,6 +135,18 @@ export class RolesGuard implements CanActivate {
 export class AuthController {
   constructor(private db: DbService, private jwt: JwtService, private emailVerification: EmailVerificationService) {}
 
+  private async recordLoginSecurity(req: any, eventType: string, outcome: string, actorUserId?: string | null): Promise<void> {
+    try {
+      await this.db.recordSecurityEvent({
+        eventType, severity: outcome === 'failed' ? 'medium' : 'info', outcome,
+        actorUserId: actorUserId || null, sourceIp: req?.ip || null,
+        userAgent: req?.headers?.['user-agent'] || null,
+      });
+    } catch (error) {
+      console.warn('[AURORA_SECURITY] Could not persist login event:', error instanceof Error ? error.message : 'database error');
+    }
+  }
+
   private normalizePhone(value: string): string {
     const digits = value.replace(/\D/g, '');
     if (digits.startsWith('254') && digits.length === 12) return digits;
@@ -579,7 +591,7 @@ export class AuthController {
   }
 
   @Post('admin/login')
-  async adminLogin(@Body() body: { email?: string; password?: string }) {
+  async adminLogin(@Body() body: { email?: string; password?: string }, @Req() req: any) {
     const email = String(body?.email || '').trim().toLowerCase();
     const password = String(body?.password || '');
     const identity = configuredAdminIdentities().find(x => x.emails.includes(email));
@@ -598,8 +610,10 @@ export class AuthController {
       try { passwordOk = await argon2.verify(account.password_hash, password); } catch { passwordOk = false; }
     }
     if (!account || !account.is_active || !account.admin_email_verified_at || !passwordOk) {
+      await this.recordLoginSecurity(req, 'admin_login_failed', 'failed', account?.id || null);
       throw new UnauthorizedException('Invalid administrator email or password, or administrator email verification is still pending.');
     }
+    await this.recordLoginSecurity(req, 'admin_login_success', 'success', account.id);
     const payload: AuthUser & { adminEmail: string; adminPersonId: string } = {
       sub: account.id, tenantId: null, storeId: null, role: 'super_admin',
       fullName: account.full_name, adminEmail: email, adminPersonId: identity.personId,
@@ -821,7 +835,7 @@ export class AuthController {
   }
 
   @Post('login')
-  async login(@Body() body: { phone?: string; password?: string; accountType?: string }) {
+  async login(@Body() body: { phone?: string; password?: string; accountType?: string }, @Req() req: any) {
     const { password } = body ?? {};
     if (!body?.phone || !password) throw new UnauthorizedException();
     const phone = this.normalizePhone(body.phone);
@@ -835,7 +849,8 @@ export class AuthController {
       if (account?.password_hash) {
         try { passwordOk = await argon2.verify(account.password_hash, password); } catch { passwordOk = false; }
       }
-      if (!account || !account.is_active || !passwordOk) throw new UnauthorizedException('Invalid customer phone number or password.');
+      if (!account || !account.is_active || !passwordOk) { await this.recordLoginSecurity(req, 'login_failed', 'failed'); throw new UnauthorizedException('Invalid customer phone number or password.'); }
+      await this.recordLoginSecurity(req, 'login_success', 'success', account.id);
       const payload: AuthUser = { sub: account.id, tenantId: null, storeId: null, role: 'customer', fullName: account.full_name };
       return { accessToken: await this.jwt.signAsync(payload, { expiresIn: '30d' }), user: { fullName: account.full_name, phone: account.phone, email: account.email, role: 'customer' } };
     }
@@ -866,7 +881,8 @@ export class AuthController {
     const tenantIsUsable = !u?.tenant_id || u.tenant_status === 'active';
     const ok = u && u.is_active && tenantIsUsable && passwordOk;
     const roleMatches = requestedType === 'freelancer' ? u?.role === 'freelancer' : requestedType === 'staff' ? ['cashier','vendor','freelancer'].includes(u?.role) : ['owner','manager'].includes(u?.role);
-    if (!ok || !roleMatches) throw new UnauthorizedException('Invalid phone or password for this sign-in type');
+    if (!ok || !roleMatches) { await this.recordLoginSecurity(req, 'login_failed', 'failed', u?.id || null); throw new UnauthorizedException('Invalid phone or password for this sign-in type'); }
+    await this.recordLoginSecurity(req, 'login_success', 'success', u.id);
 
     const payload: AuthUser = { sub: u.id, tenantId: u.tenant_id, storeId: u.store_id, role: u.role, mustChangePassword: !!u.must_change_password, fullName: u.full_name };
     return { accessToken: await this.jwt.signAsync(payload, { expiresIn: '30d' }), mustChangePassword: !!u.must_change_password, user: { fullName: u.full_name, role: u.role, staffTitle: u.staff_title, profilePhotoData: u.profile_photo_data } };
