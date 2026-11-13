@@ -27,8 +27,8 @@ export class IntaSendController {
         if(state!=='COMPLETE')return;
         const amountCents=Math.round(Number(body?.value)*100);
         if(!Number.isFinite(amountCents)||amountCents!==Number(p.amount_kes)*100||String(body?.currency??'').toUpperCase()!=='KES')return;
-        const account=typeof body?.account==='string'?body.account.replace(/\\D/g,''):'';
-        if(account&&/^254[17]\\d{8}$/.test(account)&&account!==String(p.phone).replace(/\\D/g,''))return;
+        const account=typeof body?.account==='string'?body.account.replace(/\D/g,''):'';
+        if(account&&/^254[17]\d{8}$/.test(account)&&account!==String(p.phone).replace(/\D/g,''))return;
         const receipt=String(body?.mpesa_reference||body?.provider_ref||invoiceId).trim().slice(0,120);
         await c.query("UPDATE payments SET status='success',mpesa_receipt_no=$1 WHERE id=$2 AND status='pending'",[receipt,p.id]);
         await c.query("INSERT INTO platform_financial_ledger(tenant_id,payment_id,entry_type,amount_kes,external_reference) VALUES($1,$2,'subscription_revenue',$3,$4) ON CONFLICT DO NOTHING",[p.tenant_id,p.id,p.amount_kes,receipt]);
