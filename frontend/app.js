@@ -1184,6 +1184,8 @@
       })});
       const freelancerPhone=$('freelancer-phone').value.trim();
       message.textContent=result.message||'Your account has been created and linked to the shop. You can now sign in.';
+      // Leave the full-screen registration layout before revealing sign-in.
+      document.body.classList.remove('registration-open');
       $('freelancer-register-form').reset();
       $('freelancer-register-form').classList.add('hidden');
       $('login-form').classList.remove('hidden');
