@@ -1,11 +1,11 @@
 import { BadRequestException, Body, Controller, Get, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { randomBytes } from 'node:crypto';
-import PDFDocument = require('pdfkit');
 import { AuthGuard, Roles, RolesGuard } from '../auth/auth';
 import { DbService } from '../db/db.service';
 import { hashNationalId, normalisePhone } from '../receipts/receipts.service';
 import { EmailVerificationService } from '../notifications/email-verification.service';
 import { WhatsAppReceiptService } from '../notifications/whatsapp-receipt.service';
+import { buildSecondHandDeclarationPdf } from '../second-hand/second-hand-declaration-pdf';
 
 @Controller('api/v1/customers')
 @UseGuards(AuthGuard, RolesGuard)
@@ -111,70 +111,7 @@ export class CustomersController {
   }
 
   private buildCustomerSalesDeclarationPdf(d: any): Promise<Buffer> {
-    return new Promise((resolve, reject) => {
-      const doc = new PDFDocument({ size: 'A4', margin: 46, info: { Title: 'AURORA Sales Declaration ' + d.declarationRef, Author: 'AURORA E-RECEIPT' } });
-      const chunks: Buffer[] = [];
-      doc.on('data', (chunk: Buffer) => chunks.push(Buffer.from(chunk)));
-      doc.on('error', reject);
-      doc.on('end', () => resolve(Buffer.concat(chunks)));
-      const line = (label: string, value: unknown) => {
-        doc.font('Helvetica-Bold').fontSize(9).fillColor('#17324d').text(label + ': ', { continued: true });
-        doc.font('Helvetica').text(String(value ?? '—'));
-      };
-      const heading = (value: string) => {
-        doc.moveDown(.7).font('Helvetica-Bold').fontSize(12).fillColor('#075b74').text(value);
-        doc.moveDown(.25);
-      };
-      doc.font('Helvetica-Bold').fontSize(19).fillColor('#075b74').text('AURORA E-RECEIPT');
-      doc.fontSize(15).fillColor('#172b45').text('SALES DECLARATION FORM');
-      doc.moveDown(.3).font('Helvetica').fontSize(9).fillColor('#526477').text('Declaration reference: ' + d.declarationRef);
-      doc.text('Submitted: ' + new Date(d.createdAt || Date.now()).toLocaleString('en-KE', { timeZone: 'Africa/Nairobi' }));
-      doc.roundedRect(46, doc.y + 8, 504, 38, 5).fill('#fff3cd');
-      doc.fillColor('#805b00').font('Helvetica-Bold').fontSize(9).text('CUSTOMER SUBMISSION · PENDING SHOP REVIEW · NOT AN APPROVED SHOP RECEIPT', 56, doc.y + 20, { width: 484, align: 'center' });
-      doc.moveDown(3);
-      doc.moveTo(46, doc.y).lineTo(550, doc.y).strokeColor('#9bb7c8').stroke();
-      heading('SELLER DETAILS');
-      line('Full name', d.sellerName); line('National ID / Passport', d.nationalId);
-      line('Phone', d.sellerPhone); line('Alternative phone', d.alternativePhone || 'Not supplied');
-      line('Email', d.sellerEmail); line('Residential address', d.residentialAddress);
-      heading('BUYER DETAILS');
-      line('Full name', d.buyerName); line('National ID / Passport', d.buyerNationalId);
-      line('Phone', d.buyerPhone); line('Email', d.buyerEmail);
-      heading('PRODUCT AND SALE DETAILS');
-      line('Product / make and model', d.productName || d.phoneMakeModel);
-      line('IMEI / identifier', d.imei1 || 'Not provided'); line('Second identifier', d.imei2 || 'Not provided');
-      line('Serial number', d.serialNumber || 'Not provided'); line('Condition', d.condition);
-      line('Agreed price', 'KSh ' + Number(d.purchasePriceKes || 0).toLocaleString('en-KE'));
-      line('Declaration type', d.saleType === 'with_receipt' ? 'WITH ORIGINAL PURCHASE RECEIPT' : 'WITHOUT ORIGINAL PURCHASE RECEIPT');
-      line('Original purchase receipt', d.saleType === 'with_receipt' ? 'Provided — receipt photograph attached where supplied' : 'Not provided');
-      if (d.saleType !== 'with_receipt') line('Reason receipt unavailable', d.noReceiptReason || 'Not supplied');
-      heading('SELLER OWNERSHIP AND RESPONSIBILITY DECLARATION — AS SHOWN ON THE FORM');
-      const declarationText = d.saleType === 'with_receipt'
-        ? 'I declare that I am the lawful owner of the product recorded above or have full legal authority to sell it. I confirm that the original purchase receipt shown and attached to this record relates to this product and, to the best of my knowledge, is genuine and has not been altered. I confirm that the product is not stolen, unlawfully obtained, fraudulently acquired or subject to an ownership dispute, and that all product identifiers and details I have supplied are true. I accept responsibility for false statements, a false or altered receipt, fraudulent representation or an unlawful ownership claim connected with this sale. I agree to cooperate with lawful investigations and provide further information when lawfully required. I understand that this declaration may be retained and disclosed to lawful authorities when required.'
-        : 'I declare that I am the lawful owner of the product recorded above or have full legal authority to sell it, even though I cannot provide its original purchase receipt. I have truthfully explained why the receipt is unavailable and confirm that, to the best of my knowledge, the product is not stolen, unlawfully obtained, fraudulently acquired or subject to an ownership dispute. I confirm that all product identifiers and details I have supplied are true and have not knowingly been altered. I accept responsibility for false statements, fraudulent representation or an unlawful ownership claim connected with this sale. I agree to cooperate with lawful investigations and provide further information when lawfully required. I understand that this declaration may be retained and disclosed to lawful authorities when required.';
-      doc.font('Helvetica').fontSize(9).fillColor('#263746').text(declarationText, { align: 'justify' });
-      heading('CONFIRMATION AND SIGNATURE');
-      line('Seller confirmed the declaration was read and understood', d.declarationAccepted ? 'Yes' : 'No');
-      line('Witness', d.witnessName || 'Not supplied'); line('Witness phone', d.witnessPhone || 'Not supplied');
-      const addImage = (label: string, data?: string) => {
-        if (!data || !data.startsWith('data:image/')) return;
-        try {
-          const raw = Buffer.from(data.split(',')[1], 'base64');
-          if (doc.y > 640) doc.addPage();
-          doc.moveDown(.5).font('Helvetica-Bold').fontSize(9).fillColor('#17324d').text(label);
-          doc.image(raw, 46, doc.y, { fit: [230, 110] });
-          doc.moveDown(.5);
-        } catch {}
-      };
-      addImage('Seller signature', d.signatureData);
-      addImage('Seller thumbprint mark', d.thumbprintData);
-      addImage('Seller ID image', d.idPhotoData);
-      addImage('Seller photograph', d.sellerPhotoData);
-      addImage('Product photograph', d.phonePhotoData);
-      addImage('Original purchase receipt image', d.receiptPhotoData);
-      doc.moveDown().font('Helvetica').fontSize(8).fillColor('#65758a').text('This is the complete copy of the information and evidence submitted by the customer. It is pending shop review and is not an approved shop receipt. This record does not independently verify identity or establish legal ownership.');
-      doc.end();
-    });
+    return buildSecondHandDeclarationPdf(d, { pendingShopReview: true });
   }
 
   @Get('sales-declarations')
