@@ -1084,15 +1084,39 @@
     $('freelancer-register-entry')?.classList.remove('hidden');$('login-account-type').value='freelancer';updateLoginAccountType();
   });
   async function freelancerImageDataUrl(inputId,maxBytes,label){
-    const file=$(inputId)?.files?.[0];
-    if(!file)throw new Error('Please upload '+label+'.');
-    if(!['image/jpeg','image/png','image/webp'].includes(file.type))throw new Error(label+' must be JPG, PNG or WebP.');
+    const input=$(inputId),file=input?.files?.[0];
+    if(!file)throw new Error('Please select '+label+' from Gallery or Files, or take a new photo.');
+    if(!file.size)throw new Error('The selected '+label+' is empty or unavailable. Choose another photo from Gallery or Files.');
     if(file.size>maxBytes)throw new Error(label+' is too large. Maximum size is '+Math.round(maxBytes/1024)+' KB.');
+    const extension=String(file.name||'').toLowerCase().split('.').pop();
+    const mimeMap={jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp'};
+    const mime=String(file.type||mimeMap[extension]||'').toLowerCase();
+    if(!['image/jpeg','image/png','image/webp'].includes(mime))throw new Error(label+' must be a JPG, PNG or WebP image. If your phone saved it as HEIC, choose a JPG/PNG copy.');
+    // Android document/photo pickers can expose a File that fails in FileReader.
+    // Prefer Blob.arrayBuffer(), with FileReader as a compatibility fallback.
+    const makeDataUrl=bytes=>{
+      let binary='';
+      const chunkSize=0x8000;
+      for(let offset=0;offset<bytes.length;offset+=chunkSize){
+        binary+=String.fromCharCode(...bytes.subarray(offset,Math.min(offset+chunkSize,bytes.length)));
+      }
+      return 'data:'+mime+';base64,'+btoa(binary);
+    };
+    try{
+      if(typeof file.arrayBuffer==='function'){
+        const buffer=await file.arrayBuffer();
+        if(buffer?.byteLength)return makeDataUrl(new Uint8Array(buffer));
+      }
+    }catch(_){}
     return await new Promise((resolve,reject)=>{
       const reader=new FileReader();
-      reader.onload=()=>resolve(String(reader.result||''));
-      reader.onerror=()=>reject(new Error('Could not read '+label+'. Please choose the image again.'));
-      reader.readAsDataURL(file);
+      reader.onload=()=>{
+        const result=String(reader.result||'');
+        if(result.startsWith('data:'+mime+';base64,')&&result.length>30)resolve(result);
+        else reject(new Error('The '+label+' could not be opened. Please choose a JPG or PNG photo from Gallery or Files.'));
+      };
+      reader.onerror=()=>reject(new Error('Your phone could not open that '+label+' file. Please choose a JPG or PNG photo from Gallery or Files, or take a new photo.'));
+      try{reader.readAsDataURL(file);}catch(_){reject(new Error('Your phone could not open that '+label+' file. Please choose another photo from Gallery or Files.'));}
     });
   }
   $('freelancer-register-form')?.addEventListener('submit',async e=>{
