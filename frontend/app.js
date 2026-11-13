@@ -518,7 +518,7 @@
         owner?.classList.add('profile-workspace-mode');
         // Profile has only its business, account and (for owners) team cards.
         owner?.querySelectorAll(':scope > *:not(#profile-panel):not(#owner-staff-area)').forEach(el=>el.classList.add('hidden'));
-        owner?.querySelector('#owner-staff-area')?.classList.add('hidden');
+        owner?.querySelector('#owner-staff-area')?.classList.remove('hidden');
         profile?.classList.remove('hidden');
         // The dashboard and profile share this scroll container. Always reset
         // every nested scroll position when opening Profile so it starts at
