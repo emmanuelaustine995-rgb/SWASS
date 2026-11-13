@@ -142,6 +142,12 @@ export class AuthController {
         actorUserId: actorUserId || null, sourceIp: req?.ip || null,
         userAgent: req?.headers?.['user-agent'] || null,
       });
+      if (eventType === 'login_failed' && req?.ip) {
+        const recent = await this.db.pool.query("SELECT COUNT(*)::int AS count FROM aurora_security_events WHERE source_ip=$1 AND event_type IN ('login_failed','admin_login_failed') AND created_at >= now()-interval '15 minutes'", [String(req.ip).slice(0,80)]);
+        if (Number(recent.rows[0]?.count) === 5) {
+          await this.db.recordSecurityEvent({ eventType: 'repeated_login_failures', severity: 'high', outcome: 'detected', sourceIp: req.ip, userAgent: req?.headers?.['user-agent'] || null, metadata: { failedAttemptsIn15Minutes: 5 } });
+        }
+      }
     } catch (error) {
       console.warn('[AURORA_SECURITY] Could not persist login event:', error instanceof Error ? error.message : 'database error');
     }
