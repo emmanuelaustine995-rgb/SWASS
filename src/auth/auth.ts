@@ -310,6 +310,8 @@ export class AuthController {
     };
     const encryptedIdPhotoData = encryptIdentityPhoto(idPhotoData);
     const encryptedPassportPhotoData = encryptIdentityPhoto(passportPhotoData);
+    const usedOwnerId = await this.db.pool.query('SELECT 1 FROM aurora_owner_identity_records WHERE national_id_hash=$1 LIMIT 1', [nationalIdHash]);
+    if (usedOwnerId.rowCount) throw new BadRequestException('This National ID is already linked to a shop-owner account.');
     const phone = this.normalizePhone(body.phone || '');
     const referralCode = String(body.referralCode || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 20) || null;
     const ip = String(req.ip ?? '').replace(/^::ffff:/, '') || null;
@@ -799,6 +801,8 @@ export class AuthController {
     const idSecret = process.env.SWASS_ID_SECRET;
     if (!idSecret) throw new ServiceUnavailableException('Secure identity verification is not configured.');
     const nationalIdHash = createHmac('sha256', idSecret).update('aurora-customer-national-id:' + nationalId).digest('hex');
+    const usedCustomerId = await this.db.pool.query('SELECT 1 FROM customer_accounts WHERE national_id_hash=$1 LIMIT 1', [nationalIdHash]);
+    if (usedCustomerId.rowCount) throw new BadRequestException('This National ID is already linked to a customer account.');
     const existing = await this.db.pool.query('SELECT 1 FROM customer_accounts WHERE phone=$1 LIMIT 1', [phone]);
     if (existing.rowCount) throw new BadRequestException('A customer account already exists for this phone. Please sign in.');
     const limits = await this.db.pool.query(
