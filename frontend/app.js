@@ -1067,7 +1067,21 @@
   $('signup-back-btn')?.addEventListener('click',returnFromSignupToLogin);
   $('signup-back-btn')?.classList.toggle('hidden',!customerSignupMode);
   $('login-account-type').addEventListener('change', updateLoginAccountType);
-  document.querySelectorAll('[data-login-role]').forEach(tab=>tab.addEventListener('click',()=>{ $('login-account-type').value=tab.dataset.loginRole; updateLoginAccountType(); }));
+  document.querySelectorAll('[data-login-role]').forEach(tab=>tab.addEventListener('click',()=>{
+    const selected=tab.dataset.loginRole;
+    // Always return to the normal sign-in panel when switching account types.
+    document.body.classList.remove('registration-open');
+    $('login-view')?.classList.remove('hidden');
+    $('login-form')?.classList.remove('hidden');
+    $('password-reset-form')?.classList.add('hidden');
+    $('first-password-form')?.classList.add('hidden');
+    $('register-form')?.classList.add('hidden');
+    $('freelancer-register-form')?.classList.add('hidden');
+    $('owner-register-entry')?.classList.remove('hidden');
+    $('freelancer-register-entry')?.classList.add('hidden');
+    $('login-account-type').value=selected;
+    updateLoginAccountType();
+  }));
   updateLoginAccountType();
   $('show-freelancer-register')?.addEventListener('click',()=>{
     document.body.classList.add('registration-open');$('login-form').classList.add('hidden');$('password-reset-form')?.classList.add('hidden');
