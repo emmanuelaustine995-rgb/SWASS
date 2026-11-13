@@ -38,6 +38,79 @@ export class PlatformAdminController {
     };
   }
 
+
+  @Get('reports')
+  async platformReports(@Query('from') from = '', @Query('to') to = '') {
+    const validDate = (value: string) => /^\\d{4}-\\d{2}-\\d{2}$/.test(value) && !Number.isNaN(Date.parse(value + 'T00:00:00Z'));
+    const endDate = validDate(to) ? to : new Date().toISOString().slice(0, 10);
+    const startDate = validDate(from) ? from : new Date(Date.now() - 29 * 86400000).toISOString().slice(0, 10);
+    if (startDate > endDate) throw new BadRequestException('The report start date must be on or before the end date.');
+    const span = (Date.parse(endDate + 'T00:00:00Z') - Date.parse(startDate + 'T00:00:00Z')) / 86400000;
+    if (span > 365) throw new BadRequestException('Choose a reporting period of 366 days or less.');
+    const params = [startDate, endDate];
+    const [shops, users, receipts, subscriptions, ledger, daily, paymentMethods, topShops] = await Promise.all([
+      this.db.pool.query(`SELECT COUNT(*)::int AS total,
+        COUNT(*) FILTER (WHERE status='active')::int AS active,
+        COUNT(*) FILTER (WHERE status='suspended')::int AS suspended,
+        COUNT(*) FILTER (WHERE created_at >= $1::date AND created_at < $2::date + interval '1 day')::int AS new_in_period
+        FROM tenants`),
+      this.db.pool.query(`SELECT COUNT(*)::int AS total,
+        COUNT(*) FILTER (WHERE is_active=true)::int AS active,
+        COUNT(*) FILTER (WHERE is_active=false)::int AS inactive,
+        COUNT(*) FILTER (WHERE created_at >= $1::date AND created_at < $2::date + interval '1 day')::int AS new_in_period
+        FROM users WHERE role <> 'super_admin'`, params),
+      this.db.pool.query(`SELECT COUNT(*) FILTER (WHERE status='issued')::int AS issued,
+        COUNT(*) FILTER (WHERE status='voided')::int AS voided,
+        COUNT(*) FILTER (WHERE status='returned')::int AS returned,
+        COALESCE(SUM(total_kes) FILTER (WHERE status='issued'),0)::bigint AS issued_value_kes,
+        COUNT(*) FILTER (WHERE issued_at >= $1::date AND issued_at < $2::date + interval '1 day' AND status='issued')::int AS issued_in_period,
+        COALESCE(SUM(total_kes) FILTER (WHERE issued_at >= $1::date AND issued_at < $2::date + interval '1 day' AND status='issued'),0)::bigint AS issued_value_in_period_kes
+        FROM receipts WHERE issued_at >= $1::date AND issued_at < $2::date + interval '1 day'`, params),
+      this.db.pool.query(`SELECT COUNT(*) FILTER (WHERE starts_at >= $1::date AND starts_at < $2::date + interval '1 day')::int AS started_in_period,
+        COUNT(*) FILTER (WHERE status='active' AND starts_at<=now() AND ends_at>now())::int AS active_now,
+        COUNT(*) FILTER (WHERE ends_at >= $1::date AND ends_at < $2::date + interval '1 day')::int AS ending_in_period
+        FROM subscriptions`, params),
+      this.db.pool.query(`SELECT
+        COALESCE(SUM(amount_kes) FILTER (WHERE entry_type='subscription_revenue'),0)::bigint AS subscription_kes,
+        COALESCE(SUM(amount_kes) FILTER (WHERE entry_type='receipt_fee_revenue'),0)::bigint AS receipt_fee_kes,
+        COALESCE(SUM(amount_kes),0)::bigint AS total_kes, COUNT(*)::int AS entries
+        FROM platform_financial_ledger WHERE created_at >= $1::date AND created_at < $2::date + interval '1 day'`, params),
+      this.db.pool.query(`WITH days AS (
+          SELECT generate_series($1::date,$2::date,interval '1 day')::date AS day
+        ), r AS (
+          SELECT issued_at::date AS day, COUNT(*) FILTER (WHERE status='issued')::int AS receipts,
+                 COALESCE(SUM(total_kes) FILTER (WHERE status='issued'),0)::bigint AS sales_kes
+          FROM receipts WHERE issued_at >= $1::date AND issued_at < $2::date + interval '1 day' GROUP BY issued_at::date
+        ), u AS (
+          SELECT created_at::date AS day, COUNT(*)::int AS registrations
+          FROM users WHERE role <> 'super_admin' AND created_at >= $1::date AND created_at < $2::date + interval '1 day' GROUP BY created_at::date
+        ), t AS (
+          SELECT created_at::date AS day, COUNT(*)::int AS new_shops
+          FROM tenants WHERE created_at >= $1::date AND created_at < $2::date + interval '1 day' GROUP BY created_at::date
+        )
+        SELECT days.day, COALESCE(r.receipts,0)::int AS receipts, COALESCE(r.sales_kes,0)::bigint AS "salesKes",
+               COALESCE(u.registrations,0)::int AS registrations, COALESCE(t.new_shops,0)::int AS "newShops"
+        FROM days LEFT JOIN r USING(day) LEFT JOIN u USING(day) LEFT JOIN t USING(day) ORDER BY days.day`, params),
+      this.db.pool.query(`SELECT payment_method AS "paymentMethod", COUNT(*) FILTER (WHERE status='issued')::int AS receipts,
+        COALESCE(SUM(total_kes) FILTER (WHERE status='issued'),0)::bigint AS "salesKes"
+        FROM receipts WHERE issued_at >= $1::date AND issued_at < $2::date + interval '1 day'
+        GROUP BY payment_method ORDER BY payment_method`, params),
+      this.db.pool.query(`SELECT t.name AS "businessName", COUNT(r.id) FILTER (WHERE r.status='issued')::int AS receipts,
+        COALESCE(SUM(r.total_kes) FILTER (WHERE r.status='issued'),0)::bigint AS "salesKes"
+        FROM tenants t LEFT JOIN receipts r ON r.tenant_id=t.id
+          AND r.issued_at >= $1::date AND r.issued_at < $2::date + interval '1 day'
+        GROUP BY t.id,t.name ORDER BY "salesKes" DESC, receipts DESC LIMIT 10`, params),
+    ]);
+    return {
+      period: { from: startDate, to: endDate },
+      shops: shops.rows[0], users: users.rows[0], receipts: receipts.rows[0],
+      subscriptions: subscriptions.rows[0], platformRevenue: ledger.rows[0],
+      daily: daily.rows, paymentMethods: paymentMethods.rows, topShops: topShops.rows,
+      definitions: { shopSalesAreNotPlatformRevenue: true, receiptSalesAreGrossIssuedReceiptValue: true, platformRevenueIsLedgerOnly: true },
+      generatedAt: new Date().toISOString(),
+    };
+  }
+
   @Get('shops')
   async shopDirectory(@Query('search') search = '', @Query('limit') limit = '50') {
     const term = String(search || '').trim().slice(0, 100);
