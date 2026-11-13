@@ -1,4 +1,4 @@
-import { BadRequestException, Controller, Get, Param, Post, Query, UseGuards, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Controller, Get, Param, Post, Query, UseGuards, NotFoundException, Req } from '@nestjs/common';
 import { AuthGuard, Roles, RolesGuard } from '../auth/auth';
 import { DbService } from '../db/db.service';
 
@@ -61,4 +61,78 @@ export class PlatformAdminController {
     );
     return { shops: result.rows };
   }
+
+  @Get('security/summary')
+  async securitySummary() {
+    await this.db.ensureSecuritySchema();
+    const result = await this.db.pool.query(`
+      SELECT
+        COUNT(*) FILTER (WHERE created_at >= now()-interval '24 hours')::int AS events_24h,
+        COUNT(*) FILTER (WHERE created_at >= now()-interval '24 hours' AND severity='critical')::int AS critical_24h,
+        COUNT(*) FILTER (WHERE created_at >= now()-interval '24 hours' AND severity='high')::int AS high_24h,
+        COUNT(*) FILTER (WHERE created_at >= now()-interval '24 hours' AND event_type='login_failed')::int AS failed_logins_24h,
+        COUNT(DISTINCT source_ip) FILTER (WHERE created_at >= now()-interval '24 hours' AND outcome='blocked')::int AS blocked_sources_24h,
+        COUNT(*) FILTER (WHERE created_at >= now()-interval '7 days' AND event_type='shop_deactivated')::int AS shops_deactivated_7d
+      FROM aurora_security_events
+    `);
+    const open = await this.db.pool.query(`
+      SELECT COUNT(*)::int AS count FROM aurora_security_events
+       WHERE severity IN ('critical','high') AND outcome IN ('detected','blocked')
+         AND created_at >= now()-interval '7 days'
+    `);
+    return { ...result.rows[0], openHighPriority: Number(open.rows[0].count), monitoring: 'event-log' };
+  }
+
+  @Get('security/events')
+  async securityEvents(@Query('limit') limit = '50', @Query('severity') severity = '') {
+    await this.db.ensureSecuritySchema();
+    const take = Math.min(100, Math.max(1, Number.parseInt(String(limit), 10) || 50));
+    const validSeverity = ['critical','high','medium','low','info'].includes(severity) ? severity : '';
+    const result = await this.db.pool.query(`
+      SELECT id,event_type AS "eventType",severity,outcome,source_ip AS "sourceIp",
+             user_agent AS "userAgent",metadata,created_at AS "createdAt"
+        FROM aurora_security_events
+       WHERE ($1='' OR severity=$1)
+       ORDER BY created_at DESC LIMIT $2
+    `, [validSeverity, take]);
+    return { events: result.rows };
+  }
+
+  @Get('security/trends')
+  async securityTrends() {
+    await this.db.ensureSecuritySchema();
+    const result = await this.db.pool.query(`
+      SELECT to_char(date_trunc('hour', created_at), 'YYYY-MM-DD"T"HH24:00:00') AS hour,
+             COUNT(*)::int AS events,
+             COUNT(*) FILTER (WHERE severity IN ('critical','high'))::int AS high_priority,
+             COUNT(*) FILTER (WHERE event_type='login_failed')::int AS failed_logins
+        FROM aurora_security_events
+       WHERE created_at >= now()-interval '24 hours'
+       GROUP BY date_trunc('hour', created_at)
+       ORDER BY date_trunc('hour', created_at)
+    `);
+    return { points: result.rows };
+  }
+
+  @Post('shops/:tenantId/deactivate')
+  async deactivateShop(@Param('tenantId') tenantId: string, @Req() req: any) {
+    const id = String(tenantId || '').trim();
+    if (!id || id.length > 80) throw new BadRequestException('A valid shop identifier is required');
+    const result = await this.db.pool.query(
+      `UPDATE tenants SET status='suspended' WHERE id=$1 AND status='active'
+       RETURNING id AS "tenantId", name AS "businessName", status`, [id],
+    );
+    if (!result.rowCount) {
+      const existing = await this.db.pool.query('SELECT id,status FROM tenants WHERE id=$1 LIMIT 1', [id]);
+      if (!existing.rowCount) throw new NotFoundException('Shop not found');
+      return { deactivated: false, status: existing.rows[0].status, message: 'This shop is already inactive or suspended.' };
+    }
+    await this.db.recordSecurityEvent({
+      eventType: 'shop_deactivated', severity: 'high', outcome: 'blocked',
+      actorUserId: req.user?.sub, sourceIp: req.ip, userAgent: req.headers?.['user-agent'],
+      metadata: { tenantId: id, businessName: result.rows[0].businessName },
+    });
+    return { deactivated: true, shop: result.rows[0], message: 'Shop deactivated successfully.' };
+  }
+
 }
