@@ -106,7 +106,7 @@ export class PlatformAdminController {
       SELECT to_char(date_trunc('hour', created_at), 'YYYY-MM-DD"T"HH24:00:00') AS hour,
              COUNT(*)::int AS events,
              COUNT(*) FILTER (WHERE severity IN ('critical','high'))::int AS high_priority,
-             COUNT(*) FILTER (WHERE event_type='login_failed')::int AS failed_logins
+             COUNT(*) FILTER (WHERE event_type IN ('login_failed','admin_login_failed'))::int AS failed_logins
         FROM aurora_security_events
        WHERE created_at >= now()-interval '24 hours'
        GROUP BY date_trunc('hour', created_at)
