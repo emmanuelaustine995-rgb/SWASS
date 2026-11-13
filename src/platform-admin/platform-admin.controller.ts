@@ -70,9 +70,10 @@ export class PlatformAdminController {
         COUNT(*) FILTER (WHERE created_at >= now()-interval '24 hours')::int AS events_24h,
         COUNT(*) FILTER (WHERE created_at >= now()-interval '24 hours' AND severity='critical')::int AS critical_24h,
         COUNT(*) FILTER (WHERE created_at >= now()-interval '24 hours' AND severity='high')::int AS high_24h,
-        COUNT(*) FILTER (WHERE created_at >= now()-interval '24 hours' AND event_type='login_failed')::int AS failed_logins_24h,
+        COUNT(*) FILTER (WHERE created_at >= now()-interval '24 hours' AND event_type IN ('login_failed','admin_login_failed'))::int AS failed_logins_24h,
         COUNT(DISTINCT source_ip) FILTER (WHERE created_at >= now()-interval '24 hours' AND outcome='blocked')::int AS blocked_sources_24h,
-        COUNT(*) FILTER (WHERE created_at >= now()-interval '7 days' AND event_type='shop_deactivated')::int AS shops_deactivated_7d
+        COUNT(*) FILTER (WHERE created_at >= now()-interval '7 days' AND event_type='shop_deactivated')::int AS shops_deactivated_7d,
+        COUNT(*) FILTER (WHERE created_at >= now()-interval '24 hours' AND event_type='admin_login_success')::int AS admin_logins_24h
       FROM aurora_security_events
     `);
     const open = await this.db.pool.query(`
@@ -89,7 +90,7 @@ export class PlatformAdminController {
     const take = Math.min(100, Math.max(1, Number.parseInt(String(limit), 10) || 50));
     const validSeverity = ['critical','high','medium','low','info'].includes(severity) ? severity : '';
     const result = await this.db.pool.query(`
-      SELECT id,event_type AS "eventType",severity,outcome,source_ip AS "sourceIp",
+      SELECT id,event_type AS "eventType",severity,outcome,actor_user_id AS "actorUserId",source_ip AS "sourceIp",
              user_agent AS "userAgent",metadata,created_at AS "createdAt"
         FROM aurora_security_events
        WHERE ($1='' OR severity=$1)
@@ -128,7 +129,7 @@ export class PlatformAdminController {
       return { deactivated: false, status: existing.rows[0].status, message: 'This shop is already inactive or suspended.' };
     }
     await this.db.recordSecurityEvent({
-      eventType: 'shop_deactivated', severity: 'high', outcome: 'blocked',
+      eventType: 'shop_deactivated', severity: 'info', outcome: 'completed',
       actorUserId: req.user?.sub, sourceIp: req.ip, userAgent: req.headers?.['user-agent'],
       metadata: { tenantId: id, businessName: result.rows[0].businessName },
     });
