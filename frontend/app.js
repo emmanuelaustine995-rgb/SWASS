@@ -1086,38 +1086,68 @@
   async function freelancerImageDataUrl(inputId,maxBytes,label){
     const input=$(inputId),file=input?.files?.[0];
     if(!file)throw new Error('Please select '+label+' from Gallery or Files, or take a new photo.');
-    if(!file.size)throw new Error('The selected '+label+' is empty or unavailable. Choose another photo from Gallery or Files.');
-    if(file.size>maxBytes)throw new Error(label+' is too large. Maximum size is '+Math.round(maxBytes/1024)+' KB.');
+    if(!file.size)throw new Error('The selected '+label+' is empty or unavailable. Choose another photo.');
+    // Accept normal phone-camera originals, then compress them before upload.
+    if(file.size>15*1024*1024)throw new Error(label+' is over 15 MB. Please choose a smaller photo or take a new photo at a lower resolution.');
     const extension=String(file.name||'').toLowerCase().split('.').pop();
     const mimeMap={jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp'};
     const mime=String(file.type||mimeMap[extension]||'').toLowerCase();
     if(!['image/jpeg','image/png','image/webp'].includes(mime))throw new Error(label+' must be a JPG, PNG or WebP image. If your phone saved it as HEIC, choose a JPG/PNG copy.');
-    // Android document/photo pickers can expose a File that fails in FileReader.
-    // Prefer Blob.arrayBuffer(), with FileReader as a compatibility fallback.
-    const makeDataUrl=bytes=>{
-      let binary='';
-      const chunkSize=0x8000;
-      for(let offset=0;offset<bytes.length;offset+=chunkSize){
-        binary+=String.fromCharCode(...bytes.subarray(offset,Math.min(offset+chunkSize,bytes.length)));
-      }
-      return 'data:'+mime+';base64,'+btoa(binary);
-    };
+    let bitmap=null,objectUrl=null;
     try{
-      if(typeof file.arrayBuffer==='function'){
-        const buffer=await file.arrayBuffer();
-        if(buffer?.byteLength)return makeDataUrl(new Uint8Array(buffer));
+      if(typeof createImageBitmap==='function'){
+        try{bitmap=await createImageBitmap(file);}catch(_){}
       }
-    }catch(_){}
-    return await new Promise((resolve,reject)=>{
-      const reader=new FileReader();
-      reader.onload=()=>{
-        const result=String(reader.result||'');
-        if(result.startsWith('data:'+mime+';base64,')&&result.length>30)resolve(result);
-        else reject(new Error('The '+label+' could not be opened. Please choose a JPG or PNG photo from Gallery or Files.'));
-      };
-      reader.onerror=()=>reject(new Error('Your phone could not open that '+label+' file. Please choose a JPG or PNG photo from Gallery or Files, or take a new photo.'));
-      try{reader.readAsDataURL(file);}catch(_){reject(new Error('Your phone could not open that '+label+' file. Please choose another photo from Gallery or Files.'));}
-    });
+      if(!bitmap){
+        objectUrl=URL.createObjectURL(file);
+        bitmap=await new Promise((resolve,reject)=>{
+          const img=new Image();
+          img.onload=()=>resolve(img);
+          img.onerror=()=>reject(new Error('The selected '+label+' could not be opened. Please choose a JPG or PNG photo.'));
+          img.src=objectUrl;
+        });
+      }
+      const maxDimension=inputId==='freelancer-id-photo'?1800:1400;
+      const scale=Math.min(1,maxDimension/Math.max(bitmap.width,bitmap.height));
+      const canvas=document.createElement('canvas');
+      canvas.width=Math.max(1,Math.round(bitmap.width*scale));
+      canvas.height=Math.max(1,Math.round(bitmap.height*scale));
+      const ctx=canvas.getContext('2d');
+      if(!ctx)throw new Error('Your phone could not prepare the '+label+'. Please try another photo.');
+      ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
+      const targetBytes=maxBytes;
+      let blob=null;
+      for(let attempt=0;attempt<7;attempt++){
+        const quality=[0.88,0.82,0.76,0.70,0.64,0.58,0.52][attempt];
+        blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',quality));
+        if(blob&&blob.size<=targetBytes)break;
+        if(attempt===2||attempt===4){
+          const factor=attempt===2?0.88:0.82;
+          const nextWidth=Math.max(700,Math.round(canvas.width*factor));
+          const nextHeight=Math.max(700,Math.round(canvas.height*factor));
+          const temp=document.createElement('canvas');temp.width=nextWidth;temp.height=nextHeight;
+          const tempCtx=temp.getContext('2d');
+          if(!tempCtx)break;
+          tempCtx.fillStyle='#fff';tempCtx.fillRect(0,0,nextWidth,nextHeight);
+          tempCtx.drawImage(canvas,0,0,nextWidth,nextHeight);
+          canvas.width=nextWidth;canvas.height=nextHeight;
+          const resizedCtx=canvas.getContext('2d');
+          resizedCtx.drawImage(temp,0,0,nextWidth,nextHeight);
+        }
+      }
+      if(!blob||blob.size>targetBytes)throw new Error('Could not reduce the '+label+' enough. Please take a clear photo in good light and try again.');
+      const buffer=await blob.arrayBuffer();
+      let binary='';
+      const bytes=new Uint8Array(buffer);
+      for(let offset=0;offset<bytes.length;offset+=0x8000){
+        binary+=String.fromCharCode(...bytes.subarray(offset,Math.min(offset+0x8000,bytes.length)));
+      }
+      return 'data:image/jpeg;base64,'+btoa(binary);
+    }finally{
+      if(bitmap&&typeof bitmap.close==='function')bitmap.close();
+      if(objectUrl)URL.revokeObjectURL(objectUrl);
+    }
   }
   $('freelancer-register-form')?.addEventListener('submit',async e=>{
     e.preventDefault();
