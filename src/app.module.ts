@@ -8,6 +8,8 @@ import { HealthController } from './health.controller';
 import { InventoryController } from './inventory/inventory.controller';
 import { DashboardController } from './dashboard/dashboard.controller';
 import { MpesaController, MpesaService } from './mpesa/mpesa.controller';
+import { IntaSendService } from './intasend/intasend.service';
+import { IntaSendController } from './intasend/intasend.controller';
 import { ReceiptRecoveryController } from './receipts/recovery.controller';
 import { PlatformFinanceController } from './platform-finance/platform-finance.controller';
 import { PlatformAdminController } from './platform-admin/platform-admin.controller';
@@ -24,7 +26,7 @@ import { LostItemsController, PublicLostItemsController } from './lost-items/los
 
 @Module({
   imports: [JwtModule.register({ global: true, secret: process.env.JWT_SECRET })],
-  controllers: [HealthController, AuthController, ReceiptsController, InventoryController, DashboardController, MpesaController, ReceiptRecoveryController, PlatformFinanceController, PlatformAdminController, BusinessProfileController, CustomersController, StaffController, ReferralsController, SecondHandPhoneDeclarationsController, SecondHandSpecialRecoveryController, LoanItemsController, LostItemsController, PublicLostItemsController],
-  providers: [DbService, ReceiptsService, EmailVerificationService, WhatsAppReceiptService, AuthGuard, RolesGuard, { provide: MpesaService, useClass: MpesaService }],
+  controllers: [HealthController, AuthController, ReceiptsController, InventoryController, DashboardController, MpesaController, ReceiptRecoveryController, PlatformFinanceController, PlatformAdminController, BusinessProfileController, CustomersController, StaffController, ReferralsController, SecondHandPhoneDeclarationsController, SecondHandSpecialRecoveryController, LoanItemsController, LostItemsController, PublicLostItemsController, IntaSendController],
+  providers: [DbService, ReceiptsService, EmailVerificationService, WhatsAppReceiptService, AuthGuard, RolesGuard, { provide: MpesaService, useClass: MpesaService }, IntaSendService],
 })
 export class AppModule {}
