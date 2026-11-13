@@ -5,7 +5,7 @@ import {
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
-import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
+import { createCipheriv, createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import { DbService } from '../db/db.service';
 import { EmailVerificationService } from '../notifications/email-verification.service';
 
@@ -301,6 +301,15 @@ export class AuthController {
     const idSecret = process.env.SWASS_ID_SECRET;
     if (!idSecret) throw new ServiceUnavailableException('Secure identity verification is not configured.');
     const nationalIdHash = createHmac('sha256', idSecret).update('aurora-owner-national-id:' + nationalId).digest('hex');
+    const photoKey = createHash('sha256').update('aurora-owner-identity-photo:' + idSecret).digest();
+    const encryptIdentityPhoto = (value: string) => {
+      const iv = randomBytes(12);
+      const cipher = createCipheriv('aes-256-gcm', photoKey, iv);
+      const encrypted = Buffer.concat([cipher.update(value, 'utf8'), cipher.final()]);
+      return [iv.toString('base64'), cipher.getAuthTag().toString('base64'), encrypted.toString('base64')].join('.');
+    };
+    const encryptedIdPhotoData = encryptIdentityPhoto(idPhotoData);
+    const encryptedPassportPhotoData = encryptIdentityPhoto(passportPhotoData);
     const phone = this.normalizePhone(body.phone || '');
     const referralCode = String(body.referralCode || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 20) || null;
     const ip = String(req.ip ?? '').replace(/^::ffff:/, '') || null;
@@ -333,7 +342,7 @@ export class AuthController {
       `INSERT INTO signup_otp_requests
        (phone,business_name,store_name,store_location,full_name,email,password_hash,code_hash,ip_address,expires_at,role,invitation_id,house_name,floor,house_number,website_url,kra_pin,legal_name,business_email,referral_code,national_id_hash,id_photo_data,passport_photo_data)
        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9::inet,now()+interval '5 minutes',$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22) RETURNING id`,
-      [phone,businessName,storeName,storeLocation,fullName,email,passwordHash,this.signupCodeHash(code),ip,role,invitationId,houseName,floor,houseNumber,websiteUrl,kraPin,legalName,businessEmail,referralCode,nationalIdHash,idPhotoData,passportPhotoData],
+      [phone,businessName,storeName,storeLocation,fullName,email,passwordHash,this.signupCodeHash(code),ip,role,invitationId,houseName,floor,houseNumber,websiteUrl,kraPin,legalName,businessEmail,referralCode,nationalIdHash,encryptedIdPhotoData,encryptedPassportPhotoData],
     );
     console.info(`[SWASS][OTP_DIAG] OTP record saved in ${Date.now() - saveOtpStartedAt}ms; starting SMS provider request`);
     try {
