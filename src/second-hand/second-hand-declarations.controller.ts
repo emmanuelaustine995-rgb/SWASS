@@ -174,6 +174,60 @@ export class SecondHandPhoneDeclarationsController {
     } };
   }
 
+  @Post(':id/deliver')
+  @Roles('owner','freelancer')
+  async redeliver(@Req() req: any, @Param('id') id: string) {
+    const user = req.user;
+    this.requireStore(user);
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+      throw new BadRequestException('Invalid declaration reference.');
+    }
+    const { rows } = await this.db.pool.query(
+      `SELECT id, declaration_ref AS "declarationRef", seller_name AS "sellerName",
+        national_id AS "nationalId", seller_phone AS "sellerPhone", seller_email AS "sellerEmail",
+        buyer_name AS "buyerName", buyer_national_id AS "buyerNationalId",
+        buyer_phone AS "buyerPhone", buyer_email AS "buyerEmail",
+        alternative_phone AS "alternativePhone", residential_address AS "residentialAddress",
+        phone_make_model AS "phoneMakeModel", imei1, imei2, serial_number AS "serialNumber",
+        phone_condition AS "condition", purchase_price_kes AS "purchasePriceKes",
+        no_receipt_reason AS "noReceiptReason", sale_type AS "saleType",
+        receipt_photo_data AS "receiptPhotoData", seller_photo_data AS "sellerPhotoData",
+        id_photo_data AS "idPhotoData", phone_photo_data AS "phonePhotoData",
+        signature_data AS "signatureData", thumbprint_data AS "thumbprintData",
+        witness_name AS "witnessName", witness_phone AS "witnessPhone",
+        declaration_accepted AS "declarationAccepted", shop_acknowledged AS "shopAcknowledged",
+        accepted_at AS "acceptedAt", created_at AS "createdAt"
+       FROM second_hand_phone_declarations
+       WHERE id=$1 AND tenant_id=$2 AND store_id=$3 LIMIT 1`,
+      [id, user.tenantId, user.storeId],
+    );
+    if (!rows[0]) throw new BadRequestException('Declaration not found in this shop.');
+    const declaration = { ...rows[0], shopRepresentativeName: user.fullName || 'Shop owner' };
+    const pdf = await this.buildSecondHandPdf(declaration);
+    const deliver = async (task: () => Promise<any>) => {
+      try {
+        const result = await task();
+        return { sent: !!result?.sent, reason: null as string | null };
+      } catch (error) {
+        return { sent: false, reason: error instanceof Error ? error.message : 'Delivery failed' };
+      }
+    };
+    const [sellerEmail, buyerEmail, sellerWhatsapp, buyerWhatsapp] = await Promise.all([
+      deliver(() => this.email.sendSecondHandReceipt({to:declaration.sellerEmail,recipientName:declaration.sellerName,reference:declaration.declarationRef,productName:declaration.phoneMakeModel,sellerName:declaration.sellerName,buyerName:declaration.buyerName,pdf})),
+      deliver(() => this.email.sendSecondHandReceipt({to:declaration.buyerEmail,recipientName:declaration.buyerName,reference:declaration.declarationRef,productName:declaration.phoneMakeModel,sellerName:declaration.sellerName,buyerName:declaration.buyerName,pdf})),
+      deliver(() => this.whatsapp.sendPdf({to:declaration.sellerPhone,receiptNo:declaration.declarationRef,businessName:'AURORA E-RECEIPT',pdf})),
+      deliver(() => this.whatsapp.sendPdf({to:declaration.buyerPhone,receiptNo:declaration.declarationRef,businessName:'AURORA E-RECEIPT',pdf})),
+    ]);
+    return {
+      declarationRef: declaration.declarationRef,
+      pdfBase64: pdf.toString('base64'),
+      delivery: {
+        seller: { email: sellerEmail, whatsapp: sellerWhatsapp },
+        buyer: { email: buyerEmail, whatsapp: buyerWhatsapp },
+      },
+    };
+  }
+
   @Get(':id/pdf')
   @Roles('owner','freelancer')
   async pdf(@Req() req: any, @Param('id') id: string, @Res() res: any) {
