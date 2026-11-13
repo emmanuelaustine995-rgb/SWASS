@@ -443,7 +443,9 @@
         pos?.classList.remove('hidden');
         posGrid?.classList.add('hidden');
         $('owner-dashboard-view')?.classList.remove('hidden');
-        ownerHome?.classList.add('hidden');
+        // The Home invite-a-friend card is shared by shop owners and linked freelancers.
+        ownerHome?.classList.remove('hidden');
+        void loadOwnerHomeSummary();
         // Keep the complete shop-owner dashboard, including payments and team cards, visible to freelancers.
         window.dispatchEvent(new Event('swass:dashboard-open'));
         void loadStaffSalesSummary();
@@ -800,10 +802,10 @@
       if(status)status.textContent=sub?.active?'Active':(sub?'Expired':'Payment required');
       if(expiry)expiry.textContent=sub?.endsAt?'Expires: '+new Date(sub.endsAt).toLocaleString('en-KE'):(sub?'Subscription expired or inactive':'No active subscription');
       updateSubscriptionCountdown(sub?.endsAt);
-      if(remaining)remaining.textContent=Number(data.receiptsRemaining||0).toLocaleString('en-KE');
-      if(balance)balance.textContent=money(data.balanceKes);
-      if(remainder)remainder.textContent=Number(data.walletRemainderKes||0)>0?money(data.walletRemainderKes)+' carried forward':'No unused wallet fraction';
-      if(message)message.textContent=sub?.active?'Your subscription is active. Each issued receipt automatically deducts KSh 4 and updates this count.': 'Pay your existing subscription fee to unlock services. Then top up the receipt wallet to issue receipts.';
+      if(remaining)remaining.textContent=(data.subscription?.active?'Unlimited':Number(data.receiptsRemaining||0).toLocaleString('en-KE'));
+      if(balance)balance.textContent=sub?.active?'Included':money(data.balanceKes);
+      if(remainder)remainder.textContent=sub?.active?'No receipt top-ups required':'Subscription includes unlimited receipts once active.';
+      if(message)message.textContent=sub?.active?'Your paid subscription includes unlimited receipts until the plan expires. No per-receipt wallet charge applies.': 'Pay KSh 100 monthly or KSh 900 yearly to unlock unlimited receipts for the subscription period.';
     }catch(error){if(message)message.textContent=error.message||'Could not load your subscription balance.';}
   }
   // Put the existing M-Pesa subscription/top-up form behind compact dashboard tabs.
