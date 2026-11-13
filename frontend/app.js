@@ -143,11 +143,15 @@
   }
 
   function renderDashboardBusinessProfile(){
+    // Business details are managed in Shop > Profile. Do not repeat a
+    // "Complete Shop Profile" prompt/card on Home or the Shop overview.
+    const card=$('dashboard-business-card');
+    card?.classList.add('hidden');
+    if(!card)return;
     const p=state.businessProfile||{};
     const complete=!!(String(p.businessName||'').trim()&&String(p.businessPhone||'').trim()&&String(p.storeName||'').trim());
-    const card=$('dashboard-business-card'),panel=$('profile-panel'),close=$('profile-close'),button=$('dashboard-edit-profile');
-    if(!card||!panel)return;
-    card.classList.remove('hidden');
+    const panel=$('profile-panel'),close=$('profile-close'),button=$('dashboard-edit-profile');
+    if(!panel)return;
     $('dashboard-profile-name').textContent=complete?p.businessName:'Complete your business profile';
     $('dashboard-profile-meta').textContent=complete?[p.storeName,p.businessPhone,p.storeLocation].filter(Boolean).join(' · '):'Add your business name, phone and branch details to set up AURORA.';
     const photo=$('dashboard-profile-image');
@@ -470,15 +474,11 @@
       if(state.role==='customer'){showWorkspaceScreen('dashboard',{fromBack:true});return;}
       $('shop-home')?.classList.remove('hidden');
       setShopTab('products');
-      // Show the linked shop's actual stock catalogue in the freelancer/owner Shop workspace.
+      // Keep the POS stock catalogue inside the sale workflow only.
+      // Do not display registered product cards in the Shop overview.
       const inventoryPanel=$('products-panel');
-      if(inventoryPanel){
-        inventoryPanel.classList.remove('hidden');
-        inventoryPanel.setAttribute('aria-hidden','false');
-        const tabs=$('shop-home').querySelector('.shop-section-tabs');
-        if(tabs&&inventoryPanel.parentElement!==$('shop-home'))tabs.insertAdjacentElement('afterend',inventoryPanel);
-        void loadProducts();
-      }
+      inventoryPanel?.classList.add('hidden');
+      inventoryPanel?.setAttribute('aria-hidden','true');
       void loadBusinessProfile().catch(err=>showNotice('Shop profile could not be loaded. '+(err.message||''),true));
       
       const isShopOwner = ['owner','freelancer'].includes(state.role);
