@@ -2470,11 +2470,11 @@ body:not(.workspace-active):not(.registration-open) #freelancer-register-entry:n
 }
 body:not(.workspace-active):not(.registration-open) #freelancer-register-entry #show-freelancer-register{
  display:inline-flex!important;visibility:visible!important;opacity:1!important;
- min-height:48px!important;min-width:220px!important;padding:12px 28px!important;
+ min-height:36px!important;min-width:0!important;padding:7px 14px!important;
  align-items:center!important;justify-content:center!important;background:#087be8!important;
- border:2px solid #075fc4!important;border-radius:11px!important;color:#fff!important;
- font-size:15px!important;font-weight:850!important;text-decoration:none!important;
- box-shadow:0 4px 0 #064b9b!important;
+ border:1px solid #075fc4!important;border-radius:9px!important;color:#fff!important;
+ font-size:12px!important;font-weight:800!important;text-decoration:none!important;
+ box-shadow:0 2px 0 #064b9b!important;
 }
 body.registration-open #login-view{position:fixed!important;inset:72px 0 0!important;z-index:9998!important;width:100vw!important;height:calc(100dvh - 72px)!important;max-width:none!important;padding:0!important;margin:0!important;display:block!important;background:#fff!important;overflow:hidden!important}
 body.registration-open #login-view>.login-card{position:static!important;width:100%!important;max-width:none!important;height:100%!important;max-height:none!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:#fff!important;box-shadow:none!important;overflow:visible!important}
@@ -2686,3 +2686,5 @@ html body:not(.workspace-active):not(.registration-open) #login-form input,
 html body:not(.workspace-active):not(.registration-open) #login-form button[type=submit],
 html body:not(.workspace-active):not(.registration-open) .login-forgot-wrap{visibility:visible!important;opacity:1!important}
 html body:not(.workspace-active):not(.registration-open) #freelancer-register-entry:not(.hidden){display:block!important;visibility:visible!important;opacity:1!important}
+
+@media(max-width:480px){body:not(.workspace-active) #freelancer-register-entry{margin:7px 0!important}body:not(.workspace-active) #freelancer-register-entry #show-freelancer-register{min-height:34px!important;padding:6px 12px!important;font-size:11px!important}}
