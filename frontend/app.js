@@ -1089,10 +1089,6 @@
     if(!file.size)throw new Error('The selected '+label+' is empty or unavailable. Choose another photo.');
     // Accept normal phone-camera originals, then compress them before upload.
     if(file.size>15*1024*1024)throw new Error(label+' is over 15 MB. Please choose a smaller photo or take a new photo at a lower resolution.');
-    const extension=String(file.name||'').toLowerCase().split('.').pop();
-    const mimeMap={jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp'};
-    const mime=String(file.type||mimeMap[extension]||'').toLowerCase();
-    if(!['image/jpeg','image/png','image/webp'].includes(mime))throw new Error(label+' must be a JPG, PNG or WebP image. If your phone saved it as HEIC, choose a JPG/PNG copy.');
     let bitmap=null,objectUrl=null;
     try{
       if(typeof createImageBitmap==='function'){
@@ -1103,7 +1099,7 @@
         bitmap=await new Promise((resolve,reject)=>{
           const img=new Image();
           img.onload=()=>resolve(img);
-          img.onerror=()=>reject(new Error('The selected '+label+' could not be opened. Please choose a JPG or PNG photo.'));
+          img.onerror=()=>reject(new Error('Your phone selected a photo format this browser cannot read. Open Camera settings and turn off HEIF/HEIC photo format, then take the ID photo again.'));
           img.src=objectUrl;
         });
       }
