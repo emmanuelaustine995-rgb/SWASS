@@ -81,7 +81,7 @@ export class AuthGuard implements CanActivate {
       if (!identity) throw new ForbiddenException('This administrator account is not authorised.');
       const verified = await this.db.pool.query(
         `SELECT 1 FROM users u JOIN aurora_admin_identity_records r ON r.user_id=u.id
-          WHERE u.id=$1 AND r.person_id=$2 AND u.is_active=true AND u.email_verified_at IS NOT NULL LIMIT 1`,
+          WHERE u.id=$1 AND r.person_id=$2 AND u.is_active=true AND r.admin_email_verified_at IS NOT NULL LIMIT 1`,
         [user.sub, adminPersonId],
       );
       if (!verified.rowCount) throw new ForbiddenException('Administrator access is no longer active or the email is not verified.');
