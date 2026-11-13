@@ -4,7 +4,7 @@ import { createHash, timingSafeEqual } from 'node:crypto';
 @Injectable()
 export class IntaSendService {
   private config() {
-    const secretKey=(process.env.INTASEND_SECRET_KEY??'').trim().replace(/^Bearer\\s+/i,'');
+    const secretKey=(process.env.INTASEND_SECRET_KEY??'').trim().replace(/^Bearer\s+/i,'');
     const challenge=(process.env.INTASEND_WEBHOOK_CHALLENGE??'').trim();
     if(!/^ISSecretKey_(test|live)_/.test(secretKey)) throw new ServiceUnavailableException('IntaSend secret key is missing or invalid. Add INTASEND_SECRET_KEY in Render.');
     if(!challenge||challenge.length<24) throw new ServiceUnavailableException('IntaSend webhook challenge is not configured. Add a private challenge of at least 24 characters in Render.');
