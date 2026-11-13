@@ -1640,14 +1640,53 @@
     syncSecondhandReceiptMode(mode);
   }));
   async function secondhandImageData(inputId,required=false) {
-    const file=$(inputId)?.files?.[0];if(!file){if(required)throw new Error('Please attach the required seller ID and product photos.');return null;}
-    if(!file.type.startsWith('image/'))throw new Error('Choose an image file for '+inputId.replace('sh-','').replaceAll('-',' ')+'.');
-    return await new Promise((resolve,reject)=>{
-      const reader=new FileReader();reader.onerror=()=>reject(new Error('Could not read an uploaded photo.'));
-      reader.onload=()=>{const img=new Image();img.onerror=()=>reject(new Error('This photo format is not supported. Please use JPG or PNG.'));
-        img.onload=()=>{const scale=Math.min(1,700/Math.max(img.width,img.height));const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(img.width*scale));canvas.height=Math.max(1,Math.round(img.height*scale));const ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);let data=canvas.toDataURL('image/jpeg',.46);for(let attempt=0;data.length>45000&&attempt<3;attempt++){const factor=attempt===0?.72:.78;canvas.width=Math.max(1,Math.round(canvas.width*factor));canvas.height=Math.max(1,Math.round(canvas.height*factor));ctx.drawImage(img,0,0,canvas.width,canvas.height);data=canvas.toDataURL('image/jpeg',attempt===0?.34:.28);}if(data.length>50000)reject(new Error('Photo is too large. Please take a closer photo with less background.'));else resolve(data);};
-        img.src=String(reader.result||'');};reader.readAsDataURL(file);
-    });
+    const file=$(inputId)?.files?.[0];
+    const label=inputId.replace('sh-','').replaceAll('-',' ');
+    if(!file){if(required)throw new Error('Please choose the required '+label+' using Camera, Gallery or Files.');return null;}
+    if(file.size>15*1024*1024)throw new Error('The '+label+' is larger than 15 MB. Choose a smaller photo or retake it at a lower camera resolution.');
+    if(file.type&&!file.type.startsWith('image/'))throw new Error('The selected '+label+' is not an image. Please choose a photo.');
+    let bitmap=null,objectUrl=null;
+    try{
+      if(typeof createImageBitmap==='function'){
+        try{bitmap=await createImageBitmap(file);}catch(_){}
+      }
+      if(!bitmap){
+        objectUrl=URL.createObjectURL(file);
+        bitmap=await new Promise((resolve,reject)=>{
+          const img=new Image();
+          img.onload=()=>resolve(img);
+          img.onerror=()=>reject(new Error('Your phone photo format could not be opened by this browser. In Camera settings choose JPEG/JPG instead of HEIF/HEIC, then retake the photo or choose a JPG/PNG from Gallery.'));
+          img.src=objectUrl;
+        });
+      }
+      const maxDimension=1000;
+      const scale=Math.min(1,maxDimension/Math.max(bitmap.width,bitmap.height));
+      const canvas=document.createElement('canvas');
+      canvas.width=Math.max(1,Math.round(bitmap.width*scale));
+      canvas.height=Math.max(1,Math.round(bitmap.height*scale));
+      const ctx=canvas.getContext('2d');
+      if(!ctx)throw new Error('This browser could not prepare the '+label+'. Please try another photo.');
+      ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
+      let data='';
+      for(let attempt=0;attempt<7;attempt++){
+        const quality=[.78,.68,.58,.48,.40,.32,.26][attempt];
+        data=canvas.toDataURL('image/jpeg',quality);
+        if(data.length<=78000)break;
+        const factor=attempt<3?.82:.72;
+        const nextWidth=Math.max(240,Math.round(canvas.width*factor));
+        const nextHeight=Math.max(240,Math.round(canvas.height*factor));
+        if(nextWidth===canvas.width&&nextHeight===canvas.height)break;
+        canvas.width=nextWidth;canvas.height=nextHeight;
+        ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
+      }
+      if(!data||data.length>82000)throw new Error('The '+label+' could not be compressed enough. Retake it with the document or person filling most of the frame.');
+      return data;
+    }finally{
+      if(bitmap&&typeof bitmap.close==='function')bitmap.close();
+      if(objectUrl)URL.revokeObjectURL(objectUrl);
+    }
   }
   async function checkSecondhandBiometricSupport() {
     const status=$('sh-biometric-status');if(!status)return;
@@ -1762,7 +1801,7 @@
       ['sh-id-preview','sh-seller-preview','sh-phone-preview','sh-receipt-preview'].forEach(id=>$(id)?.classList.add('hidden'));
       $('secondhand-history')?.classList.add('hidden');
     }catch(err){message.textContent=err.message||'Could not save the declaration. Please check the details and try again.';message.style.color='#a12b22';}
-    finally{button.disabled=false;button.textContent=isCustomer?'Submit Sales Declaration for Review':'Save Seller Declaration & Record Product';}
+    finally{button.disabled=false;button.textContent=isCustomer?'Submit Sales Declaration for Review':'Issue Sales Declaration PDF & Send to Both Parties';}
   });
   $('secondhand-clear')?.addEventListener('click',()=>{
     const form=$('secondhand-form');if(!form)return;
