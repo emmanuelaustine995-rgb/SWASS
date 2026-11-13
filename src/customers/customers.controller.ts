@@ -5,11 +5,12 @@ import { AuthGuard, Roles, RolesGuard } from '../auth/auth';
 import { DbService } from '../db/db.service';
 import { hashNationalId, normalisePhone } from '../receipts/receipts.service';
 import { EmailVerificationService } from '../notifications/email-verification.service';
+import { WhatsAppReceiptService } from '../notifications/whatsapp-receipt.service';
 
 @Controller('api/v1/customers')
 @UseGuards(AuthGuard, RolesGuard)
 export class CustomersController {
-  constructor(private db: DbService, private email: EmailVerificationService) {}
+  constructor(private db: DbService, private email: EmailVerificationService, private whatsapp: WhatsAppReceiptService) {}
 
   @Get('referral-summary')
   @Roles('customer')
@@ -72,7 +73,7 @@ export class CustomersController {
     const submission = saved.rows[0];
     const declaration = { ...body, declarationRef, createdAt: submission.createdAt };
     const pdf = await this.buildCustomerSalesDeclarationPdf(declaration);
-    const deliver = async (to: string, recipientName: string) => {
+    const deliverEmail = async (to: string, recipientName: string) => {
       try {
         await this.email.sendCustomerSalesDeclaration({
           to, recipientName, reference: declarationRef,
@@ -84,15 +85,28 @@ export class CustomersController {
         return { sent: false, reason: error instanceof Error ? error.message : 'Email delivery failed' };
       }
     };
-    const [sellerEmail, buyerEmail] = await Promise.all([
-      deliver(String(body.sellerEmail).trim().toLowerCase(), String(body.sellerName)),
-      deliver(String(body.buyerEmail).trim().toLowerCase(), String(body.buyerName)),
+    const deliverWhatsApp = async (to: string) => {
+      try {
+        await this.whatsapp.sendPdf({ to, receiptNo: declarationRef, businessName: 'AURORA E-RECEIPT', pdf });
+        return { sent: true, reason: null as string | null };
+      } catch (error) {
+        return { sent: false, reason: error instanceof Error ? error.message : 'WhatsApp delivery failed' };
+      }
+    };
+    const [sellerEmail, buyerEmail, sellerWhatsApp, buyerWhatsApp] = await Promise.all([
+      deliverEmail(String(body.sellerEmail).trim().toLowerCase(), String(body.sellerName)),
+      deliverEmail(String(body.buyerEmail).trim().toLowerCase(), String(body.buyerName)),
+      deliverWhatsApp(String(body.sellerPhone)),
+      deliverWhatsApp(String(body.buyerPhone)),
     ]);
     return {
       submission,
       pdfBase64: pdf.toString('base64'),
-      delivery: { seller: { email: sellerEmail }, buyer: { email: buyerEmail } },
-      message: 'Your complete declaration PDF has been created. Email delivery was attempted for both seller and buyer. The submission remains pending shop review and is not an approved shop receipt.',
+      delivery: {
+        seller: { email: sellerEmail, whatsapp: sellerWhatsApp },
+        buyer: { email: buyerEmail, whatsapp: buyerWhatsApp },
+      },
+      message: 'The complete Sales Declaration PDF was created and delivery was attempted by email and WhatsApp for both seller and buyer. This customer submission remains pending shop review and is not an approved shop receipt.',
     };
   }
 
