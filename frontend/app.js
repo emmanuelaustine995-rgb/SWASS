@@ -1783,7 +1783,7 @@
       <p class="secondhand-receipt-notice"><strong>SELLER LIABILITY NOTICE:</strong> I confirm that I am the lawful owner of the product recorded above or legally authorised to sell it. If the product is found to be stolen, fraudulently obtained, unlawfully possessed, or subject to a false ownership claim, I accept responsibility for any false information or unlawful sale attributable to me and agree to cooperate with lawful investigations. I understand that I may be held liable under applicable Kenyan law.</p>
       <div class="secondhand-record-images">${d.idPhotoData?`<figure><img src="${d.idPhotoData}" alt="Seller ID"><figcaption>Seller ID</figcaption></figure>`:''}${d.sellerPhotoData?`<figure><img src="${d.sellerPhotoData}" alt="Seller photo"><figcaption>Seller photo</figcaption></figure>`:''}${d.phonePhotoData?`<figure><img src="${d.phonePhotoData}" alt="Phone photo"><figcaption>Product and identifying details</figcaption></figure>`:''}${d.receiptPhotoData?`<figure><img src="${d.receiptPhotoData}" alt="Original purchase receipt"><figcaption>Original purchase receipt</figcaption></figure>`:''}</div>
       <div class="secondhand-record-signatures"><figure><strong>Seller signature</strong><img src="${d.signatureData}" alt="Seller signature"></figure>${d.thumbprintData?`<figure><strong>Seller thumbprint mark (drawn)</strong><img src="${d.thumbprintData}" alt="Drawn thumbprint mark"></figure>`:''}</div>
-      <p><strong>Witness:</strong> ${safe(d.witnessName)} · ${safe(d.witnessPhone)}</p><p><strong>Shop representative:</strong> ${safe(d.shopRepresentativeName||'Recorded shop owner')} · Seller and product checks acknowledged</p><p class="tiny">The seller confirmed the declaration electronically. This record supports shop record-keeping; it does not itself determine legal ownership or guarantee a court outcome.</p></div><button id="secondhand-print-button" class="btn btn-primary full" type="button">Print / Save as PDF</button><button id="secondhand-amend-button" class="btn btn-light full" type="button" data-declaration-id="${safe(d.id)}">Amend saved declaration</button><button id="secondhand-amend-history-button" class="btn btn-light full" type="button" data-declaration-id="${safe(d.id)}">View amendment history</button><p id="secondhand-amend-message" class="muted" aria-live="polite"></p>`;
+      <p><strong>Witness:</strong> ${safe(d.witnessName)} · ${safe(d.witnessPhone)}</p><p><strong>Shop representative:</strong> ${safe(d.shopRepresentativeName||'Recorded shop owner')} · Seller and product checks acknowledged</p><p class="tiny">The seller confirmed the declaration electronically. This record supports shop record-keeping; it does not itself determine legal ownership or guarantee a court outcome.</p></div>${d.delivery&&['seller','buyer'].some(p=>!d.delivery[p]?.email?.sent||!d.delivery[p]?.whatsapp?.sent)?'<button id="secondhand-redeliver-button" class="btn btn-light full" type="button">Retry sending full PDF to both parties</button>':''}<button id="secondhand-print-button" class="btn btn-primary full" type="button">Print / Save as PDF</button><button id="secondhand-amend-button" class="btn btn-light full" type="button" data-declaration-id="${safe(d.id)}">Amend saved declaration</button><button id="secondhand-amend-history-button" class="btn btn-light full" type="button" data-declaration-id="${safe(d.id)}">View amendment history</button><p id="secondhand-amend-message" class="muted" aria-live="polite"></p>`;
     if(d.pdfBase64){
       const download=document.createElement('a');download.className='btn btn-primary full secondhand-download-pdf';
       download.href='data:application/pdf;base64,'+d.pdfBase64;download.download='AURORA-Sales-Declaration-'+(d.declarationRef||'receipt')+'.pdf';
@@ -1793,6 +1793,25 @@
     buyerSummary.textContent='Buyer: '+(d.buyerName||'')+' · ID: '+(d.buyerNationalId||'')+' · Phone: '+(d.buyerPhone||'')+' · Email: '+(d.buyerEmail||'');
     target.insertBefore(buyerSummary,target.firstChild);
     target.classList.remove('hidden');
+    $('secondhand-redeliver-button')?.addEventListener('click',async()=>{
+      const retry=$('secondhand-redeliver-button');
+      if(!d.id||!retry)return;
+      retry.disabled=true;retry.textContent='Retrying delivery…';
+      try{
+        const result=await request('/api/v1/second-hand-phone-declarations/'+encodeURIComponent(d.id)+'/deliver',{method:'POST',body:JSON.stringify({})});
+        const status=(party,channel)=>result.delivery?.[party]?.[channel]?.sent?'Sent':'Not sent'+(result.delivery?.[party]?.[channel]?.reason?': '+result.delivery[party][channel].reason:'');
+        const allSent=['seller','buyer'].every(p=>result.delivery?.[p]?.email?.sent&&result.delivery?.[p]?.whatsapp?.sent);
+        const message=$('secondhand-message');
+        if(message)message.textContent='Delivery retry · Seller — email: '+status('seller','email')+', WhatsApp: '+status('seller','whatsapp')+'. Buyer — email: '+status('buyer','email')+', WhatsApp: '+status('buyer','whatsapp')+'.';
+        if(result.pdfBase64){
+          let link=target.querySelector('.secondhand-download-pdf');
+          if(!link){link=document.createElement('a');link.className='btn btn-primary full secondhand-download-pdf';target.insertBefore(link,target.firstChild);}
+          link.href='data:application/pdf;base64,'+result.pdfBase64;link.download='AURORA-Sales-Declaration-'+(result.declarationRef||d.declarationRef||'copy')+'.pdf';link.textContent='Download latest complete PDF';
+        }
+        if(allSent){retry.remove();if(message)message.textContent+=' All four delivery attempts succeeded.';}
+        else{retry.disabled=false;retry.textContent='Retry sending full PDF to both parties';}
+      }catch(error){retry.disabled=false;retry.textContent='Retry sending full PDF to both parties';const message=$('secondhand-message');if(message)message.textContent=error.message||'Could not retry PDF delivery.';}
+    });
     $('secondhand-print-button')?.addEventListener('click',()=>window.print());
     $('secondhand-amend-button')?.addEventListener('click',async()=>{
       const id=d.id;if(!id){showNotice('This saved record cannot be amended until it is reopened from history.',true);return;}
@@ -1841,7 +1860,7 @@
         const delivery=result.delivery||{},status=(party,channel)=>delivery[party]?.[channel]?.sent?'Sent':'Not sent'+(delivery[party]?.[channel]?.reason?': '+delivery[party][channel].reason:'');
         message.textContent='Sales Declaration PDF created · '+(result.declaration?.declarationRef||'saved')+'. Seller — email: '+status('seller','email')+', WhatsApp: '+status('seller','whatsapp')+'. Buyer — email: '+status('buyer','email')+', WhatsApp: '+status('buyer','whatsapp')+'. Download the PDF below if any delivery failed.';
         message.style.color=(delivery.seller?.email?.sent&&delivery.seller?.whatsapp?.sent&&delivery.buyer?.email?.sent&&delivery.buyer?.whatsapp?.sent)?'#176b52':'#9a5b00';
-        renderSecondhandRecord({...result.declaration,pdfBase64:result.pdfBase64});
+        renderSecondhandRecord({...result.declaration,pdfBase64:result.pdfBase64,delivery:result.delivery});
       }
       $('secondhand-form').reset();$('sh-sale-type').value='';$('secondhand-form').classList.add('hidden');document.querySelectorAll('[data-secondhand-mode]').forEach(el=>el.classList.remove('selected'));['sh-signature','sh-thumbprint'].forEach(clearSecondhandPad);
       ['sh-id-preview','sh-seller-preview','sh-phone-preview','sh-receipt-preview'].forEach(id=>$(id)?.classList.add('hidden'));
