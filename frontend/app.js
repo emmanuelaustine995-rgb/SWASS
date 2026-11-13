@@ -1603,7 +1603,18 @@
   document.querySelectorAll('[data-clear-pad]').forEach(btn=>btn.addEventListener('click',()=>clearSecondhandPad(btn.dataset.clearPad)));
   function watchSecondhandPhoto(inputId,previewId) {
     const input=$(inputId),preview=$(previewId);if(!input||!preview)return;
-    input.addEventListener('change',()=>{const file=input.files?.[0];if(!file){preview.classList.add('hidden');return;}preview.src=URL.createObjectURL(file);preview.classList.remove('hidden');});
+    input.addEventListener('change',async()=>{
+      const file=input.files?.[0];
+      if(!file){preview.removeAttribute('src');preview.classList.add('hidden');return;}
+      preview.classList.add('hidden');preview.removeAttribute('src');
+      try{
+        const data=await secondhandImageData(inputId,true);
+        if(input.files?.[0]!==file)return;
+        preview.src=data;preview.classList.remove('hidden');
+      }catch(error){
+        if(input.files?.[0]===file)showNotice(error.message||'Could not open the selected photo. Choose another image.',true);
+      }
+    });
   }
   watchSecondhandPhoto('sh-id-photo','sh-id-preview');watchSecondhandPhoto('sh-seller-photo','sh-seller-preview');watchSecondhandPhoto('sh-phone-photo','sh-phone-preview');watchSecondhandPhoto('sh-receipt-photo','sh-receipt-preview');
   function syncSecondhandReceiptMode(selected){
@@ -1670,10 +1681,12 @@
     if(!(converted instanceof Blob)||!converted.size)throw new Error('The selected photo could not be converted.');
     return converted;
   }
+  const secondhandImageCache=new WeakMap();
   async function secondhandImageData(inputId,required=false) {
     const file=$(inputId)?.files?.[0];
     const label=inputId.replace('sh-','').replaceAll('-',' ');
     if(!file){if(required)throw new Error('Please choose the required '+label+' using Camera, Gallery or Files.');return null;}
+    const cached=secondhandImageCache.get(file);if(cached)return cached;
     if(file.size>20*1024*1024)throw new Error('The '+label+' is larger than 20 MB. Choose a smaller photo or retake it at a lower camera resolution.');
     let bitmap=null,sourceFile=file;
     const openPhoto=async(blob)=>{
@@ -1729,6 +1742,7 @@
         ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
       }
       if(!data||data.length>82000)throw new Error('The '+label+' could not be compressed enough. Retake it with the document or person filling most of the frame.');
+      secondhandImageCache.set(file,data);
       return data;
     }finally{
       if(bitmap&&typeof bitmap.close==='function')bitmap.close();
