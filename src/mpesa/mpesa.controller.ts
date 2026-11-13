@@ -6,6 +6,7 @@ import {
 import { createHash, timingSafeEqual } from 'node:crypto';
 import { DbService } from '../db/db.service';
 import { AuthGuard, Roles, RolesGuard } from '../auth/auth';
+import { IntaSendService } from '../intasend/intasend.service';
 
 const MONTHLY_KES = 100;
 const YEARLY_KES = 900;
@@ -123,7 +124,7 @@ export class MpesaService {
 
 @Controller('api/v1/mpesa')
 export class MpesaController {
-  constructor(private db: DbService, private mpesa: MpesaService) {}
+  constructor(private db: DbService, private mpesa: MpesaService, private intasend: IntaSendService) {}
 
   @Get('account-summary')
   @UseGuards(AuthGuard, RolesGuard)
@@ -187,9 +188,14 @@ export class MpesaController {
     const paymentId: string = inserted.rows[0].id;
     if (purpose === 'vendor_fee') await this.db.pool.query(`INSERT INTO vendor_invitation_fees(tenant_id,invitation_id,payment_id,status) VALUES($1,$2,$3,'pending') ON CONFLICT(invitation_id) DO UPDATE SET payment_id=EXCLUDED.payment_id,status='pending',paid_at=NULL`, [tenantId,String(body.invitationId),paymentId]);
     try {
+      if (purpose === 'subscription' && (process.env.PAYMENT_PROVIDER ?? 'tuma').trim().toLowerCase() === 'intasend') {
+        const invoiceId = await this.intasend.initiate({ phone, amount, paymentId });
+        await this.db.pool.query(`UPDATE payments SET checkout_request_id=$1 WHERE id=$2 AND tenant_id=$3`, [invoiceId, paymentId, tenantId]);
+        return { paymentId, status: 'pending', amountKes: amount, phone, provider: 'intasend', invoiceId, message: 'IntaSend M-Pesa prompt requested. Complete the prompt on your phone; your subscription activates only after IntaSend confirms payment.' };
+      }
       const checkoutId = await this.mpesa.initiate({ phone, amount, purpose, paymentId });
       await this.db.pool.query(`UPDATE payments SET checkout_request_id=$1 WHERE id=$2 AND tenant_id=$3`, [checkoutId, paymentId, tenantId]);
-      return { paymentId, status: 'pending', amountKes: amount, phone, message: 'Tuma STK prompt requested. Complete the prompt on your phone; the subscription activates only after Tuma confirms payment.' };
+      return { paymentId, status: 'pending', amountKes: amount, phone, provider: 'tuma', message: 'Tuma STK prompt requested. Complete the prompt on your phone; the subscription activates only after Tuma confirms payment.' };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '';
       if (!(error instanceof ServiceUnavailableException && errorMessage.toLowerCase().includes('timed out'))) {
