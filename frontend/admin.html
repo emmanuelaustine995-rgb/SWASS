@@ -63,6 +63,88 @@ html,body{width:100%;min-height:100%;overflow-x:hidden}
 @media(max-width:360px){#admin-app .cards{grid-template-columns:1fr}.top-brand{font-size:10px}}
 @media(min-width:641px){#admin-app .content{min-height:calc(100vh - 76px)}}
 
+
+/* Colour-rich AURORA cyber operations theme */
+:root{--aurora-navy:#081a3a;--aurora-blue:#1769e0;--aurora-cyan:#06b6d4;--aurora-violet:#7655df;--aurora-teal:#0caa91;--aurora-amber:#f59e0b;--aurora-rose:#e65383}
+body{background:#eef3fb}
+#admin-app{background:radial-gradient(ellipse at 12% 0%,#dbeafe 0,transparent 38%),radial-gradient(ellipse at 94% 12%,#e9ddff 0,transparent 32%),#f3f6fc}
+#admin-app .top{background:linear-gradient(105deg,#081a3a,#123b76 65%,#254b93);border:0;color:#fff}
+#admin-app .top-brand,#admin-app .top-title,#admin-app .top small{color:#e9f4ff}
+#admin-app .menu-toggle{background:#ffffff18;border-color:#ffffff55;color:#fff}
+#admin-app .admin-menu{border:1px solid #d4def1}
+#admin-app .content{max-width:1600px}
+#admin-app .heading h2{color:#102d5c}
+#admin-app .card{position:relative;overflow:hidden;border:1px solid #e0e8f6;background:linear-gradient(145deg,#fff,#f7faff);box-shadow:0 10px 28px #173b7010}
+#admin-app .card:after{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--card-accent,#1769e0)}
+#admin-app .cards>.card:nth-child(4n+1){--card-accent:#1769e0}
+#admin-app .cards>.card:nth-child(4n+2){--card-accent:#08a6a6}
+#admin-app .cards>.card:nth-child(4n+3){--card-accent:#7955df}
+#admin-app .cards>.card:nth-child(4n){--card-accent:#f0a11b}
+#admin-app .card small{color:#566985}
+#admin-app .metric{color:var(--card-accent,#1769e0);font-variant-numeric:tabular-nums}
+#admin-app .panel{border:1px solid #dce6f5;background:linear-gradient(145deg,#fff,#f9fbff);box-shadow:0 10px 30px #173b700c}
+#admin-app .panel h3{color:#173d78}
+#admin-app .panel p{color:#61728d}
+#admin-app .primary{background:linear-gradient(100deg,#1769e0,#7254dc);box-shadow:0 8px 20px #2866c52b}
+#admin-app .table-wrap{width:100%;max-width:100%;overflow-x:auto}
+#admin-app table{width:100%;min-width:680px}
+.chart-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:18px}
+.chart-panel{background:linear-gradient(145deg,#0b2149,#173e78);color:#fff;border-radius:16px;padding:20px;min-width:0;box-shadow:0 14px 32px #0b214927}
+.chart-panel h3{color:#fff!important;margin:0 0 5px}
+.chart-panel p{color:#c6d7f2!important;margin:0 0 18px}
+.chart-row{display:grid;grid-template-columns:minmax(92px,135px) 1fr 48px;align-items:center;gap:10px;margin:13px 0;font-size:12px}
+.chart-track{height:11px;border-radius:20px;background:#ffffff20;overflow:hidden}
+.chart-fill{height:100%;width:0;border-radius:20px;background:linear-gradient(90deg,#23c8e4,#6c8cff,#b18bff);transition:width .5s}
+.chart-value{text-align:right;font-weight:800;color:#fff;font-variant-numeric:tabular-nums}
+.chart-empty{color:#c6d7f2;font-size:13px}
+@media(max-width:640px){
+ html,body{min-height:100%;overflow-x:hidden}
+ #admin-app .top{height:auto;min-height:66px;padding:10px 12px;align-items:center}
+ #admin-app .top>small{display:none}
+ #admin-app .top-left{gap:10px}
+ #admin-app .top-brand{font-size:10px;letter-spacing:.45px;white-space:normal;line-height:1.25}
+ #admin-app .top-title{display:block;font-size:12px;white-space:normal}
+ #admin-app .menu-toggle{width:42px;height:42px}
+ #admin-app .menu-wrap{position:static}
+ #admin-app .admin-menu{position:fixed;top:70px;left:10px;right:10px;width:auto;max-height:calc(100dvh - 84px);overflow-y:auto;overscroll-behavior:contain}
+ #admin-app .content{padding:14px 11px 28px}
+ #admin-app .heading{display:block;margin-bottom:14px}
+ #admin-app .heading h2{font-size:21px;line-height:1.25}
+ #admin-app .heading p{font-size:12px;line-height:1.5}
+ #admin-app .cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:12px}
+ #admin-app .card{padding:14px 11px 13px 15px;min-width:0}
+ #admin-app .card small{font-size:11px;line-height:1.35;display:block;overflow-wrap:anywhere}
+ #admin-app .metric{font-size:clamp(16px,5vw,21px);line-height:1.2;overflow-wrap:anywhere}
+ #admin-app .muted{font-size:10px;line-height:1.35}
+ #admin-app .panel{padding:13px 11px;margin-top:12px;min-width:0}
+ #admin-app .panel h3{font-size:16px}
+ #admin-app .panel p{font-size:12px;line-height:1.5}
+ #admin-app label{font-size:12px}
+ #admin-app input{min-width:0;max-width:100%;font-size:16px}
+ #admin-app #shop-search{width:100%!important;max-width:none!important}
+ #admin-app #shop-search-btn{width:100%!important;margin:10px 0!important}
+ #admin-app .table-wrap{overflow:visible}
+ #admin-app table,#admin-app tbody{display:block;width:100%;min-width:0}
+ #admin-app thead{display:none}
+ #admin-app tbody{display:grid;gap:10px}
+ #admin-app tr{display:grid;grid-template-columns:1fr;background:#fff;border:1px solid #dfe8f5;border-radius:12px;padding:8px 11px;box-shadow:0 4px 14px #173b700b}
+ #admin-app td{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:8px 0;border-bottom:1px solid #edf1f7;text-align:right;min-width:0;font-size:12px;overflow-wrap:anywhere}
+ #admin-app td:last-child{border-bottom:0}
+ #admin-app td:before{content:attr(data-label);font-weight:750;color:#536783;text-align:left;flex:0 0 42%;overflow-wrap:anywhere}
+ .chart-grid{grid-template-columns:1fr;gap:10px;margin-top:12px}
+ .chart-panel{padding:15px 12px;border-radius:13px}
+ .chart-row{grid-template-columns:88px minmax(0,1fr) 38px;gap:7px;font-size:10px}
+}
+@media(max-width:360px){
+ #admin-app .cards{grid-template-columns:1fr}
+ #admin-app .top-brand{max-width:220px}
+ .chart-row{grid-template-columns:76px minmax(0,1fr) 34px}
+}
+@media(min-width:641px){
+ #admin-app .content{min-height:calc(100vh - 76px);padding:clamp(20px,3vw,42px)}
+ #admin-app .cards{grid-template-columns:repeat(auto-fit,minmax(205px,1fr))}
+}
+
 </style>
 </head>
 <body>
@@ -129,7 +211,22 @@ html,body{width:100%;min-height:100%;overflow-x:hidden}
 <div class="card"><small>Total platform revenue</small><div id="metric-total" class="metric">—</div><div class="muted">Excludes shop sales</div></div>
 <div class="card"><small>Ledger entries</small><div id="metric-entries" class="metric">—</div><div class="muted">Recorded financial entries</div></div>
 </div>
-<div class="cards" style="margin-top:16px"><div class="card"><small>Registered shops</small><div id="metric-shops" class="metric">—</div></div><div class="card"><small>Active subscriptions</small><div id="metric-active-subs" class="metric">—</div></div><div class="card"><small>Active freelancers</small><div id="metric-freelancers" class="metric">—</div></div><div class="card"><small>Issued receipts</small><div id="metric-issued" class="metric">—</div></div></div><div class="panel"><h3>Platform activity</h3><p>Live counts are read directly from the platform database. Shop sales are not counted as platform revenue.</p><div id="home-status" class="status">Loading verified platform summary…</div></div>
+<div class="cards" style="margin-top:16px"><div class="card"><small>Registered shops</small><div id="metric-shops" class="metric">—</div></div><div class="card"><small>Active subscriptions</small><div id="metric-active-subs" class="metric">—</div></div><div class="card"><small>Active freelancers</small><div id="metric-freelancers" class="metric">—</div></div><div class="card"><small>Issued receipts</small><div id="metric-issued" class="metric">—</div></div></div>
+<div class="chart-grid">
+ <div class="chart-panel"><h3>Revenue mix</h3><p>Recorded platform ledger · KSh</p>
+  <div class="chart-row"><span>Subscriptions</span><div class="chart-track"><div id="chart-sub-fill" class="chart-fill"></div></div><strong id="chart-sub-value" class="chart-value">—</strong></div>
+  <div class="chart-row"><span>Receipt fees</span><div class="chart-track"><div id="chart-receipt-fill" class="chart-fill"></div></div><strong id="chart-receipt-value" class="chart-value">—</strong></div>
+  <div id="revenue-chart-note" class="chart-empty">Waiting for ledger data…</div>
+ </div>
+ <div class="chart-panel"><h3>Platform footprint</h3><p>Live counts returned by the platform database</p>
+  <div class="chart-row"><span>Shops</span><div class="chart-track"><div id="chart-shops-fill" class="chart-fill"></div></div><strong id="chart-shops-value" class="chart-value">—</strong></div>
+  <div class="chart-row"><span>Stores</span><div class="chart-track"><div id="chart-stores-fill" class="chart-fill"></div></div><strong id="chart-stores-value" class="chart-value">—</strong></div>
+  <div class="chart-row"><span>Owners</span><div class="chart-track"><div id="chart-owners-fill" class="chart-fill"></div></div><strong id="chart-owners-value" class="chart-value">—</strong></div>
+  <div class="chart-row"><span>Freelancers</span><div class="chart-track"><div id="chart-freelancers-fill" class="chart-fill"></div></div><strong id="chart-freelancers-value" class="chart-value">—</strong></div>
+  <div id="footprint-chart-note" class="chart-empty">Waiting for platform counts…</div>
+ </div>
+</div>
+<div class="panel"><h3>Platform activity</h3><p>Live counts are read directly from the platform database. Shop sales are not counted as platform revenue.</p><div id="home-status" class="status">Loading verified platform summary…</div></div>
 </section>
 <section id="section-shops" class="hidden"><div class="heading"><div><h2>Shop Management</h2><p>Search registered shops and review their subscription and workspace activity.</p></div></div><div class="panel"><label for="shop-search">Search by business name, phone or email</label><input id="shop-search" type="search" placeholder="Search shops…" style="max-width:480px"><button id="shop-search-btn" class="primary" style="width:auto;padding:12px 20px;margin:10px 0">Search shops</button><p id="shops-status">Loading shop directory…</p><div class="table-wrap"><table><thead><tr><th>Business</th><th>Store</th><th>Phone</th><th>Active users</th><th>Receipts</th><th>Subscription</th><th>Ends</th></tr></thead><tbody id="shops-rows"><tr><td colspan="7">Loading…</td></tr></tbody></table></div></div></section>
 <section id="section-finance" class="hidden"><div class="heading"><div><h2>Finance &amp; Payments</h2><p>Platform revenue, subscriptions, receipt credits and payment reconciliation.</p></div></div><div class="cards"><div class="card"><small>Subscription revenue</small><div id="finance-subscriptions" class="metric">—</div></div><div class="card"><small>Receipt fee revenue</small><div id="finance-receipts" class="metric">—</div></div><div class="card"><small>Total revenue</small><div id="finance-total" class="metric">—</div></div><div class="card"><small>Ledger entries</small><div id="finance-entries" class="metric">—</div></div></div><div class="panel"><h3>Financial ledger</h3><p id="finance-status">Loading recorded ledger entries…</p><div class="table-wrap"><table><thead><tr><th>Type</th><th>Amount</th><th>Reference</th><th>Date</th></tr></thead><tbody id="finance-rows"><tr><td colspan="4">Loading…</td></tr></tbody></table></div></div></section>
@@ -156,6 +253,10 @@ html,body{width:100%;min-height:100%;overflow-x:hidden}
       $('metric-active-subs').textContent=Number(data.activeSubscriptions||0).toLocaleString();
       $('metric-freelancers').textContent=Number(data.activeFreelancers||0).toLocaleString();
       $('metric-issued').textContent=Number(data.issuedReceipts||0).toLocaleString();
+      const footprint=[['shops',data.shops],['stores',data.stores],['owners',data.activeOwners],['freelancers',data.activeFreelancers]];
+      const maxFoot=Math.max(1,...footprint.map(x=>Number(x[1]||0)));
+      footprint.forEach(([key,val])=>{$('chart-'+key+'-value').textContent=Number(val||0).toLocaleString();$('chart-'+key+'-fill').style.width=(Number(val||0)/maxFoot*100)+'%';});
+      $('footprint-chart-note').textContent='Relative bar lengths compare the four live counts; values are exact.';
       $('home-status').textContent='Live database counts loaded: '+Number(data.stores||0).toLocaleString()+' stores, '+Number(data.activeOwners||0).toLocaleString()+' active shop owners, '+Number(data.activeCustomers||0).toLocaleString()+' active customers and '+Number(data.inactiveUsers||0).toLocaleString()+' inactive user accounts.';
     }catch(e){$('home-status').textContent='Platform overview unavailable: '+e.message;}
   }
@@ -167,7 +268,7 @@ html,body{width:100%;min-height:100%;overflow-x:hidden}
       for(const shop of (data.shops||[])){
         const tr=document.createElement('tr');
         const values=[shop.businessName||'—',shop.storeName||'—',shop.businessPhone||'—',shop.activeUsers??0,shop.issuedReceipts??0,shop.subscriptionStatus||'No subscription',shop.subscriptionEndsAt?new Date(shop.subscriptionEndsAt).toLocaleDateString():'—'];
-        for(const value of values){const td=document.createElement('td');td.textContent=String(value);tr.append(td);}
+        const labels=['Business','Store','Phone','Active users','Receipts','Subscription','Ends'];for(let i=0;i<values.length;i++){const td=document.createElement('td');td.textContent=String(values[i]);td.dataset.label=labels[i];tr.append(td);}
         rows.append(tr);
       }
       if(!rows.children.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=7;td.textContent='No matching shops found.';tr.append(td);rows.append(tr);}
@@ -180,8 +281,11 @@ html,body{width:100%;min-height:100%;overflow-x:hidden}
       const values={subscriptions:kes(summary.subscriptionRevenueKes),receipts:kes(summary.receiptFeeRevenueKes),total:kes(summary.totalPlatformRevenueKes),entries:String(summary.ledgerEntries??0)};
       $('metric-subscriptions').textContent=values.subscriptions;$('metric-receipts').textContent=values.receipts;$('metric-total').textContent=values.total;$('metric-entries').textContent=values.entries;
       $('finance-subscriptions').textContent=values.subscriptions;$('finance-receipts').textContent=values.receipts;$('finance-total').textContent=values.total;$('finance-entries').textContent=values.entries;
+      const rev=[['sub',Number(summary.subscriptionRevenueKes||0)],['receipt',Number(summary.receiptFeeRevenueKes||0)]],maxRev=Math.max(1,...rev.map(x=>x[1]));
+      rev.forEach(([key,val])=>{$('chart-'+key+'-value').textContent=kes(val);$('chart-'+key+'-fill').style.width=(val/maxRev*100)+'%';});
+      $('revenue-chart-note').textContent='Bars compare recorded revenue categories; they do not represent shop sales.';
       const rows=$('finance-rows');rows.replaceChildren();
-      for(const item of (entries.entries||[])){const tr=document.createElement('tr');for(const val of [item.entryType,kes(item.amountKes),item.externalReference||'—',item.createdAt?new Date(item.createdAt).toLocaleString():'—']){const td=document.createElement('td');td.textContent=String(val);tr.append(td);}rows.append(tr);}
+      for(const item of (entries.entries||[])){const tr=document.createElement('tr');const labels=['Type','Amount','Reference','Date'];const vals=[item.entryType,kes(item.amountKes),item.externalReference||'—',item.createdAt?new Date(item.createdAt).toLocaleString():'—'];for(let i=0;i<vals.length;i++){const td=document.createElement('td');td.textContent=String(vals[i]);td.dataset.label=labels[i];tr.append(td);}rows.append(tr);}
       if(!rows.children.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=4;td.textContent='No financial ledger entries have been recorded.';tr.append(td);rows.append(tr);}
       $('home-status').textContent='Financial summary loaded from the platform ledger. Shop and receipt activity metrics are not connected yet.';
       $('finance-status').textContent='Showing up to 100 recorded platform ledger entries. Bank settlement is not verified by this ledger.';
