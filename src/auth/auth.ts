@@ -269,7 +269,7 @@ export class AuthController {
   }
 
   @Post('register')
-  async register(@Body() body: { accountType?: string; businessName?: string; storeName?: string; storeLocation?: string; houseName?: string; floor?: string; houseNumber?: string; websiteUrl?: string; kraPin?: string; legalName?: string; businessEmail?: string; fullName?: string; phone?: string; email?: string; password?: string; referralCode?: string }, @Req() req: any) {
+  async register(@Body() body: { accountType?: string; businessName?: string; storeName?: string; storeLocation?: string; houseName?: string; floor?: string; houseNumber?: string; websiteUrl?: string; kraPin?: string; legalName?: string; businessEmail?: string; fullName?: string; phone?: string; email?: string; password?: string; nationalId?: string; idPhotoData?: string; passportPhotoData?: string; referralCode?: string }, @Req() req: any) {
     const registrationStartedAt = Date.now();
     console.info('[SWASS][OTP_DIAG] Signup registration request received');
     if (body?.accountType === 'cashier') throw new BadRequestException('Staff accounts can only be created by accepting an email invitation from the shop owner.');
@@ -286,12 +286,21 @@ export class AuthController {
     const fullName = body?.fullName?.trim();
     const email = body?.email?.trim().toLowerCase() || null;
     const password = body?.password || '';
+    const nationalId = String(body?.nationalId || '').replace(/\s+/g, '');
+    const idPhotoData = String(body?.idPhotoData || '');
+    const passportPhotoData = String(body?.passportPhotoData || '');
     if (!businessName || businessName.length > 120 || !storeName || storeName.length > 120 || !fullName || fullName.length > 120) {
-      throw new BadRequestException('Enter your business name, store name and full name (maximum 120 characters each)');
+      throw new BadRequestException('Enter your shop name and full name (maximum 120 characters each).');
     }
-    if (storeLocation && storeLocation.length > 200) throw new BadRequestException('Store location must be at most 200 characters');
-    if (email && (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254)) throw new BadRequestException('Enter a valid email address');
-    if (password.length < 10 || password.length > 128) throw new BadRequestException('Password must be at least 10 characters');
+    if (!storeLocation || storeLocation.length > 200) throw new BadRequestException('Enter your business location (maximum 200 characters).');
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) throw new BadRequestException('Enter a valid email address.');
+    if (!/^[0-9]{7,9}$/.test(nationalId)) throw new BadRequestException('Enter a valid Kenyan National ID number.');
+    const validPhoto = (value: string) => /^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(value) && value.length <= 2200000;
+    if (!validPhoto(idPhotoData) || !validPhoto(passportPhotoData)) throw new BadRequestException('Upload a valid JPG, PNG or WEBP National ID photo and passport-size photo. Each must be 1.5 MB or smaller.');
+    if (password.length < 10 || password.length > 128) throw new BadRequestException('Password must be at least 10 characters.');
+    const idSecret = process.env.SWASS_ID_SECRET;
+    if (!idSecret) throw new ServiceUnavailableException('Secure identity verification is not configured.');
+    const nationalIdHash = createHmac('sha256', idSecret).update('aurora-owner-national-id:' + nationalId).digest('hex');
     const phone = this.normalizePhone(body.phone || '');
     const referralCode = String(body.referralCode || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 20) || null;
     const ip = String(req.ip ?? '').replace(/^::ffff:/, '') || null;
@@ -322,9 +331,9 @@ export class AuthController {
     );
     const saved = await this.db.pool.query(
       `INSERT INTO signup_otp_requests
-       (phone,business_name,store_name,store_location,full_name,email,password_hash,code_hash,ip_address,expires_at,role,invitation_id,house_name,floor,house_number,website_url,kra_pin,legal_name,business_email,referral_code)
-       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9::inet,now()+interval '5 minutes',$10,$11,$12,$13,$14,$15,$16,$17,$18,$19) RETURNING id`,
-      [phone,businessName,storeName,storeLocation,fullName,email,passwordHash,this.signupCodeHash(code),ip,role,invitationId,houseName,floor,houseNumber,websiteUrl,kraPin,legalName,businessEmail,referralCode],
+       (phone,business_name,store_name,store_location,full_name,email,password_hash,code_hash,ip_address,expires_at,role,invitation_id,house_name,floor,house_number,website_url,kra_pin,legal_name,business_email,referral_code,national_id_hash,id_photo_data,passport_photo_data)
+       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9::inet,now()+interval '5 minutes',$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22) RETURNING id`,
+      [phone,businessName,storeName,storeLocation,fullName,email,passwordHash,this.signupCodeHash(code),ip,role,invitationId,houseName,floor,houseNumber,websiteUrl,kraPin,legalName,businessEmail,referralCode,nationalIdHash,idPhotoData,passportPhotoData],
     );
     console.info(`[SWASS][OTP_DIAG] OTP record saved in ${Date.now() - saveOtpStartedAt}ms; starting SMS provider request`);
     try {
@@ -404,6 +413,11 @@ export class AuthController {
             `INSERT INTO users (tenant_id,store_id,full_name,phone,email,password_hash,role)
              VALUES ($1,$2,$3,$4,$5,$6,'owner') RETURNING id,tenant_id,store_id,role`,
             [tenantId,storeId,row.full_name,phone,row.email,row.password_hash],
+          );
+          await c.query(
+            `INSERT INTO aurora_owner_identity_records(user_id,national_id_hash,id_photo_data,passport_photo_data)
+             VALUES($1,$2,$3,$4)`,
+            [inserted.rows[0].id,row.national_id_hash,row.id_photo_data,row.passport_photo_data],
           );
           await c.query('INSERT INTO wallets (tenant_id) VALUES ($1)', [tenantId]);
           if (row.referral_code) {
@@ -762,15 +776,20 @@ export class AuthController {
   }
 
   @Post('customer/register')
-  async registerCustomer(@Body() body: { fullName?: string; phone?: string; email?: string; password?: string; referralCode?: string }, @Req() req: any) {
+  async registerCustomer(@Body() body: { fullName?: string; phone?: string; email?: string; password?: string; nationalId?: string; referralCode?: string }, @Req() req: any) {
     const fullName = String(body?.fullName ?? '').trim();
     const phone = this.normalizePhone(String(body?.phone ?? ''));
     const email = String(body?.email ?? '').trim().toLowerCase() || null;
     const password = String(body?.password ?? '');
+    const nationalId = String(body?.nationalId || '').replace(/\s+/g, '');
     const referralCode = String(body?.referralCode ?? '').trim().toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,20) || null;
     if (!fullName || fullName.length > 120) throw new BadRequestException('Enter your full name (maximum 120 characters).');
-    if (email && (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254)) throw new BadRequestException('Enter a valid email address.');
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) throw new BadRequestException('Enter a valid email address.');
+    if (!/^[0-9]{7,9}$/.test(nationalId)) throw new BadRequestException('Enter a valid Kenyan National ID number.');
     if (password.length < 10 || password.length > 128) throw new BadRequestException('Password must be at least 10 characters.');
+    const idSecret = process.env.SWASS_ID_SECRET;
+    if (!idSecret) throw new ServiceUnavailableException('Secure identity verification is not configured.');
+    const nationalIdHash = createHmac('sha256', idSecret).update('aurora-customer-national-id:' + nationalId).digest('hex');
     const existing = await this.db.pool.query('SELECT 1 FROM customer_accounts WHERE phone=$1 LIMIT 1', [phone]);
     if (existing.rowCount) throw new BadRequestException('A customer account already exists for this phone. Please sign in.');
     const limits = await this.db.pool.query(
@@ -784,9 +803,9 @@ export class AuthController {
       `UPDATE customer_signup_otp_requests SET expires_at=now() WHERE phone=$1 AND consumed_at IS NULL AND expires_at>now()`, [phone],
     );
     const saved = await this.db.pool.query(
-      `INSERT INTO customer_signup_otp_requests(phone,full_name,email,password_hash,code_hash,expires_at,referral_code)
-       VALUES($1,$2,$3,$4,$5,now()+interval '5 minutes',$6) RETURNING id`,
-      [phone,fullName,email,passwordHash,this.signupCodeHash(code),referralCode],
+      `INSERT INTO customer_signup_otp_requests(phone,full_name,email,password_hash,code_hash,expires_at,referral_code,national_id_hash)
+       VALUES($1,$2,$3,$4,$5,now()+interval '5 minutes',$6,$7) RETURNING id`,
+      [phone,fullName,email,passwordHash,this.signupCodeHash(code),referralCode,nationalIdHash],
     );
     try {
       await this.sendSignupSms(phone, `Your AURORA customer verification code is ${code}. It expires in 5 minutes. Do not share this code.`);
@@ -823,9 +842,9 @@ export class AuthController {
       );
       if (!locked.rowCount) throw new BadRequestException('Code has expired. Request a new one.');
       const created = await c.query(
-        `INSERT INTO customer_accounts(full_name,phone,email,password_hash,referral_code)
-         VALUES($1,$2,$3,$4,$5) RETURNING id,full_name,phone,email`,
-        [row.full_name,row.phone,row.email,row.password_hash,randomBytes(6).toString('hex').toUpperCase()],
+        `INSERT INTO customer_accounts(full_name,phone,email,password_hash,referral_code,national_id_hash)
+         VALUES($1,$2,$3,$4,$5,$6) RETURNING id,full_name,phone,email`,
+        [row.full_name,row.phone,row.email,row.password_hash,randomBytes(6).toString('hex').toUpperCase(),row.national_id_hash],
       );
       if(row.referral_code){
         const referrer=await c.query('SELECT id FROM customer_accounts WHERE referral_code=$1 FOR UPDATE',[row.referral_code]);
