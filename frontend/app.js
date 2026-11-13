@@ -1065,6 +1065,7 @@
     $('register-form').classList.add('hidden');
     $('signup-otp-panel').classList.add('hidden');
     $('register-fields').classList.remove('hidden');
+    $('owner-signup-fields').classList.toggle('hidden',customerSignupMode);
     $('register-submit').classList.remove('hidden');
     $('register-submit').disabled=false;
     $('login-form').classList.remove('hidden');
@@ -1261,6 +1262,7 @@
       const payload=await signupPayload();
       const data=await request(customerSignupMode?'/api/v1/auth/customer/register':'/api/v1/auth/register',{method:'POST',signal:AbortSignal.timeout(150000),body:JSON.stringify(payload)});
       $('register-fields').classList.add('hidden');
+      $('owner-signup-fields').classList.add('hidden');
       $('register-submit').classList.add('hidden');
       $('signup-otp-panel').classList.remove('hidden');
       $('signup-otp-code').focus();
@@ -1306,6 +1308,7 @@
       $('register-form').reset();
       updateSignupAccountType();
       $('register-fields').classList.remove('hidden');
+      $('owner-signup-fields').classList.toggle('hidden',customerSignupMode);
       $('signup-otp-panel').classList.add('hidden');
       $('register-submit').classList.remove('hidden');
       showPOS();
