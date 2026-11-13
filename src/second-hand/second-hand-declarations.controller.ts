@@ -119,7 +119,7 @@ export class SecondHandPhoneDeclarationsController {
     }
     if (body.declarationAccepted !== true) throw new BadRequestException('The seller must accept the ownership and responsibility declaration.');
     if (body.shopAcknowledged !== true) throw new BadRequestException('The shop representative must confirm the seller and phone checks.');
-    const sellerPhotoData = image(body.sellerPhotoData, 'Seller photo', true);
+    const sellerPhotoData = image(body.sellerPhotoData, 'Seller photo', saleType === 'without_receipt');
     const receiptPhotoData = image(body.receiptPhotoData, 'Original purchase receipt photo', saleType === 'with_receipt');
     if (saleType === 'without_receipt' && receiptPhotoData) throw new BadRequestException('Receipt photo must be omitted when the seller has no original receipt.');
     const idPhotoData = image(body.idPhotoData, 'Seller ID photo', true);
