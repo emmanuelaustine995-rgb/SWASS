@@ -35,7 +35,7 @@ export function buildSecondHandDeclarationPdf(d: any, options: { pendingShopRevi
         ensureSpace(145);
         doc.moveDown(.35).font('Helvetica-Bold').fontSize(8.7).fillColor('#17324d').text(clean(label));
         const y = doc.y + 4;
-        doc.image(raw, 46, y, { fit: [250, 112], align: 'left', valign: 'top' });
+        doc.image(raw, 46, y, { fit: [250, 112] });
         doc.y = y + 118;
       } catch {
         ensureSpace(24);
