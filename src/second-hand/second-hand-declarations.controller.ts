@@ -143,11 +143,10 @@ export class SecondHandPhoneDeclarationsController {
         alternative_phone AS "alternativePhone", residential_address AS "residentialAddress", phone_make_model AS "phoneMakeModel",
         imei1, imei2, serial_number AS "serialNumber", phone_condition AS "condition",
         purchase_price_kes AS "purchasePriceKes", no_receipt_reason AS "noReceiptReason",
-        sale_type AS "saleType", receipt_photo_data AS "receiptPhotoData", receipt_photo_data AS "receiptPhotoData", seller_photo_data AS "sellerPhotoData", id_photo_data AS "idPhotoData",
+        sale_type AS "saleType", receipt_photo_data AS "receiptPhotoData", seller_photo_data AS "sellerPhotoData", id_photo_data AS "idPhotoData",
         phone_photo_data AS "phonePhotoData", signature_data AS "signatureData",
         thumbprint_data AS "thumbprintData", witness_name AS "witnessName",
-        witness_phone AS "witnessPhone", seller_email AS "sellerEmail", buyer_name AS "buyerName",
-        buyer_national_id AS "buyerNationalId", buyer_phone AS "buyerPhone", buyer_email AS "buyerEmail",
+        witness_phone AS "witnessPhone",
         declaration_accepted AS "declarationAccepted", shop_acknowledged AS "shopAcknowledged",
         accepted_at AS "acceptedAt", created_at AS "createdAt"`,
       [user.tenantId, user.storeId, user.sub, declarationRef, sellerName, nationalId, sellerPhone,
@@ -336,7 +335,7 @@ export class SecondHandPhoneDeclarationsController {
       line('Shop representative checked seller ID and product identifiers',d.shopAcknowledged?'Yes':'No');
       line('Witness full name',d.witnessName||'Not supplied');line('Witness phone',d.witnessPhone||'Not supplied');
       line('Server recorded date and time',new Date(d.createdAt||Date.now()).toLocaleString('en-KE',{timeZone:'Africa/Nairobi'}));
-      const addImage=(label:string,data?:string)=>{if(!data||!data.startsWith('data:image/'))return;try{const raw=Buffer.from(data.split(',')[1],'base64');if(doc.y>640)doc.addPage();doc.moveDown(.5).font('Helvetica-Bold').fontSize(9).fillColor('#17324d').text(label);doc.image(raw,46,doc.y,{fit:[230,110]});doc.moveDown(.5);}catch{}};
+      const addImage=(label:string,data?:string)=>{if(!data||!data.startsWith('data:image/'))return;try{const raw=Buffer.from(data.split(',')[1],'base64');if(!raw.length)return;if(doc.y+145>doc.page.height-doc.page.margins.bottom)doc.addPage();doc.moveDown(.4).font('Helvetica-Bold').fontSize(9).fillColor('#17324d').text(label);const imageY=doc.y+4;doc.image(raw,46,imageY,{fit:[230,110]});doc.y=imageY+116;}catch{}};
       addImage('Seller electronic signature',d.signatureData);addImage('Seller electronic thumbprint mark (drawn, not biometric scan)',d.thumbprintData);addImage('Seller ID photo (front)',d.idPhotoData);addImage('Seller / client photograph',d.sellerPhotoData);addImage('Product and identifying-details photograph',d.phonePhotoData);addImage('Original purchase receipt photograph',d.receiptPhotoData);
       doc.moveDown().font('Helvetica').fontSize(8).fillColor('#65758a').text('This record documents the information and declarations supplied by the parties. It does not independently verify identity, establish legal ownership or guarantee a court outcome.');
       doc.end();
