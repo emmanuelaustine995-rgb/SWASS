@@ -19,7 +19,6 @@ export interface CreateReceiptDto {
   customer?: { fullName: string; phone: string; email?: string; nationalId?: string };
 }
 
-const RECEIPT_FEE_KES = 4;
 const POINTS_PER_KES = 100;           // 1 point per KSh 100 spent (adjust to taste)
 const CASHIER_MAX_DISCOUNT_PCT = Number(process.env.CASHIER_MAX_DISCOUNT_PCT ?? 5);
 if (!Number.isInteger(CASHIER_MAX_DISCOUNT_PCT) || CASHIER_MAX_DISCOUNT_PCT < 0 || CASHIER_MAX_DISCOUNT_PCT > 100) {
