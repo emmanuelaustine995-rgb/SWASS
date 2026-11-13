@@ -432,7 +432,8 @@
         dashboardBusinessCard?.classList.add('hidden');customerHome?.classList.remove('hidden');
         if($('customer-home-name'))$('customer-home-name').textContent=state.userName||'Welcome';
         void loadCustomerReferralSummary();
-      }else dashboardBusinessCard?.classList.remove('hidden');
+      }else if(state.role==='owner')dashboardBusinessCard?.classList.remove('hidden');
+      else dashboardBusinessCard?.classList.add('hidden');
       if(state.role==='super_admin'){
         dashboardBusinessCard?.classList.add('hidden');
         $('platform-referral-admin')?.classList.remove('hidden');
