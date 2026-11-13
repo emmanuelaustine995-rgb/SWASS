@@ -2676,3 +2676,13 @@ html body.registration-open #aurora-policy-center{
  html body.registration-open #register-form:not(.hidden),
  html body.registration-open #freelancer-register-form:not(.hidden){gap:10px!important}
 }
+
+/* Keep freelancer sign-in content visible after switching account tabs. */
+html body:not(.workspace-active):not(.registration-open) #login-view{display:block!important;visibility:visible!important;opacity:1!important}
+html body:not(.workspace-active):not(.registration-open) #login-form:not(.hidden){display:grid!important;visibility:visible!important;opacity:1!important}
+html body:not(.workspace-active):not(.registration-open) #login-form .login-role-tabs{display:grid!important}
+html body:not(.workspace-active):not(.registration-open) #login-form label,
+html body:not(.workspace-active):not(.registration-open) #login-form input,
+html body:not(.workspace-active):not(.registration-open) #login-form button[type=submit],
+html body:not(.workspace-active):not(.registration-open) .login-forgot-wrap{visibility:visible!important;opacity:1!important}
+html body:not(.workspace-active):not(.registration-open) #freelancer-register-entry:not(.hidden){display:block!important;visibility:visible!important;opacity:1!important}
