@@ -466,9 +466,9 @@ export class AuthController {
       // it to match, or overwrite, the existing shop owner's login email.
     }
     const duplicate = await this.db.pool.query(
-      `SELECT 1 FROM users WHERE lower(email)=$1 AND ($4::text IS NULL OR id::text<>$4)
-       UNION ALL SELECT 1 FROM aurora_admin_identity_records WHERE national_id_hash=$3 OR person_id=$5 LIMIT 1`,
-      [email, phone, nationalIdHash, existingUser.rows[0]?.id || null, identity.personId],
+      `SELECT 1 FROM users WHERE lower(email)=$1 AND ($3::text IS NULL OR id::text<>$3)
+       UNION ALL SELECT 1 FROM aurora_admin_identity_records WHERE national_id_hash=$2 OR person_id=$4 LIMIT 1`,
+      [email, nationalIdHash, existingUser.rows[0]?.id || null, identity.personId],
     );
     if (duplicate.rowCount) throw new UnauthorizedException('This administrator identity or National ID is already registered.');
     const recent = await this.db.pool.query(
