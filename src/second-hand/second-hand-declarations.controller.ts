@@ -307,6 +307,10 @@ export class SecondHandPhoneDeclarationsController {
   private buildSecondHandPdf(d: any): Promise<Buffer> {
     return new Promise((resolve,reject)=>{
       const doc=new PDFDocument({size:'A4',margin:46,info:{Title:'AURORA Second-Hand Receipt '+d.declarationRef,Author:'AURORA E-RECEIPT'}});
+      // PDFKit's built-in Helvetica font uses WinAnsi. Normalise all generated text to
+      // printable ASCII so punctuation copied from mobile keyboards cannot abort PDF generation.
+      const pdfText = doc.text.bind(doc);
+      (doc as any).text = (value: any, ...args: any[]) => pdfText(typeof value === 'string' ? value.normalize('NFKD').replace(/[^\\x20-\\x7E]/g, ' ') : value, ...args);
       const chunks:Buffer[]=[];
       doc.on('data',(chunk:Buffer)=>chunks.push(Buffer.from(chunk)));
       doc.on('error',reject);
