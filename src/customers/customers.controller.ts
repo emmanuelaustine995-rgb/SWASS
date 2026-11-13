@@ -145,12 +145,16 @@ export class CustomersController {
       line('IMEI / identifier', d.imei1 || 'Not provided'); line('Second identifier', d.imei2 || 'Not provided');
       line('Serial number', d.serialNumber || 'Not provided'); line('Condition', d.condition);
       line('Agreed price', 'KSh ' + Number(d.purchasePriceKes || 0).toLocaleString('en-KE'));
-      line('Original purchase receipt', d.saleType === 'with_receipt' ? 'Provided' : 'Not provided');
+      line('Declaration type', d.saleType === 'with_receipt' ? 'WITH ORIGINAL PURCHASE RECEIPT' : 'WITHOUT ORIGINAL PURCHASE RECEIPT');
+      line('Original purchase receipt', d.saleType === 'with_receipt' ? 'Provided — receipt photograph attached where supplied' : 'Not provided');
       if (d.saleType !== 'with_receipt') line('Reason receipt unavailable', d.noReceiptReason || 'Not supplied');
-      heading('SELLER OWNERSHIP DECLARATION');
-      doc.font('Helvetica').fontSize(9).fillColor('#263746').text('The seller declares that they are the lawful owner of the product recorded above or are authorised to sell it; that, to the best of their knowledge, it is not stolen, unlawfully obtained, fraudulently acquired or subject to an ownership dispute; and that the details supplied are true. The seller accepts responsibility for false statements or an unlawful ownership claim connected with this sale and agrees to cooperate with lawful investigations.');
+      heading('SELLER OWNERSHIP AND RESPONSIBILITY DECLARATION — AS SHOWN ON THE FORM');
+      const declarationText = d.saleType === 'with_receipt'
+        ? 'I declare that I am the lawful owner of the product recorded above or have full legal authority to sell it. I confirm that the original purchase receipt shown and attached to this record relates to this product and, to the best of my knowledge, is genuine and has not been altered. I confirm that the product is not stolen, unlawfully obtained, fraudulently acquired or subject to an ownership dispute, and that all product identifiers and details I have supplied are true. I accept responsibility for false statements, a false or altered receipt, fraudulent representation or an unlawful ownership claim connected with this sale. I agree to cooperate with lawful investigations and provide further information when lawfully required. I understand that this declaration may be retained and disclosed to lawful authorities when required.'
+        : 'I declare that I am the lawful owner of the product recorded above or have full legal authority to sell it, even though I cannot provide its original purchase receipt. I have truthfully explained why the receipt is unavailable and confirm that, to the best of my knowledge, the product is not stolen, unlawfully obtained, fraudulently acquired or subject to an ownership dispute. I confirm that all product identifiers and details I have supplied are true and have not knowingly been altered. I accept responsibility for false statements, fraudulent representation or an unlawful ownership claim connected with this sale. I agree to cooperate with lawful investigations and provide further information when lawfully required. I understand that this declaration may be retained and disclosed to lawful authorities when required.';
+      doc.font('Helvetica').fontSize(9).fillColor('#263746').text(declarationText, { align: 'justify' });
       heading('CONFIRMATION AND SIGNATURE');
-      line('Seller declaration accepted', d.declarationAccepted ? 'Yes' : 'No');
+      line('Seller confirmed the declaration was read and understood', d.declarationAccepted ? 'Yes' : 'No');
       line('Witness', d.witnessName || 'Not supplied'); line('Witness phone', d.witnessPhone || 'Not supplied');
       const addImage = (label: string, data?: string) => {
         if (!data || !data.startsWith('data:image/')) return;
