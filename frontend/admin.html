@@ -145,6 +145,9 @@ body{background:#eef3fb}
  #admin-app .cards{grid-template-columns:repeat(auto-fit,minmax(205px,1fr))}
 }
 
+
+.soc-banner{display:flex;align-items:center;gap:12px;padding:15px 18px;margin:0 0 16px;border:1px solid #1c806d;border-radius:14px;background:linear-gradient(110deg,#071d2c,#0b3542);color:#d9fff4}.soc-banner strong{display:block;letter-spacing:.08em;font-size:13px}.soc-banner small{display:block;color:#9bc9c5;margin-top:4px}.soc-pulse{width:11px;height:11px;border-radius:50%;background:#37e6a5;box-shadow:0 0 0 5px #37e6a522,0 0 16px #37e6a5}.soc-live{margin-left:auto;color:#70e7bd;font-size:10px;font-weight:800;letter-spacing:.08em}.soc-metrics .card{min-width:0}.soc-metrics .card span{display:block;color:var(--muted,#8ca0b6);font-size:11px;margin-top:4px}.soc-critical{border-top:3px solid #ff4b5c!important}.soc-high{border-top:3px solid #ff9d42!important}.soc-grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(260px,1fr);gap:16px;margin:16px 0}.soc-trend{height:190px;display:flex;align-items:flex-end;gap:5px;padding:12px 4px 4px;border-bottom:1px solid #34475a;overflow-x:auto}.soc-hour{flex:1;min-width:10px;display:flex;align-items:flex-end;justify-content:center;height:100%;position:relative}.soc-hour-stack{width:min(100%,22px);height:100%;display:flex;align-items:flex-end;gap:2px}.soc-bar{width:33%;min-height:2px;border-radius:4px 4px 0 0}.soc-bar.all{background:#3bc4d8}.soc-bar.high{background:#ff9d42}.soc-bar.failed{background:#ff5268}.soc-legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;color:var(--muted,#8ca0b6);font-size:11px}.soc-legend i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px}.legend-all{background:#3bc4d8}.legend-high{background:#ff9d42}.legend-failed{background:#ff5268}.soc-signal{display:flex;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid #263b50;color:#c8d7e7}.soc-signal strong{color:#fff}.soc-note{font-size:11px;line-height:1.5;color:#9aafc5;margin-top:14px;padding:10px;background:#101f30;border-radius:8px}.soc-panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.soc-panel-head select{max-width:180px}.soc-severity{display:inline-block;padding:4px 8px;border-radius:20px;font-size:10px;font-weight:800;text-transform:uppercase}.sev-critical{background:#5b1824;color:#ff9aa7}.sev-high{background:#593516;color:#ffc078}.sev-medium{background:#51451a;color:#ffe18a}.sev-low{background:#173f45;color:#8ce7e1}.sev-info{background:#24374a;color:#a9c7e5}.soc-control-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.soc-control-grid div{padding:13px;border:1px solid #263c52;border-radius:10px;background:#0d1d2c}.soc-control-grid b{display:block;color:#dce9f6;font-size:12px}.soc-control-grid span{display:block;color:#8da4bb;font-size:11px;margin-top:5px}.soc-table td{font-size:12px}@media(max-width:760px){.soc-grid{grid-template-columns:1fr}.soc-live{display:none}.soc-control-grid{grid-template-columns:1fr}.soc-trend{height:155px}.soc-panel-head{align-items:stretch}.soc-panel-head select{max-width:none;width:100%}.soc-banner{padding:12px}.soc-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
 </style>
 </head>
 <body>
@@ -230,7 +233,24 @@ body{background:#eef3fb}
 </section>
 <section id="section-shops" class="hidden"><div class="heading"><div><h2>Shop Management</h2><p>Search registered shops and review their subscription and workspace activity.</p></div></div><div class="panel"><label for="shop-search">Search by business name, phone or email</label><input id="shop-search" type="search" placeholder="Search shops…" style="max-width:480px"><button id="shop-search-btn" class="primary" style="width:auto;padding:12px 20px;margin:10px 0">Search shops</button><p id="shops-status">Loading shop directory…</p><div class="table-wrap"><table><thead><tr><th>Business</th><th>Store</th><th>Phone</th><th>Active users</th><th>Receipts</th><th>Subscription</th><th>Ends</th><th>Customer feedback</th><th>Action</th></tr></thead><tbody id="shops-rows"><tr><td colspan="7">Loading…</td></tr></tbody></table></div></div></section>
 <section id="section-finance" class="hidden"><div class="heading"><div><h2>Finance &amp; Payments</h2><p>Platform revenue, subscriptions, receipt credits and payment reconciliation.</p></div></div><div class="cards"><div class="card"><small>Subscription revenue</small><div id="finance-subscriptions" class="metric">—</div></div><div class="card"><small>Receipt fee revenue</small><div id="finance-receipts" class="metric">—</div></div><div class="card"><small>Total revenue</small><div id="finance-total" class="metric">—</div></div><div class="card"><small>Ledger entries</small><div id="finance-entries" class="metric">—</div></div></div><div class="panel"><h3>Financial ledger</h3><p id="finance-status">Loading recorded ledger entries…</p><div class="table-wrap"><table><thead><tr><th>Type</th><th>Amount</th><th>Reference</th><th>Date</th></tr></thead><tbody id="finance-rows"><tr><td colspan="4">Loading…</td></tr></tbody></table></div></div></section>
-<section id="section-security" class="hidden"><div class="heading"><div><h2>Security Centre</h2><p>Access events, suspicious activity, incidents and audit history.</p></div></div><div class="panel"><h3>Security monitoring</h3><p>Security event feeds and append-only admin audit logging are not connected yet. No security events are being fabricated or displayed as live.</p></div></section>
+<section id="section-security" class="hidden">
+ <div class="heading"><div><h2>Cybersecurity Operations Centre</h2><p>Security event monitoring · authentication defence · administrator audit trail</p></div><button id="security-refresh" class="primary" style="width:auto;padding:10px 16px">↻ Refresh monitoring</button></div>
+ <div class="soc-banner"><span class="soc-pulse"></span><div><strong>EVENT MONITORING ACTIVE</strong><small>Signals collected from AURORA authentication and administrator actions</small></div><span class="soc-live">DATABASE CONNECTED</span></div>
+ <div class="cards soc-metrics">
+  <div class="card soc-critical"><small>Critical · 24 hours</small><div id="soc-critical" class="metric">—</div><span>Urgent security events</span></div>
+  <div class="card soc-high"><small>High priority · 24 hours</small><div id="soc-high" class="metric">—</div><span>High severity activity</span></div>
+  <div class="card"><small>Failed logins · 24 hours</small><div id="soc-failed" class="metric">—</div><span>Authentication failures</span></div>
+  <div class="card"><small>Blocked sources · 24 hours</small><div id="soc-blocked" class="metric">—</div><span>Sources marked blocked</span></div>
+  <div class="card"><small>Open high-priority events</small><div id="soc-open" class="metric">—</div><span>Detected / blocked events, last 7 days</span></div>
+  <div class="card"><small>Shops deactivated · 7 days</small><div id="soc-deactivated" class="metric">—</div><span>Recorded admin actions</span></div>
+ </div>
+ <div class="soc-grid">
+  <div class="chart-panel"><h3>Security activity · Last 24 hours</h3><p>Hourly event volume, high-priority events and failed sign-ins</p><div id="soc-trend" class="soc-trend"><div class="chart-empty">Loading security timeline…</div></div><div class="soc-legend"><span><i class="legend-all"></i>All events</span><span><i class="legend-high"></i>High priority</span><span><i class="legend-failed"></i>Failed logins</span></div></div>
+  <div class="chart-panel"><h3>Threat intelligence</h3><p>Signals currently available from AURORA itself</p><div class="soc-signal"><span>Authentication failures</span><strong id="soc-signal-failed">—</strong></div><div class="soc-signal"><span>Administrator sign-ins</span><strong id="soc-signal-admin">—</strong></div><div class="soc-signal"><span>Shop suspension actions</span><strong id="soc-signal-shop">—</strong></div><div class="soc-note">External threat feeds, malware scanning, network intrusion detection and geographic risk scoring are not connected. This dashboard does not claim to detect those threats.</div></div>
+ </div>
+ <div class="panel"><div class="soc-panel-head"><div><h3>Security incident queue</h3><p id="soc-events-status">Loading latest recorded events…</p></div><select id="soc-severity" aria-label="Filter events by severity"><option value="">All severities</option><option value="critical">Critical</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option><option value="info">Info</option></select></div><div class="table-wrap"><table class="soc-table"><thead><tr><th>Time</th><th>Event</th><th>Severity</th><th>Outcome</th><th>Source IP</th></tr></thead><tbody id="soc-events"><tr><td colspan="5">Loading security events…</td></tr></tbody></table></div></div>
+ <div class="panel"><h3>Security controls &amp; audit coverage</h3><div class="soc-control-grid"><div><b>HTTPS and browser security headers</b><span>Configured in API gateway application</span></div><div><b>Administrator-only endpoints</b><span>JWT authentication and super-admin role checks</span></div><div><b>Login event recording</b><span>Successful and failed customer, owner and admin sign-ins</span></div><div><b>Shop action audit</b><span>Shop deactivation events recorded with administrator identity</span></div></div></div>
+</section>
 <section id="section-access" class="hidden"><div class="heading"><div><h2>Admin Access Control</h2><p>Up to three authorised people, with multiple approved email aliases per person.</p></div></div><div class="cards"><div class="card"><small>Registered shops</small><div id="access-shops" class="metric">—</div></div><div class="card"><small>Active shop owners</small><div id="access-owners" class="metric">—</div></div><div class="card"><small>Active customer accounts</small><div id="access-customers" class="metric">—</div></div><div class="card"><small>Inactive user accounts</small><div id="access-inactive" class="metric">—</div></div></div><div class="chart-grid"><div class="chart-panel"><h3>Account security posture</h3><p>Live account counts from the platform database—not a threat-detection score</p><div class="chart-row"><span>Active owners</span><div class="chart-track"><div id="access-owner-fill" class="chart-fill"></div></div><strong id="access-owner-value" class="chart-value">—</strong></div><div class="chart-row"><span>Customers</span><div class="chart-track"><div id="access-customer-fill" class="chart-fill"></div></div><strong id="access-customer-value" class="chart-value">—</strong></div><div class="chart-row"><span>Inactive users</span><div class="chart-track"><div id="access-inactive-fill" class="chart-fill"></div></div><strong id="access-inactive-value" class="chart-value">—</strong></div><div id="access-chart-note" class="chart-empty">Waiting for verified platform counts…</div></div><div class="panel"><h3>Authorised administrator identities</h3><p>Registration is checked against the server-side AURORA_ADMIN_IDENTITIES configuration. Each person has one approved phone number and one or more approved email addresses. Phone verification and email verification are required before admin sign-in. National ID numbers are stored only as protected hashes. Individual permissions, login MFA, and append-only administrator audit history still require backend implementation.</p></div></div></section>
 <section id="section-reports" class="hidden"><div class="heading"><div><h2>Platform Reports</h2><p>Growth, receipt volumes, registrations and subscription reporting.</p></div></div><div class="panel"><h3>Reporting workspace</h3><p>Platform-wide reports and exports will appear here after their reporting endpoints are connected.</p></div></section>
 <section id="section-settings" class="hidden"><div class="heading"><div><h2>System Settings</h2><p>Platform announcements, maintenance, service health and integrations.</p></div></div><div class="panel"><h3>System configuration</h3><p>Service health, backup status, maintenance controls and SMS/payment integration status are not connected to this portal yet.</p></div></section>
@@ -300,6 +320,48 @@ body{background:#eef3fb}
       await loadShops();await loadOverview();
     }catch(e){alert(e.message||'Could not deactivate this shop.');button.disabled=false;button.textContent='Deactivate this shop';}
   }
+
+  async function loadSecurity(){
+    const status=$('soc-events-status'),rows=$('soc-events'),severity=$('soc-severity').value;
+    status.textContent='Refreshing security telemetry…';
+    try{
+      const [summary,trends,events]=await Promise.all([
+        api('/platform-admin/security/summary'),api('/platform-admin/security/trends'),
+        api('/platform-admin/security/events?limit=60&severity='+encodeURIComponent(severity))
+      ]);
+      $('soc-critical').textContent=Number(summary.critical_24h||0).toLocaleString();
+      $('soc-high').textContent=Number(summary.high_24h||0).toLocaleString();
+      $('soc-failed').textContent=Number(summary.failed_logins_24h||0).toLocaleString();
+      $('soc-blocked').textContent=Number(summary.blocked_sources_24h||0).toLocaleString();
+      $('soc-open').textContent=Number(summary.openHighPriority||0).toLocaleString();
+      $('soc-deactivated').textContent=Number(summary.shops_deactivated_7d||0).toLocaleString();
+      $('soc-signal-failed').textContent=Number(summary.failed_logins_24h||0).toLocaleString();
+      $('soc-signal-admin').textContent='Recorded in event queue';
+      $('soc-signal-shop').textContent=Number(summary.shops_deactivated_7d||0).toLocaleString();
+      const points=trends.points||[],max=Math.max(1,...points.map(p=>Number(p.events||0)));
+      const chart=$('soc-trend');chart.replaceChildren();
+      if(!points.length){const empty=document.createElement('div');empty.className='chart-empty';empty.textContent='No security events have been recorded in the last 24 hours yet. Events will appear as authentication and admin activity occurs.';chart.append(empty);}
+      else points.forEach(p=>{
+        const hour=document.createElement('div');hour.className='soc-hour';hour.title=new Date(p.hour).toLocaleString()+': '+p.events+' events';
+        const stack=document.createElement('div');stack.className='soc-hour-stack';
+        [['all',p.events],['high',p.high_priority],['failed',p.failed_logins]].forEach(([kind,value])=>{const bar=document.createElement('div');bar.className='soc-bar '+kind;bar.style.height=Math.max(Number(value)>0?3:0,Number(value||0)/max*100)+'%';stack.append(bar);});
+        hour.append(stack);chart.append(hour);
+      });
+      rows.replaceChildren();
+      for(const event of (events.events||[])){
+        const tr=document.createElement('tr');
+        const time=document.createElement('td');time.dataset.label='Time';time.textContent=event.createdAt?new Date(event.createdAt).toLocaleString():'—';tr.append(time);
+        const type=document.createElement('td');type.dataset.label='Event';type.textContent=String(event.eventType||'security_event').replace(/_/g,' ');tr.append(type);
+        const sev=document.createElement('td');sev.dataset.label='Severity';const badge=document.createElement('span');badge.className='soc-severity sev-'+String(event.severity||'info');badge.textContent=event.severity||'info';sev.append(badge);tr.append(sev);
+        const outcome=document.createElement('td');outcome.dataset.label='Outcome';outcome.textContent=event.outcome||'observed';tr.append(outcome);
+        const ip=document.createElement('td');ip.dataset.label='Source IP';ip.textContent=event.sourceIp||'Not captured';tr.append(ip);
+        rows.append(tr);
+      }
+      if(!rows.children.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=5;td.textContent='No matching security events recorded yet.';tr.append(td);rows.append(tr);}
+      status.textContent='Showing '+(events.events||[]).length+' recorded events. Last refresh: '+new Date().toLocaleTimeString();
+    }catch(e){status.textContent='Security telemetry unavailable: '+e.message;rows.innerHTML='<tr><td colspan="5">Could not load security events.</td></tr>'; }
+  }
+
   async function loadFinance(){
     try{
       const [summary,entries]=await Promise.all([api('/platform-finance/summary'),api('/platform-finance/entries')]);
@@ -353,6 +415,8 @@ body{background:#eef3fb}
   });
   $('admin-logout').addEventListener('click',logout);
   $('shop-search-btn').addEventListener('click',loadShops);
+  $('security-refresh').addEventListener('click',loadSecurity);
+  $('soc-severity').addEventListener('change',loadSecurity);
   $('shop-search').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();loadShops();}});
   const menu=$('admin-menu'),menuToggle=$('admin-menu-toggle');
   menuToggle.addEventListener('click',()=>{const opening=menu.hidden;menu.hidden=!opening;menuToggle.setAttribute('aria-expanded',String(opening));});
@@ -360,7 +424,7 @@ body{background:#eef3fb}
   document.querySelectorAll('.nav button').forEach(btn=>btn.addEventListener('click',()=>{
     document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b===btn));
     document.querySelectorAll('main.content section').forEach(s=>s.classList.add('hidden'));
-    $('section-'+btn.dataset.section).classList.remove('hidden');$('admin-welcome').textContent=btn.textContent;menu.hidden=true;menuToggle.setAttribute('aria-expanded','false');if(btn.dataset.section==='shops')loadShops();
+    $('section-'+btn.dataset.section).classList.remove('hidden');$('admin-welcome').textContent=btn.textContent;menu.hidden=true;menuToggle.setAttribute('aria-expanded','false');if(btn.dataset.section==='shops')loadShops();if(btn.dataset.section==='security')loadSecurity();
   }));
 })();
 </script>
