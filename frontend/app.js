@@ -1668,10 +1668,11 @@
       if(isCustomer){
         const result=await request('/api/v1/customers/sales-declarations',{method:'POST',body:JSON.stringify(payload)});
         const submission=result.submission||{},delivery=result.delivery||{};
-        const sellerSent=!!delivery.seller?.email?.sent,buyerSent=!!delivery.buyer?.email?.sent;
-        message.textContent='Full Sales Declaration PDF created · '+(submission.declarationRef||'saved')+'. Seller email: '+(sellerSent?'Sent':'Not sent')+'. Buyer email: '+(buyerSent?'Sent':'Not sent')+'. The PDF is available below. Status: PENDING SHOP REVIEW — not an approved shop receipt.';
-        message.style.color=sellerSent&&buyerSent?'#176b52':'#9a5b00';
-        $('secondhand-saved-record').innerHTML='<div class="secondhand-record-print"><h2>DECLARATION SUBMITTED</h2><p><strong>Reference:</strong> '+escapeHtml(submission.declarationRef||'—')+'</p><p><strong>Status:</strong> Pending shop review</p><p>The complete declaration PDF has been prepared. Email delivery was attempted separately for the seller and buyer.</p></div>'+(result.pdfBase64?'<a class="btn btn-primary full secondhand-download-pdf" download="AURORA-Sales-Declaration-'+encodeURIComponent(submission.declarationRef||'copy')+'.pdf" href="data:application/pdf;base64,'+result.pdfBase64+'">Download complete declaration PDF</a>':'');
+        const status=(party,channel)=>delivery[party]?.[channel]?.sent?'Sent':'Not sent'+(delivery[party]?.[channel]?.reason?': '+delivery[party][channel].reason:'');
+        const allDelivered=['seller','buyer'].every(p=>delivery[p]?.email?.sent&&delivery[p]?.whatsapp?.sent);
+        message.textContent='Complete Sales Declaration PDF created · '+(submission.declarationRef||'saved')+'. Seller — email: '+status('seller','email')+'; WhatsApp: '+status('seller','whatsapp')+'. Buyer — email: '+status('buyer','email')+'; WhatsApp: '+status('buyer','whatsapp')+'. Full PDF copy is available below. Status: PENDING SHOP REVIEW — not an approved shop receipt.';
+        message.style.color=allDelivered?'#176b52':'#9a5b00';
+        $('secondhand-saved-record').innerHTML='<div class="secondhand-record-print"><h2>DECLARATION SUBMITTED</h2><p><strong>Reference:</strong> '+escapeHtml(submission.declarationRef||'—')+'</p><p><strong>Status:</strong> Pending shop review</p><p>The complete PDF, including the filled-in details and submitted evidence, was sent separately to the seller and buyer through the available email and WhatsApp channels. Delivery results are shown above.</p></div>'+(result.pdfBase64?'<a class="btn btn-primary full secondhand-download-pdf" download="AURORA-Sales-Declaration-'+encodeURIComponent(submission.declarationRef||'copy')+'.pdf" href="data:application/pdf;base64,'+result.pdfBase64+'">Download complete declaration PDF</a>':'');
         $('secondhand-saved-record').classList.remove('hidden');
       }else{
         const result=await request('/api/v1/second-hand-phone-declarations',{method:'POST',body:JSON.stringify(payload)});
