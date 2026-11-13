@@ -104,17 +104,21 @@
           <button id="signup-back-btn" class="btn btn-light btn-small hidden" type="button" style="align-self:flex-start;margin-bottom:2px">← Back</button>
           <p class="eyebrow">CREATE YOUR AURORA E-RECEIPT ACCOUNT</p>
           <div id="owner-signup-fields">
-            <label>Company / trading name<input id="reg-business" required maxlength="120" placeholder="Business name shown on receipts"></label>
-            <details class="compact-extra-fields"><summary>More business details (optional)</summary><label>Legal registered entity name<input id="reg-legal-name" maxlength="160"></label><label>Business email address<input id="reg-business-email" type="email" maxlength="254" placeholder="shop@example.com"></label></details>
-            <label>Branch / outlet name<input id="reg-store" required maxlength="120" placeholder="e.g. Main Branch"></label>
-            <label>Physical location / address<input id="reg-location" required maxlength="200" placeholder="Street, town or area"></label>
-            <details class="compact-extra-fields"><summary>Address, website and KRA details (optional)</summary><label>House / building name<input id="reg-house-name" maxlength="120"></label><div class="form-two"><label>Floor<input id="reg-floor" maxlength="40"></label><label>House / unit number<input id="reg-house-number" maxlength="40"></label></div><label>Website URL<input id="reg-website" type="url" maxlength="255" placeholder="https://example.com"></label><label>KRA PIN<input id="reg-kra-pin" maxlength="40" placeholder="Only if applicable"></label></details>
+            <label>Shop / business name<input id="reg-business" required maxlength="120" placeholder="Business name"></label>
+            <label>Business location<input id="reg-location" required maxlength="200" placeholder="Town, street or area"></label>
           </div>
           <div id="register-fields">
-            <label>Your full name<input id="reg-name" required maxlength="120" autocomplete="name"></label>
-            <label>Phone number<input id="reg-phone" required inputmode="tel" autocomplete="tel" placeholder="07XX XXX XXX"></label>
-            <details class="compact-extra-fields"><summary>Email address (optional)</summary><label>Email<input id="reg-email" type="email" autocomplete="email"></label></details>
+            <label>Full name<input id="reg-name" required maxlength="120" autocomplete="name"></label>
+            <label>Phone number<input id="reg-phone" type="tel" required inputmode="tel" autocomplete="tel" placeholder="07XX XXX XXX"></label>
+            <label>Email address<input id="reg-email" type="email" required autocomplete="email" placeholder="you@example.com"></label>
+            <label>National ID number<input id="reg-national-id" type="text" inputmode="numeric" maxlength="9" pattern="[0-9]{7,9}" required placeholder="Enter National ID number"></label>
+            <div id="owner-identity-uploads">
+              <label>National ID photo (camera or gallery)<input id="reg-id-photo" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" required></label>
+              <label>Passport-size photo (camera or gallery)<input id="reg-passport-photo" type="file" accept="image/jpeg,image/png,image/webp" capture="user" required></label>
+            </div>
+            <label id="reg-kra-wrap">KRA PIN <span class="muted small">(optional)</span><input id="reg-kra-pin" maxlength="40" placeholder="Only if available"></label>
             <label id="reg-password-field">Create password<input id="reg-password" type="password" required minlength="10" autocomplete="new-password" placeholder="At least 10 characters"></label>
+            <label id="reg-confirm-password-field">Confirm password<input id="reg-confirm-password" type="password" required minlength="10" autocomplete="new-password" placeholder="Enter password again"></label>
           </div>
           <div id="signup-otp-panel" class="hidden">
             <p class="muted small">We sent a 6-digit verification code by SMS to your phone. Enter it below to activate your business account.</p>
