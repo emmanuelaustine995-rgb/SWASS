@@ -52,6 +52,13 @@ services:
         value: Kenyavat93@gmail.com
       - key: TUMA_API_KEY
         sync: false
+      # Set PAYMENT_PROVIDER to intasend after adding sandbox or live credentials.
+      - key: PAYMENT_PROVIDER
+        value: tuma
+      - key: INTASEND_SECRET_KEY
+        sync: false
+      - key: INTASEND_WEBHOOK_CHALLENGE
+        sync: false
       - key: PUBLIC_APP_URL
         value: https://swass-web.onrender.com
       # TalkSasa is the active provider for signup and receipt-recovery OTPs.
