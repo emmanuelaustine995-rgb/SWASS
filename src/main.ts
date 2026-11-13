@@ -15,6 +15,8 @@ async function bootstrap() {
   }
 
   const app = await NestFactory.create(AppModule, { bodyParser: false });
+  // Render terminates HTTPS and forwards the original client address through one trusted proxy.
+  app.set('trust proxy', 1);
   app.use(json({ limit: '6mb' }));
   app.use(urlencoded({ extended: true, limit: '2mb' }));
   // Always allow the production SWASS frontend. CORS_ORIGINS may add
