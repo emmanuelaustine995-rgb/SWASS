@@ -140,7 +140,6 @@
     $('owner-dashboard-view').classList.remove('hidden');
     $('owner-dashboard-view').classList.remove('workspace-accounting','workspace-console');
     $('owner-dashboard-view').classList.add('workspace-dashboard');
-    if(state.role==='freelancer'){$('payments-section').classList.add('hidden');$('staff-area').classList.add('hidden');}
     document.getElementById('pos-view').classList.remove('hidden');
     document.querySelector('.pos-grid')?.classList.add('hidden');
     ['history-panel','owner-customers-section','profile-panel'].forEach(id=>document.getElementById(id)?.classList.add('hidden'));
