@@ -1615,8 +1615,14 @@
     if(form){form.hidden=false;form.classList.remove('hidden');form.style.setProperty('display','grid','important');}
     $('sh-no-receipt-wrap')?.classList.toggle('hidden',withReceipt);
     $('sh-receipt-photo-wrap')?.classList.toggle('hidden',!withReceipt);
-    $('sh-seller-photo-wrap')?.classList.toggle('hidden',withReceipt);
+    // Keep the seller/client photo upload visible in both declaration paths.
+    // It is mandatory without an original receipt and optional when a receipt is supplied.
+    const sellerPhotoWrap=$('sh-seller-photo-wrap');
+    sellerPhotoWrap?.classList.remove('hidden');
+    if(sellerPhotoWrap){sellerPhotoWrap.hidden=false;sellerPhotoWrap.style.setProperty('display','block','important');}
     $('sh-seller-photo').required=!withReceipt;
+    const sellerPhotoLabel=sellerPhotoWrap?.querySelector('label');
+    if(sellerPhotoLabel) sellerPhotoLabel.firstChild.textContent=withReceipt?'Seller / client photo (optional) ':'Seller / client photo (required — upload a clear photo) ';
     $('sh-no-receipt').required=!withReceipt;
     $('sh-receipt-photo').required=withReceipt;
     $('sh-thumbprint-wrap')?.classList.toggle('hidden',withReceipt);
