@@ -462,11 +462,7 @@
       const isCustomerAccount=state.role==='customer';
       document.body.classList.toggle('customer-account-active',isCustomerAccount);
       if(isCustomerAccount)enforceCustomerReceiptActions();
-      // Receipt history lives inside the Receipts workspace. The global workspace
-      // reset hides nested panels, so explicitly restore it whenever Receipts opens.
-      history?.classList.remove('hidden');
-      // Receipt history was nested inside the hidden business-profile panel. Move it into Receipts.
-      if(history&&receiptHome&&history.parentElement!==receiptHome)receiptHome.appendChild(history);
+      // Receipt history belongs in Shop > Profile, not on the Receipts workspace.
       if(['cashier','freelancer'].includes(state.role)){staffSummary?.classList.remove('hidden');void loadStaffSalesSummary();}
       $('open-recover-receipt')?.classList.remove('hidden');
       $('secondhand-open-card')?.classList.toggle('hidden',!['owner','freelancer','customer'].includes(state.role));
