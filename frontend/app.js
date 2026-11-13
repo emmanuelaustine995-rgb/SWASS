@@ -1639,25 +1639,55 @@
     }
     syncSecondhandReceiptMode(mode);
   }));
+  let heicConverterPromise;
+  async function convertHeicPhoto(file){
+    if(!heicConverterPromise){
+      heicConverterPromise=new Promise((resolve,reject)=>{
+        if(typeof window.heic2any==='function'){resolve(window.heic2any);return;}
+        const script=document.createElement('script');
+        script.src='https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js';
+        script.async=true;
+        script.onload=()=>typeof window.heic2any==='function'?resolve(window.heic2any):reject(new Error('HEIC photo converter did not load.'));
+        script.onerror=()=>reject(new Error('Could not load the photo converter. Please choose a JPG or PNG photo and try again.'));
+        document.head.appendChild(script);
+      });
+    }
+    const convert=await heicConverterPromise;
+    const result=await convert({blob:file,toType:'image/jpeg',quality:0.86});
+    return Array.isArray(result)?result[0]:result;
+  }
   async function secondhandImageData(inputId,required=false) {
     const file=$(inputId)?.files?.[0];
     const label=inputId.replace('sh-','').replaceAll('-',' ');
     if(!file){if(required)throw new Error('Please choose the required '+label+' using Camera, Gallery or Files.');return null;}
     if(file.size>15*1024*1024)throw new Error('The '+label+' is larger than 15 MB. Choose a smaller photo or retake it at a lower camera resolution.');
     if(file.type&&!file.type.startsWith('image/'))throw new Error('The selected '+label+' is not an image. Please choose a photo.');
-    let bitmap=null,objectUrl=null;
+    let bitmap=null,objectUrl=null,sourceFile=file;
     try{
-      if(typeof createImageBitmap==='function'){
-        try{bitmap=await createImageBitmap(file);}catch(_){}
-      }
-      if(!bitmap){
-        objectUrl=URL.createObjectURL(file);
-        bitmap=await new Promise((resolve,reject)=>{
-          const img=new Image();
-          img.onload=()=>resolve(img);
-          img.onerror=()=>reject(new Error('Your phone photo format could not be opened by this browser. In Camera settings choose JPEG/JPG instead of HEIF/HEIC, then retake the photo or choose a JPG/PNG from Gallery.'));
-          img.src=objectUrl;
-        });
+      const openPhoto=async(blob)=>{
+        if(typeof createImageBitmap==='function'){
+          try{return await createImageBitmap(blob);}catch(_){}
+        }
+        const url=URL.createObjectURL(blob);
+        try{
+          return await new Promise((resolve,reject)=>{
+            const img=new Image();
+            img.onload=()=>resolve(img);
+            img.onerror=()=>reject(new Error('This browser cannot decode the selected photo.'));
+            img.src=url;
+          });
+        }finally{URL.revokeObjectURL(url);}
+      };
+      try{bitmap=await openPhoto(sourceFile);}catch(_){
+        const type=(file.type||'').toLowerCase(),name=(file.name||'').toLowerCase();
+        const looksHeic=type.includes('heic')||type.includes('heif')||/\\.(heic|heif)$/.test(name);
+        if(!looksHeic)throw new Error('This photo could not be opened. Please choose a clear JPG or PNG image.');
+        try{
+          sourceFile=await convertHeicPhoto(file);
+          bitmap=await openPhoto(sourceFile);
+        }catch(convertError){
+          throw new Error(convertError?.message||'This HEIC/HEIF photo could not be converted. Please choose a JPG or PNG photo from Gallery.');
+        }
       }
       const maxDimension=1000;
       const scale=Math.min(1,maxDimension/Math.max(bitmap.width,bitmap.height));
