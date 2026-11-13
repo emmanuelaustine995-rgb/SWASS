@@ -1642,54 +1642,71 @@
   let heicConverterPromise;
   async function convertHeicPhoto(file){
     if(!heicConverterPromise){
-      heicConverterPromise=new Promise((resolve,reject)=>{
-        if(typeof window.heic2any==='function'){resolve(window.heic2any);return;}
-        const script=document.createElement('script');
-        script.src='https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js';
-        script.async=true;
-        script.onload=()=>typeof window.heic2any==='function'?resolve(window.heic2any):reject(new Error('HEIC photo converter did not load.'));
-        script.onerror=()=>reject(new Error('Could not load the photo converter. Please choose a JPG or PNG photo and try again.'));
-        document.head.appendChild(script);
-      });
+      heicConverterPromise=(async()=>{
+        if(typeof window.heic2any==='function')return window.heic2any;
+        const urls=[
+          'https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js',
+          'https://unpkg.com/heic2any@0.0.4/dist/heic2any.min.js'
+        ];
+        let lastError;
+        for(const src of urls){
+          try{
+            await new Promise((resolve,reject)=>{
+              const script=document.createElement('script');
+              script.src=src;script.async=true;
+              script.onload=()=>typeof window.heic2any==='function'?resolve():reject(new Error('Photo converter did not initialise.'));
+              script.onerror=()=>reject(new Error('Photo converter could not be loaded.'));
+              document.head.appendChild(script);
+            });
+            if(typeof window.heic2any==='function')return window.heic2any;
+          }catch(error){lastError=error;}
+        }
+        throw lastError||new Error('HEIC photo conversion is unavailable.');
+      })();
     }
     const convert=await heicConverterPromise;
-    const result=await convert({blob:file,toType:'image/jpeg',quality:0.86});
-    return Array.isArray(result)?result[0]:result;
+    const result=await convert({blob:file,toType:'image/jpeg',quality:0.88});
+    const converted=Array.isArray(result)?result[0]:result;
+    if(!(converted instanceof Blob)||!converted.size)throw new Error('The selected photo could not be converted.');
+    return converted;
   }
   async function secondhandImageData(inputId,required=false) {
     const file=$(inputId)?.files?.[0];
     const label=inputId.replace('sh-','').replaceAll('-',' ');
     if(!file){if(required)throw new Error('Please choose the required '+label+' using Camera, Gallery or Files.');return null;}
-    if(file.size>15*1024*1024)throw new Error('The '+label+' is larger than 15 MB. Choose a smaller photo or retake it at a lower camera resolution.');
-    if(file.type&&!file.type.startsWith('image/'))throw new Error('The selected '+label+' is not an image. Please choose a photo.');
-    let bitmap=null,objectUrl=null,sourceFile=file;
+    if(file.size>20*1024*1024)throw new Error('The '+label+' is larger than 20 MB. Choose a smaller photo or retake it at a lower camera resolution.');
+    let bitmap=null,sourceFile=file;
+    const openPhoto=async(blob)=>{
+      if(typeof createImageBitmap==='function'){
+        try{return await createImageBitmap(blob);}catch(_){}
+      }
+      const url=URL.createObjectURL(blob);
+      try{
+        return await new Promise((resolve,reject)=>{
+          const img=new Image();
+          img.onload=()=>resolve(img);
+          img.onerror=()=>reject(new Error('This browser cannot decode the selected photo.'));
+          img.src=url;
+        });
+      }finally{URL.revokeObjectURL(url);}
+    };
     try{
-      const openPhoto=async(blob)=>{
-        if(typeof createImageBitmap==='function'){
-          try{return await createImageBitmap(blob);}catch(_){}
-        }
-        const url=URL.createObjectURL(blob);
-        try{
-          return await new Promise((resolve,reject)=>{
-            const img=new Image();
-            img.onload=()=>resolve(img);
-            img.onerror=()=>reject(new Error('This browser cannot decode the selected photo.'));
-            img.src=url;
-          });
-        }finally{URL.revokeObjectURL(url);}
-      };
-      try{bitmap=await openPhoto(sourceFile);}catch(_){
-        const type=(file.type||'').toLowerCase(),name=(file.name||'').toLowerCase();
-        const looksHeic=type.includes('heic')||type.includes('heif')||/\\.(heic|heif)$/.test(name);
-        if(!looksHeic)throw new Error('This photo could not be opened. Please choose a clear JPG or PNG image.');
+      try{
+        bitmap=await openPhoto(sourceFile);
+      }catch(nativeError){
+        // Android gallery providers sometimes label HEIC/HEIF photos as
+        // application/octet-stream or omit the filename extension. Do not
+        // trust MIME type/extension: try HEIC conversion for every undecodable image.
         try{
           sourceFile=await convertHeicPhoto(file);
           bitmap=await openPhoto(sourceFile);
         }catch(convertError){
-          throw new Error(convertError?.message||'This HEIC/HEIF photo could not be converted. Please choose a JPG or PNG photo from Gallery.');
+          const detail=convertError instanceof Error?convertError.message:'';
+          throw new Error('AURORA could not decode this photo format. Try selecting the original photo from Gallery or Files again. '+detail);
         }
       }
-      const maxDimension=1000;
+      if(!bitmap||!bitmap.width||!bitmap.height)throw new Error('The selected photo has invalid image dimensions.');
+      const maxDimension=1200;
       const scale=Math.min(1,maxDimension/Math.max(bitmap.width,bitmap.height));
       const canvas=document.createElement('canvas');
       canvas.width=Math.max(1,Math.round(bitmap.width*scale));
@@ -1699,13 +1716,13 @@
       ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
       ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
       let data='';
-      for(let attempt=0;attempt<7;attempt++){
-        const quality=[.78,.68,.58,.48,.40,.32,.26][attempt];
+      for(let attempt=0;attempt<8;attempt++){
+        const quality=[.82,.74,.66,.58,.50,.42,.34,.28][attempt];
         data=canvas.toDataURL('image/jpeg',quality);
         if(data.length<=78000)break;
-        const factor=attempt<3?.82:.72;
-        const nextWidth=Math.max(240,Math.round(canvas.width*factor));
-        const nextHeight=Math.max(240,Math.round(canvas.height*factor));
+        const factor=attempt<3?.82:.70;
+        const nextWidth=Math.max(180,Math.round(canvas.width*factor));
+        const nextHeight=Math.max(180,Math.round(canvas.height*factor));
         if(nextWidth===canvas.width&&nextHeight===canvas.height)break;
         canvas.width=nextWidth;canvas.height=nextHeight;
         ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
@@ -1715,7 +1732,6 @@
       return data;
     }finally{
       if(bitmap&&typeof bitmap.close==='function')bitmap.close();
-      if(objectUrl)URL.revokeObjectURL(objectUrl);
     }
   }
   async function checkSecondhandBiometricSupport() {
