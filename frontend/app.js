@@ -188,9 +188,9 @@
     const businessRow=$('account-profile-business-row');
     businessRow.classList.toggle('hidden',!['owner','manager','vendor','freelancer'].includes(state.role));
     $('account-profile-business').textContent=business.businessName||'Business details not added';
-    const readOnlyProfile=['vendor','freelancer'].includes(state.role);
+    const readOnlyProfile=state.role==='vendor';
     $('account-profile-photo-area').classList.toggle('hidden',state.role!=='cashier');
-    $('account-profile-business-edit').classList.toggle('hidden',!['owner','manager'].includes(state.role));
+    $('account-profile-business-edit').classList.toggle('hidden',!['owner','manager','freelancer'].includes(state.role));
     const profileForm=$('profile-form');
     if(profileForm){profileForm.querySelectorAll('input,select,textarea,button').forEach(control=>{control.disabled=readOnlyProfile;});const save=profileForm.querySelector('button[type="submit"]');if(save)save.classList.toggle('hidden',readOnlyProfile);}
     $('profile-panel')?.classList.toggle('profile-readonly',readOnlyProfile);
@@ -281,8 +281,8 @@
   async function loadOwnerReferralSummary(){
     const card=$('referral-card');
     if(!card)return;
-    card.classList.toggle('hidden',state.role!=='owner');
-    if(state.role!=='owner')return;
+    card.classList.toggle('hidden',!['owner','freelancer'].includes(state.role));
+    if(!['owner','freelancer'].includes(state.role))return;
     try{
       const data=await request('/api/v1/referrals/summary');
       $('referral-total').textContent=Number(data.totalReferrals||0).toLocaleString('en-KE');
@@ -443,8 +443,7 @@
         posGrid?.classList.add('hidden');
         $('owner-dashboard-view')?.classList.remove('hidden');
         ownerHome?.classList.add('hidden');
-        $('owner-payments-section')?.classList.add('hidden');
-        $('owner-staff-area')?.classList.add('hidden');
+        // Keep the complete shop-owner dashboard, including payments and team cards, visible to freelancers.
         window.dispatchEvent(new Event('swass:dashboard-open'));
         void loadStaffSalesSummary();
       }else if(['owner','manager','vendor'].includes(state.role)){
@@ -455,7 +454,7 @@
         void loadStaffSalesSummary();
       }
     }else if(screen==='subscription'){
-      if(!['owner','manager'].includes(state.role)){
+      if(!['owner','manager','freelancer'].includes(state.role)){
         showNotice('Subscription and payment management is available to the business owner or manager.',true);
         screen='dashboard';
         ownerHome?.classList.remove('hidden');
@@ -519,7 +518,7 @@
         owner?.classList.add('profile-workspace-mode');
         // Profile has only its business, account and (for owners) team cards.
         owner?.querySelectorAll(':scope > *:not(#profile-panel):not(#owner-staff-area)').forEach(el=>el.classList.add('hidden'));
-        owner?.querySelector('#owner-staff-area')?.classList.toggle('hidden',state.role!=='owner');
+        owner?.querySelector('#owner-staff-area')?.classList.add('hidden');
         profile?.classList.remove('hidden');
         // The dashboard and profile share this scroll container. Always reset
         // every nested scroll position when opening Profile so it starts at
@@ -791,7 +790,7 @@
     tick();subscriptionCountdownTimer=window.setInterval(tick,1000);
   }
   async function loadSubscriptionBalance(){
-    if(!['owner','manager'].includes(state.role))return;
+    if(!['owner','manager','freelancer'].includes(state.role))return;
     const status=$('subscription-status'),remaining=$('subscription-receipts-remaining'),balance=$('subscription-wallet-balance'),expiry=$('subscription-expiry'),remainder=$('subscription-wallet-remainder'),message=$('subscription-balance-message');
     if(message)message.textContent='Refreshing subscription and receipt balance…';
     try{
@@ -813,7 +812,7 @@
   if (dashboardPaymentSlot && existingPaymentCard) dashboardPaymentSlot.appendChild(existingPaymentCard);
   const vendorAccessTab = $('dashboard-vendor-tab');
   if (vendorAccessTab) {
-    vendorAccessTab.classList.toggle('hidden', state.role !== 'owner');
+    vendorAccessTab.classList.toggle('hidden', !['owner','freelancer'].includes(state.role));
     vendorAccessTab.addEventListener('click', () => {
       showWorkspaceScreen('profile');
       const team = $('owner-staff-area');
@@ -1460,7 +1459,7 @@
   });
   $('open-recover-receipt').addEventListener('click',()=>{window.location.href='recover.html';});
   $('open-special-amendment')?.addEventListener('click',()=>{
-    if(state.role!=='owner'){showNotice('Only the shop owner can amend a saved Second-Hand Special Receipt.',true);return;}
+    if(!['owner','freelancer'].includes(state.role)){showNotice('This account cannot amend a saved Second-Hand Special Receipt.',true);return;}
     showWorkspaceScreen('receipts');
     $('secondhand-open-card')?.click();
     $('secondhand-history-toggle')?.click();
