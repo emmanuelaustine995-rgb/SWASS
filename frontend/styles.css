@@ -2567,3 +2567,65 @@ body.registration-open .registration-sticky-footer{position:sticky!important;bot
   max-width:100%!important;border-radius:0!important;
  }
 }
+
+
+ 
+/* Mobile registration fit fix: keep every account form inside the phone viewport
+body.registration-open{overflow:hidden!important}
+body.registration-open #login-view{
+  position:fixed!important;top:64px!important;right:0!important;bottom:0!important;left:0!important;
+  width:100vw!important;height:auto!important;min-height:0!important;max-height:none!important;
+  margin:0!important;padding:0!important;overflow:hidden!important;background:#fff!important;
+}
+body.registration-open #login-view>.login-card{
+  position:static!important;display:block!important;width:100%!important;max-width:100%!important;
+  height:100%!important;min-height:0!important;max-height:none!important;margin:0!important;padding:0!important;
+  overflow:visible!important;background:#fff!important;box-shadow:none!important;
+}
+body.registration-open #register-form:not(.hidden),
+body.registration-open #freelancer-register-form:not(.hidden){
+  position:fixed!important;top:64px!important;right:0!important;bottom:0!important;left:0!important;
+  z-index:10001!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;
+  gap:12px!important;width:100vw!important;max-width:100vw!important;height:auto!important;
+  min-height:0!important;max-height:none!important;margin:0!important;
+  padding:14px 14px max(18px,env(safe-area-inset-bottom))!important;
+  overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior-y:contain!important;
+  -webkit-overflow-scrolling:touch!important;box-sizing:border-box!important;
+  background:#fff!important;color:#172b3a!important;
+}
+body.registration-open #register-form:not(.hidden)>*,
+body.registration-open #freelancer-register-form:not(.hidden)>*{flex:0 0 auto!important;min-width:0!important;max-width:100%!important}
+body.registration-open #register-form:not(.hidden) label,
+body.registration-open #freelancer-register-form:not(.hidden) label{
+  display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:6px!important;
+  width:100%!important;min-width:0!important;margin:0!important;
+}
+body.registration-open #register-form:not(.hidden) input,
+body.registration-open #freelancer-register-form:not(.hidden) input,
+body.registration-open #register-form:not(.hidden) select,
+body.registration-open #freelancer-register-form:not(.hidden) select{
+  display:block!important;width:100%!important;min-width:0!important;max-width:100%!important;
+  min-height:44px!important;box-sizing:border-box!important;font-size:16px!important;
+}
+body.registration-open #register-form .registration-sticky-footer,
+body.registration-open #freelancer-register-form .registration-sticky-footer{
+  position:sticky!important;bottom:calc(-1 * max(18px,env(safe-area-inset-bottom)))!important;
+  z-index:5!important;margin-top:8px!important;padding:12px 0 max(12px,env(safe-area-inset-bottom))!important;
+  background:#fff!important;
+}
+body.registration-open #register-form .aurora-policy-consent{align-items:flex-start!important}
+body.registration-open #register-form .aurora-policy-consent input{width:20px!important;min-width:20px!important;min-height:20px!important}
+@media(min-width:601px){
+ body.registration-open #login-view{top:72px!important;left:50%!important;right:auto!important;width:430px!important;transform:translateX(-50%)!important}
+ body.registration-open #register-form:not(.hidden),
+ body.registration-open #freelancer-register-form:not(.hidden){
+   top:72px!important;left:50%!important;right:auto!important;width:430px!important;max-width:430px!important;
+   transform:translateX(-50%)!important;padding:18px 16px 22px!important;
+ }
+}
+@media(max-width:380px){
+ body.registration-open #register-form:not(.hidden),
+ body.registration-open #freelancer-register-form:not(.hidden){padding-left:11px!important;padding-right:11px!important;gap:10px!important}
+ body.registration-open #register-form:not(.hidden) .eyebrow,
+ body.registration-open #freelancer-register-form:not(.hidden) .eyebrow{font-size:14px!important}
+}
