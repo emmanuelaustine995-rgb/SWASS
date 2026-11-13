@@ -1015,16 +1015,20 @@
   function updateSignupAccountType(){
     customerSignupMode = $('login-account-type').value === 'customer';
     $('signup-back-btn')?.classList.toggle('hidden', !customerSignupMode);
-    if($('reg-account-type'))$('reg-account-type').value=customerSignupMode?'customer':'owner';
     $('owner-signup-fields').classList.toggle('hidden',customerSignupMode);
     $('reg-business').required=!customerSignupMode;
-    $('reg-store').required=!customerSignupMode;
     $('reg-location').required=!customerSignupMode;
+    $('reg-national-id').required=true;
+    $('reg-id-photo').required=!customerSignupMode;
+    $('reg-passport-photo').required=!customerSignupMode;
+    $('reg-kra-wrap').classList.toggle('hidden',customerSignupMode);
+    $('reg-email').required=true;
     $('reg-password').required=true;
-    $('reg-password-field').classList.remove('hidden');
-    $('register-submit').textContent=customerSignupMode?'Create customer account · Send code':'Create business · Send verification code';
+    $('reg-confirm-password').required=true;
+    $('owner-identity-uploads').classList.toggle('hidden',customerSignupMode);
+    $('register-submit').textContent=customerSignupMode?'Create customer account · Send code':'Create shop owner account · Send verification code';
     const eyebrow=$('register-form').querySelector('.eyebrow');
-    if(eyebrow)eyebrow.textContent=customerSignupMode?'CREATE YOUR AURORA CUSTOMER ACCOUNT':'CREATE YOUR AURORA E-RECEIPT ACCOUNT';
+    if(eyebrow)eyebrow.textContent=customerSignupMode?'CREATE YOUR AURORA CUSTOMER ACCOUNT':'CREATE YOUR AURORA SHOP OWNER ACCOUNT';
   }
   updateSignupAccountType();
   function updateLoginAccountType(){
@@ -1196,18 +1200,38 @@
   });
   let signupResendTimer = null;
   let signupResendSeconds = 0;
-  function signupPayload(){
+  function readSignupPhoto(inputId){
+    const file=$(inputId)?.files?.[0];
+    if(!file)return Promise.resolve('');
+    if(!['image/jpeg','image/png','image/webp'].includes(file.type))return Promise.reject(new Error('Choose a JPG, PNG or WEBP image.'));
+    if(file.size>1500*1024)return Promise.reject(new Error('Each photo must be 1.5 MB or smaller. Please choose a smaller image.'));
+    return new Promise((resolve,reject)=>{
+      const reader=new FileReader();
+      reader.onload=()=>resolve(String(reader.result||''));
+      reader.onerror=()=>reject(new Error('Could not read the selected photo. Please choose it again.'));
+      reader.readAsDataURL(file);
+    });
+  }
+  async function signupPayload(){
+    const password=$('reg-password').value;
+    if(password!==$('reg-confirm-password').value)throw new Error('The passwords do not match.');
+    const nationalId=$('reg-national-id').value.trim();
+    if(!/^[0-9]{7,9}$/.test(nationalId))throw new Error('Enter a valid National ID number.');
+    const idPhotoData=customerSignupMode?'':await readSignupPhoto('reg-id-photo');
+    const passportPhotoData=customerSignupMode?'':await readSignupPhoto('reg-passport-photo');
     return {
       accountType:customerSignupMode?'customer':'owner',
       businessName:customerSignupMode?'':$('reg-business').value.trim(),
-      legalName:$('reg-legal-name').value.trim(),businessEmail:$('reg-business-email').value.trim(),
-      storeName:customerSignupMode?'':$('reg-store').value.trim(),
+      storeName:customerSignupMode?'':$('reg-business').value.trim(),
       storeLocation:customerSignupMode?'':$('reg-location').value.trim(),
-      houseName:$('reg-house-name').value.trim(),floor:$('reg-floor').value.trim(),houseNumber:$('reg-house-number').value.trim(),websiteUrl:$('reg-website').value.trim(),kraPin:$('reg-kra-pin').value.trim(),
+      kraPin:customerSignupMode?'':$('reg-kra-pin').value.trim(),
+      nationalId,
+      idPhotoData,
+      passportPhotoData,
       fullName:$('reg-name').value.trim(),
       phone:$('reg-phone').value.trim(),
       email:$('reg-email').value.trim(),
-      password:$('reg-password').value,
+      password,
       referralCode:customerSignupMode?(customerReferralCodeFromUrl||''):referralCodeFromUrl
     };
   }
@@ -1234,7 +1258,8 @@
       $('register-error').textContent='Connecting to AURORA…';
       void warmApi();
       $('register-error').textContent='';
-      const data=await request(customerSignupMode?'/api/v1/auth/customer/register':'/api/v1/auth/register',{method:'POST',signal:AbortSignal.timeout(150000),body:JSON.stringify(signupPayload())});
+      const payload=await signupPayload();
+      const data=await request(customerSignupMode?'/api/v1/auth/customer/register':'/api/v1/auth/register',{method:'POST',signal:AbortSignal.timeout(150000),body:JSON.stringify(payload)});
       $('register-fields').classList.add('hidden');
       $('register-submit').classList.add('hidden');
       $('signup-otp-panel').classList.remove('hidden');
