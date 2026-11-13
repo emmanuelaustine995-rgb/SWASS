@@ -41,7 +41,7 @@ export class PlatformAdminController {
 
   @Get('reports')
   async platformReports(@Query('from') from = '', @Query('to') to = '') {
-    const validDate = (value: string) => /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(Date.parse(value + 'T00:00:00Z'));
+    const validDate = (value: string) => { if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false; const parsed = new Date(value + 'T00:00:00Z'); return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value; };
     const endDate = validDate(to) ? to : new Date().toISOString().slice(0, 10);
     const startDate = validDate(from) ? from : new Date(Date.now() - 29 * 86400000).toISOString().slice(0, 10);
     if (startDate > endDate) throw new BadRequestException('The report start date must be on or before the end date.');
@@ -53,7 +53,7 @@ export class PlatformAdminController {
         COUNT(*) FILTER (WHERE status='active')::int AS active,
         COUNT(*) FILTER (WHERE status='suspended')::int AS suspended,
         COUNT(*) FILTER (WHERE created_at >= $1::date AND created_at < $2::date + interval '1 day')::int AS new_in_period
-        FROM tenants`),
+        FROM tenants`, params),
       this.db.pool.query(`SELECT COUNT(*)::int AS total,
         COUNT(*) FILTER (WHERE is_active=true)::int AS active,
         COUNT(*) FILTER (WHERE is_active=false)::int AS inactive,
