@@ -86,6 +86,17 @@ export class AuthGuard implements CanActivate {
       );
       if (!verified.rowCount) throw new ForbiddenException('Administrator access is no longer active or the email is not verified.');
     }
+    if (user.role === 'customer') {
+      const activeCustomer = await this.db.pool.query(
+        'SELECT 1 FROM customer_accounts WHERE id=$1 AND is_active=true LIMIT 1', [user.sub],
+      );
+      if (!activeCustomer.rowCount) throw new UnauthorizedException('This account is no longer active. Please register again.');
+    } else if (user.role !== 'super_admin') {
+      const activeUser = await this.db.pool.query(
+        'SELECT 1 FROM users WHERE id=$1 AND is_active=true LIMIT 1', [user.sub],
+      );
+      if (!activeUser.rowCount) throw new UnauthorizedException('This account is no longer active. Please register again.');
+    }
     const path = String(req.originalUrl ?? req.url ?? '').split('?')[0];
     if (user.mustChangePassword && path !== '/api/v1/auth/change-password') throw new ForbiddenException('Please create your own password before using the shop workspace.');
     // Keep the payment portal usable when a subscription has expired or has
@@ -315,7 +326,7 @@ export class AuthController {
     // Run independent database checks and password hashing together to shorten signup time.
     const checksStartedAt = Date.now();
     const [existing, limits, passwordHash] = await Promise.all([
-      this.db.pool.query(`SELECT 1 FROM users WHERE phone = ANY($1::text[]) OR regexp_replace(phone, '[^0-9]', '', 'g') = ANY($1::text[]) LIMIT 1`, [[phone, '0' + phone.slice(3)]]),
+      this.db.pool.query(`SELECT 1 FROM users WHERE is_active=true AND (phone = ANY($1::text[]) OR regexp_replace(phone, '[^0-9]', '', 'g') = ANY($1::text[])) LIMIT 1`, [[phone, '0' + phone.slice(3)]]),
       this.db.pool.query(
         `SELECT
           (SELECT count(*)::int FROM signup_otp_requests WHERE phone=$1 AND created_at>now()-interval '15 minutes') AS phone_count,
@@ -809,9 +820,9 @@ export class AuthController {
     const idSecret = process.env.SWASS_ID_SECRET;
     if (!idSecret) throw new ServiceUnavailableException('Secure identity verification is not configured.');
     const nationalIdHash = createHmac('sha256', idSecret).update('aurora-customer-national-id:' + nationalId).digest('hex');
-    const usedCustomerId = await this.db.pool.query('SELECT 1 FROM customer_accounts WHERE national_id_hash=$1 LIMIT 1', [nationalIdHash]);
+    const usedCustomerId = await this.db.pool.query('SELECT 1 FROM customer_accounts WHERE national_id_hash=$1 AND is_active=true LIMIT 1', [nationalIdHash]);
     if (usedCustomerId.rowCount) throw new BadRequestException('This National ID is already linked to a customer account.');
-    const existing = await this.db.pool.query('SELECT 1 FROM customer_accounts WHERE phone=$1 LIMIT 1', [phone]);
+    const existing = await this.db.pool.query('SELECT 1 FROM customer_accounts WHERE phone=$1 AND is_active=true LIMIT 1', [phone]);
     if (existing.rowCount) throw new BadRequestException('A customer account already exists for this phone. Please sign in.');
     const limits = await this.db.pool.query(
       `SELECT count(*)::int AS n FROM customer_signup_otp_requests WHERE phone=$1 AND created_at>now()-interval '15 minutes'`,
