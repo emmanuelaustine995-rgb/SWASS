@@ -168,20 +168,17 @@ export class AuthController {
   }
 
   private async sendSignupSms(to: string, message: string): Promise<void> {
-    const failures: string[] = [];
     const token = process.env.TALKSASA_API_TOKEN || process.env.TALKSASA_API_KEY;
-
-    // Try the approved TalkSasa sender first.
     if (token) {
-      const providerStartedAt = Date.now();
+      const startedAt = Date.now();
+      const configuredUrl = (process.env.TALKSASA_API_URL || 'https://bulksms.talksasa.com/api/v3/sms/send').trim();
+      const endpoint = /\\/sms\\/send\\/?$/i.test(configuredUrl)
+        ? configuredUrl
+        : `${configuredUrl.replace(/\\/+$/, '')}/sms/send`;
       try {
-        const configuredTalkSasaUrl = (process.env.TALKSASA_API_URL || 'https://bulksms.talksasa.com/api/v3/sms/send').trim();
-        const talkSasaEndpoint = /\/sms\/send\/?$/i.test(configuredTalkSasaUrl)
-          ? configuredTalkSasaUrl
-          : `${configuredTalkSasaUrl.replace(/\/+$/, '')}/sms/send`;
-        const response = await fetch(talkSasaEndpoint, {
+        const response = await fetch(endpoint, {
           method: 'POST',
-          signal: AbortSignal.timeout(12000),
+          signal: AbortSignal.timeout(8000),
           headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', 'Content-Type': 'application/json' },
           body: JSON.stringify({
             recipient: `+${to}`,
@@ -193,24 +190,25 @@ export class AuthController {
         const raw = await response.text();
         let result: any = {};
         try { result = raw ? JSON.parse(raw) : {}; } catch { result = {}; }
-        // Log timing and provider acceptance only; never log the phone, OTP, token or message.
-        const gatewayStatus = String(result?.status ?? result?.data?.status ?? '').trim().toLowerCase();
+        const status = String(result?.status ?? result?.data?.status ?? '').trim().toLowerCase();
         const accepted = response.ok && (
-          gatewayStatus === 'success' || gatewayStatus === 'accepted' || gatewayStatus === 'queued' ||
+          status === 'success' || status === 'accepted' || status === 'queued' ||
           result?.success === true || result?.status === true
         );
-        console.info(`[SWASS] Signup OTP TalkSasa response: HTTP ${response.status}, status=${gatewayStatus || 'missing'}, accepted=${accepted}, durationMs=${Date.now() - providerStartedAt}`);
-        // Do not treat HTTP 200 alone as success: the gateway can return a JSON error.
+        console.info(`[AURORA][SMS] TalkSasa HTTP ${response.status}, status=${status || 'missing'}, accepted=${accepted}, durationMs=${Date.now() - startedAt}`);
         if (accepted) return;
-        const reason = String(result?.message ?? result?.error ?? result?.data?.message ?? raw ?? response.statusText ?? '').replace(/[\\r\\n]+/g, ' ').slice(0, 180);
-        failures.push(`TalkSasa HTTP ${response.status}${reason ? `: ${reason}` : ''}`);
+        const reason = String(result?.message ?? result?.error ?? result?.data?.message ?? raw ?? response.statusText ?? '')
+          .replace(/[\\r\\n]+/g, ' ').slice(0, 180);
+        throw new Error(`TalkSasa HTTP ${response.status}${reason ? `: ${reason}` : ''}`);
       } catch (error) {
-        console.warn(`[SWASS] Signup OTP TalkSasa request failed after ${Date.now() - providerStartedAt}ms: ${error instanceof Error ? error.name : 'request failed'}`);
-        failures.push(`TalkSasa: ${error instanceof Error ? error.message : 'request failed'}`);
+        console.error(`[AURORA][SMS] TalkSasa delivery failed after ${Date.now() - startedAt}ms: ${error instanceof Error ? error.message : 'request failed'}`);
+        // Do not silently route OTPs through a different provider when TalkSasa is configured.
+        throw new Error('TalkSasa could not accept the OTP request. Please try again shortly.');
       }
     }
 
-    // Keep the previously supported Africa's Talking route as a real fallback.
+    // Use legacy providers only when TalkSasa has not been configured.
+    const failures: string[] = [];
     const atUsername = process.env.AT_USERNAME;
     const atApiKey = process.env.AT_API_KEY;
     if (atUsername && atApiKey) {
@@ -222,7 +220,7 @@ export class AuthController {
           : 'https://api.africastalking.com/version1/messaging';
         const response = await fetch(endpoint, {
           method: 'POST',
-          signal: AbortSignal.timeout(12000),
+          signal: AbortSignal.timeout(8000),
           headers: { apiKey: atApiKey, Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
           body: form,
         });
@@ -232,13 +230,12 @@ export class AuthController {
         const recipients = result?.SMSMessageData?.Recipients;
         if (response.ok && Array.isArray(recipients) && recipients.length &&
             recipients.every((r: any) => Number(r.statusCode) === 101)) return;
-        const providerMessage = String(result?.SMSMessageData?.Message ?? result?.message ?? raw ?? '').slice(0, 140);
-        failures.push(`Africa's Talking HTTP ${response.status}${providerMessage ? `: ${providerMessage}` : ''}`);
+        const detail = String(result?.SMSMessageData?.Message ?? result?.message ?? raw ?? '').slice(0, 140);
+        failures.push(`Africa's Talking HTTP ${response.status}${detail ? `: ${detail}` : ''}`);
       } catch (error) {
         failures.push(`Africa's Talking: ${error instanceof Error ? error.message : 'request failed'}`);
       }
     }
-
     const sid = process.env.TWILIO_ACCOUNT_SID;
     const auth = process.env.TWILIO_AUTH_TOKEN;
     const from = process.env.TWILIO_FROM || process.env.TWILIO_FROM_NUMBER;
@@ -247,7 +244,7 @@ export class AuthController {
         const form = new URLSearchParams({ To: `+${to}`, From: from, Body: message });
         const response = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`, {
           method: 'POST',
-          signal: AbortSignal.timeout(12000),
+          signal: AbortSignal.timeout(8000),
           headers: {
             Authorization: `Basic ${Buffer.from(`${sid}:${auth}`).toString('base64')}`,
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -260,8 +257,7 @@ export class AuthController {
         failures.push(`Twilio: ${error instanceof Error ? error.message : 'request failed'}`);
       }
     }
-
-    if (!token && !atUsername && !sid) {
+    if (!atUsername && !sid) {
       if (process.env.NODE_ENV !== 'production') return;
       throw new Error('No SMS provider credentials are configured');
     }
