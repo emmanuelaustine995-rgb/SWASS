@@ -1,27 +1,41 @@
-/* AURORA registration workspace
-   A single phone-width white workspace on desktop and a full-width screen on mobile.
-   The existing form markup, field IDs, validation, OTP and policy content are preserved. */
-
+/* Registration page intentionally has no custom styling.
+   Keep the existing form IDs and markup so signup, OTP, and validation continue
+   working. Browser-native HTML appearance is used while registration is open. */
 html body.registration-open {
+  all: revert !important;
+  display: block !important;
+  margin: 8px !important;
+  padding: 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+  overflow: auto !important;
+  background: white !important;
+  color: black !important;
+  font-family: initial !important;
+}
+html body.registration-open * {
+  all: revert !important;
+}
+html body.registration-open .shell,
+html body.registration-open #login-view,
+html body.registration-open #login-view > .login-card {
+  display: block !important;
+  position: static !important;
+  width: auto !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
   margin: 0 !important;
-  min-height: 100dvh !important;
-  height: 100dvh !important;
-  overflow: hidden !important;
-  background: #f3f6fa !important;
-  color: #173047 !important;
-  font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  transform: none !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
 }
-
-html body.registration-open .topbar {
-  display: flex !important;
-  position: fixed !important;
-  z-index: 10020 !important;
-  inset: 0 0 auto 0 !important;
-  height: 62px !important;
-  min-height: 62px !important;
-}
-
-html body.registration-open .global-back-row,
 html body.registration-open .aurora-brand-lockup,
 html body.registration-open #login-form,
 html body.registration-open #password-reset-form,
@@ -30,315 +44,15 @@ html body.registration-open #owner-register-entry,
 html body.registration-open #freelancer-register-entry {
   display: none !important;
 }
-
-html body.registration-open .shell {
-  position: fixed !important;
-  z-index: 10000 !important;
-  top: 62px !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  width: 100% !important;
-  max-width: none !important;
-  height: auto !important;
-  min-height: 0 !important;
-  max-height: none !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  overflow: hidden !important;
-  transform: none !important;
-  background: #fff !important;
-  box-sizing: border-box !important;
-}
-
-html body.registration-open #login-view {
-  position: absolute !important;
-  inset: 0 !important;
-  display: block !important;
-  width: 100% !important;
-  max-width: 100% !important;
-  height: 100% !important;
-  min-height: 0 !important;
-  max-height: none !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  overflow-x: hidden !important;
-  overflow-y: auto !important;
-  overscroll-behavior-y: contain !important;
-  -webkit-overflow-scrolling: touch !important;
-  background: #fff !important;
-  box-sizing: border-box !important;
-}
-
-html body.registration-open #login-view > .login-card {
-  position: relative !important;
-  display: block !important;
-  width: 100% !important;
-  max-width: 100% !important;
-  min-width: 0 !important;
-  height: auto !important;
-  min-height: 100% !important;
-  max-height: none !important;
-  margin: 0 auto !important;
-  padding: 22px 18px 30px !important;
-  overflow: visible !important;
-  transform: none !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  background: #fff !important;
-  box-sizing: border-box !important;
-}
-
 html body.registration-open #register-form:not(.hidden),
 html body.registration-open #freelancer-register-form:not(.hidden) {
-  position: relative !important;
-  inset: auto !important;
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: stretch !important;
-  gap: 13px !important;
-  width: 100% !important;
-  max-width: 100% !important;
-  min-width: 0 !important;
-  height: auto !important;
-  min-height: 0 !important;
-  max-height: none !important;
-  margin: 0 !important;
-  padding: 0 0 24px !important;
-  overflow: visible !important;
-  transform: none !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  background: #fff !important;
-  color: #173047 !important;
-  box-sizing: border-box !important;
-  font: inherit !important;
-}
-
-html body.registration-open #register-form:not(.hidden) > *,
-html body.registration-open #freelancer-register-form:not(.hidden) > * {
-  flex: 0 0 auto !important;
-  min-width: 0 !important;
-  max-width: 100% !important;
-  box-sizing: border-box !important;
-}
-
-html body.registration-open #register-form:not(.hidden) > .eyebrow,
-html body.registration-open #freelancer-register-form:not(.hidden) > .eyebrow {
-  margin: 0 0 3px !important;
-  color: #075bd8 !important;
-  font-size: 12px !important;
-  font-weight: 800 !important;
-  letter-spacing: .09em !important;
-  line-height: 1.4 !important;
-}
-
-html body.registration-open #register-form:not(.hidden) label,
-html body.registration-open #freelancer-register-form:not(.hidden) label {
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: stretch !important;
-  gap: 6px !important;
-  width: 100% !important;
-  min-width: 0 !important;
-  margin: 0 !important;
-  color: #29445b !important;
-  font-size: 13px !important;
-  font-weight: 650 !important;
-  line-height: 1.4 !important;
-}
-
-html body.registration-open #register-form:not(.hidden) input:not([type="checkbox"]),
-html body.registration-open #freelancer-register-form:not(.hidden) input:not([type="checkbox"]) {
   display: block !important;
-  width: 100% !important;
-  max-width: 100% !important;
-  min-width: 0 !important;
-  min-height: 45px !important;
+  width: auto !important;
+  max-width: none !important;
   margin: 0 !important;
-  padding: 10px 12px !important;
-  border: 1px solid #cbd7e3 !important;
-  border-radius: 9px !important;
-  outline-offset: 2px !important;
-  background: #fff !important;
-  color: #173047 !important;
-  font: inherit !important;
-  font-size: 16px !important;
-  line-height: 1.35 !important;
-  box-sizing: border-box !important;
+  padding: 0 !important;
 }
-
-html body.registration-open #register-form input[type="file"],
-html body.registration-open #freelancer-register-form input[type="file"] {
-  min-height: 52px !important;
-  padding: 9px !important;
-  background: #f7faff !important;
-}
-
-html body.registration-open #register-form button,
-html body.registration-open #freelancer-register-form button {
-  min-height: 43px !important;
-  max-width: 100% !important;
-  border-radius: 9px !important;
-  font: inherit !important;
-  font-size: 14px !important;
-  font-weight: 750 !important;
-  cursor: pointer !important;
-  box-sizing: border-box !important;
-}
-
-html body.registration-open #register-form button.full,
-html body.registration-open #freelancer-register-form button.full,
-html body.registration-open #register-form #register-submit,
-html body.registration-open #freelancer-register-form #request-freelancer-approval {
-  display: block !important;
-  width: 100% !important;
-  min-height: 48px !important;
-  margin: 2px 0 !important;
-  background: #075bd8 !important;
-  color: #fff !important;
-  border: 1px solid #075bd8 !important;
-}
-
-html body.registration-open #register-form #signup-otp-panel,
-html body.registration-open #register-form #owner-signup-fields,
-html body.registration-open #register-form #register-fields {
-  display: flex;
-  flex-direction: column;
-  gap: 13px;
-  width: 100%;
-  min-width: 0;
-}
-
-html body.registration-open #register-form #signup-otp-panel.hidden,
-html body.registration-open #register-form #owner-signup-fields.hidden,
-html body.registration-open #register-form #register-fields.hidden,
 html body.registration-open .hidden,
 html body.registration-open [hidden] {
   display: none !important;
-}
-
-html body.registration-open #register-form .aurora-policy-consent,
-html body.registration-open #freelancer-register-form .aurora-policy-consent {
-  display: grid !important;
-  grid-template-columns: 20px minmax(0, 1fr) !important;
-  align-items: start !important;
-  gap: 9px !important;
-  color: #42596d !important;
-  font-size: 12px !important;
-  font-weight: 500 !important;
-}
-
-html body.registration-open .aurora-policy-consent input[type="checkbox"] {
-  width: 18px !important;
-  height: 18px !important;
-  min-height: 18px !important;
-  margin: 1px 0 0 !important;
-  accent-color: #075bd8 !important;
-}
-
-html body.registration-open .aurora-policy-consent a {
-  color: #075bd8 !important;
-  font-weight: 750 !important;
-}
-
-html body.registration-open .registration-sticky-footer {
-  position: static !important;
-  display: flex !important;
-  flex-wrap: wrap !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  gap: 10px !important;
-  width: 100% !important;
-  margin: 5px 0 0 !important;
-  padding: 14px 0 4px !important;
-  border-top: 1px solid #e6edf4 !important;
-  background: #fff !important;
-  color: #607487 !important;
-  font-size: 12px !important;
-}
-
-html body.registration-open .registration-back-button {
-  min-height: 36px !important;
-  padding: 7px 12px !important;
-  border: 1px solid #cbd9e6 !important;
-  border-radius: 8px !important;
-  background: #f3f7fb !important;
-  color: #174e82 !important;
-}
-
-html body.registration-open #aurora-policy-center {
-  display: block !important;
-  width: 100% !important;
-  max-width: 100% !important;
-  margin: 0 !important;
-  padding: 15px 18px 30px !important;
-  border: 0 !important;
-  border-top: 1px solid #e7edf3 !important;
-  border-radius: 0 !important;
-  background: #fff !important;
-  color: #263b4e !important;
-  box-sizing: border-box !important;
-}
-
-html body.registration-open #aurora-policy-center summary {
-  color: #075bd8 !important;
-  font-size: 13px !important;
-  font-weight: 750 !important;
-}
-
-html body.registration-open #aurora-policy-center .aurora-policy-content {
-  max-height: 45vh !important;
-  overflow: auto !important;
-}
-
-html body.registration-open #register-form .error,
-html body.registration-open #freelancer-register-form [role="status"],
-html body.registration-open #register-form [role="status"] {
-  overflow-wrap: anywhere !important;
-  margin: 0 !important;
-  font-size: 12px !important;
-}
-
-@media (min-width: 600px) {
-  html body.registration-open .shell {
-    top: 62px !important;
-    right: auto !important;
-    left: 50% !important;
-    width: min(430px, calc(100vw - 32px)) !important;
-    max-width: 430px !important;
-    transform: translateX(-50%) !important;
-    border-left: 1px solid #e8edf3 !important;
-    border-right: 1px solid #e8edf3 !important;
-    box-shadow: 0 0 24px rgba(28, 54, 82, .07) !important;
-  }
-  html body.registration-open #login-view > .login-card {
-    padding: 22px 18px 30px !important;
-  }
-}
-
-@media (max-width: 599px) {
-  html body.registration-open .topbar {
-    height: 56px !important;
-    min-height: 56px !important;
-  }
-  html body.registration-open .shell {
-    top: 56px !important;
-  }
-  html body.registration-open #login-view > .login-card {
-    padding: 17px 15px 26px !important;
-  }
-}
-
-@media (max-width: 360px) {
-  html body.registration-open #login-view > .login-card {
-    padding-right: 12px !important;
-    padding-left: 12px !important;
-  }
-  html body.registration-open #register-form:not(.hidden),
-  html body.registration-open #freelancer-register-form:not(.hidden) {
-    gap: 11px !important;
-  }
 }
