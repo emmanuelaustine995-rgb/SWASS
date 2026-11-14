@@ -266,3 +266,9 @@
 }
 
 /* The existing mobile registration presentation is intentionally preserved. */
+
+@media (min-width: 761px) {
+  html body.registration-open #freelancer-register-form:not(.hidden) > p {
+    grid-column: 1 / -1 !important;
+  }
+}
