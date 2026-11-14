@@ -207,6 +207,7 @@ body{background:#eef3fb}
    <button data-section="finance">Finance &amp; Payments</button>
    <button data-section="security">Security Centre</button>
    <button data-section="access">Admin Access Control</button>
+   <button data-section="accounts">Registered Accounts</button>
    <button data-section="reports">Platform Reports</button>
    <button data-section="settings">System Settings</button>
   </nav><button id="admin-logout" class="logout" type="button">Sign out</button>
@@ -260,6 +261,16 @@ body{background:#eef3fb}
  <div class="panel"><h3>Security controls &amp; audit coverage</h3><div class="soc-control-grid"><div><b>HTTPS and browser security headers</b><span>Configured in API gateway application</span></div><div><b>Administrator-only endpoints</b><span>JWT authentication and super-admin role checks</span></div><div><b>Login event recording</b><span>Successful and failed customer, owner and admin sign-ins</span></div><div><b>Shop action audit</b><span>Shop deactivation events recorded with administrator identity</span></div></div></div>
 </section>
 <section id="section-access" class="hidden"><div class="heading"><div><h2>Admin Access Control</h2><p>Up to three authorised people, with multiple approved email aliases per person.</p></div></div><div class="cards"><div class="card"><small>Registered shops</small><div id="access-shops" class="metric">—</div></div><div class="card"><small>Active shop owners</small><div id="access-owners" class="metric">—</div></div><div class="card"><small>Active customer accounts</small><div id="access-customers" class="metric">—</div></div><div class="card"><small>Inactive user accounts</small><div id="access-inactive" class="metric">—</div></div></div><div class="chart-grid"><div class="chart-panel"><h3>Account security posture</h3><p>Live account counts from the platform database—not a threat-detection score</p><div class="chart-row"><span>Active owners</span><div class="chart-track"><div id="access-owner-fill" class="chart-fill"></div></div><strong id="access-owner-value" class="chart-value">—</strong></div><div class="chart-row"><span>Customers</span><div class="chart-track"><div id="access-customer-fill" class="chart-fill"></div></div><strong id="access-customer-value" class="chart-value">—</strong></div><div class="chart-row"><span>Inactive users</span><div class="chart-track"><div id="access-inactive-fill" class="chart-fill"></div></div><strong id="access-inactive-value" class="chart-value">—</strong></div><div id="access-chart-note" class="chart-empty">Waiting for verified platform counts…</div></div><div class="panel"><h3>Authorised administrator identities</h3><p>Registration is checked against the server-side AURORA_ADMIN_IDENTITIES configuration. Each person has one approved phone number and one or more approved email addresses. Phone verification and email verification are required before admin sign-in. National ID numbers are stored only as protected hashes. Individual permissions, login MFA, and append-only administrator audit history still require backend implementation.</p></div></div></section>
+<section id="section-accounts" class="hidden">
+ <div class="heading"><div><h2>Registered Account Reset</h2><p>Deactivate old login accounts and expire subscriptions while preserving business and transaction history.</p></div></div>
+ <div class="panel">
+  <h3>Prepare accounts for fresh registration</h3>
+  <p>This action keeps every super-admin account, shop, store, receipt, sales record, customer history, inventory record and financial ledger entry. It deactivates all non-admin owner, staff, freelancer and customer login accounts, expires active subscriptions, and clears old owner identity verification links so former users can register again.</p>
+  <p><strong>This cannot be automatically undone.</strong> Users will need to register and verify their details again. Existing login sessions will stop working.</p>
+  <button id="account-reset-run" class="primary" type="button" style="max-width:360px;background:#b42318">RESET NON-ADMIN LOGIN ACCOUNTS</button>
+  <p id="account-reset-status" class="status" role="status">No reset has been run from this page.</p>
+ </div>
+</section>
 <section id="section-reports" class="hidden">
 <div class="heading"><div><h2>Platform Reports</h2><p>Evidence-based platform performance, growth, receipts and subscription reporting.</p></div><div class="report-actions"><button class="secondary" id="reports-refresh" type="button">↻ Run report</button><button class="primary" id="reports-export" type="button">↓ Export CSV</button></div></div>
 <div class="report-filter panel"><div><label for="reports-from">From date</label><input id="reports-from" type="date"></div><div><label for="reports-to">To date</label><input id="reports-to" type="date"></div><p id="reports-status" role="status">Choose a reporting period and run the report.</p></div>
@@ -360,6 +371,25 @@ body{background:#eef3fb}
       await loadShops();await loadOverview();
     }catch(e){alert(e.message||'Could not deactivate this shop.');button.disabled=false;button.textContent='Deactivate this shop';}
   }
+
+  async function resetRegisteredAccounts(){
+    const phrase=window.prompt('This will deactivate every non-admin login and expire all active subscriptions. Business and sales history will remain.\n\nType RESET ACCOUNTS to continue:');
+    if(phrase!=='RESET ACCOUNTS')return;
+    if(!window.confirm('Final confirmation: keep all super-admin accounts and all business/receipt history, but require every other user to register again?'))return;
+    const button=$('account-reset-run'),status=$('account-reset-status');
+    button.disabled=true;button.textContent='RESETTING ACCOUNTS…';status.textContent='Applying the account reset in one database transaction…';
+    try{
+      const res=await fetch(API+'/platform-admin/accounts/reset',{method:'POST',headers:{Authorization:'Bearer '+token,Accept:'application/json'}});
+      const data=await res.json().catch(()=>({}));
+      if(!res.ok)throw new Error(data.message||'Account reset failed.');
+      status.textContent='Completed: '+Number(data.deactivatedUserAccounts||0)+' owner/staff/freelancer accounts, '+Number(data.deactivatedCustomerAccounts||0)+' customer accounts deactivated; '+Number(data.expiredSubscriptions||0)+' subscriptions expired. Business and sales history preserved.';
+      window.alert(data.message||'Registered accounts reset successfully.');
+      await loadOverview();
+      await loadSecurity();
+    }catch(e){status.textContent='Reset failed: '+(e.message||'Unknown error');}
+    finally{button.disabled=false;button.textContent='RESET NON-ADMIN LOGIN ACCOUNTS';}
+  }
+  $('account-reset-run').addEventListener('click',resetRegisteredAccounts);
 
   async function loadSecurity(){
     const status=$('soc-events-status'),rows=$('soc-events'),severity=$('soc-severity').value;
