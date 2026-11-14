@@ -699,11 +699,17 @@ export class AuthController {
       `SELECT id FROM users
          WHERE regexp_replace(phone, '[^0-9]', '', 'g') IN ($1,$2)
            AND is_active=true
-           AND ($3::text IS NULL OR role=$3)
+           AND (
+             $3::text IS NULL
+             OR ($3='freelancer' AND (
+               role='freelancer'
+               OR (role='cashier' AND lower(coalesce(staff_title,''))='freelancer')
+             ))
+           )
          LIMIT 1`,
       [phone, '0' + phone.slice(3), body?.accountType === 'freelancer' ? 'freelancer' : null],
     );
-    console.info(`[AURORA] Freelancer password-reset lookup: matched=${Boolean(found.rowCount)}, accountType=${body?.accountType === 'freelancer' ? 'freelancer' : 'other'}`);
+    console.info(`[AURORA] Password-reset lookup: matched=${Boolean(found.rowCount)}, accountType=${body?.accountType === 'freelancer' ? 'freelancer' : 'general'}`);
     if (!found.rowCount) return generic;
     const userId = found.rows[0].id;
     const recent = await this.db.pool.query(
@@ -747,7 +753,13 @@ export class AuthController {
       `SELECT pr.id,pr.user_id,pr.code_hash,pr.attempts
        FROM password_reset_requests pr JOIN users u ON u.id=pr.user_id
        WHERE pr.phone=$1 AND pr.used_at IS NULL AND pr.expires_at>now() AND u.is_active=true
-         AND ($2::text IS NULL OR u.role=$2)
+         AND (
+           $2::text IS NULL
+           OR ($2='freelancer' AND (
+             u.role='freelancer'
+             OR (u.role='cashier' AND lower(coalesce(u.staff_title,''))='freelancer')
+           ))
+         )
        ORDER BY pr.created_at DESC LIMIT 1`,
       [phone, body?.accountType === 'freelancer' ? 'freelancer' : null],
     );
