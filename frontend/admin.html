@@ -199,7 +199,7 @@ body{background:#eef3fb}
 <section id="admin-app" class="app hidden">
 <div class="main">
 <header class="top">
- <div class="top-left"><button id="admin-menu-toggle" class="menu-toggle" type="button" aria-label="Open admin navigation" aria-expanded="false"><span></span><span></span><span></span></button><div><div class="top-brand">AURORA · ADMIN CONTROL CENTRE</div><strong id="admin-welcome" class="top-title">Admin Home</strong></div></div>
+ <div class="top-left"><button id="admin-menu-toggle" class="menu-toggle" type="button" aria-label="Open admin navigation" aria-expanded="false"><span></span><span></span><span></span></button><div><div class="top-brand">AURORA · ADMIN CONTROL CENTRE</div><strong id="admin-welcome" class="top-title">Admin Home</strong></div><button id="admin-accounts-shortcut" type="button" style="border:0;border-radius:9px;background:#f59e0b;color:#172554;padding:10px 13px;font-size:12px;font-weight:900;white-space:nowrap;cursor:pointer">REGISTERED ACCOUNTS</button></div>
  <div class="menu-wrap"><div id="admin-menu" class="admin-menu" hidden>
   <nav class="nav" aria-label="Admin navigation">
    <button class="active" data-section="home">Admin Home</button>
@@ -586,6 +586,7 @@ body{background:#eef3fb}
   $('shop-search').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();loadShops();}});
   const menu=$('admin-menu'),menuToggle=$('admin-menu-toggle');
   menuToggle.addEventListener('click',()=>{const opening=menu.hidden;menu.hidden=!opening;menuToggle.setAttribute('aria-expanded',String(opening));});
+  $('admin-accounts-shortcut').addEventListener('click',()=>document.querySelector('.nav button[data-section="accounts"]').click());
   document.addEventListener('click',e=>{if(!e.target.closest('.menu-wrap')&&!e.target.closest('#admin-menu-toggle')){menu.hidden=true;menuToggle.setAttribute('aria-expanded','false');}});
   document.querySelectorAll('.nav button').forEach(btn=>btn.addEventListener('click',()=>{
     document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b===btn));
