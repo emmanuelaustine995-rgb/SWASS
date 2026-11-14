@@ -262,7 +262,12 @@ body{background:#eef3fb}
 </section>
 <section id="section-access" class="hidden"><div class="heading"><div><h2>Admin Access Control</h2><p>Up to three authorised people, with multiple approved email aliases per person.</p></div></div><div class="cards"><div class="card"><small>Registered shops</small><div id="access-shops" class="metric">—</div></div><div class="card"><small>Active shop owners</small><div id="access-owners" class="metric">—</div></div><div class="card"><small>Active customer accounts</small><div id="access-customers" class="metric">—</div></div><div class="card"><small>Inactive user accounts</small><div id="access-inactive" class="metric">—</div></div></div><div class="chart-grid"><div class="chart-panel"><h3>Account security posture</h3><p>Live account counts from the platform database—not a threat-detection score</p><div class="chart-row"><span>Active owners</span><div class="chart-track"><div id="access-owner-fill" class="chart-fill"></div></div><strong id="access-owner-value" class="chart-value">—</strong></div><div class="chart-row"><span>Customers</span><div class="chart-track"><div id="access-customer-fill" class="chart-fill"></div></div><strong id="access-customer-value" class="chart-value">—</strong></div><div class="chart-row"><span>Inactive users</span><div class="chart-track"><div id="access-inactive-fill" class="chart-fill"></div></div><strong id="access-inactive-value" class="chart-value">—</strong></div><div id="access-chart-note" class="chart-empty">Waiting for verified platform counts…</div></div><div class="panel"><h3>Authorised administrator identities</h3><p>Registration is checked against the server-side AURORA_ADMIN_IDENTITIES configuration. Each person has one approved phone number and one or more approved email addresses. Phone verification and email verification are required before admin sign-in. National ID numbers are stored only as protected hashes. Individual permissions, login MFA, and append-only administrator audit history still require backend implementation.</p></div></div></section>
 <section id="section-accounts" class="hidden">
- <div class="heading"><div><h2>Registered Account Reset</h2><p>Deactivate old login accounts and expire subscriptions while preserving business and transaction history.</p></div></div>
+ <div class="heading"><div><h2>People &amp; Account Directory</h2><p>All shop owners, managers and freelancers remain visible here, including deactivated accounts.</p></div></div>
+ <div class="panel">
+  <div class="soc-panel-head"><div><h3>Registered people</h3><p id="people-status">Loading account records…</p></div><div style="display:flex;gap:8px;flex-wrap:wrap"><input id="people-search" type="search" placeholder="Search name, phone, email or shop" style="max-width:320px"><button class="secondary" id="people-refresh" type="button" style="width:auto;margin:0">Refresh</button></div></div>
+  <div class="table-wrap"><table><thead><tr><th>Name</th><th>Account type</th><th>Business</th><th>Phone</th><th>Email</th><th>Login status</th><th>Registered</th></tr></thead><tbody id="people-rows"><tr><td colspan="7">Loading…</td></tr></tbody></table></div>
+ </div>
+ <div class="heading" style="margin-top:28px"><div><h2>Registered Account Reset</h2><p>Deactivate old login accounts and expire subscriptions while preserving business and transaction history.</p></div></div>
  <div class="panel">
   <h3>Prepare accounts for fresh registration</h3>
   <p>This action keeps every super-admin account, shop, store, receipt, sales record, customer history, inventory record and financial ledger entry. It deactivates all non-admin owner, staff, freelancer and customer login accounts, expires active subscriptions, and clears old owner identity verification links so former users can register again.</p>
@@ -371,6 +376,26 @@ body{background:#eef3fb}
       await loadShops();await loadOverview();
     }catch(e){alert(e.message||'Could not deactivate this shop.');button.disabled=false;button.textContent='Deactivate this shop';}
   }
+
+  async function loadPeople(){
+    const status=$('people-status'),rows=$('people-rows');
+    status.textContent='Loading all shop-owner, manager and freelancer records…';rows.replaceChildren();
+    try{
+      const term=$('people-search').value.trim();
+      const data=await api('/platform-admin/people?limit=200&search='+encodeURIComponent(term));
+      for(const person of (data.people||[])){
+        const tr=document.createElement('tr');
+        const values=[person.fullName||'—',String(person.role||'').replace(/_/g,' '),person.businessName||'—',person.phone||'—',person.email||'—',person.isActive?'Active':'Deactivated',person.createdAt?new Date(person.createdAt).toLocaleDateString():'—'];
+        const labels=['Name','Account type','Business','Phone','Email','Login status','Registered'];
+        values.forEach((value,i)=>{const td=document.createElement('td');td.textContent=String(value);td.dataset.label=labels[i];tr.append(td);});
+        rows.append(tr);
+      }
+      if(!rows.children.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=7;td.textContent='No matching owner or freelancer records found.';tr.append(td);rows.append(tr);}
+      status.textContent='Showing '+(data.people||[]).length+' people. Active and deactivated accounts are both included.';
+    }catch(e){status.textContent='Could not load people: '+e.message;const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=7;td.textContent='People directory unavailable.';tr.append(td);rows.append(tr);}
+  }
+  $('people-refresh').addEventListener('click',loadPeople);
+  $('people-search').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();loadPeople();}});
 
   async function resetRegisteredAccounts(){
     const confirmed=window.confirm('Are you sure you want to perform this action?\n\nThis will deactivate all non-admin login accounts and expire active subscriptions. Super Admin accounts, shops, receipts, sales, inventory and financial history will be preserved.');
@@ -604,7 +629,7 @@ body{background:#eef3fb}
   document.querySelectorAll('.nav button').forEach(btn=>btn.addEventListener('click',()=>{
     document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b===btn));
     document.querySelectorAll('main.content section').forEach(s=>s.classList.add('hidden'));
-    $('section-'+btn.dataset.section).classList.remove('hidden');$('admin-welcome').textContent=btn.textContent;menu.hidden=true;menuToggle.setAttribute('aria-expanded','false');if(btn.dataset.section==='shops')loadShops();if(btn.dataset.section==='security')loadSecurity();if(btn.dataset.section==='reports')loadReports();if(btn.dataset.section==='settings')loadSettings();
+    $('section-'+btn.dataset.section).classList.remove('hidden');$('admin-welcome').textContent=btn.textContent;menu.hidden=true;menuToggle.setAttribute('aria-expanded','false');if(btn.dataset.section==='shops')loadShops();if(btn.dataset.section==='accounts')loadPeople();if(btn.dataset.section==='security')loadSecurity();if(btn.dataset.section==='reports')loadReports();if(btn.dataset.section==='settings')loadSettings();
   }));
 })();
 </script>
