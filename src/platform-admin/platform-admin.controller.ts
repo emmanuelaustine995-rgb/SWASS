@@ -309,15 +309,21 @@ export class PlatformAdminController {
         expiredPendingCustomerRegistrations: customerOtps.rowCount || 0,
       };
     });
-    await this.db.recordSecurityEvent({
-      eventType: 'registered_accounts_reset',
-      severity: 'high',
-      outcome: 'completed',
-      actorUserId: req.user?.sub,
-      sourceIp: req.ip,
-      userAgent: req.headers?.['user-agent'],
-      metadata: result,
-    });
+    // The reset transaction is the source of truth. Audit logging must not
+    // turn a successfully committed reset into a misleading HTTP failure.
+    try {
+      await this.db.recordSecurityEvent({
+        eventType: 'registered_accounts_reset',
+        severity: 'high',
+        outcome: 'completed',
+        actorUserId: req.user?.sub,
+        sourceIp: req.ip,
+        userAgent: req.headers?.['user-agent'],
+        metadata: result,
+      });
+    } catch (error) {
+      console.error('[AURORA_ADMIN] Account reset committed, but audit logging failed:', error instanceof Error ? error.message : error);
+    }
     return {
       reset: true,
       ...result,
