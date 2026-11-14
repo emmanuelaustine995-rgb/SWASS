@@ -275,7 +275,7 @@ export class PlatformAdminController {
       const users = await client.query(
         `UPDATE users
             SET is_active=false, national_id_number=NULL, national_id_photo_data=NULL
-          WHERE role <> 'super_admin' AND is_active=true
+          WHERE role <> 'super_admin'
           RETURNING id`,
       );
       const userIds = users.rows.map((row: { id: string }) => row.id);
