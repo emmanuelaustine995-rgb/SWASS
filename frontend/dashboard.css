@@ -2544,3 +2544,32 @@ html body.workspace-active #receipts-home .receipt-actions-grid .receipt-choice 
     line-height:1.1!important;
   }
 }
+
+
+/* Registration panel: keep the same compact phone-width card on laptops too.
+   The available height starts below the site header; do not combine a full-viewport
+   card height with a top offset, which clips the lower registration fields. */
+html body.registration-open .shell{
+  position:fixed!important;top:72px!important;left:50%!important;right:auto!important;bottom:0!important;
+  width:min(430px,100vw)!important;max-width:430px!important;height:auto!important;
+  min-height:0!important;max-height:none!important;transform:translateX(-50%)!important;
+  margin:0!important;padding:0!important;overflow:hidden!important;box-sizing:border-box!important;
+}
+html body.registration-open #login-view{
+  display:flex!important;flex-direction:column!important;align-items:stretch!important;justify-content:flex-start!important;
+  width:100%!important;height:100%!important;min-height:0!important;max-height:100%!important;
+  margin:0!important;padding:0!important;overflow:hidden!important;box-sizing:border-box!important;
+}
+html body.registration-open #login-view>.login-card{
+  display:flex!important;flex:1 1 auto!important;flex-direction:column!important;
+  width:100%!important;max-width:100%!important;height:100%!important;min-height:0!important;max-height:100%!important;
+  margin:0!important;padding:14px 16px 18px!important;overflow-x:hidden!important;overflow-y:auto!important;
+  box-sizing:border-box!important;-webkit-overflow-scrolling:touch!important;overscroll-behavior:contain!important;
+}
+html body.registration-open #register-form:not(.hidden),
+html body.registration-open #freelancer-register-form:not(.hidden){
+  flex:0 0 auto!important;width:100%!important;max-width:100%!important;min-width:0!important;
+}
+@media(max-width:430px){
+  html body.registration-open .shell{width:100vw!important;max-width:100vw!important;}
+}
