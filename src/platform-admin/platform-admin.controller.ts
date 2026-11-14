@@ -268,4 +268,62 @@ export class PlatformAdminController {
     return { deactivated: true, shop: result.rows[0], message: 'Shop deactivated successfully.' };
   }
 
+  @Post('accounts/reset')
+  async resetRegisteredAccounts(@Req() req: any) {
+    await this.db.ensureSecuritySchema();
+    const result = await this.db.tx(async client => {
+      const users = await client.query(
+        `UPDATE users
+            SET is_active=false, national_id_number=NULL, national_id_photo_data=NULL
+          WHERE role <> 'super_admin' AND is_active=true
+          RETURNING id`,
+      );
+      const userIds = users.rows.map((row: { id: string }) => row.id);
+      if (userIds.length) {
+        await client.query('DELETE FROM aurora_owner_identity_records WHERE user_id = ANY($1::uuid[])', [userIds]);
+      }
+      const customers = await client.query(
+        `UPDATE customer_accounts SET is_active=false
+          WHERE is_active=true RETURNING id`,
+      );
+      const subscriptions = await client.query(
+        `UPDATE subscriptions
+            SET status='expired', auto_renew=false,
+                ends_at=GREATEST(now(), starts_at + interval '1 second')
+          WHERE status='active'
+          RETURNING id`,
+      );
+      const ownerOtps = await client.query(
+        `UPDATE signup_otp_requests SET expires_at=now()
+          WHERE expires_at>now() RETURNING id`,
+      );
+      const customerOtps = await client.query(
+        `UPDATE customer_signup_otp_requests SET expires_at=now()
+          WHERE expires_at>now() RETURNING id`,
+      );
+      return {
+        deactivatedUserAccounts: users.rowCount || 0,
+        deactivatedCustomerAccounts: customers.rowCount || 0,
+        expiredSubscriptions: subscriptions.rowCount || 0,
+        expiredPendingOwnerRegistrations: ownerOtps.rowCount || 0,
+        expiredPendingCustomerRegistrations: customerOtps.rowCount || 0,
+      };
+    });
+    await this.db.recordSecurityEvent({
+      eventType: 'registered_accounts_reset',
+      severity: 'high',
+      outcome: 'completed',
+      actorUserId: req.user?.sub,
+      sourceIp: req.ip,
+      userAgent: req.headers?.['user-agent'],
+      metadata: result,
+    });
+    return {
+      reset: true,
+      ...result,
+      preserved: ['super_admin accounts', 'businesses and stores', 'receipts and sales history', 'customers and inventory', 'financial ledger and payment history'],
+      message: 'Non-admin login accounts have been deactivated and subscriptions expired. Historical business records remain preserved; previous users can register again using their details.',
+    };
+  }
+
 }
