@@ -2664,3 +2664,9 @@ html body:not(.workspace-active):not(.registration-open) #freelancer-register-en
     box-sizing: border-box !important;
   }
 }
+
+
+/* Small persistent AURORA copyright notice on login, registration and workspace screens. */
+.aurora-copyright{position:fixed;z-index:1300;left:0;right:0;bottom:5px;margin:0 auto;width:max-content;max-width:calc(100vw - 20px);padding:2px 8px;border-radius:8px;background:rgba(5,16,42,.72);color:#dce8ff;font:500 9px/1.35 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;letter-spacing:.025em;text-align:center;pointer-events:none;white-space:nowrap}
+body.workspace-active .aurora-copyright{bottom:calc(66px + env(safe-area-inset-bottom));}
+@media print{.aurora-copyright{display:none!important}}
