@@ -1019,7 +1019,10 @@
     $('reg-business').required=!customerSignupMode;
     $('reg-location').required=!customerSignupMode;
     $('reg-national-id').required=true;
-    $('reg-id-photo').required=true;
+    // Customers provide only their name, National ID number, phone and email.
+    // Identity-document uploads and KRA details are reserved for shop owners.
+    $('reg-id-photo-wrap').classList.toggle('hidden',customerSignupMode);
+    $('reg-id-photo').required=!customerSignupMode;
     $('reg-passport-photo').required=!customerSignupMode;
     $('reg-kra-wrap').classList.toggle('hidden',customerSignupMode);
     $('reg-email').required=true;
@@ -1218,7 +1221,7 @@
     if(password!==$('reg-confirm-password').value)throw new Error('The passwords do not match.');
     const nationalId=$('reg-national-id').value.trim();
     if(!/^[0-9]{7,9}$/.test(nationalId))throw new Error('Enter a valid National ID number.');
-    const idPhotoData=await readSignupPhoto('reg-id-photo');
+    const idPhotoData=customerSignupMode?'':await readSignupPhoto('reg-id-photo');
     const passportPhotoData=customerSignupMode?'':await readSignupPhoto('reg-passport-photo');
     return {
       accountType:customerSignupMode?'customer':'owner',
