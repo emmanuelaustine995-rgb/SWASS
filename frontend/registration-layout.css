@@ -1,0 +1,184 @@
+/* AURORA desktop registration rebuild.
+   One centered panel, one vertical scroll container, and one form column.
+   Deliberately limited to desktop so the existing phone layout is untouched. */
+@media (min-width: 761px) {
+  html body.registration-open {
+    height: 100%;
+    min-height: 100%;
+    overflow: hidden !important;
+    background: #f2f5fa !important;
+  }
+
+  html body.registration-open .shell {
+    position: fixed !important;
+    top: 88px !important;
+    right: auto !important;
+    bottom: 20px !important;
+    left: 50% !important;
+    width: min(760px, calc(100vw - 48px)) !important;
+    max-width: 760px !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    transform: translateX(-50%) !important;
+    display: block !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+    background: #fff !important;
+    border: 1px solid #e3e9f1 !important;
+    border-radius: 18px !important;
+    box-shadow: 0 14px 44px rgba(22, 43, 76, .12) !important;
+  }
+
+  html body.registration-open #login-view {
+    position: absolute !important;
+    inset: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: 100% !important;
+    margin: 0 !important;
+    padding: 22px 22px 30px !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior-y: contain !important;
+    -webkit-overflow-scrolling: touch !important;
+    box-sizing: border-box !important;
+    background: #fff !important;
+    scrollbar-gutter: stable !important;
+  }
+
+  html body.registration-open #login-view > .login-card {
+    position: relative !important;
+    inset: auto !important;
+    display: flex !important;
+    flex: 0 0 auto !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    width: 100% !important;
+    max-width: 620px !important;
+    min-width: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    margin: 0 auto 20px !important;
+    padding: 22px 28px 28px !important;
+    gap: 12px !important;
+    overflow: visible !important;
+    transform: none !important;
+    box-sizing: border-box !important;
+    border: 1px solid #e5eaf1 !important;
+    border-radius: 16px !important;
+    background: #fff !important;
+    box-shadow: 0 5px 22px rgba(18, 38, 68, .07) !important;
+  }
+
+  html body.registration-open #login-view > .login-card > * {
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    grid-column: 1 !important;
+    box-sizing: border-box !important;
+  }
+
+  html body.registration-open #login-view .aurora-brand-lockup {
+    margin: 0 auto 8px !important;
+  }
+
+  html body.registration-open #register-form:not(.hidden),
+  html body.registration-open #freelancer-register-form:not(.hidden) {
+    position: relative !important;
+    inset: auto !important;
+    display: flex !important;
+    flex: 0 0 auto !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 0 18px !important;
+    gap: 12px !important;
+    overflow: visible !important;
+    transform: none !important;
+    box-sizing: border-box !important;
+  }
+
+  html body.registration-open #register-form:not(.hidden) > *,
+  html body.registration-open #freelancer-register-form:not(.hidden) > * {
+    flex: 0 0 auto !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  html body.registration-open #register-form:not(.hidden) label,
+  html body.registration-open #freelancer-register-form:not(.hidden) label {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    gap: 6px !important;
+  }
+
+  html body.registration-open #register-form:not(.hidden) input,
+  html body.registration-open #freelancer-register-form:not(.hidden) input,
+  html body.registration-open #register-form:not(.hidden) select,
+  html body.registration-open #freelancer-register-form:not(.hidden) select {
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    min-height: 44px !important;
+    box-sizing: border-box !important;
+  }
+
+  html body.registration-open #register-form .registration-sticky-footer,
+  html body.registration-open #freelancer-register-form .registration-sticky-footer {
+    position: static !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin: 8px 0 0 !important;
+    padding: 12px 0 8px !important;
+    background: #fff !important;
+  }
+
+  html body.registration-open #aurora-policy-center {
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    max-width: 620px !important;
+    margin: 0 auto !important;
+    padding: 14px 18px 28px !important;
+    box-sizing: border-box !important;
+    background: #fff !important;
+  }
+}
+
+@media (min-width: 761px) and (max-width: 900px) {
+  html body.registration-open .shell {
+    width: calc(100vw - 32px) !important;
+    max-width: none !important;
+  }
+  html body.registration-open #login-view {
+    padding: 16px 12px 24px !important;
+  }
+  html body.registration-open #login-view > .login-card {
+    padding: 18px 18px 24px !important;
+  }
+}
