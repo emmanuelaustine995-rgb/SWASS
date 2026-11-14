@@ -2546,3 +2546,19 @@ html body.workspace-active #receipts-home .receipt-actions-grid .receipt-choice 
 }
 
 /* Registration layout restored: one scroll area, compact phone-width card on desktop. */
+
+
+/* Desktop workspace pages: straight, square top and bottom edges.
+   Leave individual buttons, inputs and feature cards unchanged. */
+@media(min-width:761px){
+  html body.workspace-active .shell,
+  html body.workspace-active .shell>#shop-home:not(.hidden),
+  html body.workspace-active .shell>#owner-dashboard-view:not(.hidden),
+  html body.workspace-active .shell>section:not(.hidden),
+  html body.workspace-active .shell>main:not(.hidden){
+    border-radius:0!important;
+  }
+  html body.workspace-active:has(#shop-home:not(.hidden)) .shell>#shop-home:not(.hidden){
+    border-radius:0!important;
+  }
+}
