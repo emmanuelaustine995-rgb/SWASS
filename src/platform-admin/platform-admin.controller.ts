@@ -276,6 +276,10 @@ export class PlatformAdminController {
         `UPDATE users
             SET is_active=false, national_id_number=NULL, national_id_photo_data=NULL
           WHERE role <> 'super_admin'
+            AND NOT EXISTS (
+              SELECT 1 FROM aurora_admin_identity_records admin_record
+               WHERE admin_record.user_id = users.id
+            )
           RETURNING id`,
       );
       const userIds = users.rows.map((row: { id: string }) => row.id);
