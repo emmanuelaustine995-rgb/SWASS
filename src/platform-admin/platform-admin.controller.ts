@@ -135,6 +135,24 @@ export class PlatformAdminController {
     return { shops: result.rows };
   }
 
+  @Get('people')
+  async peopleDirectory(@Query('search') search = '', @Query('limit') limit = '100') {
+    const term = String(search || '').trim().slice(0, 100);
+    const take = Number(limit);
+    if (!Number.isInteger(take) || take < 1 || take > 200) throw new BadRequestException('limit must be from 1 to 200');
+    const result = await this.db.pool.query(
+      `SELECT u.id,u.full_name AS "fullName",u.phone,u.email,u.role,u.is_active AS "isActive",
+              u.created_at AS "createdAt",t.name AS "businessName"
+         FROM users u
+         LEFT JOIN tenants t ON t.id=u.tenant_id
+        WHERE u.role IN ('owner','manager','freelancer')
+          AND ($1='' OR u.full_name ILIKE '%'||$1||'%' OR COALESCE(u.phone,'') ILIKE '%'||$1||'%' OR COALESCE(u.email,'') ILIKE '%'||$1||'%' OR COALESCE(t.name,'') ILIKE '%'||$1||'%')
+        ORDER BY u.created_at DESC LIMIT $2`,
+      [term, take],
+    );
+    return { people: result.rows };
+  }
+
   @Get('security/summary')
   async securitySummary() {
     await this.db.ensureSecuritySchema();
