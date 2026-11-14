@@ -28,7 +28,7 @@ services:
       - key: SWASS_ID_SECRET
         generateValue: true
       - key: CORS_ORIGINS
-        value: https://swass-web.onrender.com
+        value: https://swass-web.onrender.com,https://auroraskyholdings.co.ke,https://www.auroraskyholdings.co.ke
       - key: AURORA_ADMIN_IDENTITIES
         sync: false
       - key: CASHIER_MAX_DISCOUNT_PCT
