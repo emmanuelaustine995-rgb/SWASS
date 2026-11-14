@@ -373,9 +373,8 @@ body{background:#eef3fb}
   }
 
   async function resetRegisteredAccounts(){
-    const phrase=window.prompt('This will deactivate every non-admin login and expire all active subscriptions. Business and sales history will remain.\n\nType RESET ACCOUNTS to continue:');
-    if(phrase!=='RESET ACCOUNTS')return;
-    if(!window.confirm('Final confirmation: keep all super-admin accounts and all business/receipt history, but require every other user to register again?'))return;
+    const confirmed=window.confirm('Are you sure you want to perform this action?\n\nThis will deactivate all non-admin login accounts and expire active subscriptions. Super Admin accounts, shops, receipts, sales, inventory and financial history will be preserved.');
+    if(!confirmed)return;
     const button=$('account-reset-run'),status=$('account-reset-status');
     let resetRequestStarted=false;
     button.disabled=true;button.textContent='CHECKING API…';status.textContent='Checking that the live AURORA API can be reached. No records have been changed yet…';
