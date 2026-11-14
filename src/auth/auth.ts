@@ -172,9 +172,9 @@ export class AuthController {
     if (token) {
       const startedAt = Date.now();
       const configuredUrl = (process.env.TALKSASA_API_URL || 'https://bulksms.talksasa.com/api/v3/sms/send').trim();
-      const endpoint = /\\/sms\\/send\\/?$/i.test(configuredUrl)
+      const endpoint = /\/sms\/send\/?$/i.test(configuredUrl)
         ? configuredUrl
-        : `${configuredUrl.replace(/\\/+$/, '')}/sms/send`;
+        : `${configuredUrl.replace(/\/+$/, '')}/sms/send`;
       try {
         const response = await fetch(endpoint, {
           method: 'POST',
