@@ -1015,16 +1015,25 @@
   function updateSignupAccountType(){
     customerSignupMode = $('login-account-type').value === 'customer';
     $('signup-back-btn')?.classList.toggle('hidden', !customerSignupMode);
-    $('owner-signup-fields').classList.toggle('hidden',customerSignupMode);
+    // Apply visibility directly as well as the hidden class. The registration
+    // page resets descendant styles, so inline !important prevents owner-only
+    // fields from reappearing in the customer form.
+    const setOwnerOnlyVisible=(id,visible)=>{
+      const element=$(id);
+      if(!element)return;
+      element.classList.toggle('hidden',!visible);
+      if(visible)element.style.removeProperty('display');
+      else element.style.setProperty('display','none','important');
+    };
+    setOwnerOnlyVisible('owner-signup-fields',!customerSignupMode);
+    setOwnerOnlyVisible('reg-id-photo-wrap',!customerSignupMode);
+    setOwnerOnlyVisible('owner-identity-uploads',!customerSignupMode);
+    setOwnerOnlyVisible('reg-kra-wrap',!customerSignupMode);
     $('reg-business').required=!customerSignupMode;
     $('reg-location').required=!customerSignupMode;
     $('reg-national-id').required=true;
-    // Customers provide only their name, National ID number, phone and email.
-    // Identity-document uploads and KRA details are reserved for shop owners.
-    $('reg-id-photo-wrap').classList.toggle('hidden',customerSignupMode);
     $('reg-id-photo').required=!customerSignupMode;
     $('reg-passport-photo').required=!customerSignupMode;
-    $('reg-kra-wrap').classList.toggle('hidden',customerSignupMode);
     $('reg-email').required=true;
     $('reg-password').required=true;
     $('reg-confirm-password').required=true;
