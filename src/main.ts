@@ -23,6 +23,8 @@ async function bootstrap() {
   // custom domains, but a missing/empty Render variable must not block the app.
   const allowedOrigins = new Set([
     'https://swass-web.onrender.com',
+    'https://auroraskyholdings.co.ke',
+    'https://www.auroraskyholdings.co.ke',
     ...((process.env.CORS_ORIGINS ?? '').split(',').map((v: string) => v.trim()).filter(Boolean)),
   ]);
   if (process.env.NODE_ENV !== 'production') {
