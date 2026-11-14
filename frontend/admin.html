@@ -377,17 +377,31 @@ body{background:#eef3fb}
     if(phrase!=='RESET ACCOUNTS')return;
     if(!window.confirm('Final confirmation: keep all super-admin accounts and all business/receipt history, but require every other user to register again?'))return;
     const button=$('account-reset-run'),status=$('account-reset-status');
-    button.disabled=true;button.textContent='RESETTING ACCOUNTS…';status.textContent='Applying the account reset in one database transaction…';
+    let resetRequestStarted=false;
+    button.disabled=true;button.textContent='CHECKING API…';status.textContent='Checking that the live AURORA API can be reached. No records have been changed yet…';
     try{
+      // Check connectivity before sending the destructive request. This avoids
+      // asking the administrator to retry when the API is simply unreachable.
+      const health=await fetch('https://swass-api.onrender.com/health',{method:'GET',headers:{Accept:'application/json'}});
+      if(!health.ok)throw new Error('The API health check returned HTTP '+health.status+'. No reset request was sent.');
+      button.textContent='RESETTING ACCOUNTS…';
+      status.textContent='API is reachable. Sending the confirmed reset request…';
+      resetRequestStarted=true;
       const res=await fetch(API+'/platform-admin/accounts/reset',{method:'POST',headers:{Authorization:'Bearer '+token,Accept:'application/json'}});
-      const data=await res.json().catch(()=>({}));
-      if(!res.ok)throw new Error(data.message||'Account reset failed.');
-      status.textContent='Completed: '+Number(data.deactivatedUserAccounts||0)+' owner/staff/freelancer accounts, '+Number(data.deactivatedCustomerAccounts||0)+' customer accounts deactivated; '+Number(data.expiredSubscriptions||0)+' subscriptions expired. Business and sales history preserved.';
+      const raw=await res.text();
+      let data={};
+      try{data=raw?JSON.parse(raw):{};}catch{data={message:raw.slice(0,500)};}
+      if(!res.ok)throw new Error(data.message||('The API returned HTTP '+res.status+'.'));
+      if(data.reset!==true)throw new Error('The API did not confirm that the reset completed. Check the API logs before trying again.');
+      status.textContent='Completed: '+Number(data.deactivatedUserAccounts||0)+' non-admin login accounts, '+Number(data.deactivatedCustomerAccounts||0)+' customer accounts deactivated; '+Number(data.expiredSubscriptions||0)+' subscriptions expired. Business and sales history preserved.';
       window.alert(data.message||'Registered accounts reset successfully.');
       await loadOverview();
       await loadSecurity();
-    }catch(e){status.textContent='Reset failed: '+(e.message||'Unknown error');}
-    finally{button.disabled=false;button.textContent='RESET NON-ADMIN LOGIN ACCOUNTS';}
+    }catch(e){
+      status.textContent=resetRequestStarted
+        ? 'Reset result needs verification: '+(e.message||'Connection lost while waiting for the API. Do not run the reset again yet; refresh the overview and check the API logs first.')
+        : 'Reset not sent: '+(e.message||'The live API could not be reached. No account reset was requested.');
+    }finally{button.disabled=false;button.textContent='RESET NON-ADMIN LOGIN ACCOUNTS';}
   }
   $('account-reset-run').addEventListener('click',resetRegisteredAccounts);
 
