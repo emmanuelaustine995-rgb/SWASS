@@ -387,3 +387,88 @@
     max-width: 185px !important;
   }
 }
+
+
+/* Final viewport-safe alignment override.
+   Avoid 50% positioning/translate, which can clip the left edge on some desktop
+   zoom levels and browser viewport calculations. */
+@media (min-width: 761px) {
+  html body.registration-open:not(.workspace-active):has(#login-view #register-form:not(.hidden)) .shell,
+  html body.registration-open:not(.workspace-active):has(#login-view #freelancer-register-form:not(.hidden)) .shell {
+    position: fixed !important;
+    top: 82px !important;
+    bottom: 14px !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: min(1000px, calc(100vw - 40px)) !important;
+    max-width: 1000px !important;
+    height: auto !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding: 0 !important;
+    transform: none !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+  }
+
+  html body.registration-open:not(.workspace-active):has(#login-view #register-form:not(.hidden)) #login-view,
+  html body.registration-open:not(.workspace-active):has(#login-view #freelancer-register-form:not(.hidden)) #login-view {
+    position: absolute !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 12px 18px 22px !important;
+    display: block !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    box-sizing: border-box !important;
+  }
+
+  html body.registration-open:not(.workspace-active):has(#login-view #register-form:not(.hidden)) #login-view > .login-card,
+  html body.registration-open:not(.workspace-active):has(#login-view #freelancer-register-form:not(.hidden)) #login-view > .login-card {
+    position: relative !important;
+    display: flex !important;
+    width: 100% !important;
+    max-width: 940px !important;
+    min-width: 0 !important;
+    margin: 0 auto 12px !important;
+    padding: 14px 20px 18px !important;
+    overflow: visible !important;
+    transform: none !important;
+    box-sizing: border-box !important;
+  }
+
+  html body.registration-open #register-form:not(.hidden),
+  html body.registration-open #freelancer-register-form:not(.hidden) {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  html body.registration-open #register-form:not(.hidden) label,
+  html body.registration-open #freelancer-register-form:not(.hidden) label {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow-wrap: anywhere !important;
+    white-space: normal !important;
+  }
+
+  html body.registration-open #register-form:not(.hidden) input,
+  html body.registration-open #freelancer-register-form:not(.hidden) input,
+  html body.registration-open #register-form:not(.hidden) select,
+  html body.registration-open #freelancer-register-form:not(.hidden) select {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+}
