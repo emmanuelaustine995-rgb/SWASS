@@ -272,3 +272,118 @@
     grid-column: 1 / -1 !important;
   }
 }
+
+
+/* Compact desktop registration: keep the form centered and reduce wasted space.
+   The inner page remains scrollable so every field and action stays reachable. */
+@media (min-width: 761px) {
+  html body.registration-open:not(.workspace-active):has(#login-view #register-form:not(.hidden)) .shell,
+  html body.registration-open:not(.workspace-active):has(#login-view #freelancer-register-form:not(.hidden)) .shell {
+    inset: 68px auto 12px 50% !important;
+    width: min(960px, calc(100vw - 32px)) !important;
+    border-radius: 16px !important;
+  }
+
+  html body.registration-open:not(.workspace-active):has(#login-view #register-form:not(.hidden)) #login-view,
+  html body.registration-open:not(.workspace-active):has(#login-view #freelancer-register-form:not(.hidden)) #login-view {
+    padding: 10px 14px 18px !important;
+  }
+
+  html body.registration-open:not(.workspace-active):has(#login-view #register-form:not(.hidden)) #login-view > .login-card,
+  html body.registration-open:not(.workspace-active):has(#login-view #freelancer-register-form:not(.hidden)) #login-view > .login-card {
+    width: min(100%, 900px) !important;
+    max-width: 900px !important;
+    margin: 0 auto 10px !important;
+    padding: 14px 22px 18px !important;
+    gap: 8px !important;
+    border-radius: 14px !important;
+  }
+
+  html body.registration-open #login-view .aurora-brand-lockup {
+    width: min(100%, 230px) !important;
+    margin: 0 auto !important;
+  }
+  html body.registration-open #login-view .aurora-login-logo {
+    max-width: 230px !important;
+  }
+  html body.registration-open #login-view .aurora-tagline {
+    margin-top: 0 !important;
+    font-size: 11px !important;
+  }
+
+  html body.registration-open #register-form:not(.hidden),
+  html body.registration-open #freelancer-register-form:not(.hidden) {
+    gap: 9px 14px !important;
+    padding: 4px 0 6px !important;
+  }
+
+  html body.registration-open #register-form:not(.hidden) label,
+  html body.registration-open #freelancer-register-form:not(.hidden) label {
+    gap: 4px !important;
+    font-size: 12.5px !important;
+    line-height: 1.25 !important;
+  }
+
+  html body.registration-open #register-form:not(.hidden) input:not([type="checkbox"]),
+  html body.registration-open #freelancer-register-form:not(.hidden) input:not([type="checkbox"]),
+  html body.registration-open #register-form:not(.hidden) select,
+  html body.registration-open #freelancer-register-form:not(.hidden) select {
+    min-height: 38px !important;
+    padding: 8px 10px !important;
+    border-radius: 8px !important;
+    font-size: 13px !important;
+  }
+
+  html body.registration-open #register-form:not(.hidden) input[type="file"],
+  html body.registration-open #freelancer-register-form:not(.hidden) input[type="file"] {
+    min-height: 42px !important;
+    padding: 6px !important;
+    font-size: 12px !important;
+  }
+
+  html body.registration-open #register-form:not(.hidden) .aurora-policy-consent,
+  html body.registration-open #freelancer-register-form:not(.hidden) .aurora-policy-consent {
+    gap: 8px !important;
+    padding: 9px 11px !important;
+    font-size: 12px !important;
+    line-height: 1.35 !important;
+  }
+
+  html body.registration-open #register-submit,
+  html body.registration-open #request-freelancer-approval {
+    min-height: 40px !important;
+    padding: 9px 14px !important;
+    font-size: 13px !important;
+  }
+
+  html body.registration-open #register-form .registration-sticky-footer,
+  html body.registration-open #freelancer-register-form .registration-sticky-footer {
+    gap: 6px !important;
+    margin-top: 0 !important;
+    padding-top: 9px !important;
+    font-size: 12px !important;
+  }
+
+  html body.registration-open #aurora-policy-center {
+    padding: 10px 16px 18px !important;
+  }
+}
+
+@media (min-width: 761px) and (max-height: 760px) {
+  html body.registration-open:not(.workspace-active):has(#login-view #register-form:not(.hidden)) #login-view,
+  html body.registration-open:not(.workspace-active):has(#login-view #freelancer-register-form:not(.hidden)) #login-view {
+    padding-top: 6px !important;
+  }
+  html body.registration-open:not(.workspace-active):has(#login-view #register-form:not(.hidden)) #login-view > .login-card,
+  html body.registration-open:not(.workspace-active):has(#login-view #freelancer-register-form:not(.hidden)) #login-view > .login-card {
+    padding-top: 9px !important;
+    padding-bottom: 12px !important;
+    gap: 6px !important;
+  }
+  html body.registration-open #login-view .aurora-brand-lockup {
+    width: min(100%, 185px) !important;
+  }
+  html body.registration-open #login-view .aurora-login-logo {
+    max-width: 185px !important;
+  }
+}
