@@ -169,7 +169,7 @@ export class AuthController {
 
   private async sendSignupSms(to: string, message: string): Promise<void> {
     const failures: string[] = [];
-    const token = process.env.TALKSASA_API_TOKEN;
+    const token = process.env.TALKSASA_API_TOKEN || process.env.TALKSASA_API_KEY;
 
     // Try the approved TalkSasa sender first.
     if (token) {
