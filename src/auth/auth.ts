@@ -337,7 +337,7 @@ export class AuthController {
       this.db.pool.query(`SELECT 1 FROM users u LEFT JOIN tenants t ON t.id=u.tenant_id
         WHERE u.is_active=true
           AND (u.phone = ANY($1::text[]) OR regexp_replace(u.phone, '[^0-9]', '', 'g') = ANY($1::text[]))
-          AND (u.role <> 'owner' OR t.status='active') LIMIT 1`, [phoneVariants]),
+          AND (u.role <> 'owner' OR t.status='suspended') LIMIT 1`, [phoneVariants]),
       this.db.pool.query(
         `SELECT
           (SELECT count(*)::int FROM signup_otp_requests WHERE phone=$1 AND created_at>now()-interval '15 minutes') AS phone_count,
