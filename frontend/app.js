@@ -1217,7 +1217,27 @@
       $('login-account-type').value='freelancer';updateLoginAccountType();
       $('login-phone').value=freelancerPhone;
       $('freelancer-register-success').textContent=successText;
-    }catch(error){message.textContent=error.message||'Could not create your freelancer account.';}
+    }catch(error){
+      const errorText=error.message||'Could not create your freelancer account.';
+      if(/already registered/i.test(errorText)){
+        const registeredPhone=$('freelancer-phone').value.trim();
+        const loginView=$('login-view');
+        document.body.classList.remove('registration-open');
+        $('freelancer-register-form')?.classList.add('hidden');
+        $('login-form')?.classList.remove('hidden');
+        loginView?.classList.remove('hidden');
+        $('login-account-type').value='freelancer';
+        updateLoginAccountType();
+        $('login-phone').value=registeredPhone;
+        $('login-password').value='';
+        $('login-error').textContent='This freelancer account already exists. Sign in below using its registered phone number and your existing password. If you do not remember the password, use FORGOT PASSWORD.';
+        $('freelancer-register-success').textContent='';
+        $('login-password')?.focus();
+        if(loginView)loginView.scrollIntoView({behavior:'smooth',block:'start'});
+      }else{
+        message.textContent=errorText;
+      }
+    }
     finally{button.disabled=false;button.textContent='CREATE FREELANCER ACCOUNT';}
   });
   let signupResendTimer = null;
