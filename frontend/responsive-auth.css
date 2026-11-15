@@ -45,3 +45,13 @@ body.freelancer-account-active #owner-dashboard-view > *:not(#freelancer-home) {
 @media(prefers-reduced-motion:reduce) {
   .freelancer-home-card, .freelancer-home-card * { scroll-behavior:auto !important; animation:none !important; transition:none !important; }
 }
+
+/* Touch-first control sizing across Android, iOS and tablet browsers. */
+@media (pointer:coarse) {
+  body.registration-open #register-form input:not([type=checkbox]),
+  body.registration-open #freelancer-register-form input:not([type=checkbox]),
+  body.registration-open #register-form button,
+  body.registration-open #freelancer-register-form button {
+    min-height:52px !important;
+  }
+}
