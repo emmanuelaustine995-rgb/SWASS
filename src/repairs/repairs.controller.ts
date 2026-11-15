@@ -1,4 +1,4 @@
-import { BadRequestException, Controller, Get, Post, Body, Req, UseGuards } from '@nestjs/common';
+import { BadRequestException, Controller, Get, Post, Patch, Param, Body, Req, UseGuards, NotFoundException } from '@nestjs/common';
 import { AuthGuard, Roles, RolesGuard } from '../auth/auth';
 import { DbService } from '../db/db.service';
 
@@ -31,6 +31,31 @@ export class RepairsController {
       [user.tenantId, user.storeId],
     );
     return { repairs: result.rows };
+  }
+
+
+  @Patch(':id')
+  async update(@Req() req: any, @Param('id') id: string, @Body() body: any) {
+    const user = this.requireShop(req);
+    await this.db.ensureRepairSchema();
+    if (!/^\\d{1,18}$/.test(String(id || ''))) throw new BadRequestException('A valid repair record is required.');
+    const allowed = ['received','diagnosing','in_repair','ready','collected','cancelled'];
+    const status = String(body?.status || '').trim();
+    const detected = body?.detected === undefined ? undefined : String(body.detected).trim();
+    if (status && !allowed.includes(status)) throw new BadRequestException('Choose a valid repair status.');
+    if (detected !== undefined && detected.length > 2000) throw new BadRequestException('Diagnosis is too long.');
+    if (!status && detected === undefined) throw new BadRequestException('Provide a status or diagnosis update.');
+    const result = await this.db.pool.query(
+      `UPDATE shop_repair_jobs
+          SET status=COALESCE(NULLIF($1,''),status),
+              detected=CASE WHEN $2::boolean THEN $3 ELSE detected END,
+              updated_at=now()
+        WHERE id=$4 AND tenant_id=$5 AND store_id=$6
+        RETURNING id,status,detected`,
+      [status,detected !== undefined,detected ?? '',id,user.tenantId,user.storeId],
+    );
+    if (!result.rowCount) throw new NotFoundException('Repair record not found.');
+    return { repair: result.rows[0], message: 'Repair record updated.' };
   }
 
   @Post()
