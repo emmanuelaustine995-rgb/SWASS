@@ -1,4 +1,5 @@
-import { BadRequestException, Controller, Get, Post, Patch, Param, Body, Req, UseGuards, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Controller, Get, Post, Patch, Param, Body, Req, UseGuards, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
+import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'node:crypto';
 import { AuthGuard, Roles, RolesGuard } from '../auth/auth';
 import { DbService } from '../db/db.service';
 
@@ -7,6 +8,29 @@ import { DbService } from '../db/db.service';
 @Roles('owner', 'manager', 'freelancer')
 export class RepairsController {
   constructor(private db: DbService) {}
+
+  private identityKey(): Buffer {
+    const secret = process.env.SWASS_ID_SECRET;
+    if (!secret) throw new ServiceUnavailableException('Secure identity storage is not configured.');
+    return createHash('sha256').update('aurora-repair-customer-id:' + secret).digest();
+  }
+
+  private encryptCustomerId(value: string): string {
+    const iv = randomBytes(12);
+    const cipher = createCipheriv('aes-256-gcm', this.identityKey(), iv);
+    const encrypted = Buffer.concat([cipher.update(value, 'utf8'), cipher.final()]);
+    return ['v1', iv.toString('base64'), cipher.getAuthTag().toString('base64'), encrypted.toString('base64')].join('.');
+  }
+
+  private decryptCustomerId(value: string): string {
+    const [version, iv, tag, encrypted] = String(value || '').split('.');
+    if (version !== 'v1' || !iv || !tag || !encrypted) return 'Unavailable';
+    try {
+      const decipher = createDecipheriv('aes-256-gcm', this.identityKey(), Buffer.from(iv, 'base64'));
+      decipher.setAuthTag(Buffer.from(tag, 'base64'));
+      return Buffer.concat([decipher.update(Buffer.from(encrypted, 'base64')), decipher.final()]).toString('utf8');
+    } catch { return 'Unavailable'; }
+  }
 
   private requireShop(req: any) {
     if (!req.user?.tenantId || !req.user?.storeId) throw new BadRequestException('A registered shop is required.');
@@ -30,7 +54,7 @@ export class RepairsController {
         LIMIT 300`,
       [user.tenantId, user.storeId],
     );
-    return { repairs: result.rows };
+    return { repairs: result.rows.map(row => ({ ...row, customerId: this.decryptCustomerId(row.customerId) })) };
   }
 
 
@@ -88,7 +112,7 @@ export class RepairsController {
                  customer_name AS "customerName", customer_id AS "customerId",
                  item_condition AS condition, problem, detected,
                  received_date AS "receivedDate", expected_pick_date AS "expectedPickDate", status`,
-      [user.tenantId,user.storeId,user.sub,itemName,itemIdentifier,customerName,customerId,condition,problem,detected,receivedDate,expectedPickDate],
+      [user.tenantId,user.storeId,user.sub,itemName,itemIdentifier,customerName,this.encryptCustomerId(customerId),condition,problem,detected,receivedDate,expectedPickDate],
     );
     return { repair: result.rows[0], message: 'Goods received for repair and saved.' };
   }
