@@ -468,8 +468,9 @@
       // Re-apply visibility for every account switch: a previous customer login
       // must not leave Issue Receipt hidden for the next owner or freelancer.
       enforceCustomerReceiptActions();
-      // Receipt history belongs in Shop > Profile, not on the Receipts workspace.
-      if(['cashier','freelancer'].includes(state.role)){staffSummary?.classList.remove('hidden');void loadStaffSalesSummary();}
+      // Receipts landing page is intentionally limited to its three action cards.
+      // Sales summaries belong on the role dashboard, not above these cards.
+      staffSummary?.classList.add('hidden');
       $('open-issue-receipt')?.classList.toggle('hidden',isCustomerAccount);
       $('open-recover-receipt')?.classList.remove('hidden');
       $('secondhand-open-card')?.classList.toggle('hidden',!['owner','freelancer','customer'].includes(state.role));
