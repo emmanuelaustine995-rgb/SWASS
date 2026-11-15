@@ -1358,22 +1358,29 @@
         method:'POST',
         body:JSON.stringify({phone:$('reg-phone').value.trim(),code})
       });
-      state.token=data.accessToken;
-      state.userName=$('reg-name').value.trim();
-      const parts=state.token.split('.')[1];
-      const claims=JSON.parse(atob(parts.replace(/-/g,'+').replace(/_/g,'/')));
-      state.role=claims.role;
-      if(signupResendTimer)clearInterval(signupResendTimer);
+      const registeredPhone=$('reg-phone').value.trim();
+      const registeredAsCustomer=customerSignupMode;
+      if(signupResendTimer){clearInterval(signupResendTimer);signupResendTimer=null;}
+      signupResendSeconds=0;
+      // Registration and authentication are separate steps. Do not silently
+      // enter the workspace after OTP verification; return to sign-in with a
+      // clear success message and the verified phone number prefilled.
+      clearSession();
       $('register-form').reset();
-      updateSignupAccountType();
+      $('register-form').classList.add('hidden');
       $('register-fields').classList.remove('hidden');
-      $('owner-signup-fields').classList.toggle('hidden',customerSignupMode);
+      $('owner-signup-fields').classList.toggle('hidden',registeredAsCustomer);
       $('signup-otp-panel').classList.add('hidden');
       $('register-submit').classList.remove('hidden');
-      showPOS();
-      publishWorkspaceSession();
-      showWorkspaceScreen('dashboard');
-      showNotice(customerSignupMode?'Your customer account is ready. You can now sign in using the Customer tab.':'Your business account is ready. Subscribe for KSh 100 per month (or KSh 900 per year), then top up your receipt wallet.');
+      document.body.classList.remove('registration-open');
+      $('login-view').classList.remove('hidden');
+      $('login-form').classList.remove('hidden');
+      $('login-account-type').value=registeredAsCustomer?'customer':'owner';
+      updateLoginAccountType();
+      $('login-phone').value=registeredPhone;
+      $('signup-success-message').textContent=registeredAsCustomer
+        ?'Your customer account has been verified and created. Sign in to continue.'
+        :'Your shop-owner account has been verified and created. Sign in to continue to your subscription and receipt-wallet setup.';
     }catch(err){
       $('signup-otp-message').textContent=err.message||'Verification failed. Check the code and try again.';
     }finally{btn.disabled=false;btn.textContent='Verify phone and create account';}
