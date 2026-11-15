@@ -302,8 +302,10 @@ export class AuthController {
     if (!storeLocation || storeLocation.length > 200) throw new BadRequestException('Enter your business location (maximum 200 characters).');
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) throw new BadRequestException('Enter a valid email address.');
     if (!/^[0-9]{7,9}$/.test(nationalId)) throw new BadRequestException('Enter a valid Kenyan National ID number.');
-    const validPhoto = (value: string) => /^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(value) && value.length <= 2200000;
-    if (!validPhoto(idPhotoData) || !validPhoto(passportPhotoData)) throw new BadRequestException('Upload a valid JPG, PNG or WEBP National ID photo and passport-size photo. Each must be 1.5 MB or smaller.');
+    // Registration photos are resized to JPEG in the browser before transport.
+    // Allow up to 2.5 MB of decoded image data per photo after compression.
+    const validPhoto = (value: string) => /^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(value) && value.length <= 3500000;
+    if (!validPhoto(idPhotoData) || !validPhoto(passportPhotoData)) throw new BadRequestException('Upload valid JPG, PNG or WebP National ID and passport-size photos. Each compressed photo must be no larger than 2.5 MB.');
     if (password.length < 10 || password.length > 128) throw new BadRequestException('Password must be at least 10 characters.');
     const idSecret = process.env.SWASS_ID_SECRET;
     if (!idSecret) throw new ServiceUnavailableException('Secure identity verification is not configured.');
