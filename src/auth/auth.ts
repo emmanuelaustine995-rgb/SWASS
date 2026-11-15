@@ -1006,11 +1006,38 @@ export class AuthController {
         LIMIT 1`,
       [phoneVariants, phone, requestedType],
     );
-    const u = rows[0];
+    let u = rows[0];
     // Same error for unknown phone, wrong password or disabled account.
     let passwordOk = false;
     if (u?.password_hash) {
       try { passwordOk = await argon2.verify(u.password_hash, password); } catch { passwordOk = false; }
+    }
+    // Repair older freelancer records that were created with the shop owner's
+    // same phone but were not assigned a tenant/store. Never guess if the
+    // number is linked to more than one active shop.
+    if (u && passwordOk && u.role === 'freelancer' && (!u.tenant_id || !u.store_id)) {
+      const linkedShop = await this.db.pool.query(
+        `SELECT DISTINCT owner.tenant_id,owner.store_id,t.status AS tenant_status
+           FROM users owner JOIN tenants t ON t.id=owner.tenant_id
+          WHERE owner.role='owner' AND owner.is_active=true AND owner.store_id IS NOT NULL
+            AND COALESCE(t.status,'active')='active'
+            AND (owner.phone = ANY($1::text[]) OR regexp_replace(coalesce(owner.phone,''),'[^0-9]','','g') = ANY($1::text[])
+              OR regexp_replace(coalesce(t.phone,''),'[^0-9]','','g') = ANY($1::text[]))
+          ORDER BY owner.tenant_id,owner.store_id LIMIT 2`, [phoneVariants],
+      );
+      if (linkedShop.rowCount === 1) {
+        const repaired = await this.db.pool.query(
+          `UPDATE users SET tenant_id=$1,store_id=$2
+            WHERE id=$3 AND role='freelancer' AND (tenant_id IS NULL OR store_id IS NULL)
+            RETURNING tenant_id,store_id`,
+          [linkedShop.rows[0].tenant_id,linkedShop.rows[0].store_id,u.id],
+        );
+        if (repaired.rowCount) {
+          u.tenant_id = repaired.rows[0].tenant_id;
+          u.store_id = repaired.rows[0].store_id;
+          u.tenant_status = linkedShop.rows[0].tenant_status;
+        }
+      }
     }
     const tenantIsUsable = !u?.tenant_id || u.tenant_status === 'active';
     const ok = u && u.is_active && tenantIsUsable && passwordOk;
