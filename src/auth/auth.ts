@@ -428,34 +428,75 @@ export class AuthController {
           );
           await c.query('UPDATE staff_invitations SET accepted_by=$1 WHERE id=$2', [inserted.rows[0].id,row.invitation_id]);
         } else {
-          const tenant = await c.query(
-            'INSERT INTO tenants (name, phone, email, website_url, kra_pin, legal_name) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id',
-            [row.business_name, phone, row.business_email || row.email, row.website_url, row.kra_pin, row.legal_name],
+          const previousOwner = await c.query(
+            `SELECT u.id,u.tenant_id,u.store_id,u.is_active,t.status AS tenant_status,
+                    r.national_id_hash AS stored_national_id_hash
+               FROM users u JOIN tenants t ON t.id=u.tenant_id
+               LEFT JOIN aurora_owner_identity_records r ON r.user_id=u.id
+              WHERE u.role='owner'
+                AND (u.phone = ANY($1::text[]) OR regexp_replace(u.phone, '[^0-9]', '', 'g') = ANY($1::text[]))
+              ORDER BY u.created_at DESC LIMIT 1 FOR UPDATE OF u,t`,
+            [phoneVariants],
           );
-          tenantId = tenant.rows[0].id;
-          const store = await c.query(
-            'INSERT INTO stores (tenant_id,name,location,house_name,floor,house_number) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id',
-            [tenantId, row.store_name, row.store_location, row.house_name, row.floor, row.house_number],
-          );
-          storeId = store.rows[0].id;
-          inserted = await c.query(
-            `INSERT INTO users (tenant_id,store_id,full_name,phone,email,password_hash,role)
-             VALUES ($1,$2,$3,$4,$5,$6,'owner') RETURNING id,tenant_id,store_id,role`,
-            [tenantId,storeId,row.full_name,phone,row.email,row.password_hash],
-          );
-          await c.query(
-            `INSERT INTO aurora_owner_identity_records(user_id,national_id_hash,id_photo_data,passport_photo_data)
-             VALUES($1,$2,$3,$4)`,
-            [inserted.rows[0].id,row.national_id_hash,row.id_photo_data,row.passport_photo_data],
-          );
-          await c.query('INSERT INTO wallets (tenant_id) VALUES ($1)', [tenantId]);
-          if (row.referral_code) {
-            const referrer = await c.query('SELECT id FROM tenants WHERE referral_code=$1 FOR UPDATE', [row.referral_code]);
-            if (referrer.rowCount && referrer.rows[0].id !== tenantId) {
-              await c.query(
-                'INSERT INTO tenant_referrals(referrer_tenant_id,referred_tenant_id,referral_code) VALUES($1,$2,$3) ON CONFLICT (referred_tenant_id) DO NOTHING',
-                [referrer.rows[0].id, tenantId, row.referral_code],
-              );
+          if (previousOwner.rowCount) {
+            const previous = previousOwner.rows[0];
+            if (previous.is_active && previous.tenant_status === 'active') throw new BadRequestException('This shop is already active. Please sign in instead.');
+            if (previous.stored_national_id_hash && previous.stored_national_id_hash !== row.national_id_hash) {
+              throw new BadRequestException('The National ID does not match the previous shop-owner registration.');
+            }
+            tenantId = previous.tenant_id;
+            storeId = previous.store_id;
+            await c.query(
+              `UPDATE tenants SET status='active',name=$1,phone=$2,email=$3,website_url=$4,kra_pin=$5,legal_name=$6 WHERE id=$7`,
+              [row.business_name,phone,row.business_email || row.email,row.website_url,row.kra_pin,row.legal_name,tenantId],
+            );
+            await c.query(
+              `UPDATE stores SET name=$1,location=$2,house_name=$3,floor=$4,house_number=$5 WHERE tenant_id=$6 AND id=$7`,
+              [row.store_name,row.store_location,row.house_name,row.floor,row.house_number,tenantId,storeId],
+            );
+            inserted = await c.query(
+              `UPDATE users SET full_name=$1,phone=$2,email=$3,password_hash=$4,is_active=true,national_id_number=NULL WHERE id=$5
+               RETURNING id,tenant_id,store_id,role`,
+              [row.full_name,phone,row.email,row.password_hash,previous.id],
+            );
+            await c.query(
+              `INSERT INTO aurora_owner_identity_records(user_id,national_id_hash,id_photo_data,passport_photo_data)
+               VALUES($1,$2,$3,$4)
+               ON CONFLICT (user_id) DO UPDATE SET national_id_hash=EXCLUDED.national_id_hash,
+                 id_photo_data=EXCLUDED.id_photo_data,passport_photo_data=EXCLUDED.passport_photo_data`,
+              [previous.id,row.national_id_hash,row.id_photo_data,row.passport_photo_data],
+            );
+            await c.query('INSERT INTO wallets (tenant_id) VALUES ($1) ON CONFLICT (tenant_id) DO NOTHING', [tenantId]);
+          } else {
+            const tenant = await c.query(
+              'INSERT INTO tenants (name, phone, email, website_url, kra_pin, legal_name) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id',
+              [row.business_name, phone, row.business_email || row.email, row.website_url, row.kra_pin, row.legal_name],
+            );
+            tenantId = tenant.rows[0].id;
+            const store = await c.query(
+              'INSERT INTO stores (tenant_id,name,location,house_name,floor,house_number) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id',
+              [tenantId, row.store_name, row.store_location, row.house_name, row.floor, row.house_number],
+            );
+            storeId = store.rows[0].id;
+            inserted = await c.query(
+              `INSERT INTO users (tenant_id,store_id,full_name,phone,email,password_hash,role)
+               VALUES ($1,$2,$3,$4,$5,$6,'owner') RETURNING id,tenant_id,store_id,role`,
+              [tenantId,storeId,row.full_name,phone,row.email,row.password_hash],
+            );
+            await c.query(
+              `INSERT INTO aurora_owner_identity_records(user_id,national_id_hash,id_photo_data,passport_photo_data)
+               VALUES($1,$2,$3,$4)`,
+              [inserted.rows[0].id,row.national_id_hash,row.id_photo_data,row.passport_photo_data],
+            );
+            await c.query('INSERT INTO wallets (tenant_id) VALUES ($1)', [tenantId]);
+            if (row.referral_code) {
+              const referrer = await c.query('SELECT id FROM tenants WHERE referral_code=$1 FOR UPDATE', [row.referral_code]);
+              if (referrer.rowCount && referrer.rows[0].id !== tenantId) {
+                await c.query(
+                  'INSERT INTO tenant_referrals(referrer_tenant_id,referred_tenant_id,referral_code) VALUES($1,$2,$3) ON CONFLICT (referred_tenant_id) DO NOTHING',
+                  [referrer.rows[0].id, tenantId, row.referral_code],
+                );
+              }
             }
           }
         }
