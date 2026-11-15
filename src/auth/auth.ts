@@ -319,16 +319,25 @@ export class AuthController {
     };
     const encryptedIdPhotoData = encryptIdentityPhoto(idPhotoData);
     const encryptedPassportPhotoData = encryptIdentityPhoto(passportPhotoData);
-    const usedOwnerId = await this.db.pool.query('SELECT 1 FROM aurora_owner_identity_records WHERE national_id_hash=$1 LIMIT 1', [nationalIdHash]);
-    if (usedOwnerId.rowCount) throw new BadRequestException('This National ID is already linked to a shop-owner account.');
     const phone = this.normalizePhone(body.phone || '');
+    const phoneVariants = [phone, '0' + phone.slice(3)];
+    const usedOwnerId = await this.db.pool.query(
+      `SELECT u.phone FROM aurora_owner_identity_records r JOIN users u ON u.id=r.user_id
+        WHERE r.national_id_hash=$1 LIMIT 1`, [nationalIdHash],
+    );
+    if (usedOwnerId.rowCount && !phoneVariants.includes(this.normalizePhone(usedOwnerId.rows[0].phone))) {
+      throw new BadRequestException('This National ID is already linked to another shop-owner account.');
+    }
     const referralCode = String(body.referralCode || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 20) || null;
     const ip = String(req.ip ?? '').replace(/^::ffff:/, '') || null;
 
     // Run independent database checks and password hashing together to shorten signup time.
     const checksStartedAt = Date.now();
     const [existing, limits, passwordHash] = await Promise.all([
-      this.db.pool.query(`SELECT 1 FROM users WHERE is_active=true AND (phone = ANY($1::text[]) OR regexp_replace(phone, '[^0-9]', '', 'g') = ANY($1::text[])) LIMIT 1`, [[phone, '0' + phone.slice(3)]]),
+      this.db.pool.query(`SELECT 1 FROM users u LEFT JOIN tenants t ON t.id=u.tenant_id
+        WHERE u.is_active=true
+          AND (u.phone = ANY($1::text[]) OR regexp_replace(u.phone, '[^0-9]', '', 'g') = ANY($1::text[]))
+          AND (u.role <> 'owner' OR t.status='active') LIMIT 1`, [phoneVariants]),
       this.db.pool.query(
         `SELECT
           (SELECT count(*)::int FROM signup_otp_requests WHERE phone=$1 AND created_at>now()-interval '15 minutes') AS phone_count,
