@@ -2589,3 +2589,10 @@ html body.workspace-active #receipts-home .receipt-actions-grid .receipt-choice 
 .repair-status-collected{background:#e7e7e7;color:#555}
 .repair-status-cancelled{background:#f9dddd;color:#8d2929}
 @media(max-width:520px){.shop-repair-form .form-two{display:grid;grid-template-columns:minmax(0,1fr)}.repair-record-row{flex-direction:column}.repair-status{align-self:flex-start}}
+
+
+.repair-record-tools{display:grid;gap:7px;min-width:min(220px,38%);max-width:260px}
+.repair-record-tools select,.repair-record-tools textarea{box-sizing:border-box;width:100%;min-width:0;padding:8px;border:1px solid #d9c18b;border-radius:8px;background:#fff;color:#4b3510;font:inherit;font-size:12px}
+.repair-record-tools textarea{resize:vertical;min-height:54px}
+.repair-record-tools .btn{min-height:34px;font-size:11px}
+@media(max-width:520px){.repair-record-tools{width:100%;max-width:none;min-width:0}}
