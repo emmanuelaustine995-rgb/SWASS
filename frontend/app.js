@@ -1205,7 +1205,7 @@
   freelancerOtpInput.maxLength=6;
   freelancerOtpInput.pattern='[0-9]{6}';
   freelancerOtpInput.placeholder='Enter the code sent by SMS';
-  freelancerOtpInput.required=true;
+  freelancerOtpInput.required=false;
   freelancerOtpLabel.appendChild(freelancerOtpInput);
   const freelancerOtpResend=document.createElement('button');
   freelancerOtpResend.type='button';
@@ -1232,6 +1232,7 @@
       const result=await request('/api/v1/staff/freelancer/register/request-otp',{method:'POST',signal:AbortSignal.timeout(45000),body:JSON.stringify(freelancerSignupPayload)});
       freelancerOtpPending=true;
       freelancerOtpLabel.classList.remove('hidden');
+      freelancerOtpInput.required=true;
       freelancerOtpResend.classList.remove('hidden');
       $('freelancer-otp-label')?.scrollIntoView({behavior:'smooth',block:'center'});
       message.textContent=result.message||'A verification code has been sent. Enter it below to finish registration.';
@@ -1279,7 +1280,7 @@
       $('freelancer-register-form').classList.add('hidden');
       $('login-form').classList.remove('hidden');
       freelancerOtpPending=false;freelancerSignupPayload=null;
-      freelancerOtpLabel.classList.add('hidden');freelancerOtpResend.classList.add('hidden');
+      freelancerOtpLabel.classList.add('hidden');freelancerOtpInput.required=false;freelancerOtpResend.classList.add('hidden');
       $('login-account-type').value='freelancer';updateLoginAccountType();
       $('login-phone').value=freelancerPhone;
       $('freelancer-register-success').textContent=result.message||'Your freelancer account is verified. Sign in to continue.';
