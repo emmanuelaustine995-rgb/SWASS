@@ -224,10 +224,15 @@ export class MpesaController {
   @Roles('owner', 'manager', 'cashier', 'vendor', 'freelancer')
   async paymentStatus(@Req() req: any, @Param('id') id: string) {
     if (!req.user?.tenantId) throw new ForbiddenException();
-    const result = await this.db.pool.query(
-      `SELECT id, purpose, amount_kes, phone, status, mpesa_receipt_no, created_at FROM payments WHERE id=$1 AND tenant_id=$2`,
-      [id, req.user.tenantId],
-    );
+    const result = req.user?.role === 'freelancer'
+      ? await this.db.pool.query(
+          `SELECT id, purpose, amount_kes, phone, status, mpesa_receipt_no, created_at FROM payments WHERE id=$1 AND tenant_id=$2 AND subscriber_user_id=$3`,
+          [id, req.user.tenantId, req.user.sub],
+        )
+      : await this.db.pool.query(
+          `SELECT id, purpose, amount_kes, phone, status, mpesa_receipt_no, created_at FROM payments WHERE id=$1 AND tenant_id=$2`,
+          [id, req.user.tenantId],
+        );
     if (!result.rowCount) throw new HttpException('Payment not found', HttpStatus.NOT_FOUND);
     const p = result.rows[0];
     return { id: p.id, purpose: p.purpose, amountKes: Number(p.amount_kes), phone: p.phone, status: p.status, receiptNumber: p.mpesa_receipt_no, createdAt: p.created_at };
