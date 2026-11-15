@@ -62,7 +62,7 @@ export class RepairsController {
   async update(@Req() req: any, @Param('id') id: string, @Body() body: any) {
     const user = this.requireShop(req);
     await this.db.ensureRepairSchema();
-    if (!/^\\d{1,18}$/.test(String(id || ''))) throw new BadRequestException('A valid repair record is required.');
+    if (!/^\d{1,18}$/.test(String(id || ''))) throw new BadRequestException('A valid repair record is required.');
     const allowed = ['received','diagnosing','in_repair','ready','collected','cancelled'];
     const status = String(body?.status || '').trim();
     const detected = body?.detected === undefined ? undefined : String(body.detected).trim();
