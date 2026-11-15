@@ -96,8 +96,11 @@ export class StaffController {
 
     const ownerPhoneVariants = [...new Set(ownerPhoneCandidates.flatMap(value => [value, '0' + value.slice(3), value.slice(3)]))];
     const owner = await this.db.pool.query(
-      `SELECT DISTINCT u.id,u.tenant_id,u.store_id FROM users u JOIN tenants t ON t.id=u.tenant_id
-        WHERE u.role='owner' AND u.is_active=true AND COALESCE(t.status,'active')='active' AND u.store_id IS NOT NULL
+      `SELECT DISTINCT u.id,u.tenant_id,
+          COALESCE(u.store_id,(SELECT s.id FROM stores s WHERE s.tenant_id=u.tenant_id ORDER BY s.id LIMIT 1)) AS store_id
+        FROM users u JOIN tenants t ON t.id=u.tenant_id
+        WHERE u.role='owner' AND u.is_active=true AND COALESCE(t.status,'active')='active'
+          AND COALESCE(u.store_id,(SELECT s.id FROM stores s WHERE s.tenant_id=u.tenant_id ORDER BY s.id LIMIT 1)) IS NOT NULL
           AND (regexp_replace(coalesce(u.phone,''),'[^0-9]','','g') = ANY($1::text[])
             OR regexp_replace(coalesce(t.phone,''),'[^0-9]','','g') = ANY($1::text[]))
         ORDER BY u.id LIMIT 2`, [ownerPhoneVariants],
