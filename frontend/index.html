@@ -162,7 +162,7 @@
     </section>
     <nav id="workspace-nav" class="bottom-nav hidden" aria-label="Main navigation"><button type="button" data-workspace="dashboard" class="nav-dashboard"><span class="nav-icon" aria-hidden="true">⌂</span><span>Home</span></button><button type="button" data-workspace="receipts" class="receipt-nav"><span class="nav-icon" aria-hidden="true">▤</span><span>Receipt</span></button><button type="button" data-workspace="shop" class="nav-shop"><span class="nav-icon" aria-hidden="true">◇</span><span>Shop</span></button><button type="button" data-workspace="lost-goods" class="nav-lost-goods"><span class="nav-icon flagged-alarm-icon" aria-hidden="true">🚨</span><span>Flagged Items</span></button></nav>
     <section id="shop-home" class="shop-home hidden" aria-label="Shop">
-      <nav class="shop-section-tabs" aria-label="Shop sections"><button type="button" class="active" data-shop-tab="products">Products</button><button type="button" data-shop-tab="profile">Profile</button></nav>
+      <nav class="shop-section-tabs" aria-label="Shop sections"><button type="button" class="active" data-shop-tab="products">Products</button><button type="button" data-shop-tab="repairs">Goods on Repair</button><button type="button" data-shop-tab="profile">Profile</button></nav>
       <details id="shop-register-product-card" class="shop-register-product-card">
         <summary><strong>Add Product</strong><small>Register goods in your shop so customers can find them.</small></summary>
         <div class="shop-register-product-body">
@@ -200,6 +200,21 @@
           </form>
         </div>
       </details>
+      <section id="shop-goods-on-repair-card" class="shop-goods-on-repair-card hidden" aria-label="Goods on Repair">
+        <header class="repair-card-heading"><div><span class="repair-card-kicker">SHOP SERVICE DESK</span><h2>Goods on Repair</h2><p>Record items received for repair and track their expected collection dates.</p></div><span class="repair-gold-mark" aria-hidden="true">⚒</span></header>
+        <form id="shop-repair-form" class="shop-repair-form">
+          <div class="form-two"><label>Goods / item name<input id="repair-item-name" maxlength="160" required placeholder="e.g. Samsung Galaxy A15"></label><label>Item ID / serial number<input id="repair-item-identifier" maxlength="100" required placeholder="Serial number or IMEI"></label></div>
+          <div class="form-two"><label>Customer name<input id="repair-customer-name" maxlength="160" required></label><label>Customer ID number<input id="repair-customer-id" maxlength="50" required></label></div>
+          <label>Condition when received<textarea id="repair-condition" rows="2" maxlength="1000" required placeholder="Describe visible condition, scratches, cracks or missing parts"></textarea></label>
+          <label>Problem reported<textarea id="repair-problem" rows="2" maxlength="2000" required placeholder="What problem did the customer report?"></textarea></label>
+          <label>Problem detected / diagnosis<textarea id="repair-detected" rows="2" maxlength="2000" placeholder="Technician's findings (can be updated after diagnosis)"></textarea></label>
+          <div class="form-two"><label>Date received<input id="repair-received-date" type="date" required></label><label>Expected pick-up date<input id="repair-pick-date" type="date" required></label></div>
+          <button id="repair-submit" class="btn full" type="submit">＋ Record Goods on Repair</button>
+          <p id="repair-message" class="muted small" role="status"></p>
+        </form>
+        <div class="repair-records-heading"><h3>Repair Register</h3><button id="repair-refresh" class="btn btn-light btn-small" type="button">Refresh</button></div>
+        <div id="repair-records-list" class="repair-records-list" aria-live="polite"><p class="muted small">Open Goods on Repair to load the repair register.</p></div>
+      </section>
       <details class="profile-shop-card profile-card panel shop-business-details-card hidden"><summary class="profile-card-summary"><span><strong>Shop Details</strong><small>Business information, branding and shop photos</small></span><span class="profile-card-chevron" aria-hidden="true">⌄</span></summary><div class="profile-card-body"><p id="profile-readonly-note" class="profile-readonly-note hidden">Viewing mode · Shop owners can edit these details. Vendors and freelancers can view them only.</p><form id="profile-form">
 <div class="profile-logo-row"><img id="logo-preview" alt="Business logo preview" class="logo-preview hidden"><label>Business logo (optional)<input id="business-logo" type="file" accept="image/png,image/jpeg,image/webp"></label></div>
 <div class="form-two"><label>Company / trading name<input id="profile-business-name" maxlength="120" required></label><label>Support telephone number<input id="profile-business-phone" maxlength="30" required></label></div>
