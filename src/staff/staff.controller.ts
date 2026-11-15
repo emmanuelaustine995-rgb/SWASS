@@ -1,5 +1,5 @@
 import { BadRequestException, Controller, Delete, Get, Post, Patch, Body, Req, UseGuards } from '@nestjs/common';
-import { createHash, randomBytes } from 'node:crypto';
+import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import * as argon2 from 'argon2';
 import { AuthGuard, Roles, RolesGuard } from '../auth/auth';
 import { DbService } from '../db/db.service';
@@ -33,73 +33,143 @@ export class StaffController {
     }
   }
 
-  // Public freelancer self-registration. Link directly to the active shop owner using the owner's registered phone number.
-  @Post('freelancer/register')
-  async registerFreelancer(@Body() body: {
+  private freelancerOtpHash(code: string): string {
+    const secret = process.env.SWASS_ID_SECRET;
+    if (!secret) throw new BadRequestException('Secure OTP service is not configured.');
+    return createHmac('sha256', secret).update(`freelancer-signup-otp:${code}`).digest('hex');
+  }
+
+  private async sendFreelancerSignupOtp(to: string, code: string): Promise<void> {
+    const token = (process.env.TALKSASA_API_TOKEN || process.env.TALKSASA_API_KEY || '').trim();
+    if (!token) throw new BadRequestException('SMS verification is not configured. Please contact support.');
+    const configured = (process.env.TALKSASA_API_URL || 'https://bulksms.talksasa.com/api/v3/sms/send').trim();
+    const endpoint = /\/sms\/send\/?$/i.test(configured) ? configured : `${configured.replace(/\/+$/, '')}/sms/send`;
+    const response = await fetch(endpoint, {
+      method: 'POST', signal: AbortSignal.timeout(10000),
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ recipient: `+${to}`, sender_id: process.env.TALKSASA_SENDER_ID || 'TALK-SASA',
+        type: 'plain', message: `Your AURORA freelancer registration code is ${code}. It expires in 5 minutes. Do not share it.` }),
+    });
+    const raw = await response.text();
+    let result: any = {}; try { result = raw ? JSON.parse(raw) : {}; } catch {}
+    const status = String(result?.status ?? result?.data?.status ?? '').toLowerCase();
+    if (!response.ok || !(status === 'success' || status === 'accepted' || status === 'queued' || result?.success === true || result?.status === true)) {
+      console.error('[AURORA] Freelancer signup SMS rejected:', response.status, String(result?.message ?? result?.error ?? raw).slice(0, 180));
+      throw new BadRequestException('TalkSasa could not send the verification code. Check SMS balance and sender ID, then try again.');
+    }
+  }
+
+  // Start a separate freelancer registration. Phone/email may also belong to an owner/admin account;
+  // duplicate checks are scoped to freelancer accounts so the existing admin identity is untouched.
+  @Post('freelancer/register/request-otp')
+  async requestFreelancerSignupOtp(@Body() body: {
     ownerPhone?: string; fullName?: string; phone?: string; email?: string;
     nationalIdNumber?: string; nationalIdPhotoData?: string; profilePhotoData?: string; password?: string;
   }) {
     const normalizePhone = (value: unknown) => {
       let digits = String(value ?? '').replace(/\D/g, '');
-      // Accept 07..., 01..., 7..., 1..., 2547..., +2547... and +254 07...
       if (digits.startsWith('254')) digits = digits.slice(3);
       if (digits.startsWith('0')) digits = digits.slice(1);
       return /^[17]\d{8}$/.test(digits) ? '254' + digits : digits;
     };
     const ownerPhone = normalizePhone(body?.ownerPhone);
+    const phone = normalizePhone(body?.phone);
     const fullName = String(body?.fullName ?? '').trim();
     const email = String(body?.email ?? '').trim().toLowerCase();
-    const phone = normalizePhone(body?.phone);
     const password = String(body?.password ?? '');
-    const nationalIdNumber = String(body?.nationalIdNumber ?? '').replace(/\s+/g,'').trim();
+    const nationalIdNumber = String(body?.nationalIdNumber ?? '').replace(/\s+/g, '').trim();
     const nationalIdPhotoData = String(body?.nationalIdPhotoData ?? '');
     const profilePhotoData = String(body?.profilePhotoData ?? '');
-    if (!/^254[17]\d{8}$/.test(ownerPhone)) throw new BadRequestException('Enter a valid Kenyan shop-owner number, e.g. 0712345678 or 254712345678.');
+    if (!/^254[17]\d{8}$/.test(ownerPhone)) throw new BadRequestException('Enter a valid Kenyan shop-owner phone number.');
     if (!fullName || fullName.length > 120) throw new BadRequestException('Enter your full name.');
-    if (!/^254\d{9}$/.test(phone)) throw new BadRequestException('Enter a valid Kenyan phone number.');
+    if (!/^254[17]\d{8}$/.test(phone)) throw new BadRequestException('Enter a valid Kenyan freelancer phone number.');
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) throw new BadRequestException('Enter a valid email address.');
     if (password.length < 10 || password.length > 128) throw new BadRequestException('Choose a password of at least 10 characters.');
     if (!/^\d{6,12}$/.test(nationalIdNumber)) throw new BadRequestException('Enter a valid National ID number.');
-    const isSupportedImageData = (value: string) => ['data:image/jpeg;base64,', 'data:image/png;base64,', 'data:image/webp;base64,'].some(prefix => value.startsWith(prefix));
-    if (!isSupportedImageData(nationalIdPhotoData) || nationalIdPhotoData.length > 2800000) throw new BadRequestException('Upload a clear JPG, PNG or WebP National ID photo (maximum 2 MB).');
-    if (!isSupportedImageData(profilePhotoData) || profilePhotoData.length > 1400000) throw new BadRequestException('Upload a JPG, PNG or WebP profile photo (maximum 1 MB).');
-    const ownerDigits = ownerPhone.slice(3);
-    const ownerLocalPhone = '0' + ownerDigits;
+    const supported = (value: string) => ['data:image/jpeg;base64,', 'data:image/png;base64,', 'data:image/webp;base64,'].some(prefix => value.startsWith(prefix));
+    if (!supported(nationalIdPhotoData) || nationalIdPhotoData.length > 2800000) throw new BadRequestException('Upload a JPG, PNG or WebP National ID photo (maximum 2 MB).');
+    if (!supported(profilePhotoData) || profilePhotoData.length > 1400000) throw new BadRequestException('Upload a JPG, PNG or WebP profile photo (maximum 1 MB).');
+
+    const digits = ownerPhone.slice(3), local = '0' + digits;
     const owner = await this.db.pool.query(
-      `SELECT DISTINCT u.id,u.tenant_id,u.store_id
-         FROM users u JOIN tenants t ON t.id=u.tenant_id
-        WHERE u.role='owner' AND u.is_active=true
-          AND COALESCE(t.status,'active')='active'
-          AND u.store_id IS NOT NULL
-          AND (
-            regexp_replace(coalesce(u.phone,''),'[^0-9]','','g') IN ($1,$2,$3)
-            OR regexp_replace(coalesce(t.phone,''),'[^0-9]','','g') IN ($1,$2,$3)
-          )
-        ORDER BY u.id
-        LIMIT 2`,
-      [ownerPhone,ownerLocalPhone,ownerDigits],
+      `SELECT DISTINCT u.id,u.tenant_id,u.store_id FROM users u JOIN tenants t ON t.id=u.tenant_id
+        WHERE u.role='owner' AND u.is_active=true AND COALESCE(t.status,'active')='active' AND u.store_id IS NOT NULL
+          AND (regexp_replace(coalesce(u.phone,''),'[^0-9]','','g') IN ($1,$2,$3)
+            OR regexp_replace(coalesce(t.phone,''),'[^0-9]','','g') IN ($1,$2,$3))
+        ORDER BY u.id LIMIT 2`, [ownerPhone, local, digits],
     );
-    if (!owner.rowCount) throw new BadRequestException('No active shop-owner account is registered with that phone number. Check the number used when the shop owner created the account.');
-    if (owner.rowCount > 1) throw new BadRequestException('That phone number is linked to more than one active shop. Contact support so your freelancer account is connected to the correct shop.');
+    if (!owner.rowCount) throw new BadRequestException('No active shop owner was found for that registered phone number.');
+    if (owner.rowCount > 1) throw new BadRequestException('That phone number is linked to more than one active shop. Contact support.');
+
     const duplicate = await this.db.pool.query(
-      `SELECT 1 FROM users
-        WHERE is_active=true
-          AND (regexp_replace(phone,'[^0-9]','','g') IN ($1,$2)
-           OR lower(email)=lower($3)
-           OR national_id_number=$4)
-        LIMIT 1`,
-      [phone,'0'+phone.slice(3),email,nationalIdNumber],
+      `SELECT 1 FROM users WHERE is_active=true AND role='freelancer'
+        AND (regexp_replace(phone,'[^0-9]','','g') IN ($1,$2) OR lower(email)=lower($3) OR national_id_number=$4) LIMIT 1`,
+      [phone, '0' + phone.slice(3), email, nationalIdNumber],
     );
-    if (duplicate.rowCount) throw new BadRequestException('This freelancer phone, email or National ID is already registered. Sign in or contact support.');
+    if (duplicate.rowCount) throw new BadRequestException('A freelancer account already exists with these details. Choose Freelancer at sign-in or reset its password.');
+
+    const recent = await this.db.pool.query(
+      `SELECT 1 FROM freelancer_signup_otp_requests WHERE phone=$1 AND consumed_at IS NULL AND created_at>now()-interval '30 seconds' LIMIT 1`, [phone],
+    );
+    if (recent.rowCount) throw new BadRequestException('A verification code was just requested. Please wait 30 seconds before requesting another.');
+    const code = String(randomBytes(4).readUInt32BE(0) % 1000000).padStart(6, '0');
     const passwordHash = await argon2.hash(password);
-    const created = await this.db.pool.query(
-      `INSERT INTO users (tenant_id,store_id,full_name,phone,email,password_hash,role,must_change_password,staff_title,profile_photo_data,national_id_number,national_id_photo_data)
-       VALUES($1,$2,$3,$4,$5,$6,'freelancer',false,'Freelancer',$7,$8,$9)
-       RETURNING id`,
-      [owner.rows[0].tenant_id,owner.rows[0].store_id,fullName,phone,email,passwordHash,profilePhotoData,nationalIdNumber,nationalIdPhotoData],
+    const pending = await this.db.pool.query(
+      `INSERT INTO freelancer_signup_otp_requests
+       (phone,owner_phone,full_name,email,password_hash,national_id_number,national_id_photo_data,profile_photo_data,tenant_id,store_id,code_hash,expires_at)
+       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,now()+interval '5 minutes') RETURNING id`,
+      [phone, ownerPhone, fullName, email, passwordHash, nationalIdNumber, nationalIdPhotoData, profilePhotoData,
+        owner.rows[0].tenant_id, owner.rows[0].store_id, this.freelancerOtpHash(code)],
     );
-    return { created:true, userId:created.rows[0].id, message:'Your freelancer account has been connected to the shop registered under that phone number. Sign in, then choose Subscription to pay KSh 100 monthly or KSh 900 yearly and activate your personal freelancer account.' };
+    try {
+      await this.sendFreelancerSignupOtp(phone, code);
+    } catch (error) {
+      await this.db.pool.query('DELETE FROM freelancer_signup_otp_requests WHERE id=$1', [pending.rows[0].id]);
+      throw error;
+    }
+    return { otpRequired: true, phoneHint: phone.slice(-4), expiresInSeconds: 300, resendAfterSeconds: 30,
+      message: 'A six-digit verification code has been sent to your freelancer phone number.' };
   }
+
+  @Post('freelancer/register/verify-otp')
+  async verifyFreelancerSignupOtp(@Body() body: { phone?: string; code?: string }) {
+    const digits = String(body?.phone ?? '').replace(/\D/g, '');
+    const phone = digits.startsWith('254') ? digits : digits.startsWith('0') ? '254' + digits.slice(1) : '254' + digits;
+    const code = String(body?.code ?? '').trim();
+    if (!/^254[17]\d{8}$/.test(phone) || !/^\d{6}$/.test(code)) throw new BadRequestException('Enter the registered phone number and six-digit verification code.');
+    return this.db.tx(async c => {
+      const found = await c.query(
+        `SELECT * FROM freelancer_signup_otp_requests
+          WHERE phone=$1 AND consumed_at IS NULL AND expires_at>now()
+          ORDER BY created_at DESC LIMIT 1 FOR UPDATE`, [phone],
+      );
+      const pending = found.rows[0];
+      if (!pending || Number(pending.attempts) >= 5) throw new BadRequestException('The verification code has expired or the maximum attempts were used. Request a new code.');
+      const expected = Buffer.from(String(pending.code_hash), 'hex');
+      const supplied = Buffer.from(this.freelancerOtpHash(code), 'hex');
+      const valid = expected.length === supplied.length && timingSafeEqual(expected, supplied);
+      if (!valid) {
+        await c.query('UPDATE freelancer_signup_otp_requests SET attempts=attempts+1 WHERE id=$1', [pending.id]);
+        throw new BadRequestException('That verification code is incorrect. Check the SMS and try again.');
+      }
+      const duplicate = await c.query(
+        `SELECT 1 FROM users WHERE is_active=true AND role='freelancer'
+          AND (regexp_replace(phone,'[^0-9]','','g') IN ($1,$2) OR lower(email)=lower($3) OR national_id_number=$4) LIMIT 1`,
+        [phone, '0' + phone.slice(3), pending.email, pending.national_id_number],
+      );
+      if (duplicate.rowCount) throw new BadRequestException('A freelancer account already exists with these details. Sign in as Freelancer instead.');
+      const created = await c.query(
+        `INSERT INTO users (tenant_id,store_id,full_name,phone,email,password_hash,role,must_change_password,staff_title,profile_photo_data,national_id_number,national_id_photo_data)
+         VALUES($1,$2,$3,$4,$5,$6,'freelancer',false,'Freelancer',$7,$8,$9) RETURNING id`,
+        [pending.tenant_id,pending.store_id,pending.full_name,pending.phone,pending.email,pending.password_hash,
+          pending.profile_photo_data,pending.national_id_number,pending.national_id_photo_data],
+      );
+      await c.query('UPDATE freelancer_signup_otp_requests SET consumed_at=now() WHERE id=$1', [pending.id]);
+      return { created: true, userId: created.rows[0].id,
+        message: 'Your freelancer account has been verified and created. Sign in using Freelancer with your phone number and password. Subscription: KSh 100 monthly or KSh 900 yearly.' };
+    });
+  }
+
   @Post('invitations/accept')
   async acceptInvitation(@Body() body: { token?: string; password?: string }) {
     const token = String(body?.token ?? '');
