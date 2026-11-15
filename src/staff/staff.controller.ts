@@ -76,7 +76,8 @@ export class StaffController {
     // A freelancer may use the same phone as the registered shop owner.
     // If no separate owner number is supplied, resolve the shop from the
     // freelancer's own phone; also try both numbers when one was supplied.
-    const ownerPhoneCandidates = [...new Set([phone, normalizePhone(body?.ownerPhone)].filter(Boolean))];
+    const ownerPhone = normalizePhone(body?.ownerPhone) || phone;
+    const ownerPhoneCandidates = [...new Set([phone, ownerPhone].filter(Boolean))];
     const fullName = String(body?.fullName ?? '').trim();
     const email = String(body?.email ?? '').trim().toLowerCase();
     const password = String(body?.password ?? '');
