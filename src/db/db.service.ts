@@ -40,6 +40,7 @@ export class DbService implements OnModuleDestroy {
           created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
           updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
         );
+        ALTER TABLE shop_repair_jobs ADD COLUMN IF NOT EXISTS item_identifier VARCHAR(100) NOT NULL DEFAULT '';
         CREATE INDEX IF NOT EXISTS shop_repair_jobs_tenant_date_idx ON shop_repair_jobs(tenant_id, status, expected_pick_date DESC);
         CREATE INDEX IF NOT EXISTS shop_repair_jobs_store_date_idx ON shop_repair_jobs(store_id, received_date DESC);
       `).then(() => undefined).catch(err => { this.repairSchemaPromise = null; throw err; });
