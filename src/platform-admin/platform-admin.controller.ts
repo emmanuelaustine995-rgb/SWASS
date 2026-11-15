@@ -1,4 +1,6 @@
 import { BadRequestException, Controller, Get, Param, Post, Query, UseGuards, NotFoundException, Req } from '@nestjs/common';
+import * as argon2 from 'argon2';
+import { createHmac, randomBytes } from 'node:crypto';
 import { AuthGuard, Roles, RolesGuard } from '../auth/auth';
 import { DbService } from '../db/db.service';
 
@@ -7,6 +9,109 @@ import { DbService } from '../db/db.service';
 @Roles('super_admin')
 export class PlatformAdminController {
   constructor(private db: DbService) {}
+
+  // Administrators can create any supported account directly; public OTP signup is not required here.
+  @Post('accounts/create')
+  async createAccount(@Req() req: any, @Body() body: any) {
+    const accountType = String(body?.accountType || '').trim().toLowerCase();
+    const fullName = String(body?.fullName || '').trim();
+    const email = String(body?.email || '').trim().toLowerCase() || null;
+    const rawPhone = String(body?.phone || '').trim();
+    let digits = rawPhone.replace(/\\D/g, '');
+    if (digits.startsWith('254')) digits = digits.slice(3);
+    if (digits.startsWith('0')) digits = digits.slice(1);
+    if (!/^[17]\\d{8}$/.test(digits)) throw new BadRequestException('Enter a valid Kenyan phone number.');
+    const phone = '254' + digits;
+    const password = String(body?.password || '');
+    if (!fullName || fullName.length > 120) throw new BadRequestException('Enter a valid full name.');
+    if (email && (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) || email.length > 254)) throw new BadRequestException('Enter a valid email address.');
+    if (password.length < 10 || password.length > 128) throw new BadRequestException('Set a password of at least 10 characters.');
+    const passwordHash = await argon2.hash(password);
+    const normalize = (value: unknown) => { let d = String(value || '').replace(/\\D/g, ''); if (d.startsWith('254')) d=d.slice(3); if (d.startsWith('0')) d=d.slice(1); return /^[17]\\d{8}$/.test(d) ? '254'+d : ''; };
+    const secret = process.env.SWASS_ID_SECRET;
+    const created = await this.db.tx(async client => {
+      if (accountType === 'customer') {
+        const nationalId = String(body?.nationalId || '').replace(/\\s+/g, '');
+        if (!/^[0-9]{7,9}$/.test(nationalId)) throw new BadRequestException('Enter a valid customer National ID number.');
+        if (!secret) throw new BadRequestException('Secure identity verification is not configured.');
+        const nationalIdHash = createHmac('sha256', secret).update('aurora-customer-national-id:' + nationalId).digest('hex');
+        const duplicate = await client.query('SELECT 1 FROM customer_accounts WHERE is_active=true AND (phone=$1 OR lower(coalesce(email,\'\'))=lower(coalesce($2,\'\')) OR national_id_hash=$3) LIMIT 1', [phone,email,nationalIdHash]);
+        if (duplicate.rowCount) throw new BadRequestException('An active customer already uses this phone, email or National ID.');
+        const result = await client.query(
+          'INSERT INTO customer_accounts(full_name,phone,email,password_hash,referral_code,national_id_hash) VALUES($1,$2,$3,$4,$5,$6) RETURNING id,full_name,phone,email',
+          [fullName,phone,email,passwordHash,randomBytes(6).toString('hex').toUpperCase(),nationalIdHash],
+        );
+        return { id: result.rows[0].id, accountType, fullName, phone, email };
+      }
+      if (accountType === 'shop_owner') {
+        const businessName=String(body?.businessName||'').trim();
+        const storeName=String(body?.storeName||businessName).trim();
+        const storeLocation=String(body?.storeLocation||'').trim();
+        const nationalId=String(body?.nationalId||'').replace(/\\s+/g,'');
+        const idPhotoData=String(body?.idPhotoData||'');
+        const passportPhotoData=String(body?.passportPhotoData||'');
+        if(!businessName||businessName.length>160||!storeName||storeName.length>160||!storeLocation||storeLocation.length>200) throw new BadRequestException('Enter the business name, shop name and location.');
+        if(!/^[0-9]{7,9}$/.test(nationalId)||!secret) throw new BadRequestException('Enter a valid National ID and ensure identity security is configured.');
+        const validImage=(v:string)=>!v||(/^data:image\\/(jpeg|png|webp);base64,/.test(v)&&v.length<=2800000);
+        if(!validImage(idPhotoData)||!validImage(passportPhotoData)) throw new BadRequestException('ID and passport photos must be JPG, PNG or WebP images no larger than 2 MB each.');
+        const nationalIdHash=createHmac('sha256',secret).update('aurora-owner-national-id:'+nationalId).digest('hex');
+        const duplicate=await client.query(
+          `SELECT 1 FROM users u LEFT JOIN aurora_owner_identity_records r ON r.user_id=u.id
+            WHERE u.is_active=true AND (u.phone IN ($1,$2) OR lower(coalesce(u.email,''))=lower(coalesce($3,'')) OR r.national_id_hash=$4) LIMIT 1`,
+          [phone,'0'+phone.slice(3),email,nationalIdHash]);
+        if(duplicate.rowCount) throw new BadRequestException('An active account already uses this phone, email or National ID.');
+        const tenant=await client.query('INSERT INTO tenants(name,phone,email,website_url,kra_pin,legal_name) VALUES($1,$2,$3,$4,$5,$6) RETURNING id',
+          [businessName,phone,email,String(body?.websiteUrl||'').trim()||null,String(body?.kraPin||'').trim()||null,String(body?.legalName||'').trim()||businessName]);
+        const store=await client.query('INSERT INTO stores(tenant_id,name,location) VALUES($1,$2,$3) RETURNING id',[tenant.rows[0].id,storeName,storeLocation]);
+        const user=await client.query("INSERT INTO users(tenant_id,store_id,full_name,phone,email,password_hash,role) VALUES($1,$2,$3,$4,$5,$6,'owner') RETURNING id",[tenant.rows[0].id,store.rows[0].id,fullName,phone,email,passwordHash]);
+        await client.query('INSERT INTO aurora_owner_identity_records(user_id,national_id_hash,id_photo_data,passport_photo_data) VALUES($1,$2,$3,$4)',[user.rows[0].id,nationalIdHash,idPhotoData||null,passportPhotoData||null]);
+        await client.query('INSERT INTO wallets(tenant_id) VALUES($1) ON CONFLICT(tenant_id) DO NOTHING',[tenant.rows[0].id]);
+        return {id:user.rows[0].id,accountType,fullName,phone,email,tenantId:tenant.rows[0].id,storeId:store.rows[0].id};
+      }
+      if (accountType === 'freelancer') {
+        const ownerPhone=normalize(body?.ownerPhone);
+        const nationalId=String(body?.nationalId||'').replace(/\\s+/g,'');
+        const idPhotoData=String(body?.idPhotoData||'');
+        const profilePhotoData=String(body?.profilePhotoData||'');
+        if(!ownerPhone) throw new BadRequestException('Enter the registered shop-owner phone number to link this freelancer.');
+        if(!/^[0-9]{6,12}$/.test(nationalId)||!secret) throw new BadRequestException('Enter a valid National ID and ensure identity security is configured.');
+        const validImage=(v:string)=>/^data:image\\/(jpeg|png|webp);base64,/.test(v)&&v.length<=2800000;
+        if(!validImage(idPhotoData)||!validImage(profilePhotoData)) throw new BadRequestException('Upload valid ID and profile photos (JPG, PNG or WebP; maximum 2 MB).');
+        const owner=await client.query(
+          `SELECT u.id,u.tenant_id,u.store_id FROM users u JOIN tenants t ON t.id=u.tenant_id
+            WHERE u.role='owner' AND u.is_active=true AND COALESCE(t.status,'active')='active' AND u.store_id IS NOT NULL
+              AND regexp_replace(coalesce(u.phone,''),'[^0-9]','','g')=ANY($1::text[]) LIMIT 2`,
+          [[ownerPhone,'0'+ownerPhone.slice(3),ownerPhone.slice(3)]]);
+        if(!owner.rowCount) throw new BadRequestException('No active shop owner was found with that phone number.');
+        if(owner.rowCount>1) throw new BadRequestException('That phone number matches more than one shop. Contact support to resolve the link.');
+        const duplicate=await client.query("SELECT 1 FROM users WHERE is_active=true AND (phone IN ($1,$2) OR lower(coalesce(email,''))=lower(coalesce($3,''))) LIMIT 1",[phone,'0'+phone.slice(3),email]);
+        if(duplicate.rowCount) throw new BadRequestException('An active account already uses this phone or email.');
+        const user=await client.query(
+          `INSERT INTO users(tenant_id,store_id,full_name,phone,email,password_hash,role,must_change_password,staff_title,profile_photo_data,national_id_number,national_id_photo_data)
+           VALUES($1,$2,$3,$4,$5,$6,'freelancer',false,'Freelancer',$7,$8,$9) RETURNING id`,
+          [owner.rows[0].tenant_id,owner.rows[0].store_id,fullName,phone,email,passwordHash,profilePhotoData,nationalId,idPhotoData]);
+        return {id:user.rows[0].id,accountType,fullName,phone,email,tenantId:owner.rows[0].tenant_id};
+      }
+      if (accountType === 'staff') {
+        const tenantId=String(body?.tenantId||'').trim();
+        const storeId=String(body?.storeId||'').trim();
+        const staffRole=String(body?.staffRole||'cashier').trim().toLowerCase();
+        if(!tenantId||!storeId||!['cashier','vendor','manager'].includes(staffRole)) throw new BadRequestException('Choose a valid shop and staff role (cashier, vendor or manager).');
+        const shop=await client.query('SELECT 1 FROM stores WHERE id=$1 AND tenant_id=$2 LIMIT 1',[storeId,tenantId]);
+        if(!shop.rowCount) throw new BadRequestException('The selected store does not belong to the selected shop.');
+        const duplicate=await client.query("SELECT 1 FROM users WHERE is_active=true AND (phone IN ($1,$2) OR lower(coalesce(email,''))=lower(coalesce($3,''))) LIMIT 1",[phone,'0'+phone.slice(3),email]);
+        if(duplicate.rowCount) throw new BadRequestException('An active account already uses this phone or email.');
+        const user=await client.query('INSERT INTO users(tenant_id,store_id,full_name,phone,email,password_hash,role,staff_title) VALUES($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id',
+          [tenantId,storeId,fullName,phone,email,passwordHash,staffRole,String(body?.staffTitle||staffRole).slice(0,80)]);
+        return {id:user.rows[0].id,accountType,fullName,phone,email,tenantId,storeId,staffRole};
+      }
+      throw new BadRequestException('Choose Shop owner, Freelancer, Customer or Staff.');
+    });
+    try {
+      await this.db.recordSecurityEvent({eventType:'admin_account_created',severity:'medium',outcome:'completed',actorUserId:req.user?.sub,sourceIp:req.ip,userAgent:req.headers?.['user-agent'],metadata:{accountId:created.id,accountType:created.accountType,tenantId:(created as any).tenantId||null}});
+    } catch (error) { console.error('[AURORA_ADMIN] Account created but audit logging failed:',error instanceof Error?error.message:error); }
+    return {created:true,account:created,message:'Account created by an authorised administrator. Public OTP registration was not required.'};
+  }
 
   @Get('overview')
   async overview() {
