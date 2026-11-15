@@ -440,23 +440,9 @@
         dashboardBusinessCard?.classList.add('hidden');
         $('platform-referral-admin')?.classList.remove('hidden');
         void loadPlatformReferralAdmin();
-      }else if(state.role==='freelancer'){
-        // Freelancers receive a dedicated, non-empty landing screen. Do not
-        // expose the owner analytics dashboard or depend on owner-only widgets
-        // to render the first authenticated page.
-        pos?.classList.remove('hidden');
-        posGrid?.classList.add('hidden');
-        $('owner-dashboard-view')?.classList.remove('hidden');
-        $('freelancer-home')?.classList.remove('hidden');
-        ownerHome?.classList.add('hidden');
-        staffSummary?.classList.remove('hidden');
-        $('freelancer-home-name').textContent=state.userName||'Welcome';
-        $('freelancer-home-message').textContent='Your shop workspace is ready. Choose an area below to continue.';
-        window.dispatchEvent(new Event('swass:dashboard-open'));
-        void loadStaffSalesSummary().catch(error=>{
-          $('freelancer-home-message').textContent='Your workspace is ready. Sales summary is temporarily unavailable; you can still open Receipts or Shop.';
-        });
-      }else if(['owner','manager','vendor'].includes(state.role)){
+      }else if(['owner','manager','vendor','freelancer'].includes(state.role)){
+        // Freelancers use the same Home dashboard and shop workspace as owners.
+        // Their API permissions remain scoped to the linked tenant and store.
         ownerHome?.classList.remove('hidden');
         void loadOwnerHomeSummary();
       }else if(state.role!=='customer'){
@@ -479,9 +465,12 @@
       // Re-apply account permissions every time the Receipts page is opened.
       const isCustomerAccount=state.role==='customer';
       document.body.classList.toggle('customer-account-active',isCustomerAccount);
-      if(isCustomerAccount)enforceCustomerReceiptActions();
+      // Re-apply visibility for every account switch: a previous customer login
+      // must not leave Issue Receipt hidden for the next owner or freelancer.
+      enforceCustomerReceiptActions();
       // Receipt history belongs in Shop > Profile, not on the Receipts workspace.
       if(['cashier','freelancer'].includes(state.role)){staffSummary?.classList.remove('hidden');void loadStaffSalesSummary();}
+      $('open-issue-receipt')?.classList.toggle('hidden',isCustomerAccount);
       $('open-recover-receipt')?.classList.remove('hidden');
       $('secondhand-open-card')?.classList.toggle('hidden',!['owner','freelancer','customer'].includes(state.role));
     }else if(screen==='shop'){
