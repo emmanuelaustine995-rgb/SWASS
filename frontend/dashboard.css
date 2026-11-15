@@ -2562,3 +2562,30 @@ html body.workspace-active #receipts-home .receipt-actions-grid .receipt-choice 
     border-radius:0!important;
   }
 }
+
+
+/* Goods on Repair — distinct warm-gold service desk card */
+.shop-goods-on-repair-card{display:block;margin:14px 0 24px;padding:clamp(14px,2.5vw,22px);color:#4b3510;background:linear-gradient(145deg,#fff9e8 0%,#fff1c7 48%,#f8e0a0 100%);border:1px solid #d6a43d;border-top:5px solid #c28a19;border-radius:18px;box-shadow:0 12px 30px rgba(120,82,14,.13)}
+.shop-goods-on-repair-card.hidden{display:none!important}
+.repair-card-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px}
+.repair-card-kicker{display:block;font-size:10px;font-weight:850;letter-spacing:1.5px;color:#90600d}
+.repair-card-heading h2{margin:4px 0 5px;color:#67450b;font-size:clamp(20px,3vw,25px)}
+.repair-card-heading p{margin:0;color:#755c2c;font-size:13px;line-height:1.5}
+.repair-gold-mark{display:grid;place-items:center;flex:0 0 44px;width:44px;height:44px;border-radius:14px;background:#e4b84f;color:#65440b;font-size:23px}
+.shop-repair-form{display:grid;gap:12px;padding:14px;background:rgba(255,255,255,.74);border:1px solid rgba(190,143,45,.38);border-radius:14px}
+.shop-repair-form label{display:grid;gap:6px;min-width:0;color:#62470f;font-size:12px;font-weight:750}
+.shop-repair-form input,.shop-repair-form textarea{box-sizing:border-box;width:100%;min-width:0;min-height:43px;padding:10px 11px;border:1px solid #d9c18b;border-radius:9px;background:#fff;color:#29251d;font:inherit;font-size:14px}
+.shop-repair-form input:focus,.shop-repair-form textarea:focus{outline:3px solid rgba(195,143,28,.2);border-color:#b77d12}
+.shop-repair-form .btn{background:#9a680c;border-color:#9a680c;color:#fff;min-height:46px;font-weight:800}
+.repair-records-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:18px 0 10px}
+.repair-records-heading h3{margin:0;color:#67450b;font-size:16px}
+.repair-records-list{display:grid;gap:9px}
+.repair-record-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:12px;background:rgba(255,255,255,.82);border:1px solid #e5ca8c;border-radius:12px}
+.repair-record-main{display:grid;gap:5px;min-width:0}
+.repair-record-main strong{color:#4c350c;font-size:14px}
+.repair-record-main small{color:#6b572e;font-size:12px;line-height:1.45;overflow-wrap:anywhere}
+.repair-status{flex:0 0 auto;padding:5px 8px;border-radius:999px;background:#f1e4c4;color:#70500e;font-size:10px;font-weight:800}
+.repair-status-ready{background:#d8f2df;color:#176333}
+.repair-status-collected{background:#e7e7e7;color:#555}
+.repair-status-cancelled{background:#f9dddd;color:#8d2929}
+@media(max-width:520px){.shop-repair-form .form-two{display:grid;grid-template-columns:minmax(0,1fr)}.repair-record-row{flex-direction:column}.repair-status{align-self:flex-start}}
