@@ -114,6 +114,6 @@ export class RepairsController {
                  received_date AS "receivedDate", expected_pick_date AS "expectedPickDate", status`,
       [user.tenantId,user.storeId,user.sub,itemName,itemIdentifier,customerName,this.encryptCustomerId(customerId),condition,problem,detected,receivedDate,expectedPickDate],
     );
-    return { repair: result.rows[0], message: 'Goods received for repair and saved.' };
+    return { repair: { ...result.rows[0], customerId: this.decryptCustomerId(result.rows[0].customerId) }, message: 'Goods received for repair and saved.' };
   }
 }
