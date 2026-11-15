@@ -1213,17 +1213,55 @@
   });
   let signupResendTimer = null;
   let signupResendSeconds = 0;
-  function readSignupPhoto(inputId){
+  async function readSignupPhoto(inputId){
     const file=$(inputId)?.files?.[0];
-    if(!file)return Promise.resolve('');
-    if(!['image/jpeg','image/png','image/webp'].includes(file.type))return Promise.reject(new Error('Choose a JPG, PNG or WEBP image.'));
-    if(file.size>1500*1024)return Promise.reject(new Error('Each photo must be 1.5 MB or smaller. Please choose a smaller image.'));
-    return new Promise((resolve,reject)=>{
-      const reader=new FileReader();
-      reader.onload=()=>resolve(String(reader.result||''));
-      reader.onerror=()=>reject(new Error('Could not read the selected photo. Please choose it again.'));
-      reader.readAsDataURL(file);
-    });
+    if(!file)return '';
+    if(!['image/jpeg','image/png','image/webp'].includes(file.type))throw new Error('Choose a JPG, PNG or WebP photo. If your camera saves HEIC/HEIF, change Camera settings to JPEG and take the photo again.');
+    if(!file.size)throw new Error('The selected photo is empty. Please choose another photo.');
+    if(file.size>20*1024*1024)throw new Error('The original photo is over 20 MB. Choose a smaller photo or take a new one at a lower resolution.');
+    let bitmap=null,objectUrl=null;
+    try{
+      if(typeof createImageBitmap==='function'){
+        try{bitmap=await createImageBitmap(file);}catch(_){}
+      }
+      if(!bitmap){
+        objectUrl=URL.createObjectURL(file);
+        bitmap=await new Promise((resolve,reject)=>{
+          const img=new Image();img.onload=()=>resolve(img);
+          img.onerror=()=>reject(new Error('This photo format cannot be opened by your browser. Choose a JPG, PNG or WebP image.'));
+          img.src=objectUrl;
+        });
+      }
+      const isId=inputId==='reg-id-photo',maxDimension=isId?2200:1800,targetBytes=2500*1024;
+      const scale=Math.min(1,maxDimension/Math.max(bitmap.width,bitmap.height));
+      const canvas=document.createElement('canvas');
+      canvas.width=Math.max(1,Math.round(bitmap.width*scale));canvas.height=Math.max(1,Math.round(bitmap.height*scale));
+      const ctx=canvas.getContext('2d');if(!ctx)throw new Error('Your device could not prepare this photo. Please try another image.');
+      ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
+      let blob=null;
+      for(let attempt=0;attempt<9;attempt++){
+        const quality=[0.9,0.84,0.78,0.72,0.66,0.6,0.56,0.52,0.48][attempt];
+        blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',quality));
+        if(blob&&blob.size<=targetBytes)break;
+        if(attempt===2||attempt===4||attempt===6){
+          const factor=0.86,nextWidth=Math.max(600,Math.round(canvas.width*factor)),nextHeight=Math.max(600,Math.round(canvas.height*factor));
+          const resized=document.createElement('canvas');resized.width=nextWidth;resized.height=nextHeight;
+          const resizedCtx=resized.getContext('2d');if(!resizedCtx)break;
+          resizedCtx.fillStyle='#fff';resizedCtx.fillRect(0,0,nextWidth,nextHeight);resizedCtx.drawImage(canvas,0,0,nextWidth,nextHeight);
+          canvas.width=nextWidth;canvas.height=nextHeight;const nextCtx=canvas.getContext('2d');
+          if(!nextCtx)break;nextCtx.drawImage(resized,0,0,nextWidth,nextHeight);
+        }
+      }
+      if(!blob||blob.size>targetBytes)throw new Error('We could not compress this photo enough. Take a clear photo in good light and try again.');
+      return await new Promise((resolve,reject)=>{
+        const reader=new FileReader();reader.onload=()=>resolve(String(reader.result||''));
+        reader.onerror=()=>reject(new Error('Could not prepare the photo for upload. Please try again.'));
+        reader.readAsDataURL(blob);
+      });
+    }finally{
+      if(bitmap&&typeof bitmap.close==='function')bitmap.close();
+      if(objectUrl)URL.revokeObjectURL(objectUrl);
+    }
   }
   async function signupPayload(){
     const password=$('reg-password').value;
