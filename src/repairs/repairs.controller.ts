@@ -44,7 +44,7 @@ export class RepairsController {
     const result = await this.db.pool.query(
       `SELECT id, item_name AS "itemName", item_identifier AS "itemIdentifier",
               customer_name AS "customerName", customer_id AS "customerId",
-              item_condition AS condition, problem, detected,
+              item_condition AS "condition", problem, detected,
               received_date AS "receivedDate", expected_pick_date AS "expectedPickDate",
               status, created_at AS "createdAt", updated_at AS "updatedAt"
          FROM shop_repair_jobs
