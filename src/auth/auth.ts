@@ -181,10 +181,11 @@ export class AuthController {
   }
 
   private normalizePhone(value: string): string {
-    const digits = value.replace(/\D/g, '');
-    if (digits.startsWith('254') && digits.length === 12) return digits;
-    if (digits.startsWith('0') && digits.length === 10) return '254' + digits.slice(1);
-    if (digits.length === 9) return '254' + digits;
+    let digits = value.replace(/\D/g, '');
+    // Accept local numbers and international numbers, including +254 07... formatting.
+    if (digits.startsWith('254')) digits = digits.slice(3);
+    if (digits.startsWith('0')) digits = digits.slice(1);
+    if (/^[17]\d{8}$/.test(digits)) return '254' + digits;
     throw new UnauthorizedException('Enter a valid Kenyan phone number');
   }
 
@@ -993,7 +994,8 @@ export class AuthController {
     const { rows } = await this.db.pool.query(
       `SELECT u.id, u.tenant_id, u.store_id, u.role, u.full_name, u.staff_title, u.profile_photo_data, u.password_hash, u.is_active, u.must_change_password, t.status AS tenant_status
          FROM users u LEFT JOIN tenants t ON t.id = u.tenant_id
-        WHERE (u.phone = ANY($1::text[])
+        WHERE u.is_active=true
+          AND (u.phone = ANY($1::text[])
            OR regexp_replace(u.phone, '[^0-9]', '', 'g') = ANY($1::text[]))
           AND CASE
             WHEN $3='freelancer' THEN u.role='freelancer'
