@@ -1,8 +1,8 @@
-import { Injectable, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { Pool, PoolClient } from 'pg';
 
 @Injectable()
-export class DbService implements OnModuleDestroy {
+export class DbService implements OnModuleDestroy, OnModuleInit {
   // Never leave a login or other API request waiting forever when the
   // Render database is unreachable or a query is stuck.
   readonly pool = new Pool({
@@ -14,6 +14,35 @@ export class DbService implements OnModuleDestroy {
     query_timeout: 20000,
     keepAlive: true,
   });
+
+  private freelancerSubscriptionSchemaPromise: Promise<void> | null = null;
+
+  async onModuleInit(): Promise<void> {
+    await this.ensureFreelancerSubscriptionSchema();
+  }
+
+  async ensureFreelancerSubscriptionSchema(): Promise<void> {
+    if (!this.freelancerSubscriptionSchemaPromise) {
+      this.freelancerSubscriptionSchemaPromise = this.pool.query(`
+        ALTER TABLE payments ADD COLUMN IF NOT EXISTS subscriber_user_id UUID NULL REFERENCES users(id) ON DELETE SET NULL;
+        CREATE INDEX IF NOT EXISTS payments_subscriber_user_idx ON payments(subscriber_user_id, created_at DESC);
+        CREATE TABLE IF NOT EXISTS freelancer_subscriptions (
+          id BIGSERIAL PRIMARY KEY,
+          user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          payment_id UUID NOT NULL UNIQUE REFERENCES payments(id) ON DELETE RESTRICT,
+          plan VARCHAR(16) NOT NULL CHECK (plan IN ('monthly','yearly')),
+          price_kes INTEGER NOT NULL CHECK (price_kes IN (100,900)),
+          starts_at TIMESTAMPTZ NOT NULL,
+          ends_at TIMESTAMPTZ NOT NULL,
+          status VARCHAR(16) NOT NULL DEFAULT 'active' CHECK (status IN ('active','expired','cancelled')),
+          created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+        );
+        CREATE INDEX IF NOT EXISTS freelancer_subscriptions_user_expiry_idx
+          ON freelancer_subscriptions(user_id, ends_at DESC);
+      `).then(() => undefined).catch(err => { this.freelancerSubscriptionSchemaPromise = null; throw err; });
+    }
+    await this.freelancerSubscriptionSchemaPromise;
+  }
 
   private securitySchemaPromise: Promise<void> | null = null;
 
