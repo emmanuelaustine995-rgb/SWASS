@@ -1190,55 +1190,101 @@
       if(objectUrl)URL.revokeObjectURL(objectUrl);
     }
   }
+  let freelancerOtpPending=false;
+  let freelancerSignupPayload=null;
+  let freelancerOtpResendAt=0;
+  let freelancerOtpResendTimer=null;
+  const freelancerOtpLabel=document.createElement('label');
+  freelancerOtpLabel.className='hidden';
+  freelancerOtpLabel.id='freelancer-otp-label';
+  freelancerOtpLabel.textContent='Six-digit SMS verification code';
+  const freelancerOtpInput=document.createElement('input');
+  freelancerOtpInput.id='freelancer-signup-otp';
+  freelancerOtpInput.inputMode='numeric';
+  freelancerOtpInput.autocomplete='one-time-code';
+  freelancerOtpInput.maxLength=6;
+  freelancerOtpInput.pattern='[0-9]{6}';
+  freelancerOtpInput.placeholder='Enter the code sent by SMS';
+  freelancerOtpInput.required=true;
+  freelancerOtpLabel.appendChild(freelancerOtpInput);
+  const freelancerOtpResend=document.createElement('button');
+  freelancerOtpResend.type='button';
+  freelancerOtpResend.className='text-btn hidden';
+  freelancerOtpResend.id='freelancer-otp-resend';
+  freelancerOtpResend.textContent='Resend verification code';
+  $('request-freelancer-approval')?.insertAdjacentElement('beforebegin',freelancerOtpLabel);
+  $('request-freelancer-approval')?.insertAdjacentElement('afterend',freelancerOtpResend);
+  function startFreelancerOtpCooldown(seconds=30){
+    freelancerOtpResendAt=Date.now()+seconds*1000;
+    freelancerOtpResend.disabled=true;
+    const tick=()=>{
+      const remaining=Math.max(0,Math.ceil((freelancerOtpResendAt-Date.now())/1000));
+      freelancerOtpResend.textContent=remaining?'Resend code in '+remaining+'s':'Resend verification code';
+      freelancerOtpResend.disabled=remaining>0;
+      if(!remaining&&freelancerOtpResendTimer){clearInterval(freelancerOtpResendTimer);freelancerOtpResendTimer=null;}
+    };
+    if(freelancerOtpResendTimer)clearInterval(freelancerOtpResendTimer);
+    tick();freelancerOtpResendTimer=setInterval(tick,1000);
+  }
+  async function sendFreelancerSignupCode(button,message){
+    button.disabled=true;message.textContent='Sending verification code by SMS…';
+    try{
+      const result=await request('/api/v1/staff/freelancer/register/request-otp',{method:'POST',signal:AbortSignal.timeout(45000),body:JSON.stringify(freelancerSignupPayload)});
+      freelancerOtpPending=true;
+      freelancerOtpLabel.classList.remove('hidden');
+      freelancerOtpResend.classList.remove('hidden');
+      $('freelancer-otp-label')?.scrollIntoView({behavior:'smooth',block:'center'});
+      message.textContent=result.message||'A verification code has been sent. Enter it below to finish registration.';
+      button.textContent='VERIFY CODE';
+      startFreelancerOtpCooldown(result.resendAfterSeconds||30);
+      freelancerOtpInput.focus();
+    }catch(error){message.textContent=error.message||'Could not send the verification code.';}
+    finally{button.disabled=false;}
+  }
+  freelancerOtpResend.addEventListener('click',async()=>{
+    if(!freelancerSignupPayload)return;
+    await sendFreelancerSignupCode(freelancerOtpResend,$('freelancer-register-message'));
+  });
   $('freelancer-register-form')?.addEventListener('submit',async e=>{
     e.preventDefault();
     const button=$('request-freelancer-approval'),message=$('freelancer-register-message');
-    const password=$('freelancer-new-password').value,confirm=$('freelancer-confirm-password').value;
-    if(password.length<10){message.textContent='Choose a password of at least 10 characters.';return;}
-    if(password!==confirm){message.textContent='The passwords do not match.';return;}
-    button.disabled=true;button.textContent='Creating your account…';message.textContent='';
+    if(!freelancerOtpPending){
+      const password=$('freelancer-new-password').value,confirm=$('freelancer-confirm-password').value;
+      if(password.length<10){message.textContent='Choose a password of at least 10 characters.';return;}
+      if(password!==confirm){message.textContent='The passwords do not match.';return;}
+      button.disabled=true;button.textContent='Preparing registration…';message.textContent='';
+      try{
+        const nationalIdPhotoData=await freelancerImageDataUrl('freelancer-id-photo',2*1024*1024,'your National ID photo');
+        const profilePhotoData=await freelancerImageDataUrl('freelancer-profile-photo',1024*1024,'your profile photo');
+        freelancerSignupPayload={
+          ownerPhone:$('freelancer-owner-phone').value.trim(),
+          fullName:$('freelancer-full-name').value.trim(),phone:$('freelancer-phone').value.trim(),
+          email:$('freelancer-email').value.trim(),password,
+          nationalIdNumber:$('freelancer-national-id').value.trim(),nationalIdPhotoData,profilePhotoData
+        };
+      }catch(error){message.textContent=error.message||'Could not prepare your registration.';button.disabled=false;button.textContent='CREATE FREELANCER ACCOUNT';return;}
+      await sendFreelancerSignupCode(button,message);
+      return;
+    }
+    const code=freelancerOtpInput.value.trim();
+    if(!/^[0-9]{6}$/.test(code)){message.textContent='Enter the six-digit code sent to your phone.';return;}
+    button.disabled=true;button.textContent='Verifying…';message.textContent='Checking your verification code…';
     try{
-      const nationalIdPhotoData=await freelancerImageDataUrl('freelancer-id-photo',2*1024*1024,'your National ID photo');
-      const profilePhotoData=await freelancerImageDataUrl('freelancer-profile-photo',1024*1024,'your profile photo');
-      const result=await request('/api/v1/staff/freelancer/register',{method:'POST',signal:AbortSignal.timeout(150000),body:JSON.stringify({
-        ownerPhone:$('freelancer-owner-phone').value.trim(),
-        fullName:$('freelancer-full-name').value.trim(),phone:$('freelancer-phone').value.trim(),
-        email:$('freelancer-email').value.trim(),password,
-        nationalIdNumber:$('freelancer-national-id').value.trim(),nationalIdPhotoData,profilePhotoData
+      const result=await request('/api/v1/staff/freelancer/register/verify-otp',{method:'POST',signal:AbortSignal.timeout(45000),body:JSON.stringify({
+        phone:$('freelancer-phone').value.trim(),code
       })});
       const freelancerPhone=$('freelancer-phone').value.trim();
-      // Keep the successful result visible after hiding the form. The user must
-      // explicitly sign in; registration must never silently open a workspace.
-      const successText=result.message||'Your freelancer account has been created. Sign in to continue.';
       document.body.classList.remove('registration-open');
       $('freelancer-register-form').reset();
       $('freelancer-register-form').classList.add('hidden');
       $('login-form').classList.remove('hidden');
+      freelancerOtpPending=false;freelancerSignupPayload=null;
+      freelancerOtpLabel.classList.add('hidden');freelancerOtpResend.classList.add('hidden');
       $('login-account-type').value='freelancer';updateLoginAccountType();
       $('login-phone').value=freelancerPhone;
-      $('freelancer-register-success').textContent=successText;
-    }catch(error){
-      const errorText=error.message||'Could not create your freelancer account.';
-      if(/already registered/i.test(errorText)){
-        const registeredPhone=$('freelancer-phone').value.trim();
-        const loginView=$('login-view');
-        document.body.classList.remove('registration-open');
-        $('freelancer-register-form')?.classList.add('hidden');
-        $('login-form')?.classList.remove('hidden');
-        loginView?.classList.remove('hidden');
-        $('login-account-type').value='freelancer';
-        updateLoginAccountType();
-        $('login-phone').value=registeredPhone;
-        $('login-password').value='';
-        $('login-error').textContent='This freelancer account already exists. Sign in below using its registered phone number and your existing password. If you do not remember the password, use FORGOT PASSWORD.';
-        $('freelancer-register-success').textContent='';
-        $('login-password')?.focus();
-        if(loginView)loginView.scrollIntoView({behavior:'smooth',block:'start'});
-      }else{
-        message.textContent=errorText;
-      }
-    }
-    finally{button.disabled=false;button.textContent='CREATE FREELANCER ACCOUNT';}
+      $('freelancer-register-success').textContent=result.message||'Your freelancer account is verified. Sign in to continue.';
+    }catch(error){message.textContent=error.message||'Could not verify your code. Please try again.';}
+    finally{button.disabled=false;button.textContent=freelancerOtpPending?'VERIFY CODE':'CREATE FREELANCER ACCOUNT';}
   });
   let signupResendTimer = null;
   let signupResendSeconds = 0;
