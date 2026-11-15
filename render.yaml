@@ -7,7 +7,7 @@ services:
     buildCommand: npm install --include=dev && npm run build
     startCommand: npm run migrate:node && npm start
     healthCheckPath: /health
-    # Frontend-only commits must not restart the API service.
+    # Deploy the current API route definitions and frontend bundle together when this Render manifest changes.
     buildFilter:
       paths:
         - src/**
