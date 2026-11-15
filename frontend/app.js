@@ -395,6 +395,7 @@
     }
     if(!goBackWorkspace()){showWorkspaceScreen('dashboard',{fromBack:true});}syncGlobalBackButton();
   });
+  document.querySelectorAll('[data-freelancer-screen]').forEach(button=>button.addEventListener('click',()=>showWorkspaceScreen(button.dataset.freelancerScreen)));
   function showWorkspaceScreen(screen,options={}){
     if(!state.token){showLogin();return;}
     document.body.classList.add('workspace-active');
@@ -428,6 +429,7 @@
     document.getElementById('staff-profile-panel')?.classList.add('hidden');
     staffSummary?.classList.add('hidden');
     if(screen==='dashboard'){
+      $('freelancer-home')?.classList.add('hidden');
       if(state.role==='customer'){
         dashboardBusinessCard?.classList.add('hidden');customerHome?.classList.remove('hidden');
         if($('customer-home-name'))$('customer-home-name').textContent=state.userName||'Welcome';
@@ -439,16 +441,20 @@
         $('platform-referral-admin')?.classList.remove('hidden');
         void loadPlatformReferralAdmin();
       }else if(state.role==='freelancer'){
-        // The dashboard is nested inside #pos-view, so reveal its parent too.
+        // Freelancers receive a dedicated, non-empty landing screen. Do not
+        // expose the owner analytics dashboard or depend on owner-only widgets
+        // to render the first authenticated page.
         pos?.classList.remove('hidden');
         posGrid?.classList.add('hidden');
         $('owner-dashboard-view')?.classList.remove('hidden');
-        // The Home invite-a-friend card is shared by shop owners and linked freelancers.
-        ownerHome?.classList.remove('hidden');
-        void loadOwnerHomeSummary();
-        // Keep the complete shop-owner dashboard, including payments and team cards, visible to freelancers.
+        $('freelancer-home')?.classList.remove('hidden');
+        ownerHome?.classList.add('hidden');
+        $('freelancer-home-name').textContent=state.userName||'Welcome';
+        $('freelancer-home-message').textContent='Your shop workspace is ready. Choose an area below to continue.';
         window.dispatchEvent(new Event('swass:dashboard-open'));
-        void loadStaffSalesSummary();
+        void loadStaffSalesSummary().catch(error=>{
+          $('freelancer-home-message').textContent='Your workspace is ready. Sales summary is temporarily unavailable; you can still open Receipts or Shop.';
+        });
       }else if(['owner','manager','vendor'].includes(state.role)){
         ownerHome?.classList.remove('hidden');
         void loadOwnerHomeSummary();
@@ -544,7 +550,7 @@
     syncGlobalBackButton();
   }
 
-  function showPOS(){ if(!state.token){showLogin();return;} document.body.classList.add('workspace-active'); $('login-view').classList.add('hidden'); $('back-to-login-btn')?.classList.remove('hidden'); $('pos-view').classList.remove('hidden'); $('welcome-back-banner')?.classList.add('hidden'); $('profile-menu-btn')?.classList.remove('hidden'); $('logout-btn')?.classList.remove('hidden'); const label=$('user-label');label.textContent=state.userName||state.staffTitle||(state.role==='cashier'?'Shop Attendant':state.role?state.role.replace('_',' '):'Staff');if(state.userPhotoData){const avatar=document.createElement('img');avatar.src=state.userPhotoData;avatar.alt='Profile photo';avatar.style.cssText='width:30px;height:30px;object-fit:cover;border-radius:50%;vertical-align:middle;margin-right:8px';label.prepend(avatar);} $('dashboard-link').classList.toggle('hidden', !['owner','manager','vendor','freelancer'].includes(state.role));$('workspace-nav').classList.remove('hidden');const isCustomerAccount=state.role==='customer';document.body.classList.toggle('customer-account-active',isCustomerAccount);const canAccessShopTab=!isCustomerAccount&&['owner','freelancer'].includes(state.role);document.querySelectorAll('#workspace-nav [data-workspace="shop"]').forEach(el=>{el.hidden=!canAccessShopTab;el.classList.toggle('hidden',!canAccessShopTab);el.style.setProperty('display',canAccessShopTab?'':'none','important');el.setAttribute('aria-hidden',canAccessShopTab?'false':'true');});document.querySelectorAll('#workspace-nav [data-workspace="customers"]').forEach(el=>{el.hidden=true;el.classList.add('hidden');el.style.setProperty('display','none','important');el.setAttribute('aria-hidden','true');});if(state.role==='customer')enforceCustomerReceiptActions();syncGlobalBackButton();  }
+  function showPOS(){ if(!state.token){showLogin();return;} document.body.classList.add('workspace-active'); $('login-view').classList.add('hidden'); $('back-to-login-btn')?.classList.remove('hidden'); $('pos-view').classList.remove('hidden'); $('welcome-back-banner')?.classList.add('hidden'); $('profile-menu-btn')?.classList.remove('hidden'); $('logout-btn')?.classList.remove('hidden'); const label=$('user-label');label.textContent=state.userName||state.staffTitle||(state.role==='cashier'?'Shop Attendant':state.role?state.role.replace('_',' '):'Staff');if(state.userPhotoData){const avatar=document.createElement('img');avatar.src=state.userPhotoData;avatar.alt='Profile photo';avatar.style.cssText='width:30px;height:30px;object-fit:cover;border-radius:50%;vertical-align:middle;margin-right:8px';label.prepend(avatar);} $('dashboard-link').classList.toggle('hidden', !['owner','manager','vendor','freelancer'].includes(state.role));$('workspace-nav').classList.remove('hidden');const isCustomerAccount=state.role==='customer';document.body.classList.toggle('customer-account-active',isCustomerAccount);document.body.classList.toggle('freelancer-account-active',state.role==='freelancer');const canAccessShopTab=!isCustomerAccount&&['owner','freelancer'].includes(state.role);document.querySelectorAll('#workspace-nav [data-workspace="shop"]').forEach(el=>{el.hidden=!canAccessShopTab;el.classList.toggle('hidden',!canAccessShopTab);el.style.setProperty('display',canAccessShopTab?'':'none','important');el.setAttribute('aria-hidden',canAccessShopTab?'false':'true');});document.querySelectorAll('#workspace-nav [data-workspace="customers"]').forEach(el=>{el.hidden=true;el.classList.add('hidden');el.style.setProperty('display','none','important');el.setAttribute('aria-hidden','true');});if(state.role==='customer')enforceCustomerReceiptActions();syncGlobalBackButton();  }
   async function lookupCustomer(ev){
     ev.preventDefault();
     const phone=$('lookup-phone').value.trim();
@@ -1200,14 +1206,16 @@
         nationalIdNumber:$('freelancer-national-id').value.trim(),nationalIdPhotoData,profilePhotoData
       })});
       const freelancerPhone=$('freelancer-phone').value.trim();
-      message.textContent=result.message||'Your account has been created and linked to the shop. You can now sign in.';
-      // Leave the full-screen registration layout before revealing sign-in.
+      // Keep the successful result visible after hiding the form. The user must
+      // explicitly sign in; registration must never silently open a workspace.
+      const successText=result.message||'Your freelancer account has been created. Sign in to continue.';
       document.body.classList.remove('registration-open');
       $('freelancer-register-form').reset();
       $('freelancer-register-form').classList.add('hidden');
       $('login-form').classList.remove('hidden');
       $('login-account-type').value='freelancer';updateLoginAccountType();
       $('login-phone').value=freelancerPhone;
+      $('login-error').textContent=successText;
     }catch(error){message.textContent=error.message||'Could not create your freelancer account.';}
     finally{button.disabled=false;button.textContent='CREATE FREELANCER ACCOUNT';}
   });
