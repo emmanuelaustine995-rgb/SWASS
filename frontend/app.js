@@ -2021,9 +2021,43 @@
   });
 
 
+  async function loadShopRepairs(){
+    const target=$('repair-records-list');if(!target)return;
+    target.innerHTML='<p class="muted small">Loading repair register…</p>';
+    try{
+      const data=await request('/api/v1/repairs');
+      const rows=data.repairs||[];
+      const statusLabel={received:'Received',diagnosing:'Diagnosing',in_repair:'In repair',ready:'Ready for pick-up',collected:'Collected',cancelled:'Cancelled'};
+      target.innerHTML=rows.length?rows.map(x=>'<article class="repair-record-row"><div class="repair-record-main"><strong>'+escapeHtml(x.itemName)+'</strong><small>Item ID: '+escapeHtml(x.itemIdentifier||'—')+' · Customer: '+escapeHtml(x.customerName)+' · ID: '+escapeHtml(x.customerId)+'</small><small>Condition: '+escapeHtml(x.condition)+'</small><small>Problem: '+escapeHtml(x.problem)+'</small>'+(x.detected?'<small>Detected: '+escapeHtml(x.detected)+'</small>':'')+'<small>Received: '+escapeHtml(x.receivedDate?new Date(x.receivedDate).toLocaleDateString():'—')+' · Expected pick-up: '+escapeHtml(x.expectedPickDate?new Date(x.expectedPickDate).toLocaleDateString():'—')+'</small></div><span class="repair-status repair-status-'+escapeHtml(x.status)+'">'+escapeHtml(statusLabel[x.status]||x.status)+'</span></article>').join(''):'<p class="muted small">No goods have been recorded for repair yet.</p>';
+    }catch(error){target.innerHTML='<p class="error">'+escapeHtml(error.message||'Could not load the repair register.')+'</p>';}
+  }
+  const repairForm=$('shop-repair-form');
+  const repairToday=new Date();const repairTodayValue=repairToday.getFullYear()+'-'+String(repairToday.getMonth()+1).padStart(2,'0')+'-'+String(repairToday.getDate()).padStart(2,'0');
+  if($('repair-received-date'))$('repair-received-date').value=repairTodayValue;
+  if($('repair-pick-date'))$('repair-pick-date').min=repairTodayValue;
+  repairForm?.addEventListener('submit',async e=>{
+    e.preventDefault();const button=$('repair-submit'),message=$('repair-message');
+    const receivedDate=$('repair-received-date').value,expectedPickDate=$('repair-pick-date').value;
+    if(expectedPickDate<receivedDate){message.textContent='Expected pick-up date cannot be earlier than the date received.';return;}
+    button.disabled=true;message.textContent='Saving repair record…';
+    try{
+      await request('/api/v1/repairs',{method:'POST',body:JSON.stringify({
+        itemName:$('repair-item-name').value.trim(),itemIdentifier:$('repair-item-identifier').value.trim(),
+        customerName:$('repair-customer-name').value.trim(),customerId:$('repair-customer-id').value.trim(),
+        condition:$('repair-condition').value.trim(),problem:$('repair-problem').value.trim(),
+        detected:$('repair-detected').value.trim(),receivedDate,expectedPickDate
+      })});
+      message.textContent='Goods on Repair record saved successfully.';
+      repairForm.reset();$('repair-received-date').value=repairTodayValue;$('repair-pick-date').min=repairTodayValue;
+      await loadShopRepairs();
+    }catch(error){message.textContent=error.message||'Could not save the repair record.';}
+    finally{button.disabled=false;}
+  });
+  $('repair-refresh')?.addEventListener('click',()=>void loadShopRepairs());
   function setShopTab(tab){
     const products=['shop-directory-card','loan-items-card','shop-search-directory-card','shop-register-product-card'];
     products.forEach(sel=>document.querySelector('#shop-home > .'+sel)?.classList.toggle('hidden',tab!=='products'));
+    $('shop-goods-on-repair-card')?.classList.toggle('hidden',tab!=='repairs');
     const businessCard=document.querySelector('#shop-home > .shop-business-details-card');
     const historyCard=document.querySelector('#shop-home > #shop-receipt-history-card');
     const accountCard=document.querySelector('#shop-home > .profile-account-summary');
@@ -2033,6 +2067,7 @@
     if(tab==='profile'&&businessCard)businessCard.open=true;
     document.querySelectorAll('[data-shop-tab]').forEach(b=>b.classList.toggle('active',b.dataset.shopTab===tab));
     if(tab==='profile')void loadBusinessProfile().catch(e=>showNotice('Shop profile could not be loaded. '+(e.message||''),true));
+    if(tab==='repairs')void loadShopRepairs();
   }
   document.querySelectorAll('[data-shop-tab]').forEach(b=>b.addEventListener('click',()=>setShopTab(b.dataset.shopTab)));
   let lostAlarmAudio=null;
