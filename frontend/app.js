@@ -1201,7 +1201,7 @@
       const nationalIdPhotoData=await freelancerImageDataUrl('freelancer-id-photo',2*1024*1024,'your National ID photo');
       const profilePhotoData=await freelancerImageDataUrl('freelancer-profile-photo',1024*1024,'your profile photo');
       const result=await request('/api/v1/staff/freelancer/register',{method:'POST',signal:AbortSignal.timeout(150000),body:JSON.stringify({
-        ownerName:$('freelancer-owner-name').value.trim(),ownerPhone:$('freelancer-owner-phone').value.trim(),
+        ownerPhone:$('freelancer-owner-phone').value.trim(),
         fullName:$('freelancer-full-name').value.trim(),phone:$('freelancer-phone').value.trim(),
         email:$('freelancer-email').value.trim(),password,
         nationalIdNumber:$('freelancer-national-id').value.trim(),nationalIdPhotoData,profilePhotoData
