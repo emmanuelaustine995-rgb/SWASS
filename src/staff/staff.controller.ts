@@ -92,7 +92,7 @@ export class StaffController {
        RETURNING id`,
       [owner.rows[0].tenant_id,owner.rows[0].store_id,fullName,phone,email,passwordHash,profilePhotoData,nationalIdNumber,nationalIdPhotoData],
     );
-    return { created:true, userId:created.rows[0].id, message:'Freelancer account created successfully and linked to the matched shop. You can now sign in freely.' };
+    return { created:true, userId:created.rows[0].id, message:'Freelancer account created and linked to the selected shop. Sign in, then choose Subscription to pay KSh 100 monthly or KSh 900 yearly and activate your personal freelancer account.' };
   }
 
   @Post('invitations/accept')
