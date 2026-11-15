@@ -1216,7 +1216,7 @@
       $('login-form').classList.remove('hidden');
       $('login-account-type').value='freelancer';updateLoginAccountType();
       $('login-phone').value=freelancerPhone;
-      $('login-error').textContent=successText;
+      $('freelancer-register-success').textContent=successText;
     }catch(error){message.textContent=error.message||'Could not create your freelancer account.';}
     finally{button.disabled=false;button.textContent='CREATE FREELANCER ACCOUNT';}
   });
