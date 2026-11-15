@@ -17,6 +17,35 @@ export class DbService implements OnModuleDestroy {
 
   private securitySchemaPromise: Promise<void> | null = null;
 
+  private repairSchemaPromise: Promise<void> | null = null;
+
+  async ensureRepairSchema(): Promise<void> {
+    if (!this.repairSchemaPromise) {
+      this.repairSchemaPromise = this.pool.query(`
+        CREATE TABLE IF NOT EXISTS shop_repair_jobs (
+          id BIGSERIAL PRIMARY KEY,
+          tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+          store_id UUID NOT NULL REFERENCES stores(id) ON DELETE CASCADE,
+          received_by UUID NULL REFERENCES users(id) ON DELETE SET NULL,
+          item_name VARCHAR(160) NOT NULL,
+          customer_name VARCHAR(160) NOT NULL,
+          customer_id VARCHAR(50) NOT NULL,
+          item_condition VARCHAR(1000) NOT NULL,
+          problem VARCHAR(2000) NOT NULL,
+          detected VARCHAR(2000) NOT NULL DEFAULT '',
+          received_date DATE NOT NULL DEFAULT CURRENT_DATE,
+          expected_pick_date DATE NOT NULL,
+          status VARCHAR(24) NOT NULL DEFAULT 'received' CHECK (status IN ('received','diagnosing','in_repair','ready','collected','cancelled')),
+          created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+        );
+        CREATE INDEX IF NOT EXISTS shop_repair_jobs_tenant_date_idx ON shop_repair_jobs(tenant_id, status, expected_pick_date DESC);
+        CREATE INDEX IF NOT EXISTS shop_repair_jobs_store_date_idx ON shop_repair_jobs(store_id, received_date DESC);
+      `).then(() => undefined).catch(err => { this.repairSchemaPromise = null; throw err; });
+    }
+    await this.repairSchemaPromise;
+  }
+
   async ensureSecuritySchema(): Promise<void> {
     if (!this.securitySchemaPromise) {
       this.securitySchemaPromise = this.pool.query(`
