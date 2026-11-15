@@ -435,8 +435,8 @@ export class AuthController {
                LEFT JOIN aurora_owner_identity_records r ON r.user_id=u.id
               WHERE u.role='owner'
                 AND (u.phone = ANY($1::text[]) OR regexp_replace(u.phone, '[^0-9]', '', 'g') = ANY($1::text[]))
-              ORDER BY u.created_at DESC LIMIT 1 FOR UPDATE OF u,t`,
-            [phoneVariants],
+              ORDER BY CASE WHEN r.national_id_hash=$2 THEN 0 ELSE 1 END,u.created_at DESC LIMIT 1 FOR UPDATE OF u,t`,
+            [phoneVariants,row.national_id_hash],
           );
           if (previousOwner.rowCount) {
             const previous = previousOwner.rows[0];
