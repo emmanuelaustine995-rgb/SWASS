@@ -314,16 +314,27 @@ export class MpesaController {
           );
           const plan = Number(p.amount_kes) === YEARLY_KES ? 'yearly' : 'monthly';
           const interval = plan === 'yearly' ? '1 year' : '1 month';
-          await c.query(
-            `INSERT INTO subscriptions (tenant_id, plan, price_kes, starts_at, ends_at, status, auto_renew)
-             VALUES ($1,$2,$3,COALESCE((SELECT MAX(ends_at) FROM subscriptions WHERE tenant_id=$1 AND status='active' AND ends_at>now()),now()),COALESCE((SELECT MAX(ends_at) FROM subscriptions WHERE tenant_id=$1 AND status='active' AND ends_at>now()),now())+$4::interval,'active',false)`,
-            [p.tenant_id, plan, p.amount_kes, interval],
-          );
+          if (p.subscriber_user_id) {
+            await c.query(
+              `INSERT INTO freelancer_subscriptions (user_id,payment_id,plan,price_kes,starts_at,ends_at,status)
+               VALUES ($1,$2,$3,$4,
+                 COALESCE((SELECT MAX(ends_at) FROM freelancer_subscriptions WHERE user_id=$1 AND status='active' AND ends_at>now()),now()),
+                 COALESCE((SELECT MAX(ends_at) FROM freelancer_subscriptions WHERE user_id=$1 AND status='active' AND ends_at>now()),now())+$5::interval,
+                 'active')`,
+              [p.subscriber_user_id,p.id,plan,p.amount_kes,interval],
+            );
+          } else {
+            await c.query(
+              `INSERT INTO subscriptions (tenant_id, plan, price_kes, starts_at, ends_at, status, auto_renew)
+               VALUES ($1,$2,$3,COALESCE((SELECT MAX(ends_at) FROM subscriptions WHERE tenant_id=$1 AND status='active' AND ends_at>now()),now()),COALESCE((SELECT MAX(ends_at) FROM subscriptions WHERE tenant_id=$1 AND status='active' AND ends_at>now()),now())+$4::interval,'active',false)`,
+              [p.tenant_id, plan, p.amount_kes, interval],
+            );
+          }
           const firstSubscription = await c.query(
             `SELECT COUNT(*)::int AS paid_count FROM payments
-              WHERE tenant_id=$1 AND purpose='subscription' AND status='success'`, [p.tenant_id],
+              WHERE tenant_id=$1 AND purpose='subscription' AND status='success' AND subscriber_user_id IS NULL`, [p.tenant_id],
           );
-          if (Number(firstSubscription.rows[0].paid_count) === 1) {
+          if (!p.subscriber_user_id && Number(firstSubscription.rows[0].paid_count) === 1) {
             const referral = await c.query('SELECT referrer_tenant_id FROM tenant_referrals WHERE referred_tenant_id=$1 AND referrer_tenant_id<>$1 FOR UPDATE', [p.tenant_id]);
             if (referral.rowCount) {
               const referrerTenantId=referral.rows[0].referrer_tenant_id;
