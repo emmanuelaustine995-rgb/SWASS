@@ -28,6 +28,7 @@ export class DbService implements OnModuleDestroy {
           store_id UUID NOT NULL REFERENCES stores(id) ON DELETE CASCADE,
           received_by UUID NULL REFERENCES users(id) ON DELETE SET NULL,
           item_name VARCHAR(160) NOT NULL,
+          item_identifier VARCHAR(100) NOT NULL DEFAULT '',
           customer_name VARCHAR(160) NOT NULL,
           customer_id VARCHAR(50) NOT NULL,
           item_condition VARCHAR(1000) NOT NULL,
