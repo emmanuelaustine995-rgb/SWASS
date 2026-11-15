@@ -401,6 +401,7 @@ export class AuthController {
       throw new BadRequestException('That code is incorrect. Check the SMS and try again.');
     }
 
+    let shopWasReactivated = false;
     try {
       const user = await this.db.tx(async c => {
         const locked = await c.query(
@@ -440,6 +441,7 @@ export class AuthController {
           );
           if (previousOwner.rowCount) {
             const previous = previousOwner.rows[0];
+            shopWasReactivated = true;
             if (previous.is_active && previous.tenant_status === 'active') throw new BadRequestException('This shop is already active. Please sign in instead.');
             if (previous.stored_national_id_hash && previous.stored_national_id_hash !== row.national_id_hash) {
               throw new BadRequestException('The National ID does not match the previous shop-owner registration.');
@@ -504,6 +506,10 @@ export class AuthController {
         await c.query('UPDATE signup_otp_requests SET verified_at=now(),consumed_at=now() WHERE id=$1', [row.id]);
         return inserted.rows[0];
       });
+      if (shopWasReactivated) {
+        try { await this.db.recordSecurityEvent({ eventType: 'shop_reactivated_by_owner', severity: 'medium', outcome: 'completed', actorUserId: user.id, sourceIp: req.ip, userAgent: req.headers?.['user-agent'], metadata: { tenantId: user.tenant_id } }); }
+        catch (error) { console.warn('[AURORA_SECURITY] Shop reactivation audit failed:', error instanceof Error ? error.message : 'database error'); }
+      }
       const payload: AuthUser = { sub: user.id, tenantId: user.tenant_id, storeId: user.store_id, role: user.role, mustChangePassword: row.role === 'cashier' };
       // Complete account creation without waiting for the external email provider.
       // Email verification continues independently after the account is ready.
