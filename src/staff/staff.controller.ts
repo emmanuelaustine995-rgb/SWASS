@@ -83,9 +83,10 @@ export class StaffController {
     if (owner.rowCount > 1) throw new BadRequestException('That phone number is linked to more than one active shop. Contact support so your freelancer account is connected to the correct shop.');
     const duplicate = await this.db.pool.query(
       `SELECT 1 FROM users
-        WHERE regexp_replace(phone,'[^0-9]','','g') IN ($1,$2)
+        WHERE is_active=true
+          AND (regexp_replace(phone,'[^0-9]','','g') IN ($1,$2)
            OR lower(email)=lower($3)
-           OR national_id_number=$4
+           OR national_id_number=$4)
         LIMIT 1`,
       [phone,'0'+phone.slice(3),email,nationalIdNumber],
     );
