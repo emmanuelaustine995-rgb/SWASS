@@ -1421,6 +1421,14 @@
         return;
       }
       signedIn=true;
+      // A login must always leave the registration overlay completely.
+      // Clear its body state and any still-open signup panels before showing
+      // the authenticated workspace; otherwise fixed auth CSS can cover it.
+      document.body.classList.remove('registration-open');
+      $('register-form')?.classList.add('hidden');
+      $('freelancer-register-form')?.classList.add('hidden');
+      $('signup-otp-panel')?.classList.add('hidden');
+      $('login-view')?.classList.add('hidden');
       showPOS();
       publishWorkspaceSession();
       hideNotice();
@@ -2087,17 +2095,40 @@
   });
   $('repair-refresh')?.addEventListener('click',()=>void loadShopRepairs());
   function setShopTab(tab){
-    const products=['shop-directory-card','loan-items-card','shop-search-directory-card','shop-register-product-card'];
-    products.forEach(sel=>document.querySelector('#shop-home > .'+sel)?.classList.toggle('hidden',tab!=='products'));
-    $('shop-goods-on-repair-card')?.classList.toggle('hidden',tab!=='repairs');
-    const businessCard=document.querySelector('#shop-home > .shop-business-details-card');
-    const historyCard=document.querySelector('#shop-home > #shop-receipt-history-card');
-    const accountCard=document.querySelector('#shop-home > .profile-account-summary');
-    businessCard?.classList.toggle('hidden',tab!=='profile');
-    historyCard?.classList.toggle('hidden',tab!=='profile');
-    accountCard?.classList.toggle('hidden',tab!=='profile');
+    if(!['products','repairs','profile'].includes(tab))tab='products';
+    const shop=$('shop-home');
+    // Control every direct Shop child explicitly. The old global CSS contains
+    // legacy display rules that can override .hidden and leave Profile cards
+    // visible below Products or Goods on Repair.
+    const visibility=[
+      ['#shop-register-product-card','products'],
+      ['#shop-find-products-card','products'],
+      ['#shop-home > .loan-items-card','products'],
+      ['#shop-goods-on-repair-card','repairs'],
+      ['#shop-home > .shop-business-details-card','profile'],
+      ['#shop-home > #shop-receipt-history-card','profile'],
+      ['#shop-home > .profile-account-summary','profile']
+    ];
+    visibility.forEach(([selector,ownerTab])=>{
+      const el=shop?.querySelector(selector);
+      if(!el)return;
+      const visible=tab===ownerTab;
+      el.classList.toggle('hidden',!visible);
+      el.toggleAttribute('hidden',!visible);
+      el.style.setProperty('display',visible?'':'none','important');
+      el.setAttribute('aria-hidden',String(!visible));
+    });
+    const businessCard=shop?.querySelector(':scope > .shop-business-details-card');
     if(tab==='profile'&&businessCard)businessCard.open=true;
-    document.querySelectorAll('[data-shop-tab]').forEach(b=>b.classList.toggle('active',b.dataset.shopTab===tab));
+    shop?.querySelectorAll(':scope > [data-shop-tab-panel]').forEach(el=>{
+      const visible=el.dataset.shopTabPanel===tab;
+      el.classList.toggle('hidden',!visible);el.toggleAttribute('hidden',!visible);
+      el.style.setProperty('display',visible?'':'none','important');
+    });
+    document.querySelectorAll('#shop-home [data-shop-tab]').forEach(b=>{
+      b.classList.toggle('active',b.dataset.shopTab===tab);
+      b.setAttribute('aria-selected',String(b.dataset.shopTab===tab));
+    });
     if(tab==='profile')void loadBusinessProfile().catch(e=>showNotice('Shop profile could not be loaded. '+(e.message||''),true));
     if(tab==='repairs')void loadShopRepairs();
   }
