@@ -1265,15 +1265,21 @@
         phone:$('freelancer-phone').value.trim(),code
       })});
       const freelancerPhone=$('freelancer-phone').value.trim();
+      const freelancerPassword=$('freelancer-new-password').value;
       document.body.classList.remove('registration-open');
       $('freelancer-register-form').reset();
       $('freelancer-register-form').classList.add('hidden');
+      $('login-view').classList.remove('hidden');
       $('login-form').classList.remove('hidden');
       freelancerOtpPending=false;freelancerSignupPayload=null;
       freelancerOtpLabel.classList.add('hidden');freelancerOtpInput.required=false;freelancerOtpResend.classList.add('hidden');
       $('login-account-type').value='freelancer';updateLoginAccountType();
       $('login-phone').value=freelancerPhone;
-      $('freelancer-register-success').textContent=result.message||'Your freelancer account is verified. Sign in to continue.';
+      $('login-password').value=freelancerPassword;
+      $('freelancer-register-success').textContent='Registration verified. Opening your Freelancer workspace…';
+      // Use the normal secure login flow immediately after OTP verification.
+      // This stores the issued session and opens the same Home dashboard as an existing Freelancer.
+      $('login-form').requestSubmit();
     }catch(error){message.textContent=error.message||'Could not verify your code. Please try again.';}
     finally{button.disabled=false;button.textContent=freelancerOtpPending?'VERIFY CODE':'CREATE FREELANCER ACCOUNT';}
   });
