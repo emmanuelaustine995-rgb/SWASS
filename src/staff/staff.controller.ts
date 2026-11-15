@@ -40,8 +40,11 @@ export class StaffController {
     nationalIdNumber?: string; nationalIdPhotoData?: string; profilePhotoData?: string; password?: string;
   }) {
     const normalizePhone = (value: unknown) => {
-      const digits = String(value ?? '').replace(/\D/g, '');
-      return digits.startsWith('0') ? '254' + digits.slice(1) : digits.startsWith('254') ? digits : '254' + digits;
+      let digits = String(value ?? '').replace(/\D/g, '');
+      // Accept 07..., 01..., 7..., 1..., 2547..., +2547... and +254 07...
+      if (digits.startsWith('254')) digits = digits.slice(3);
+      if (digits.startsWith('0')) digits = digits.slice(1);
+      return /^[17]\d{8}$/.test(digits) ? '254' + digits : digits;
     };
     const ownerPhone = normalizePhone(body?.ownerPhone);
     const fullName = String(body?.fullName ?? '').trim();
@@ -51,7 +54,7 @@ export class StaffController {
     const nationalIdNumber = String(body?.nationalIdNumber ?? '').replace(/\s+/g,'').trim();
     const nationalIdPhotoData = String(body?.nationalIdPhotoData ?? '');
     const profilePhotoData = String(body?.profilePhotoData ?? '');
-    if (!/^254\d{9}$/.test(ownerPhone)) throw new BadRequestException('Enter the shop owner’s registered phone number.');
+    if (!/^254[17]\d{8}$/.test(ownerPhone)) throw new BadRequestException('Enter a valid Kenyan shop-owner number, e.g. 0712345678 or 254712345678.');
     if (!fullName || fullName.length > 120) throw new BadRequestException('Enter your full name.');
     if (!/^254\d{9}$/.test(phone)) throw new BadRequestException('Enter a valid Kenyan phone number.');
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) throw new BadRequestException('Enter a valid email address.');
