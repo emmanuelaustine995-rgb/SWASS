@@ -137,7 +137,7 @@ export class StaffController {
     const phone = digits.startsWith('254') ? digits : digits.startsWith('0') ? '254' + digits.slice(1) : '254' + digits;
     const code = String(body?.code ?? '').trim();
     if (!/^254[17]\d{8}$/.test(phone) || !/^\d{6}$/.test(code)) throw new BadRequestException('Enter the registered phone number and six-digit verification code.');
-    return this.db.tx(async c => {
+    const outcome = await this.db.tx(async c => {
       const found = await c.query(
         `SELECT * FROM freelancer_signup_otp_requests
           WHERE phone=$1 AND consumed_at IS NULL AND expires_at>now()
@@ -150,7 +150,7 @@ export class StaffController {
       const valid = expected.length === supplied.length && timingSafeEqual(expected, supplied);
       if (!valid) {
         await c.query('UPDATE freelancer_signup_otp_requests SET attempts=attempts+1 WHERE id=$1', [pending.id]);
-        throw new BadRequestException('That verification code is incorrect. Check the SMS and try again.');
+        return { invalidCode: true };
       }
       const duplicate = await c.query(
         `SELECT 1 FROM users WHERE is_active=true AND role='freelancer'
@@ -168,6 +168,8 @@ export class StaffController {
       return { created: true, userId: created.rows[0].id,
         message: 'Your freelancer account has been verified and created. Sign in using Freelancer with your phone number and password. Subscription: KSh 100 monthly or KSh 900 yearly.' };
     });
+    if ((outcome as any)?.invalidCode) throw new BadRequestException('That verification code is incorrect. Check the SMS and try again.');
+    return outcome;
   }
 
   @Post('invitations/accept')
