@@ -380,7 +380,7 @@ export class AuthController {
   }
 
   @Post('register/verify-otp')
-  async verifySignupOtp(@Body() body: { phone?: string; code?: string }) {
+  async verifySignupOtp(@Body() body: { phone?: string; code?: string }, @Req() req: any) {
     if (!body?.phone || !/^\d{6}$/.test(String(body?.code ?? '').trim())) {
       throw new BadRequestException('Enter your phone number and the 6-digit code sent by SMS.');
     }
