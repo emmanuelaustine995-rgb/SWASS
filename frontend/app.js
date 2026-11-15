@@ -679,7 +679,7 @@
         const deadline=Date.now()+90000;let feePaid=false,feeReceipt='';
         while(Date.now()<deadline){await new Promise(resolve=>setTimeout(resolve,3000));const status=await request('/api/v1/mpesa/payments/'+encodeURIComponent(pay.paymentId));if(status.status==='success'){feePaid=true;feeReceipt=status.receiptNumber||'';break;}if(status.status==='failed')break;}
         message.textContent=feePaid?'Vendor fee paid successfully'+(feeReceipt?' · M-Pesa receipt '+feeReceipt:'')+'. The invitation is active.':'Invitation sent, but KSh 50 payment is not confirmed yet. The vendor cannot activate until payment succeeds.';
-      }else if(payload.role==='Freelancer') message.textContent='Freelancer invitation email sent. Freelancers are not charged.';
+      }else if(payload.role==='Freelancer') message.textContent='Freelancer invitation email sent. Freelancers must pay their own subscription: KSh 100 monthly or KSh 900 yearly.';
       $('staff-invite-form').reset();setStaffInviteOpen(false);await loadStaffInvitations();
     }catch(err){message.textContent=err.message||'Could not send the staff invitation.';}
     finally{btn.disabled=false;btn.textContent='Send email invitation';}
