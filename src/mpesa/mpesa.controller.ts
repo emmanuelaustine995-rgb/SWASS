@@ -128,8 +128,17 @@ export class MpesaController {
 
   @Get('account-summary')
   @UseGuards(AuthGuard, RolesGuard)
-  @Roles('owner', 'manager')
+  @Roles('owner', 'manager', 'freelancer')
   async accountSummary(@Req() req: any) {
+    if (req.user?.role === 'freelancer') {
+      await this.db.ensureFreelancerSubscriptionSchema();
+      const personal = await this.db.pool.query(`SELECT plan,status,starts_at,ends_at FROM freelancer_subscriptions
+        WHERE user_id=$1 ORDER BY ends_at DESC LIMIT 1`, [req.user.sub]);
+      const sub = personal.rows[0];
+      return { subscription: sub ? { plan: sub.plan, status: sub.status, startsAt: sub.starts_at, endsAt: sub.ends_at,
+        active: sub.status === 'active' && new Date(sub.ends_at).getTime() > Date.now() } : null,
+        balanceKes: 0, receiptFeeKes: 4, receiptsRemaining: 0, walletRemainderKes: 0, subscriberType: 'freelancer' };
+    }
     const tenantId = req.user?.tenantId;
     if (!tenantId) throw new ForbiddenException();
     const [subscription, wallet] = await Promise.all([
@@ -158,7 +167,10 @@ export class MpesaController {
     const tenantId = req.user?.tenantId;
     if (!tenantId) throw new ForbiddenException();
     const purpose: Purpose = body?.purpose;
-    if (!['owner', 'manager'].includes(req.user?.role) && purpose !== 'receipt_sale') throw new ForbiddenException('Only business owners or managers can make account payments.');
+    const isFreelancerSubscription = req.user?.role === 'freelancer' && purpose === 'subscription';
+    if (!['owner', 'manager'].includes(req.user?.role) && purpose !== 'receipt_sale' && !isFreelancerSubscription) {
+      throw new ForbiddenException('Freelancers may only pay their own personal subscription. Other account payments are reserved for business owners or managers.');
+    }
     if (!['subscription', 'wallet_topup', 'vendor_fee', 'receipt_sale'].includes(purpose)) throw new BadRequestException('Invalid payment purpose');
     const phone = this.mpesa.normalizePhone(body?.phone);
     let amount: number;
@@ -181,9 +193,11 @@ export class MpesaController {
       }
     }
 
+    if (isFreelancerSubscription) await this.db.ensureFreelancerSubscriptionSchema();
     const inserted = await this.db.pool.query(
-      `INSERT INTO payments (tenant_id, purpose, amount_kes, phone, status) VALUES ($1,$2,$3,$4,'pending') RETURNING id`,
-      [tenantId, purpose, amount, phone],
+      `INSERT INTO payments (tenant_id, subscriber_user_id, purpose, amount_kes, phone, status)
+       VALUES ($1,$2,$3,$4,$5,'pending') RETURNING id`,
+      [tenantId, isFreelancerSubscription ? req.user.sub : null, purpose, amount, phone],
     );
     const paymentId: string = inserted.rows[0].id;
     if (purpose === 'vendor_fee') await this.db.pool.query(`INSERT INTO vendor_invitation_fees(tenant_id,invitation_id,payment_id,status) VALUES($1,$2,$3,'pending') ON CONFLICT(invitation_id) DO UPDATE SET payment_id=EXCLUDED.payment_id,status='pending',paid_at=NULL`, [tenantId,String(body.invitationId),paymentId]);
