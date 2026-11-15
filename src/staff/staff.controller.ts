@@ -72,15 +72,18 @@ export class StaffController {
       if (digits.startsWith('0')) digits = digits.slice(1);
       return /^[17]\d{8}$/.test(digits) ? '254' + digits : digits;
     };
-    const ownerPhone = normalizePhone(body?.ownerPhone);
     const phone = normalizePhone(body?.phone);
+    // A freelancer may use the same phone as the registered shop owner.
+    // If no separate owner number is supplied, resolve the shop from the
+    // freelancer's own phone; also try both numbers when one was supplied.
+    const ownerPhoneCandidates = [...new Set([phone, normalizePhone(body?.ownerPhone)].filter(Boolean))];
     const fullName = String(body?.fullName ?? '').trim();
     const email = String(body?.email ?? '').trim().toLowerCase();
     const password = String(body?.password ?? '');
     const nationalIdNumber = String(body?.nationalIdNumber ?? '').replace(/\s+/g, '').trim();
     const nationalIdPhotoData = String(body?.nationalIdPhotoData ?? '');
     const profilePhotoData = String(body?.profilePhotoData ?? '');
-    if (!/^254[17]\d{8}$/.test(ownerPhone)) throw new BadRequestException('Enter a valid Kenyan shop-owner phone number.');
+    if (!ownerPhoneCandidates.some(value => /^254[17]\d{8}$/.test(value))) throw new BadRequestException('Enter the shop owner’s registered phone number, or use the same phone number as the shop owner.');
     if (!fullName || fullName.length > 120) throw new BadRequestException('Enter your full name.');
     if (!/^254[17]\d{8}$/.test(phone)) throw new BadRequestException('Enter a valid Kenyan freelancer phone number.');
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) throw new BadRequestException('Enter a valid email address.');
@@ -90,13 +93,13 @@ export class StaffController {
     if (!supported(nationalIdPhotoData) || nationalIdPhotoData.length > 2800000) throw new BadRequestException('Upload a JPG, PNG or WebP National ID photo (maximum 2 MB).');
     if (!supported(profilePhotoData) || profilePhotoData.length > 1400000) throw new BadRequestException('Upload a JPG, PNG or WebP profile photo (maximum 1 MB).');
 
-    const digits = ownerPhone.slice(3), local = '0' + digits;
+    const ownerPhoneVariants = [...new Set(ownerPhoneCandidates.flatMap(value => [value, '0' + value.slice(3), value.slice(3)]))];
     const owner = await this.db.pool.query(
       `SELECT DISTINCT u.id,u.tenant_id,u.store_id FROM users u JOIN tenants t ON t.id=u.tenant_id
         WHERE u.role='owner' AND u.is_active=true AND COALESCE(t.status,'active')='active' AND u.store_id IS NOT NULL
-          AND (regexp_replace(coalesce(u.phone,''),'[^0-9]','','g') IN ($1,$2,$3)
-            OR regexp_replace(coalesce(t.phone,''),'[^0-9]','','g') IN ($1,$2,$3))
-        ORDER BY u.id LIMIT 2`, [ownerPhone, local, digits],
+          AND (regexp_replace(coalesce(u.phone,''),'[^0-9]','','g') = ANY($1::text[])
+            OR regexp_replace(coalesce(t.phone,''),'[^0-9]','','g') = ANY($1::text[]))
+        ORDER BY u.id LIMIT 2`, [ownerPhoneVariants],
     );
     if (!owner.rowCount) throw new BadRequestException('No active shop owner was found for that registered phone number.');
     if (owner.rowCount > 1) throw new BadRequestException('That phone number is linked to more than one active shop. Contact support.');
