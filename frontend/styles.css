@@ -995,9 +995,9 @@ body.workspace-active #receipts-home #secondhand-open-card .secondhand-entry-cop
 body.workspace-active #receipts-home #secondhand-panel{margin-top:10px}
 
 
-/* Shop Details moved from Profile to a dedicated green fading card below Find Products. */
+/* Shop Details belongs only in the Profile tab, never in Products. */
 body.workspace-active #shop-home .shop-business-details-card{
-  display:block!important;
+  display:block;
   margin:12px 0 18px!important;
   overflow:hidden;
   border:1px solid rgba(44,154,104,.42)!important;
@@ -1006,6 +1006,10 @@ body.workspace-active #shop-home .shop-business-details-card{
   background-size:300% 300%!important;
   animation:auroraShopDetailsFade 13s ease-in-out infinite!important;
   box-shadow:0 5px 18px rgba(24,135,83,.15),inset 0 0 18px rgba(255,255,255,.62)!important;
+}
+/* The shared .hidden utility must win over the card's presentation styles. */
+body.workspace-active #shop-home .shop-business-details-card.hidden{
+  display:none!important;
 }
 body.workspace-active #shop-home .shop-business-details-card>.profile-card-summary{
   display:flex;align-items:center;justify-content:space-between;gap:12px;
