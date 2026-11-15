@@ -30,6 +30,7 @@
   <link rel="stylesheet" href="./styles.css?v=aurora-copyright-visible-20261114">
   <link rel="stylesheet" href="./dashboard.css?v=gold-repair-diagnosis-20261115">
   <link rel="stylesheet" href="./registration-layout.css?v=responsive-registration-upload-20261115b">
+  <link rel="stylesheet" href="./responsive-auth.css?v=freelancer-first-render-20261115">
 </head>
 <body>
   <header class="topbar"><a class="brand" href="#" aria-label="AURORA E-RECEIPT PLATFORM"><span>AURORA E-RECEIPT PLATFORM</span></a><div class="topbar-actions"></div></header>
@@ -356,6 +357,26 @@
         <div class="lost-items-list-head hidden" id="lost-active-items-section" data-lost-panel="found" data-lost-owner-only><strong>Active lost items · Mark as found here</strong><button id="lost-items-refresh" class="btn btn-light btn-small" type="button">Refresh</button></div><div id="lost-items-list" data-lost-panel="found" data-lost-owner-only><p class="muted small">Loading registered items…</p></div>
       </section>
 <section id="owner-dashboard-view" class="hidden">
+<section id="freelancer-home" class="hidden" aria-label="Freelancer home">
+  <article class="freelancer-home-card">
+    <p class="eyebrow">AURORA FREELANCER WORKSPACE</p>
+    <h1>Welcome, <span id="freelancer-home-name">Freelancer</span></h1>
+    <p id="freelancer-home-message" class="muted" role="status" aria-live="polite">Preparing your shop workspace…</p>
+    <section id="freelancer-home-summary" class="freelancer-home-summary" aria-label="My sales summary">
+      <div class="metric-grid">
+        <article class="metric"><span>My sales today</span><strong id="staff-today-sales">KSh 0</strong><small id="staff-today-transactions">Loading today's receipts…</small></article>
+        <article class="metric"><span>My total sales</span><strong id="staff-total-sales">KSh 0</strong><small id="staff-total-transactions">Loading sales history…</small></article>
+      </div>
+    </section>
+    <div class="freelancer-home-actions" aria-label="Freelancer shortcuts">
+      <button type="button" class="btn btn-primary" data-freelancer-screen="receipts">Open Receipts</button>
+      <button type="button" class="btn btn-light" data-freelancer-screen="shop">Open Shop</button>
+      <button type="button" class="btn btn-light" data-freelancer-screen="subscription">Subscription &amp; Payments</button>
+      <button type="button" class="btn btn-light" data-freelancer-screen="profile">My Profile</button>
+    </div>
+  </article>
+</section>
+
 <section id="profile-panel" class="profile-panel hidden">
 </section>
       <section id="dashboard-business-card" class="panel dashboard-business-card hidden" aria-label="Business profile"><div class="dashboard-business-identity"><img id="dashboard-profile-image" alt="Business profile photo" class="dashboard-profile-image hidden"><div><p class="eyebrow">BUSINESS PROFILE</p><h2 id="dashboard-profile-name">Complete your business profile</h2><p id="dashboard-profile-meta" class="muted small">Add your business details and logo to personalise AURORA E-RECEIPT receipts.</p></div></div><div id="dashboard-shop-photos" class="dashboard-shop-photos hidden"><figure><img id="dashboard-shop-inside-photo" class="dashboard-shop-photo hidden" alt="Inside of registered shop"><figcaption>Inside shop</figcaption></figure><figure><img id="dashboard-shop-outside-photo" class="dashboard-shop-photo hidden" alt="Outside of registered shop"><figcaption>Outside shop</figcaption></figure></div><button id="dashboard-edit-profile" class="btn btn-primary" type="button">Complete business profile</button></section><div class="page-heading"><div><h1>Sales performance</h1><p class="muted">View sales results, daily trends and comparisons with previous periods.</p></div><div class="date-filter"><label>From<input id="owner-date-from" type="date"></label><label>To<input id="owner-date-to" type="date"></label><button id="owner-refresh-btn" class="btn btn-primary">Refresh</button></div></div><p id="owner-notice" class="notice hidden"></p>
