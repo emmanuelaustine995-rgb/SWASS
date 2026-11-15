@@ -385,6 +385,7 @@ export class AuthController {
       throw new BadRequestException('Enter your phone number and the 6-digit code sent by SMS.');
     }
     const phone = this.normalizePhone(body.phone);
+    const phoneVariants = [phone, '0' + phone.slice(3)];
     const code = String(body.code).trim();
     const pending = await this.db.pool.query(
       `SELECT * FROM signup_otp_requests
