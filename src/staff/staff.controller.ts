@@ -33,49 +33,51 @@ export class StaffController {
     }
   }
 
-  // Public freelancer self-registration. Match the shop owner by exact registered name and phone, then link the freelancer directly to that shop without an approval OTP.
+  // Public freelancer self-registration. Link directly to the active shop owner using the owner's registered phone number.
   @Post('freelancer/register')
   async registerFreelancer(@Body() body: {
-    ownerName?: string; ownerPhone?: string; fullName?: string; phone?: string; email?: string;
+    ownerPhone?: string; fullName?: string; phone?: string; email?: string;
     nationalIdNumber?: string; nationalIdPhotoData?: string; profilePhotoData?: string; password?: string;
   }) {
     const normalizePhone = (value: unknown) => {
-      const digits = String(value ?? '').replace(/\D/g, '');
+      const digits = String(value ?? '').replace(/\\D/g, '');
       return digits.startsWith('0') ? '254' + digits.slice(1) : digits.startsWith('254') ? digits : '254' + digits;
     };
     const ownerPhone = normalizePhone(body?.ownerPhone);
-    const ownerName = String(body?.ownerName ?? '').trim().replace(/\s+/g,' ');
     const fullName = String(body?.fullName ?? '').trim();
     const email = String(body?.email ?? '').trim().toLowerCase();
     const phone = normalizePhone(body?.phone);
     const password = String(body?.password ?? '');
-    const nationalIdNumber = String(body?.nationalIdNumber ?? '').replace(/\s+/g,'').trim();
+    const nationalIdNumber = String(body?.nationalIdNumber ?? '').replace(/\\s+/g,'').trim();
     const nationalIdPhotoData = String(body?.nationalIdPhotoData ?? '');
     const profilePhotoData = String(body?.profilePhotoData ?? '');
-    if (!ownerName || ownerName.length > 120 || !/^254\d{9}$/.test(ownerPhone)) throw new BadRequestException('Enter the shop owner’s full name and registered phone number.');
+    if (!/^254\\d{9}$/.test(ownerPhone)) throw new BadRequestException('Enter the shop owner’s registered phone number.');
     if (!fullName || fullName.length > 120) throw new BadRequestException('Enter your full name.');
-    if (!/^254\d{9}$/.test(phone)) throw new BadRequestException('Enter a valid Kenyan phone number.');
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) throw new BadRequestException('Enter a valid email address.');
+    if (!/^254\\d{9}$/.test(phone)) throw new BadRequestException('Enter a valid Kenyan phone number.');
+    if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) || email.length > 254) throw new BadRequestException('Enter a valid email address.');
     if (password.length < 10 || password.length > 128) throw new BadRequestException('Choose a password of at least 10 characters.');
-    if (!/^\d{6,12}$/.test(nationalIdNumber)) throw new BadRequestException('Enter a valid National ID number.');
+    if (!/^\\d{6,12}$/.test(nationalIdNumber)) throw new BadRequestException('Enter a valid National ID number.');
     const isSupportedImageData = (value: string) => ['data:image/jpeg;base64,', 'data:image/png;base64,', 'data:image/webp;base64,'].some(prefix => value.startsWith(prefix));
     if (!isSupportedImageData(nationalIdPhotoData) || nationalIdPhotoData.length > 2800000) throw new BadRequestException('Upload a clear JPG, PNG or WebP National ID photo (maximum 2 MB).');
     if (!isSupportedImageData(profilePhotoData) || profilePhotoData.length > 1400000) throw new BadRequestException('Upload a JPG, PNG or WebP profile photo (maximum 1 MB).');
     const ownerDigits = ownerPhone.slice(3);
     const ownerLocalPhone = '0' + ownerDigits;
     const owner = await this.db.pool.query(
-      `SELECT u.id,u.tenant_id,u.store_id
-         FROM users u LEFT JOIN tenants t ON t.id=u.tenant_id
+      `SELECT DISTINCT u.id,u.tenant_id,u.store_id
+         FROM users u JOIN tenants t ON t.id=u.tenant_id
         WHERE u.role='owner' AND u.is_active=true
-          AND lower(regexp_replace(trim(coalesce(u.full_name,'')),'[[:space:]]+',' ','g'))=lower($1)
+          AND COALESCE(t.status,'active')='active'
+          AND u.store_id IS NOT NULL
           AND (
-            regexp_replace(coalesce(u.phone,''),'[^0-9]','','g') IN ($2,$3,$4)
-            OR regexp_replace(coalesce(t.phone,''),'[^0-9]','','g') IN ($2,$3,$4)
+            regexp_replace(coalesce(u.phone,''),'[^0-9]','','g') IN ($1,$2,$3)
+            OR regexp_replace(coalesce(t.phone,''),'[^0-9]','','g') IN ($1,$2,$3)
           )
-        LIMIT 1`,
-      [ownerName,ownerPhone,ownerLocalPhone,ownerDigits],
+        ORDER BY u.id
+        LIMIT 2`,
+      [ownerPhone,ownerLocalPhone,ownerDigits],
     );
-    if (!owner.rowCount) throw new BadRequestException('No active shop-owner account matched that name and registered phone number. Check the details and try again.');
+    if (!owner.rowCount) throw new BadRequestException('No active shop-owner account is registered with that phone number. Check the number used when the shop owner created the account.');
+    if (owner.rowCount > 1) throw new BadRequestException('That phone number is linked to more than one active shop. Contact support so your freelancer account is connected to the correct shop.');
     const duplicate = await this.db.pool.query(
       `SELECT 1 FROM users
         WHERE regexp_replace(phone,'[^0-9]','','g') IN ($1,$2)
@@ -92,9 +94,8 @@ export class StaffController {
        RETURNING id`,
       [owner.rows[0].tenant_id,owner.rows[0].store_id,fullName,phone,email,passwordHash,profilePhotoData,nationalIdNumber,nationalIdPhotoData],
     );
-    return { created:true, userId:created.rows[0].id, message:'Freelancer account created and linked to the selected shop. Sign in, then choose Subscription to pay KSh 100 monthly or KSh 900 yearly and activate your personal freelancer account.' };
+    return { created:true, userId:created.rows[0].id, message:'Your freelancer account has been connected to the shop registered under that phone number. Sign in, then choose Subscription to pay KSh 100 monthly or KSh 900 yearly and activate your personal freelancer account.' };
   }
-
   @Post('invitations/accept')
   async acceptInvitation(@Body() body: { token?: string; password?: string }) {
     const token = String(body?.token ?? '');
