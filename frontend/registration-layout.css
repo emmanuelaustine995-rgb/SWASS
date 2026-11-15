@@ -345,3 +345,9 @@ body.registration-open #aurora-policy-center summary {
   body.registration-open *, body.registration-open *::before,
   body.registration-open *::after { scroll-behavior:auto !important; transition:none !important; animation:none !important; }
 }
+
+
+/* Keep the existing account-type and OTP visibility logic authoritative. */
+body.registration-open #owner-signup-fields.hidden,
+body.registration-open #register-fields.hidden,
+body.registration-open #signup-otp-panel.hidden { display:none !important; }
