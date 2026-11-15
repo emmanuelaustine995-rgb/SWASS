@@ -2687,3 +2687,46 @@ html body>footer.aurora-copyright{
   pointer-events:none!important;white-space:nowrap!important;
 }
 @media print{html body>footer.aurora-copyright{display:none!important}}
+
+
+/* Goods on Repair — dedicated golden service card within Shop */
+#shop-home .shop-goods-on-repair-card{
+  box-sizing:border-box;width:100%;margin:12px 0 20px;padding:clamp(14px,3vw,22px);
+  border:1px solid #d6ad45;border-radius:20px;
+  background:linear-gradient(145deg,#fffdf4 0%,#fff7dc 48%,#fffdf7 100%);
+  box-shadow:0 12px 30px rgba(143,104,22,.12),inset 0 1px 0 rgba(255,255,255,.9);
+  color:#473613;overflow:hidden;
+}
+#shop-home .repair-card-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 16px;padding:0 0 13px;border-bottom:1px solid rgba(176,133,35,.25)}
+#shop-home .repair-card-heading h2{margin:3px 0 4px;color:#5b4210;font-size:clamp(19px,4vw,24px);letter-spacing:-.025em}
+#shop-home .repair-card-heading p{margin:0;color:#786331;font-size:13px;line-height:1.5}
+#shop-home .repair-card-kicker{font-size:10px;font-weight:850;letter-spacing:.13em;color:#99701c}
+#shop-home .repair-gold-mark{display:grid;place-items:center;flex:0 0 46px;width:46px;height:46px;border-radius:14px;background:linear-gradient(145deg,#f8e7a9,#d9ae43);color:#60460c;font-size:24px;box-shadow:inset 0 1px 0 #fff7d5,0 5px 12px rgba(133,94,16,.16)}
+#shop-home .shop-repair-form{display:grid;gap:12px}
+#shop-home .shop-repair-form label{display:grid;gap:6px;min-width:0;color:#634d1d;font-size:12px;font-weight:750}
+#shop-home .shop-repair-form input,#shop-home .shop-repair-form textarea{
+  box-sizing:border-box;width:100%;min-width:0;min-height:44px;padding:10px 12px;
+  border:1px solid #dfcc94;border-radius:10px;background:#fffefa;color:#2e2a20;font:inherit;font-size:14px;
+}
+#shop-home .shop-repair-form textarea{min-height:76px;resize:vertical}
+#shop-home .shop-repair-form input:focus,#shop-home .shop-repair-form textarea:focus{outline:3px solid rgba(193,151,50,.2);border-color:#b78a25}
+#shop-home #repair-submit{min-height:47px;border:1px solid #a77a18;background:linear-gradient(110deg,#9c7117,#d4a632 55%,#f0d47a);color:#332507;font-weight:850;box-shadow:0 5px 13px rgba(135,98,19,.17)}
+#shop-home .repair-records-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:22px 0 10px;padding-top:15px;border-top:1px solid rgba(176,133,35,.25)}
+#shop-home .repair-records-heading h3{margin:0;color:#5b4210;font-size:16px}
+#shop-home .repair-record-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(190px,.72fr);gap:14px;margin:10px 0;padding:13px;border:1px solid #e2ce96;border-radius:14px;background:rgba(255,255,255,.8)}
+#shop-home .repair-record-main{display:grid;gap:5px;min-width:0}
+#shop-home .repair-record-main>strong{color:#503b12;font-size:15px;overflow-wrap:anywhere}
+#shop-home .repair-record-main small{color:#6c5a35;font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+#shop-home .repair-record-tools{display:grid;align-content:start;gap:8px;min-width:0}
+#shop-home .repair-record-tools select,#shop-home .repair-record-tools textarea{box-sizing:border-box;width:100%;min-width:0;padding:9px;border:1px solid #dfcc94;border-radius:9px;background:#fffefa;color:#473613;font:inherit;font-size:12px}
+#shop-home .repair-status{display:inline-flex;align-items:center;justify-content:center;width:max-content;max-width:100%;padding:5px 9px;border-radius:999px;background:#f5e7bd;color:#72520e;font-size:11px;font-weight:800}
+#shop-home .repair-status-ready{background:#e2f4e8;color:#17633a}
+#shop-home .repair-status-collected{background:#e8edf3;color:#46566a}
+#shop-home .repair-status-cancelled{background:#fbe6e3;color:#963b32}
+#shop-home .shop-section-tabs button[data-shop-tab="repairs"]{color:#805c12}
+#shop-home .shop-section-tabs button[data-shop-tab="repairs"].active{background:linear-gradient(120deg,#f7e7b3,#f1d47d);color:#61450b;box-shadow:inset 0 0 0 1px #d6ad45}
+@media(max-width:560px){
+  #shop-home .repair-record-row{grid-template-columns:minmax(0,1fr)}
+  #shop-home .repair-record-tools{grid-template-columns:minmax(0,1fr)}
+  #shop-home .shop-repair-form .form-two{grid-template-columns:minmax(0,1fr)}
+}
