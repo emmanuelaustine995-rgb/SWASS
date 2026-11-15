@@ -34,6 +34,10 @@ export class IntaSendController {
         await c.query("INSERT INTO platform_financial_ledger(tenant_id,payment_id,entry_type,amount_kes,external_reference) VALUES($1,$2,'subscription_revenue',$3,$4) ON CONFLICT DO NOTHING",[p.tenant_id,p.id,p.amount_kes,receipt]);
         const plan=Number(p.amount_kes)===900?'yearly':'monthly';
         const interval=plan==='yearly'?'1 year':'1 month';
+        if(p.subscriber_user_id){
+          await c.query("INSERT INTO freelancer_subscriptions(user_id,payment_id,plan,price_kes,starts_at,ends_at,status) VALUES($1,$2,$3,$4,COALESCE((SELECT MAX(ends_at) FROM freelancer_subscriptions WHERE user_id=$1 AND status='active' AND ends_at>now()),now()),COALESCE((SELECT MAX(ends_at) FROM freelancer_subscriptions WHERE user_id=$1 AND status='active' AND ends_at>now()),now())+$5::interval,'active')",[p.subscriber_user_id,p.id,plan,p.amount_kes,interval]);
+          return;
+        }
         await c.query("INSERT INTO subscriptions(tenant_id,plan,price_kes,starts_at,ends_at,status,auto_renew) VALUES($1,$2,$3,COALESCE((SELECT MAX(ends_at) FROM subscriptions WHERE tenant_id=$1 AND status='active' AND ends_at>now()),now()),COALESCE((SELECT MAX(ends_at) FROM subscriptions WHERE tenant_id=$1 AND status='active' AND ends_at>now()),now())+$4::interval,'active',false)",[p.tenant_id,plan,p.amount_kes,interval]);
         const paid=await c.query("SELECT COUNT(*)::int AS paid_count FROM payments WHERE tenant_id=$1 AND purpose='subscription' AND status='success'",[p.tenant_id]);
         if(Number(paid.rows[0].paid_count)===1){
