@@ -103,7 +103,23 @@ export class AuthGuard implements CanActivate {
     // not yet been purchased. All business-operation APIs remain locked.
     const paymentRoute = path === '/api/v1/mpesa/stk-push' || path === '/api/v1/mpesa/account-summary' || path === '/api/v1/auth/change-password' ||
       /^\/api\/v1\/mpesa\/payments\/[0-9a-f-]+$/i.test(path);
-    if (user.tenantId && user.role !== 'super_admin' && !paymentRoute) {
+    if (user.role === 'freelancer') {
+      await this.db.ensureFreelancerSubscriptionSchema();
+      if (!paymentRoute) {
+        const active = await this.db.pool.query(
+          `SELECT 1 FROM freelancer_subscriptions
+            WHERE user_id=$1 AND status='active' AND ends_at>now()
+            LIMIT 1`,
+          [user.sub],
+        );
+        if (!active.rowCount) {
+          throw new HttpException(
+            'An active personal SWASS freelancer subscription is required. Pay KSh 100 monthly or KSh 900 yearly to unlock your freelancer workspace.',
+            HttpStatus.PAYMENT_REQUIRED,
+          );
+        }
+      }
+    } else if (user.tenantId && user.role !== 'super_admin' && !paymentRoute) {
       const active = await this.db.pool.query(
         `SELECT 1 FROM subscriptions
           WHERE tenant_id=$1 AND status='active' AND ends_at>now()
