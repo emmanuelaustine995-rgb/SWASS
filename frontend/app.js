@@ -449,6 +449,7 @@
         $('owner-dashboard-view')?.classList.remove('hidden');
         $('freelancer-home')?.classList.remove('hidden');
         ownerHome?.classList.add('hidden');
+        staffSummary?.classList.remove('hidden');
         $('freelancer-home-name').textContent=state.userName||'Welcome';
         $('freelancer-home-message').textContent='Your shop workspace is ready. Choose an area below to continue.';
         window.dispatchEvent(new Event('swass:dashboard-open'));
