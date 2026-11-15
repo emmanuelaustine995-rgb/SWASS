@@ -1,0 +1,70 @@
+import { BadRequestException, Controller, Get, Post, Body, Req, UseGuards } from '@nestjs/common';
+import { AuthGuard, Roles, RolesGuard } from '../auth/auth';
+import { DbService } from '../db/db.service';
+
+@Controller('api/v1/repairs')
+@UseGuards(AuthGuard, RolesGuard)
+@Roles('owner', 'manager', 'freelancer')
+export class RepairsController {
+  constructor(private db: DbService) {}
+
+  private requireShop(req: any) {
+    if (!req.user?.tenantId || !req.user?.storeId) throw new BadRequestException('A registered shop is required.');
+    return req.user;
+  }
+
+  @Get()
+  async list(@Req() req: any) {
+    const user = this.requireShop(req);
+    await this.db.ensureRepairSchema();
+    const result = await this.db.pool.query(
+      `SELECT id, item_name AS "itemName", item_identifier AS "itemIdentifier",
+              customer_name AS "customerName", customer_id AS "customerId",
+              item_condition AS condition, problem, detected,
+              received_date AS "receivedDate", expected_pick_date AS "expectedPickDate",
+              status, created_at AS "createdAt", updated_at AS "updatedAt"
+         FROM shop_repair_jobs
+        WHERE tenant_id=$1 AND store_id=$2
+        ORDER BY CASE WHEN status IN ('collected','cancelled') THEN 1 ELSE 0 END,
+                 expected_pick_date ASC, created_at DESC
+        LIMIT 300`,
+      [user.tenantId, user.storeId],
+    );
+    return { repairs: result.rows };
+  }
+
+  @Post()
+  async create(@Req() req: any, @Body() body: any) {
+    const user = this.requireShop(req);
+    await this.db.ensureRepairSchema();
+    const clean = (value: unknown, label: string, max: number, required = true) => {
+      const result = String(value ?? '').trim();
+      if (required && !result) throw new BadRequestException(label + ' is required.');
+      if (result.length > max) throw new BadRequestException(label + ' is too long.');
+      return result;
+    };
+    const itemName = clean(body?.itemName, 'Goods / item name', 160);
+    const itemIdentifier = clean(body?.itemIdentifier, 'Item ID / serial number', 100, false);
+    const customerName = clean(body?.customerName, 'Customer name', 160);
+    const customerId = clean(body?.customerId, 'Customer ID number', 50);
+    const condition = clean(body?.condition, 'Condition', 1000);
+    const problem = clean(body?.problem, 'Problem reported', 2000);
+    const detected = clean(body?.detected, 'Detected / diagnosis', 2000, false);
+    const receivedDate = clean(body?.receivedDate, 'Date received', 10);
+    const expectedPickDate = clean(body?.expectedPickDate, 'Expected pick-up date', 10);
+    const validDate = (value: string) => /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(Date.parse(value + 'T00:00:00Z')) && new Date(value + 'T00:00:00Z').toISOString().slice(0,10) === value;
+    if (!validDate(receivedDate) || !validDate(expectedPickDate)) throw new BadRequestException('Enter valid received and expected pick-up dates.');
+    if (expectedPickDate < receivedDate) throw new BadRequestException('Expected pick-up date cannot be earlier than the date received.');
+    const result = await this.db.pool.query(
+      `INSERT INTO shop_repair_jobs
+        (tenant_id,store_id,received_by,item_name,item_identifier,customer_name,customer_id,item_condition,problem,detected,received_date,expected_pick_date)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11::date,$12::date)
+       RETURNING id, item_name AS "itemName", item_identifier AS "itemIdentifier",
+                 customer_name AS "customerName", customer_id AS "customerId",
+                 item_condition AS condition, problem, detected,
+                 received_date AS "receivedDate", expected_pick_date AS "expectedPickDate", status`,
+      [user.tenantId,user.storeId,user.sub,itemName,itemIdentifier,customerName,customerId,condition,problem,detected,receivedDate,expectedPickDate],
+    );
+    return { repair: result.rows[0], message: 'Goods received for repair and saved.' };
+  }
+}
