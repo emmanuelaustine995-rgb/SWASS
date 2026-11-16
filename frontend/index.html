@@ -95,7 +95,12 @@
           <label>Your National ID number<input id="freelancer-national-id" type="text" inputmode="numeric" maxlength="12" pattern="[0-9]{6,12}" required placeholder="Enter National ID number"></label>
           <label>Take or choose National ID photo (camera or Gallery; max 2 MB)<input id="freelancer-id-photo" type="file" accept="image/jpeg,image/png,image/webp" required></label>
           <label>Take or choose your profile photo (camera or Gallery; max 1 MB)<input id="freelancer-profile-photo" type="file" accept="image/jpeg,image/png,image/webp" required></label>
-          <label>Shop owner’s registered phone number (optional if it is your number)<input id="freelancer-owner-phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="07XX XXX XXX"><span class="muted small">Enter the shop owner’s registered number. If you are registering with the same number as the shop owner, leave this blank and AURORA will link your Freelancer account to that shop.</span></label>
+          <label>Shop owner’s registered phone number<input id="freelancer-owner-phone" type="tel" inputmode="tel" autocomplete="tel" required placeholder="07XX XXX XXX"><span class="muted small">Enter the phone number registered to the shop. AURORA will identify the shop automatically; you do not need to enter shop details.</span></label>
+          <div id="freelancer-shop-detected" class="hidden" aria-live="polite">
+            <label>Detected shop name<input id="freelancer-detected-shop-name" type="text" readonly aria-readonly="true" tabindex="-1"></label>
+            <label>Shop owner’s full name<input id="freelancer-detected-owner-name" type="text" readonly aria-readonly="true" tabindex="-1"></label>
+            <p class="muted small">These details were matched to the registered shop-owner phone number and cannot be edited here.</p>
+          </div>
           <label>Create your password<input id="freelancer-new-password" type="password" minlength="10" maxlength="128" required autocomplete="new-password" placeholder="At least 10 characters"></label>
           <label>Confirm password<input id="freelancer-confirm-password" type="password" minlength="10" maxlength="128" required autocomplete="new-password"></label>
           <label class="aurora-policy-consent"><input type="checkbox" required> I have read and agree to the <a href="#aurora-policy-center">AURORA Terms, Privacy and Security Policies</a>.</label>
