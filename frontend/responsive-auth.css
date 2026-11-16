@@ -187,3 +187,31 @@ body.registration-open [hidden]{display:none!important}
   body.registration-open #register-form button,
   body.registration-open #freelancer-register-form button{min-height:52px!important}
 }
+
+
+/* 2026-11-16: Receipt issuing is one natural, flat page.
+   Do not trap the product form or receipt items in nested scroll areas;
+   let the main workspace/page scroll instead so Add Product stays reachable. */
+html body.workspace-active #pos-view.workspace-issue-mode{
+  height:auto!important;min-height:0!important;max-height:none!important;
+  overflow:visible!important;overflow-y:visible!important;overscroll-behavior:auto!important;
+}
+html body.workspace-active #pos-view.workspace-issue-mode .pos-grid,
+html body.workspace-active #pos-view.workspace-issue-mode .cart-panel{
+  height:auto!important;min-height:0!important;max-height:none!important;
+  overflow:visible!important;overflow-y:visible!important;
+}
+html body.workspace-active #pos-view.workspace-issue-mode #cart-list,
+html body.workspace-active #pos-view.workspace-issue-mode .cart-panel .cart-list{
+  display:block!important;height:auto!important;min-height:44px!important;
+  max-height:none!important;overflow:visible!important;overflow-y:visible!important;
+  overscroll-behavior:auto!important;-webkit-overflow-scrolling:auto!important;
+}
+html body.workspace-active #pos-view.workspace-issue-mode #product-form:not(.hidden),
+html body.workspace-active #pos-view.workspace-issue-mode .simple-sale-item-form:not(.hidden){
+  display:grid!important;height:auto!important;min-height:0!important;max-height:none!important;
+  overflow:visible!important;overflow-y:visible!important;overscroll-behavior:auto!important;
+}
+html body.workspace-active #pos-view.workspace-issue-mode .cart-panel{
+  padding-bottom:calc(18px + env(safe-area-inset-bottom))!important;
+}
