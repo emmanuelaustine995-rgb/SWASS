@@ -2734,3 +2734,91 @@ html body>footer.aurora-copyright{
   #shop-home .repair-record-tools{grid-template-columns:minmax(0,1fr)}
   #shop-home .shop-repair-form .form-two{grid-template-columns:minmax(0,1fr)}
 }
+
+
+/* 2026-11-16: registration redesign and small-screen reflow */
+:root{--auth-red:#a71930;--auth-red-deep:#5f1024;--auth-gold:#d6ad62;--auth-cream:#fffaf2}
+body.registration-open{
+  background:radial-gradient(ellipse at 14% 12%,rgba(255,255,255,.13),transparent 34%),
+    radial-gradient(ellipse at 88% 88%,rgba(214,173,98,.18),transparent 36%),
+    linear-gradient(138deg,#7d1229 0%,#a71930 48%,#4e1026 100%)!important;
+  background-attachment:scroll!important;
+}
+body.registration-open .topbar{background:rgba(67,12,31,.94)!important;border-bottom:1px solid rgba(255,255,255,.18)}
+body.registration-open .shell{
+  width:100%;max-width:760px;box-sizing:border-box;margin:0 auto;padding:clamp(12px,3vw,28px);
+  height:auto!important;min-height:0!important;overflow:visible!important;display:block!important;
+}
+body.registration-open #login-view,
+body.registration-open .login-wrap{
+  display:grid;place-items:start center;width:100%;height:auto!important;min-height:0!important;overflow:visible!important;
+}
+body.registration-open .login-card{
+  width:min(100%,680px)!important;max-width:680px;box-sizing:border-box;
+  max-height:none!important;min-height:0;overflow:visible!important;
+  padding:clamp(16px,3.5vw,30px)!important;margin:0 auto 24px;
+  border:1px solid rgba(255,255,255,.65)!important;border-top:5px solid var(--auth-gold)!important;
+  border-radius:20px!important;background:var(--auth-cream)!important;color:#202633!important;
+  box-shadow:0 22px 65px rgba(35,4,16,.28)!important;
+}
+body.registration-open #register-form,
+body.registration-open #freelancer-register-form{
+  display:grid;grid-template-columns:minmax(0,1fr)!important;gap:13px!important;
+  width:100%;max-width:100%;max-height:none!important;min-height:0!important;
+  overflow:visible!important;margin:14px 0 0!important;padding:0 1px 18px!important;
+}
+body.registration-open #register-form label,
+body.registration-open #freelancer-register-form label{
+  display:grid;grid-template-columns:minmax(0,1fr);gap:7px;min-width:0;
+  width:100%;font-size:14px;line-height:1.4;color:#293244;
+}
+body.registration-open #owner-signup-fields,
+body.registration-open #register-fields{
+  display:grid;grid-template-columns:minmax(0,1fr)!important;gap:13px!important;min-width:0;width:100%;
+}
+body.registration-open #owner-signup-fields>.compact-extra-fields,
+body.registration-open #register-fields>.compact-extra-fields{grid-column:1!important}
+body.registration-open #register-form input,
+body.registration-open #freelancer-register-form input,
+body.registration-open #register-form select,
+body.registration-open #freelancer-register-form select{
+  width:100%;max-width:100%;min-width:0;min-height:48px;box-sizing:border-box;
+  padding:11px 12px;font-size:16px;line-height:1.35;border:1px solid #d6dbe3;border-radius:10px;
+}
+body.registration-open #register-form input[type=file],
+body.registration-open #freelancer-register-form input[type=file]{
+  min-height:52px;padding:9px;background:#fff;overflow:hidden;font-size:14px;
+}
+body.registration-open #register-form button,
+body.registration-open #freelancer-register-form button{min-height:48px;max-width:100%;white-space:normal}
+body.registration-open #register-form .aurora-policy-consent,
+body.registration-open #freelancer-register-form .aurora-policy-consent{
+  display:flex;align-items:flex-start;gap:10px;line-height:1.5;
+}
+body.registration-open #register-form .aurora-policy-consent input,
+body.registration-open #freelancer-register-form .aurora-policy-consent input{
+  flex:0 0 22px;width:22px;min-width:22px;min-height:22px;margin:1px 0 0;
+}
+body.registration-open .aurora-brand-lockup{max-width:100%;margin:0 auto 10px}
+body.registration-open .aurora-login-logo{display:block;width:min(100%,300px);height:auto;margin:auto}
+body.registration-open .eyebrow{color:var(--auth-red)!important}
+body.registration-open .registration-sticky-footer{
+  position:static!important;display:flex;flex-wrap:wrap;align-items:center;gap:8px;
+  padding:12px 0 0;margin-top:4px;border-top:1px solid #e7e2dc;background:transparent!important;
+}
+@media(max-width:600px){
+  body:not(.workspace-active){height:auto!important;min-height:100svh!important;overflow-x:hidden!important;overflow-y:auto!important}
+  body:not(.workspace-active) .shell{height:auto!important;min-height:0!important;overflow:visible!important;padding:10px 12px 28px!important}
+  body:not(.workspace-active) #login-view{height:auto!important;min-height:0!important;overflow:visible!important}
+  body:not(.workspace-active) .login-wrap{height:auto!important;min-height:0!important;overflow:visible!important;padding:8px 0!important}
+  body:not(.workspace-active) .login-card{max-height:none!important;overflow:visible!important}
+  body.registration-open .shell{padding:10px 10px 24px!important}
+  body.registration-open .login-card{padding:16px 13px!important;border-radius:16px!important}
+  body.registration-open #register-form,
+  body.registration-open #freelancer-register-form{gap:12px!important}
+}
+@media(max-width:360px){
+  body.registration-open .login-card{padding:13px 10px!important}
+  body.registration-open #register-form input,
+  body.registration-open #freelancer-register-form input{padding:10px;font-size:16px}
+}
