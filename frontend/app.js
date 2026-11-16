@@ -20,9 +20,9 @@
     state.userPhone=saved.userPhone||'';state.userEmail=saved.userEmail||'';
     lastSessionWrite=Number(saved.lastActivity)||Date.now();
     showPOS();
-    const allowed=['dashboard','receipts','profile','shop','subscription','lost-goods','customers'];
-    let screen='dashboard';try{const remembered=localStorage.getItem('swass-active-workspace-v1');if(allowed.includes(remembered))screen=remembered;}catch{}
-    showWorkspaceScreen(screen);
+    // A restored shop-owner session always opens Home. Do not reopen Shop
+    // Details just because that was the last workspace used before sign-out.
+    showWorkspaceScreen('dashboard');
     window.dispatchEvent(new CustomEvent('swass:login',{detail:{token:state.token,role:state.role,restored:true}}));
     if(['owner','manager','vendor','freelancer'].includes(state.role)){void loadBusinessProfile().catch(err=>{if(state.role==='freelancer'&&$('freelancer-home-message'))$('freelancer-home-message').textContent='Your shop could not be loaded: '+(err.message||'Please try again.');});}
   }
@@ -1527,9 +1527,10 @@
     if(['owner','manager','vendor','freelancer'].includes(state.role)){
       backgroundLoads.push(loadBusinessProfile().catch(err => {
         if(err.status === 402){
-          showWorkspaceScreen('shop');
-          setShopTab('profile');
-          showNotice('AURORA is locked until you subscribe. Open Subscription & Payments from the dashboard.');
+          // An unpaid or expired subscription must never redirect a new login
+          // into Shop > Profile. Keep the owner on Home and let them open the
+          // Subscription & Payments screen deliberately from the dashboard.
+          showNotice('Your subscription is not active yet. You are still on Home; open Subscription & Payments when you are ready to activate your shop.');
         } else {
           showNotice('You are signed in, but the business profile could not be loaded. '+(err.message||''),true);
         }
