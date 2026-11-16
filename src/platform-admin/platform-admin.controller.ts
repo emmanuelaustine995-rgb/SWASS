@@ -119,7 +119,7 @@ export class PlatformAdminController {
     if (!Number.isInteger(take) || take < 1 || take > 100) throw new BadRequestException('limit must be from 1 to 100');
     const result = await this.db.pool.query(
       `SELECT t.id AS "tenantId",t.name AS "businessName",t.phone AS "businessPhone",
-              t.email AS "businessEmail",s.id AS "storeId",s.name AS "storeName",
+              t.email AS "businessEmail",t.status AS "status",s.id AS "storeId",s.name AS "storeName",
               s.location AS "storeLocation",
               (SELECT COUNT(*)::int FROM users u WHERE u.tenant_id=t.id AND u.is_active=true) AS "activeUsers",
               (SELECT COUNT(*)::int FROM receipts r WHERE r.tenant_id=t.id AND r.status='issued') AS "issuedReceipts",
@@ -174,6 +174,48 @@ export class PlatformAdminController {
          AND created_at >= now()-interval '7 days'
     `);
     return { ...result.rows[0], openHighPriority: Number(open.rows[0].count), monitoring: 'event-log' };
+  }
+
+  @Get('security/lost-phones')
+  async securityLostPhones(@Query('limit') limit = '100') {
+    const take = Math.min(200, Math.max(1, Number.parseInt(String(limit), 10) || 100));
+    const result = await this.db.pool.query(`
+      SELECT li.id,li.item_code AS "itemCode",li.item_name AS "itemName",li.brand,li.model,li.colour,
+             li.description,li.imei_1 AS "imei1",li.imei_2 AS "imei2",li.serial_number AS "serialNumber",
+             li.ob_number AS "obNumber",li.status,li.lost_at AS "lostAt",li.recovered_at AS "recoveredAt",
+             li.created_at AS "createdAt",t.id AS "tenantId",t.name AS "shopName",t.phone AS "shopPhone",
+             t.email AS "shopEmail",s.name AS "branchName",s.location AS "branchLocation",
+             u.full_name AS "registeredBy",u.phone AS "registeredByPhone",
+             COALESCE(report_data.report_count,0)::int AS "reportCount",
+             COALESCE(report_data.reports,'[]'::json) AS reports,
+             last_search.identifier AS "lastSearchedIdentifier",
+             last_search.searched_by_name AS "lastSearchedBy",
+             last_search.searched_by_phone AS "lastSearchedByPhone",
+             last_search.searched_at AS "lastSearchedAt"
+        FROM lost_items li
+        JOIN tenants t ON t.id=li.tenant_id
+        LEFT JOIN stores s ON s.id=li.store_id AND s.tenant_id=li.tenant_id
+        LEFT JOIN users u ON u.id=li.registered_by
+        LEFT JOIN LATERAL (
+          SELECT COUNT(*)::int AS report_count,
+                 json_agg(json_build_object(
+                   'reporterName',r.reporter_name,'reporterPhone',r.reporter_phone,
+                   'details',r.report_details,'locationLabel',r.location_label,
+                   'latitude',r.latitude,'longitude',r.longitude,'accuracy',r.accuracy_m,
+                   'createdAt',r.created_at
+                 ) ORDER BY r.created_at DESC) AS reports
+            FROM lost_item_reports r WHERE r.lost_item_id=li.id
+        ) report_data ON TRUE
+        LEFT JOIN LATERAL (
+          SELECT searched_by_name, searched_by_phone, identifier, searched_at
+            FROM lost_item_searches WHERE item_code=li.item_code
+           ORDER BY searched_at DESC LIMIT 1
+        ) last_search ON TRUE
+       WHERE li.status IN ('lost','found','recovered')
+       ORDER BY COALESCE(li.lost_at,li.created_at) DESC
+       LIMIT $1
+    `, [take]);
+    return { phones: result.rows, visibility: 'super_admin_only' };
   }
 
   @Get('security/events')
@@ -285,6 +327,35 @@ export class PlatformAdminController {
       metadata: { tenantId: id, businessName: result.rows[0].businessName },
     });
     return { deactivated: true, shop: result.rows[0], message: 'Shop deactivated successfully.' };
+  }
+
+  @Post('shops/:tenantId/delete')
+  async deleteDeactivatedShop(@Param('tenantId') tenantId: string, @Req() req: any) {
+    const id = String(tenantId || '').trim();
+    if (!id || id.length > 80) throw new BadRequestException('A valid shop identifier is required');
+    const result = await this.db.pool.query(
+      `UPDATE tenants SET status='closed'
+        WHERE id=$1 AND status='suspended'
+        RETURNING id AS "tenantId",name AS "businessName",status`,
+      [id],
+    );
+    if (!result.rowCount) {
+      const existing = await this.db.pool.query('SELECT id,status FROM tenants WHERE id=$1 LIMIT 1', [id]);
+      if (!existing.rowCount) throw new NotFoundException('Shop not found');
+      if (existing.rows[0].status === 'closed') {
+        return { deleted: false, archived: true, message: 'This shop has already been deleted from the active directory.' };
+      }
+      throw new BadRequestException('Deactivate this shop before deleting it.');
+    }
+    await this.db.recordSecurityEvent({
+      eventType: 'shop_deleted', severity: 'high', outcome: 'completed',
+      actorUserId: req.user?.sub, sourceIp: req.ip, userAgent: req.headers?.['user-agent'],
+      metadata: { tenantId: id, businessName: result.rows[0].businessName, deletionMode: 'soft_delete_preserve_history' },
+    });
+    return {
+      deleted: true, archived: true, shop: result.rows[0],
+      message: 'Shop removed from the active shop directory. Receipts, sales, payments and audit history are preserved for records.',
+    };
   }
 
   @Post('accounts/reset')
