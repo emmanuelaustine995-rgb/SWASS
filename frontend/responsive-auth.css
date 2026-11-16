@@ -252,3 +252,29 @@ button,a,input,select,textarea{touch-action:manipulation}
 .freelancer-linked-shop{margin-top:16px;padding:16px;border:1px solid #d8e8f5;border-radius:14px;background:#fff;min-width:0}
 .freelancer-linked-shop h2{font-size:clamp(18px,4vw,23px);color:#153b58;overflow-wrap:anywhere}
 .freelancer-linked-shop p{overflow-wrap:anywhere}
+
+
+/* Keep the registration experience phone-sized and centred on desktop too. */
+@media (min-width: 601px) {
+  body.registration-open .shell {
+    display:block!important;
+    width:min(calc(100% - 32px),460px)!important;
+    max-width:460px!important;
+    margin:clamp(18px,4vh,36px) auto 32px!important;
+    padding:0 0 24px!important;
+  }
+  body.registration-open #login-view,
+  body.registration-open .login-wrap {
+    width:100%!important;
+    max-width:460px!important;
+    margin-left:auto!important;
+    margin-right:auto!important;
+  }
+  body.registration-open #login-view .login-card {
+    width:100%!important;
+    max-width:460px!important;
+    margin-left:auto!important;
+    margin-right:auto!important;
+    padding:22px!important;
+  }
+}
