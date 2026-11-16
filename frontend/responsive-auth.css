@@ -215,3 +215,40 @@ html body.workspace-active #pos-view.workspace-issue-mode .simple-sale-item-form
 html body.workspace-active #pos-view.workspace-issue-mode .cart-panel{
   padding-bottom:calc(18px + env(safe-area-inset-bottom))!important;
 }
+
+
+/* AURORA all-workspace responsive safeguards for Android Chrome and iOS Safari. */
+html,body{max-width:100%;overflow-x:clip}
+body{padding-bottom:env(safe-area-inset-bottom,0px)}
+img,svg,video,canvas{max-width:100%;height:auto}
+.shell,.owner-home,.shop-home,#owner-dashboard-view,#pos-view,.panel,.login-card{min-width:0;max-width:100%}
+button,a,input,select,textarea{touch-action:manipulation}
+@media(max-width:700px){
+ .shell{width:100%;margin:14px auto;padding-left:12px;padding-right:12px}
+ .topbar{padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right))}
+ .page-heading{flex-wrap:wrap;align-items:flex-start;gap:12px}
+ .page-heading>*{min-width:0;max-width:100%}
+ .pos-grid{grid-template-columns:minmax(0,1fr)!important;gap:12px}
+ .products-panel,.cart-panel,.panel{min-width:0;padding:14px}
+ .search-row{flex-wrap:wrap}
+ .search-row>input{min-width:0;flex:1 1 180px}
+ .product-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .receipt-actions{flex-wrap:wrap}
+ .receipt-actions>*{flex:1 1 130px;min-width:0}
+ .modal{padding:12px;align-items:center}
+ .modal-card{width:100%;max-height:calc(100dvh - 24px);overflow:auto;padding:16px}
+ #workspace-nav{max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+ #workspace-nav button{flex:0 0 auto;min-height:44px}
+ input,select,textarea{font-size:16px;max-width:100%}
+ .freelancer-home-card{width:100%;min-width:0}
+}
+@media(max-width:380px){
+ .shell{padding-left:9px;padding-right:9px}
+ .product-list{grid-template-columns:minmax(0,1fr)}
+ .section-head{align-items:flex-start;gap:8px;flex-wrap:wrap}
+ .freelancer-home-actions{grid-template-columns:minmax(0,1fr)}
+ .login-card{padding:16px}
+}
+.freelancer-linked-shop{margin-top:16px;padding:16px;border:1px solid #d8e8f5;border-radius:14px;background:#fff;min-width:0}
+.freelancer-linked-shop h2{font-size:clamp(18px,4vw,23px);color:#153b58;overflow-wrap:anywhere}
+.freelancer-linked-shop p{overflow-wrap:anywhere}
