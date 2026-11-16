@@ -319,10 +319,13 @@ export class AuthController {
     if (!storeLocation || storeLocation.length > 200) throw new BadRequestException('Enter your business location (maximum 200 characters).');
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) throw new BadRequestException('Enter a valid email address.');
     if (!/^[0-9]{7,9}$/.test(nationalId)) throw new BadRequestException('Enter a valid Kenyan National ID number.');
-    // Registration photos are resized to JPEG in the browser before transport.
-    // Allow up to 2.5 MB of decoded image data per photo after compression.
+    // Owner photos are optional at signup. Older clients may still submit them,
+    // so validate them when present; new accounts can add business imagery later
+    // from Shop > Profile without blocking account creation.
     const validPhoto = (value: string) => /^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(value) && value.length <= 3500000;
-    if (!validPhoto(idPhotoData) || !validPhoto(passportPhotoData)) throw new BadRequestException('Upload valid JPG, PNG or WebP National ID and passport-size photos. Each compressed photo must be no larger than 2.5 MB.');
+    if ((idPhotoData && !validPhoto(idPhotoData)) || (passportPhotoData && !validPhoto(passportPhotoData))) {
+      throw new BadRequestException('Choose valid JPG, PNG or WebP photos when uploading optional identity photos.');
+    }
     if (password.length < 10 || password.length > 128) throw new BadRequestException('Password must be at least 10 characters.');
     const idSecret = process.env.SWASS_ID_SECRET;
     if (!idSecret) throw new ServiceUnavailableException('Secure identity verification is not configured.');
