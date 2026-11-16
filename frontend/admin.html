@@ -240,7 +240,7 @@ body{background:#eef3fb}
 </div>
 <div class="panel"><h3>Platform activity</h3><p>Live counts are read directly from the platform database. Shop sales are not counted as platform revenue.</p><div id="home-status" class="status">Loading verified platform summary…</div></div>
 </section>
-<section id="section-shops" class="hidden"><div class="heading"><div><h2>Shop Management</h2><p>Search registered shops and review their subscription and workspace activity.</p></div></div><div class="panel"><label for="shop-search">Search by business name, phone or email</label><input id="shop-search" type="search" placeholder="Search shops…" style="max-width:480px"><button id="shop-search-btn" class="primary" style="width:auto;padding:12px 20px;margin:10px 0">Search shops</button><p id="shops-status">Loading shop directory…</p><div class="table-wrap"><table><thead><tr><th>Business</th><th>Store</th><th>Phone</th><th>Active users</th><th>Receipts</th><th>Subscription</th><th>Ends</th><th>Customer feedback</th><th>Action</th></tr></thead><tbody id="shops-rows"><tr><td colspan="7">Loading…</td></tr></tbody></table></div></div></section>
+<section id="section-shops" class="hidden"><div class="heading"><div><h2>Shop Management</h2><p>Search registered shops and review their subscription and workspace activity.</p></div></div><div class="panel"><label for="shop-search">Search by business name, phone or email</label><input id="shop-search" type="search" placeholder="Search shops…" style="max-width:480px"><button id="shop-search-btn" class="primary" style="width:auto;padding:12px 20px;margin:10px 0">Search shops</button><p id="shops-status">Loading shop directory…</p><div class="table-wrap"><table><thead><tr><th>Business</th><th>Store</th><th>Phone</th><th>Active users</th><th>Receipts</th><th>Subscription</th><th>Ends</th><th>Status</th><th>Customer feedback</th><th>Action</th></tr></thead><tbody id="shops-rows"><tr><td colspan="7">Loading…</td></tr></tbody></table></div></div></section>
 <section id="section-finance" class="hidden"><div class="heading"><div><h2>Finance &amp; Payments</h2><p>Platform revenue, subscriptions, receipt credits and payment reconciliation.</p></div></div><div class="cards"><div class="card"><small>Subscription revenue</small><div id="finance-subscriptions" class="metric">—</div></div><div class="card"><small>Receipt fee revenue</small><div id="finance-receipts" class="metric">—</div></div><div class="card"><small>Total revenue</small><div id="finance-total" class="metric">—</div></div><div class="card"><small>Ledger entries</small><div id="finance-entries" class="metric">—</div></div></div><div class="panel"><h3>Financial ledger</h3><p id="finance-status">Loading recorded ledger entries…</p><div class="table-wrap"><table><thead><tr><th>Type</th><th>Amount</th><th>Reference</th><th>Date</th></tr></thead><tbody id="finance-rows"><tr><td colspan="4">Loading…</td></tr></tbody></table></div></div></section>
 <section id="section-security" class="hidden">
  <div class="heading"><div><h2>Cybersecurity Operations Centre</h2><p>Security event monitoring · authentication defence · administrator audit trail</p></div><button id="security-refresh" class="primary" style="width:auto;padding:10px 16px">↻ Refresh monitoring</button></div>
@@ -258,6 +258,11 @@ body{background:#eef3fb}
   <div class="chart-panel"><h3>Threat intelligence</h3><p>Signals currently available from AURORA itself</p><div class="soc-signal"><span>Authentication failures</span><strong id="soc-signal-failed">—</strong></div><div class="soc-signal"><span>Administrator sign-ins · 24h</span><strong id="soc-signal-admin">—</strong></div><div class="soc-signal"><span>Shop suspension actions</span><strong id="soc-signal-shop">—</strong></div><div class="soc-note">External threat feeds, malware scanning, network intrusion detection and geographic risk scoring are not connected. This dashboard does not claim to detect those threats.</div></div>
  </div>
  <div class="panel"><div class="soc-panel-head"><div><h3>Security incident queue</h3><p id="soc-events-status">Loading latest recorded events…</p></div><select id="soc-severity" aria-label="Filter events by severity"><option value="">All severities</option><option value="critical">Critical</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option><option value="info">Info</option></select></div><div class="table-wrap"><table class="soc-table"><thead><tr><th>Time</th><th>Event</th><th>Severity</th><th>Outcome</th><th>Admin / user ID</th><th>Source IP</th></tr></thead><tbody id="soc-events"><tr><td colspan="6">Loading security events…</td></tr></tbody></table></div></div>
+ <div class="panel">
+  <div class="soc-panel-head"><div><h3>Reported lost &amp; found phones</h3><p id="lost-phone-status">Loading platform-wide phone reports…</p></div><span class="soc-severity sev-high">ADMIN ONLY</span></div>
+  <p>IMEI / serial identifiers, police OB references, shop details and finder contact/location reports. This register is visible only to Super Admin accounts.</p>
+  <div class="table-wrap"><table class="soc-table"><thead><tr><th>Phone / identifiers</th><th>Status &amp; OB</th><th>Shop / branch</th><th>Lost / reported</th><th>Finder reports</th><th>Latest search</th></tr></thead><tbody id="lost-phone-rows"><tr><td colspan="6">Loading reported phones…</td></tr></tbody></table></div>
+ </div>
  <div class="panel"><h3>Security controls &amp; audit coverage</h3><div class="soc-control-grid"><div><b>HTTPS and browser security headers</b><span>Configured in API gateway application</span></div><div><b>Administrator-only endpoints</b><span>JWT authentication and super-admin role checks</span></div><div><b>Login event recording</b><span>Successful and failed customer, owner and admin sign-ins</span></div><div><b>Shop action audit</b><span>Shop deactivation events recorded with administrator identity</span></div></div></div>
 </section>
 <section id="section-access" class="hidden"><div class="heading"><div><h2>Admin Access Control</h2><p>Up to three authorised people, with multiple approved email aliases per person.</p></div></div><div class="cards"><div class="card"><small>Registered shops</small><div id="access-shops" class="metric">—</div></div><div class="card"><small>Active shop owners</small><div id="access-owners" class="metric">—</div></div><div class="card"><small>Active customer accounts</small><div id="access-customers" class="metric">—</div></div><div class="card"><small>Inactive user accounts</small><div id="access-inactive" class="metric">—</div></div></div><div class="chart-grid"><div class="chart-panel"><h3>Account security posture</h3><p>Live account counts from the platform database—not a threat-detection score</p><div class="chart-row"><span>Active owners</span><div class="chart-track"><div id="access-owner-fill" class="chart-fill"></div></div><strong id="access-owner-value" class="chart-value">—</strong></div><div class="chart-row"><span>Customers</span><div class="chart-track"><div id="access-customer-fill" class="chart-fill"></div></div><strong id="access-customer-value" class="chart-value">—</strong></div><div class="chart-row"><span>Inactive users</span><div class="chart-track"><div id="access-inactive-fill" class="chart-fill"></div></div><strong id="access-inactive-value" class="chart-value">—</strong></div><div id="access-chart-note" class="chart-empty">Waiting for verified platform counts…</div></div><div class="panel"><h3>Authorised administrator identities</h3><p>Registration is checked against the server-side AURORA_ADMIN_IDENTITIES configuration. Each person has one approved phone number and one or more approved email addresses. Phone verification and email verification are required before admin sign-in. National ID numbers are stored only as protected hashes. Individual permissions, login MFA, and append-only administrator audit history still require backend implementation.</p></div></div></section>
@@ -351,17 +356,24 @@ body{background:#eef3fb}
       const data=await api('/platform-admin/shops?limit=100&search='+encodeURIComponent(term));
       for(const shop of (data.shops||[])){
         const tr=document.createElement('tr');
-        const values=[shop.businessName||'—',shop.storeName||'—',shop.businessPhone||'—',shop.activeUsers??0,shop.issuedReceipts??0,shop.subscriptionStatus||'No subscription',shop.subscriptionEndsAt?new Date(shop.subscriptionEndsAt).toLocaleDateString():'—'];
-        const labels=['Business','Store','Phone','Active users','Receipts','Subscription','Ends'];for(let i=0;i<values.length;i++){const td=document.createElement('td');td.textContent=String(values[i]);td.dataset.label=labels[i];tr.append(td);}
+        const values=[shop.businessName||'—',shop.storeName||'—',shop.businessPhone||'—',shop.activeUsers??0,shop.issuedReceipts??0,shop.subscriptionStatus||'No subscription',shop.subscriptionEndsAt?new Date(shop.subscriptionEndsAt).toLocaleDateString():'—',shop.status||'unknown'];
+        const labels=['Business','Store','Phone','Active users','Receipts','Subscription','Ends','Shop status'];for(let i=0;i<values.length;i++){const td=document.createElement('td');td.textContent=String(values[i]);td.dataset.label=labels[i];tr.append(td);}
         const feedback=document.createElement('td');feedback.textContent='Not yet tracked';feedback.dataset.label='Customer feedback';tr.append(feedback);
         const action=document.createElement('td');action.dataset.label='Action';
-        const deactivate=document.createElement('button');deactivate.type='button';deactivate.textContent='Deactivate this shop';deactivate.style.cssText='background:#c62828;color:#fff;border:0;border-radius:8px;padding:9px 11px;font-weight:800;cursor:pointer;white-space:nowrap';
-        deactivate.addEventListener('click',()=>deactivateShop(shop.tenantId,shop.businessName||'this shop',deactivate));
-        action.append(deactivate);tr.append(action);rows.append(tr);
+        if(shop.status==='suspended'){
+          const remove=document.createElement('button');remove.type='button';remove.textContent='Delete shop';remove.style.cssText='background:#9f1239;color:#fff;border:0;border-radius:8px;padding:9px 11px;font-weight:800;cursor:pointer;white-space:nowrap';
+          remove.addEventListener('click',()=>deleteShop(shop.tenantId,shop.businessName||'this shop',remove));action.append(remove);
+        }else if(shop.status==='closed'){
+          const deleted=document.createElement('span');deleted.textContent='Deleted / archived';deleted.style.cssText='color:#64748b;font-weight:800;font-size:12px';action.append(deleted);
+        }else{
+          const deactivate=document.createElement('button');deactivate.type='button';deactivate.textContent='Deactivate this shop';deactivate.style.cssText='background:#c62828;color:#fff;border:0;border-radius:8px;padding:9px 11px;font-weight:800;cursor:pointer;white-space:nowrap';
+          deactivate.addEventListener('click',()=>deactivateShop(shop.tenantId,shop.businessName||'this shop',deactivate));action.append(deactivate);
+        }
+        tr.append(action);rows.append(tr);
       }
-      if(!rows.children.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=9;td.textContent='No matching shops found.';tr.append(td);rows.append(tr);}
+      if(!rows.children.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=10;td.textContent='No matching shops found.';tr.append(td);rows.append(tr);}
       status.textContent='Showing '+(data.shops||[]).length+' shop records (maximum 100).';
-    }catch(e){status.textContent='Could not load shops: '+e.message;const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=9;td.textContent='Shop records unavailable.';tr.append(td);rows.append(tr);}
+    }catch(e){status.textContent='Could not load shops: '+e.message;const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=10;td.textContent='Shop records unavailable.';tr.append(td);rows.append(tr);}
   }
   async function deactivateShop(tenantId, businessName, button){
     if(!tenantId){alert('This shop record has no valid identifier.');return;}
@@ -375,6 +387,20 @@ body{background:#eef3fb}
       alert(data.message||'Shop deactivated.');
       await loadShops();await loadOverview();
     }catch(e){alert(e.message||'Could not deactivate this shop.');button.disabled=false;button.textContent='Deactivate this shop';}
+  }
+
+  async function deleteShop(tenantId,businessName,button){
+    if(!tenantId){alert('This shop record has no valid identifier.');return;}
+    const confirmed=window.confirm('DELETE / ARCHIVE '+businessName+'?\n\nThis option is available only after deactivation. The shop will disappear from the active shop directory and its users will remain blocked. Receipts, sales, payment records and audit history will be preserved. This action cannot be undone from this page.');
+    if(!confirmed)return;
+    button.disabled=true;button.textContent='Deleting…';
+    try{
+      const res=await fetch(API+'/platform-admin/shops/'+encodeURIComponent(tenantId)+'/delete',{method:'POST',headers:{Authorization:'Bearer '+token,Accept:'application/json'}});
+      const data=await res.json().catch(()=>({}));
+      if(!res.ok)throw new Error(data.message||'Shop deletion failed.');
+      alert(data.message||'Shop removed from the active directory.');
+      await loadShops();await loadOverview();await loadSecurity();
+    }catch(e){alert(e.message||'Could not delete this shop.');button.disabled=false;button.textContent='Delete shop';}
   }
 
   async function loadPeople(){
@@ -430,6 +456,7 @@ body{background:#eef3fb}
   $('account-reset-run').addEventListener('click',resetRegisteredAccounts);
 
   async function loadSecurity(){
+    void loadLostPhones();
     const status=$('soc-events-status'),rows=$('soc-events'),severity=$('soc-severity').value;
     status.textContent='Refreshing security telemetry…';
     try{
@@ -469,6 +496,34 @@ body{background:#eef3fb}
       if(!rows.children.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=6;td.textContent='No matching security events recorded yet.';tr.append(td);rows.append(tr);}
       status.textContent='Showing '+(events.events||[]).length+' recorded events. Last refresh: '+new Date().toLocaleTimeString();
     }catch(e){status.textContent='Security telemetry unavailable: '+e.message;rows.innerHTML='<tr><td colspan="6">Could not load security events.</td></tr>'; }
+  }
+
+  async function loadLostPhones(){
+    const status=$('lost-phone-status'),rows=$('lost-phone-rows');
+    if(!status||!rows)return;
+    status.textContent='Loading platform-wide lost and found phone records…';rows.replaceChildren();
+    try{
+      const data=await api('/platform-admin/security/lost-phones?limit=200');
+      for(const phone of (data.phones||[])){
+        const tr=document.createElement('tr');
+        const identifiers=[phone.imei1&&('IMEI 1: '+phone.imei1),phone.imei2&&('IMEI 2: '+phone.imei2),phone.serialNumber&&('Serial: '+phone.serialNumber)].filter(Boolean);
+        const phoneCell=document.createElement('td');phoneCell.dataset.label='Phone / identifiers';
+        const title=document.createElement('strong');title.textContent=[phone.brand,phone.model,phone.colour].filter(Boolean).join(' ')||phone.itemName||'Unspecified phone';
+        const sub=document.createElement('small');sub.style.cssText='display:block;color:#718096;margin-top:5px';sub.textContent=identifiers.join(' · ')||'No IMEI / serial saved';
+        phoneCell.append(title,sub);tr.append(phoneCell);
+        const state=document.createElement('td');state.dataset.label='Status & OB';state.textContent=String(phone.status||'unknown').toUpperCase()+' · OB: '+(phone.obNumber||'Not provided');tr.append(state);
+        const shop=document.createElement('td');shop.dataset.label='Shop / branch';shop.textContent=(phone.shopName||'Unknown shop')+' · '+(phone.branchName||'Main branch')+(phone.branchLocation?' · '+phone.branchLocation:'')+' · '+(phone.shopPhone||'No shop phone');tr.append(shop);
+        const lost=document.createElement('td');lost.dataset.label='Lost / reported';lost.textContent=phone.lostAt?new Date(phone.lostAt).toLocaleString():new Date(phone.createdAt).toLocaleString();tr.append(lost);
+        const reportCell=document.createElement('td');reportCell.dataset.label='Finder reports';
+        const reports=Array.isArray(phone.reports)?phone.reports:[];
+        reportCell.textContent=reports.length?reports.map(r=>[r.reporterName||'Finder',r.reporterPhone||'No phone',r.details||'No details',r.locationLabel||((r.latitude!=null&&r.longitude!=null)?r.latitude+', '+r.longitude:'No location'),r.createdAt?new Date(r.createdAt).toLocaleString():''].filter(Boolean).join(' — ')).join(' | '):'No finder report yet';
+        tr.append(reportCell);
+        const search=document.createElement('td');search.dataset.label='Latest search';search.textContent=phone.lastSearchedAt?((phone.lastSearchedBy||'User')+' · '+(phone.lastSearchedByPhone||'No phone')+' · '+(phone.lastSearchedIdentifier||'')+' · '+new Date(phone.lastSearchedAt).toLocaleString()):'No searches recorded';tr.append(search);
+        rows.append(tr);
+      }
+      if(!rows.children.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=6;td.textContent='No phones have been reported lost or found yet.';tr.append(td);rows.append(tr);}
+      status.textContent='Showing '+(data.phones||[]).length+' lost, found or recovered phone record(s). Finder details are restricted to Super Admin.';
+    }catch(e){status.textContent='Lost / found phone register unavailable: '+e.message;const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=6;td.textContent='Could not load phone reports.';tr.append(td);}
   }
 
   async function loadSettings(){
