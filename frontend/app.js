@@ -431,6 +431,7 @@
     staffSummary?.classList.add('hidden');
     if(screen==='dashboard'){
       if(state.role==='freelancer'){
+        owner?.classList.remove('hidden');
         $('freelancer-home')?.classList.remove('hidden');
         if($('freelancer-home-name'))$('freelancer-home-name').textContent=state.userName||'Freelancer';
         renderFreelancerHomeShop();
