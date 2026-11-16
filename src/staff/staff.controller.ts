@@ -73,18 +73,17 @@ export class StaffController {
       return /^[17]\d{8}$/.test(digits) ? '254' + digits : digits;
     };
     const phone = normalizePhone(body?.phone);
-    // A freelancer may use the same phone as the registered shop owner.
-    // If no separate owner number is supplied, resolve the shop from the
-    // freelancer's own phone; also try both numbers when one was supplied.
-    const ownerPhone = normalizePhone(body?.ownerPhone) || phone;
-    const ownerPhoneCandidates = [...new Set([phone, ownerPhone].filter(Boolean))];
+    // The freelancer must identify the existing shop using the shop owner's
+    // registered phone number. Never infer the shop from the freelancer's phone.
+    const ownerPhone = normalizePhone(body?.ownerPhone);
+    const ownerPhoneCandidates = ownerPhone ? [ownerPhone] : [];
     const fullName = String(body?.fullName ?? '').trim();
     const email = String(body?.email ?? '').trim().toLowerCase();
     const password = String(body?.password ?? '');
     const nationalIdNumber = String(body?.nationalIdNumber ?? '').replace(/\s+/g, '').trim();
     const nationalIdPhotoData = String(body?.nationalIdPhotoData ?? '');
     const profilePhotoData = String(body?.profilePhotoData ?? '');
-    if (!ownerPhoneCandidates.some(value => /^254[17]\d{8}$/.test(value))) throw new BadRequestException('Enter the shop owner’s registered phone number, or use the same phone number as the shop owner.');
+    if (!/^254[17]\d{8}$/.test(ownerPhone)) throw new BadRequestException('Enter the shop owner’s registered phone number to connect your account to the correct shop.');
     if (!fullName || fullName.length > 120) throw new BadRequestException('Enter your full name.');
     if (!/^254[17]\d{8}$/.test(phone)) throw new BadRequestException('Enter a valid Kenyan freelancer phone number.');
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) throw new BadRequestException('Enter a valid email address.');
@@ -96,7 +95,7 @@ export class StaffController {
 
     const ownerPhoneVariants = [...new Set(ownerPhoneCandidates.flatMap(value => [value, '0' + value.slice(3), value.slice(3)]))];
     const owner = await this.db.pool.query(
-      `SELECT DISTINCT u.id,u.tenant_id,
+      `SELECT DISTINCT u.id,u.full_name AS owner_full_name,t.name AS shop_name,u.tenant_id,
           COALESCE(u.store_id,(SELECT s.id FROM stores s WHERE s.tenant_id=u.tenant_id ORDER BY s.id LIMIT 1)) AS store_id
         FROM users u JOIN tenants t ON t.id=u.tenant_id
         WHERE u.role='owner' AND u.is_active=true AND COALESCE(t.status,'active')='active'
@@ -135,7 +134,9 @@ export class StaffController {
       throw error;
     }
     return { otpRequired: true, phoneHint: phone.slice(-4), expiresInSeconds: 300, resendAfterSeconds: 30,
-      message: 'A six-digit verification code has been sent to your freelancer phone number.' };
+      shopName: String(owner.rows[0].shop_name || ''),
+      shopOwnerFullName: String(owner.rows[0].owner_full_name || ''),
+      message: 'Shop matched. Its registered name and owner have been detected. A six-digit verification code has been sent to your freelancer phone number.' };
   }
 
   @Post('freelancer/register/verify-otp')
