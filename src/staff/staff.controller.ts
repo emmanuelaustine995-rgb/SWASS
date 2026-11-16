@@ -73,17 +73,17 @@ export class StaffController {
       return /^[17]\d{8}$/.test(digits) ? '254' + digits : digits;
     };
     const phone = normalizePhone(body?.phone);
-    // The freelancer must identify the existing shop using the shop owner's
-    // registered phone number. Never infer the shop from the freelancer's phone.
-    const ownerPhone = normalizePhone(body?.ownerPhone);
-    const ownerPhoneCandidates = ownerPhone ? [ownerPhone] : [];
+    // Accept either the shop owner's registered phone or the freelancer's
+    // phone when it is also registered on the shop. Check both when supplied.
+    const ownerPhoneInput = normalizePhone(body?.ownerPhone);
+    const ownerPhoneCandidates = [...new Set([ownerPhoneInput, phone].filter(Boolean))];
     const fullName = String(body?.fullName ?? '').trim();
     const email = String(body?.email ?? '').trim().toLowerCase();
     const password = String(body?.password ?? '');
     const nationalIdNumber = String(body?.nationalIdNumber ?? '').replace(/\s+/g, '').trim();
     const nationalIdPhotoData = String(body?.nationalIdPhotoData ?? '');
     const profilePhotoData = String(body?.profilePhotoData ?? '');
-    if (!/^254[17]\d{8}$/.test(ownerPhone)) throw new BadRequestException('Enter the shop owner’s registered phone number to connect your account to the correct shop.');
+    if (!ownerPhoneCandidates.some(value => /^254[17]\d{8}$/.test(value))) throw new BadRequestException('Enter the shop owner’s registered phone number, or use the freelancer phone if it is also registered to the shop.');
     if (!fullName || fullName.length > 120) throw new BadRequestException('Enter your full name.');
     if (!/^254[17]\d{8}$/.test(phone)) throw new BadRequestException('Enter a valid Kenyan freelancer phone number.');
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) throw new BadRequestException('Enter a valid email address.');
@@ -95,7 +95,7 @@ export class StaffController {
 
     const ownerPhoneVariants = [...new Set(ownerPhoneCandidates.flatMap(value => [value, '0' + value.slice(3), value.slice(3)]))];
     const owner = await this.db.pool.query(
-      `SELECT DISTINCT u.id,u.full_name AS owner_full_name,t.name AS shop_name,u.tenant_id,
+      `SELECT DISTINCT u.id,u.phone AS owner_phone,u.full_name AS owner_full_name,t.name AS shop_name,u.tenant_id,
           COALESCE(u.store_id,(SELECT s.id FROM stores s WHERE s.tenant_id=u.tenant_id ORDER BY s.id LIMIT 1)) AS store_id
         FROM users u JOIN tenants t ON t.id=u.tenant_id
         WHERE u.role='owner' AND u.is_active=true AND COALESCE(t.status,'active')='active'
@@ -118,13 +118,14 @@ export class StaffController {
       `SELECT 1 FROM freelancer_signup_otp_requests WHERE phone=$1 AND consumed_at IS NULL AND created_at>now()-interval '30 seconds' LIMIT 1`, [phone],
     );
     if (recent.rowCount) throw new BadRequestException('A verification code was just requested. Please wait 30 seconds before requesting another.');
+    const matchedOwnerPhone = normalizePhone(owner.rows[0].owner_phone) || ownerPhoneCandidates[0];
     const code = String(randomBytes(4).readUInt32BE(0) % 1000000).padStart(6, '0');
     const passwordHash = await argon2.hash(password);
     const pending = await this.db.pool.query(
       `INSERT INTO freelancer_signup_otp_requests
        (phone,owner_phone,full_name,email,password_hash,national_id_number,national_id_photo_data,profile_photo_data,tenant_id,store_id,code_hash,expires_at)
        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,now()+interval '5 minutes') RETURNING id`,
-      [phone, ownerPhone, fullName, email, passwordHash, nationalIdNumber, nationalIdPhotoData, profilePhotoData,
+      [phone, matchedOwnerPhone, fullName, email, passwordHash, nationalIdNumber, nationalIdPhotoData, profilePhotoData,
         owner.rows[0].tenant_id, owner.rows[0].store_id, this.freelancerOtpHash(code)],
     );
     try {
