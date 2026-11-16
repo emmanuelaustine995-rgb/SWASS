@@ -308,3 +308,98 @@ body.registration-open #freelancer-register-form:not(.hidden) {
   grid-template-columns:minmax(0,1fr)!important;
 }
 body.registration-open #aurora-policy-center { margin-top:14px!important; }
+
+
+/* 2026-11-16: definitive desktop registration layout repair.
+   Earlier legacy rules positioned the shell and login view as nested fixed
+   panels. Use one ordinary document-flow scroll area on every viewport. */
+html body.registration-open {
+  position:relative!important;
+  inset:auto!important;
+  width:100%!important;
+  height:auto!important;
+  min-height:100vh!important;
+  min-height:100dvh!important;
+  max-height:none!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  background:#7d1229!important;
+}
+html body.registration-open .shell {
+  position:relative!important;
+  inset:auto!important;
+  top:auto!important;right:auto!important;bottom:auto!important;left:auto!important;
+  display:block!important;
+  width:min(calc(100% - 24px),440px)!important;
+  max-width:440px!important;
+  height:auto!important;min-height:0!important;max-height:none!important;
+  margin:20px auto 36px!important;
+  padding:0 0 28px!important;
+  overflow:visible!important;
+  transform:none!important;
+  box-sizing:border-box!important;
+}
+html body.registration-open #login-view,
+html body.registration-open .login-wrap {
+  position:relative!important;
+  inset:auto!important;
+  display:block!important;
+  width:100%!important;max-width:100%!important;
+  height:auto!important;min-height:0!important;max-height:none!important;
+  margin:0!important;padding:0!important;
+  overflow:visible!important;
+  transform:none!important;
+  visibility:visible!important;opacity:1!important;
+}
+html body.registration-open #login-view>.login-card {
+  position:relative!important;
+  inset:auto!important;
+  display:block!important;
+  width:100%!important;max-width:100%!important;min-width:0!important;
+  height:auto!important;min-height:0!important;max-height:none!important;
+  margin:0 auto!important;
+  padding:clamp(16px,4vw,24px)!important;
+  overflow:visible!important;
+  transform:none!important;
+  visibility:visible!important;opacity:1!important;
+  box-sizing:border-box!important;
+}
+html body.registration-open #register-form:not(.hidden),
+html body.registration-open #freelancer-register-form:not(.hidden) {
+  position:relative!important;
+  inset:auto!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  width:100%!important;max-width:100%!important;min-width:0!important;
+  height:auto!important;min-height:0!important;max-height:none!important;
+  margin:14px 0 0!important;padding:0 0 24px!important;
+  overflow:visible!important;
+  transform:none!important;
+  visibility:visible!important;opacity:1!important;
+  box-sizing:border-box!important;
+}
+html body.registration-open #aurora-policy-center {
+  position:relative!important;
+  inset:auto!important;
+  display:block!important;
+  width:100%!important;max-width:100%!important;min-width:0!important;
+  height:auto!important;max-height:none!important;
+  margin:14px auto 0!important;
+  overflow:visible!important;
+  transform:none!important;
+}
+html body.registration-open .hidden,
+html body.registration-open [hidden],
+html body.registration-open #register-form.hidden,
+html body.registration-open #freelancer-register-form.hidden {
+  display:none!important;
+}
+@media(max-width:600px) {
+  html body.registration-open .shell {
+    width:calc(100% - 20px)!important;
+    margin:10px auto 24px!important;
+  }
+  html body.registration-open #login-view>.login-card {
+    padding:16px 13px!important;
+  }
+}
