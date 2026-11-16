@@ -1354,8 +1354,6 @@
     if(password!==$('reg-confirm-password').value)throw new Error('The passwords do not match.');
     const nationalId=$('reg-national-id').value.trim();
     if(!/^[0-9]{7,9}$/.test(nationalId))throw new Error('Enter a valid National ID number.');
-    const idPhotoData=customerSignupMode?'':await readSignupPhoto('reg-id-photo');
-    const passportPhotoData=customerSignupMode?'':await readSignupPhoto('reg-passport-photo');
     return {
       accountType:customerSignupMode?'customer':'owner',
       businessName:customerSignupMode?'':$('reg-business').value.trim(),
@@ -1363,8 +1361,6 @@
       storeLocation:customerSignupMode?'':$('reg-location').value.trim(),
       kraPin:customerSignupMode?'':$('reg-kra-pin').value.trim(),
       nationalId,
-      idPhotoData,
-      passportPhotoData,
       fullName:$('reg-name').value.trim(),
       phone:$('reg-phone').value.trim(),
       email:$('reg-email').value.trim(),
