@@ -24,6 +24,7 @@
     let screen='dashboard';try{const remembered=localStorage.getItem('swass-active-workspace-v1');if(allowed.includes(remembered))screen=remembered;}catch{}
     showWorkspaceScreen(screen);
     window.dispatchEvent(new CustomEvent('swass:login',{detail:{token:state.token,role:state.role,restored:true}}));
+    if(['owner','manager','vendor','freelancer'].includes(state.role)){void loadBusinessProfile().catch(err=>{if(state.role==='freelancer'&&$('freelancer-home-message'))$('freelancer-home-message').textContent='Your shop could not be loaded: '+(err.message||'Please try again.');});}
   }
   function checkSessionExpiry(){ if(!state.token)return; let saved;try{saved=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');}catch{} if(!sessionIsValid(saved)){clearSession();window.dispatchEvent(new Event('swass:logout'));state.cart.clear();renderCart();showLogin();showNotice('You were signed out after 5 hours without activity. Please sign in again.');} }
   // Count normal user interaction as activity, even on pages that make no API calls.
@@ -429,7 +430,12 @@
     document.getElementById('staff-profile-panel')?.classList.add('hidden');
     staffSummary?.classList.add('hidden');
     if(screen==='dashboard'){
-      $('freelancer-home')?.classList.add('hidden');
+      if(state.role==='freelancer'){
+        owner?.classList.remove('hidden');
+        $('freelancer-home')?.classList.remove('hidden');
+        if($('freelancer-home-name'))$('freelancer-home-name').textContent=state.userName||'Freelancer';
+        renderFreelancerHomeShop();
+      }else{$('freelancer-home')?.classList.add('hidden');}
       if(state.role==='customer'){
         dashboardBusinessCard?.classList.add('hidden');customerHome?.classList.remove('hidden');
         if($('customer-home-name'))$('customer-home-name').textContent=state.userName||'Welcome';
@@ -440,9 +446,7 @@
         dashboardBusinessCard?.classList.add('hidden');
         $('platform-referral-admin')?.classList.remove('hidden');
         void loadPlatformReferralAdmin();
-      }else if(['owner','manager','vendor','freelancer'].includes(state.role)){
-        // Freelancers use the same Home dashboard and shop workspace as owners.
-        // Their API permissions remain scoped to the linked tenant and store.
+      }else if(['owner','manager','vendor'].includes(state.role)){
         ownerHome?.classList.remove('hidden');
         void loadOwnerHomeSummary();
       }else if(state.role!=='customer'){
@@ -605,7 +609,8 @@
       }).join('');
     }catch(e){$('history-list').innerHTML='';$('history-error').textContent=e.message||'Could not load receipt history.';}
   }
-  async function loadBusinessProfile(){const d=await request('/api/v1/business/profile');const p=d.profile||{};state.businessProfile=p;state.shopInsidePhotoDraft=undefined;state.shopOutsidePhotoDraft=undefined;if(!state.userName){state.userName=p.ownerFullName||p.ownerName||p.fullName||p.name||'';if(state.userName)saveSession();}$('profile-business-name').value=p.businessName||'';$('profile-business-phone').value=p.businessPhone||'';$('profile-business-email').value=p.businessEmail||'';$('profile-store-name').value=p.storeName||'';$('profile-store-location').value=p.storeLocation||'';$('profile-legal-name').value=p.legalName||'';$('profile-house-name').value=p.houseName||'';$('profile-floor').value=p.floor||'';$('profile-house-number').value=p.houseNumber||'';$('profile-website').value=p.websiteUrl||'';$('profile-kra-pin').value=p.kraPin||'';$('profile-registration-code').value=p.registrationCode||'';$('profile-outlet-id').value=p.outletId||'';$('profile-terminal-number').value=p.terminalNumber||'';$('profile-receipt-header').value=p.receiptHeader||'';$('profile-receipt-footer').value=p.receiptFooter||'';state.profileLogoData=p.logoData||undefined;const img=$('logo-preview');if(state.profileLogoData){img.src=state.profileLogoData;img.classList.remove('hidden');}else{img.removeAttribute('src');img.classList.add('hidden');}const inside=$('profile-shop-inside-preview'),outside=$('profile-shop-outside-preview');if(inside){if(p.shopInsidePhotoData){inside.src=p.shopInsidePhotoData;inside.classList.remove('hidden');}else{inside.removeAttribute('src');inside.classList.add('hidden');}}if(outside){if(p.shopOutsidePhotoData){outside.src=p.shopOutsidePhotoData;outside.classList.remove('hidden');}else{outside.removeAttribute('src');outside.classList.add('hidden');}}renderDashboardBusinessProfile();}
+  function renderFreelancerHomeShop(){if(state.role!=='freelancer')return;const p=state.businessProfile||{};const name=String(p.businessName||'').trim();const store=String(p.storeName||'').trim();const location=String(p.storeLocation||'').trim();const title=$('freelancer-shop-name');const details=$('freelancer-shop-details');const message=$('freelancer-home-message');if(title)title.textContent=name||store||'Shop details unavailable';if(details)details.textContent=[store&&store!==name?store:'',location].filter(Boolean).join(' · ');if(message)message.textContent=name?'You are connected to this shop. Your work is linked to its registered business account.':'Your account is signed in, but its shop details could not be confirmed. Please contact support.';}
+  async function loadBusinessProfile(){const d=await request('/api/v1/business/profile');const p=d.profile||{};state.businessProfile=p;renderFreelancerHomeShop();state.shopInsidePhotoDraft=undefined;state.shopOutsidePhotoDraft=undefined;if(!state.userName){state.userName=p.ownerFullName||p.ownerName||p.fullName||p.name||'';if(state.userName)saveSession();}$('profile-business-name').value=p.businessName||'';$('profile-business-phone').value=p.businessPhone||'';$('profile-business-email').value=p.businessEmail||'';$('profile-store-name').value=p.storeName||'';$('profile-store-location').value=p.storeLocation||'';$('profile-legal-name').value=p.legalName||'';$('profile-house-name').value=p.houseName||'';$('profile-floor').value=p.floor||'';$('profile-house-number').value=p.houseNumber||'';$('profile-website').value=p.websiteUrl||'';$('profile-kra-pin').value=p.kraPin||'';$('profile-registration-code').value=p.registrationCode||'';$('profile-outlet-id').value=p.outletId||'';$('profile-terminal-number').value=p.terminalNumber||'';$('profile-receipt-header').value=p.receiptHeader||'';$('profile-receipt-footer').value=p.receiptFooter||'';state.profileLogoData=p.logoData||undefined;const img=$('logo-preview');if(state.profileLogoData){img.src=state.profileLogoData;img.classList.remove('hidden');}else{img.removeAttribute('src');img.classList.add('hidden');}const inside=$('profile-shop-inside-preview'),outside=$('profile-shop-outside-preview');if(inside){if(p.shopInsidePhotoData){inside.src=p.shopInsidePhotoData;inside.classList.remove('hidden');}else{inside.removeAttribute('src');inside.classList.add('hidden');}}if(outside){if(p.shopOutsidePhotoData){outside.src=p.shopOutsidePhotoData;outside.classList.remove('hidden');}else{outside.removeAttribute('src');outside.classList.add('hidden');}}renderDashboardBusinessProfile();}
   async function compressLogo(file){
     if(!file||!['image/png','image/jpeg','image/webp'].includes(file.type))throw new Error('Choose PNG, JPG or WebP.');
     let bitmap;
