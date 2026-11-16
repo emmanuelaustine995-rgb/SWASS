@@ -324,6 +324,37 @@ export class ReceiptsService {
       if (!Number.isSafeInteger(total)) throw new BadRequestException('Product price or line total exceeds the supported amount');
       return { productId: i.productId || null, name, serialNo: i.serialNo ?? null, qty: i.qty, unit, costUnit: Number(p?.cost_kes ?? 0), total, requiresBuyerId: p ? !!p.requires_buyer_id : !!i.requiresBuyerId };
     });
+    // A phone or other identifier-tracked item can only be sold as NEW once.
+    // Serialize concurrent attempts for the same identifier, then check all shops
+    // and historical receipts before creating this sale.
+    const saleIdentifiers = lines
+      .map((line) => String(line.serialNo || '').toUpperCase().replace(/[^A-Z0-9]/g, ''))
+      .filter((identifier) => identifier.length >= 6);
+    const uniqueSaleIdentifiers = [...new Set(saleIdentifiers)].sort();
+    if (uniqueSaleIdentifiers.length !== saleIdentifiers.length) {
+      throw new ConflictException('The same IMEI / serial number appears more than once in this sale. Check the phone identifiers and try again.');
+    }
+    for (const identifier of uniqueSaleIdentifiers) {
+      await c.query('SELECT pg_advisory_xact_lock(hashtextextended($1, 0))', [identifier]);
+      const previousSale = await c.query(
+        `SELECT r.receipt_no, t.name AS shop_name
+           FROM receipt_items ri
+           JOIN receipts r ON r.id = ri.receipt_id
+           LEFT JOIN tenants t ON t.id = r.tenant_id
+          WHERE upper(regexp_replace(COALESCE(ri.serial_no, ''), '[^A-Za-z0-9]', '', 'g')) = $1
+            AND r.status NOT IN ('void', 'cancelled', 'refunded')
+          ORDER BY r.issued_at ASC, r.id ASC
+          LIMIT 1`,
+        [identifier],
+      );
+      if (previousSale.rows[0]) {
+        const prior = previousSale.rows[0];
+        throw new ConflictException(
+          `This IMEI / serial number has already been sold as a NEW item on receipt ${prior.receipt_no}${prior.shop_name ? ' by ' + prior.shop_name : ''}. It cannot be sold again as new. If this is a second-hand phone, open Receipts → Sales Declaration Form and complete the Second-Hand Declaration first.`,
+        );
+      }
+    }
+
     const subtotal = lines.reduce((s, l) => s + l.total, 0);
     if (!Number.isSafeInteger(subtotal)) throw new BadRequestException('Sale total exceeds the supported amount');
     const discount = dto.discountKes ?? 0;
