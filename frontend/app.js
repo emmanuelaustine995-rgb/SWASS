@@ -1220,6 +1220,12 @@
     button.disabled=true;message.textContent='Sending verification code by SMS…';
     try{
       const result=await request('/api/v1/staff/freelancer/register/request-otp',{method:'POST',signal:AbortSignal.timeout(45000),body:JSON.stringify(freelancerSignupPayload)});
+      const detectedShopName=String(result.shopName||'').trim();
+      const detectedOwnerName=String(result.shopOwnerFullName||'').trim();
+      if(!detectedShopName||!detectedOwnerName)throw new Error('The shop was found, but its registered details could not be confirmed. Please contact support.');
+      $('freelancer-detected-shop-name').value=detectedShopName;
+      $('freelancer-detected-owner-name').value=detectedOwnerName;
+      $('freelancer-shop-detected').classList.remove('hidden');
       freelancerOtpPending=true;
       freelancerOtpLabel.classList.remove('hidden');
       freelancerOtpInput.required=true;
@@ -1272,6 +1278,9 @@
       $('login-view').classList.remove('hidden');
       $('login-form').classList.remove('hidden');
       freelancerOtpPending=false;freelancerSignupPayload=null;
+      $('freelancer-shop-detected').classList.add('hidden');
+      $('freelancer-detected-shop-name').value='';
+      $('freelancer-detected-owner-name').value='';
       freelancerOtpLabel.classList.add('hidden');freelancerOtpInput.required=false;freelancerOtpResend.classList.add('hidden');
       $('login-account-type').value='freelancer';updateLoginAccountType();
       $('login-phone').value=freelancerPhone;
