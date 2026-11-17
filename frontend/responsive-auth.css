@@ -1184,3 +1184,169 @@ body.workspace-active #workspace-nav button>span:not(.nav-icon) {
   text-align:center!important;
   overflow-wrap:anywhere!important;
 }
+
+
+/* AURORA global page-scroll and content-visibility repair.
+   The shell is the single scroll owner on laptop phone-frames. Its page
+   sections must not shrink to fit the viewport: shrinking flex children was
+   clipping long forms and records on several workspace destinations. */
+html, body {
+  min-width:0!important;
+  max-width:100%!important;
+}
+body.workspace-active .shell,
+body.workspace-active main.shell {
+  box-sizing:border-box!important;
+  min-width:0!important;
+  min-height:0!important;
+  overscroll-behavior-y:auto!important;
+  -webkit-overflow-scrolling:touch!important;
+  scrollbar-gutter:stable;
+}
+body.workspace-active .shell > :not(#workspace-nav),
+body.workspace-active main.shell > :not(#workspace-nav) {
+  flex:0 0 auto!important;
+  min-width:0!important;
+  max-width:100%!important;
+  height:auto!important;
+  max-height:none!important;
+}
+body.workspace-active .shell > section,
+body.workspace-active main.shell > section,
+body.workspace-active .shell > div,
+body.workspace-active main.shell > div {
+  min-height:max-content!important;
+  overflow:visible!important;
+}
+/* Let the actual page panels grow with their contents instead of clipping
+   forms, tables, cards, profile settings or long admin records. */
+body.workspace-active #shop-home,
+body.workspace-active #owner-home,
+body.workspace-active #receipts-home,
+body.workspace-active #pos-view,
+body.workspace-active #owner-dashboard-view,
+body.workspace-active #platform-referral-admin,
+body.workspace-active #lost-goods-view,
+body.workspace-active #profile-view,
+body.workspace-active #customer-view,
+body.workspace-active #accounting-view,
+body.workspace-active #logistics-view,
+body.workspace-active #console-view {
+  box-sizing:border-box!important;
+  min-width:0!important;
+  min-height:max-content!important;
+  height:auto!important;
+  max-height:none!important;
+  overflow:visible!important;
+}
+/* Common inner layout wrappers must be allowed to expand. Keep horizontal
+   scrolling on wide tables and dedicated modal scroll areas. */
+body.workspace-active .dashboard-layout,
+body.workspace-active .dashboard-main,
+body.workspace-active .dashboard-main-grid,
+body.workspace-active .content-grid,
+body.workspace-active .dashboard-grid,
+body.workspace-active .profile-grid,
+body.workspace-active .shop-grid,
+body.workspace-active .profile-panel,
+body.workspace-active .shop-panel,
+body.workspace-active .panel,
+body.workspace-active .card,
+body.workspace-active .page-content,
+body.workspace-active .view-content,
+body.workspace-active .workspace-content {
+  min-height:0!important;
+  max-height:none!important;
+}
+body.workspace-active .table-wrap,
+body.workspace-active .table-responsive,
+body.workspace-active .history-table-wrap,
+body.workspace-active .data-table-wrap {
+  max-width:100%!important;
+  overflow-x:auto!important;
+  overflow-y:visible!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+body.workspace-active .modal-card {
+  max-height:calc(100dvh - 24px)!important;
+  overflow:auto!important;
+  overscroll-behavior:contain!important;
+}
+/* Phone screens use normal document scrolling. Laptop screens retain the
+   centred 430px frame and scroll inside that frame. */
+@media (max-width:520px) {
+  html, body {
+    height:auto!important;
+    min-height:100%!important;
+    max-height:none!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+  }
+  body.workspace-active {
+    display:block!important;
+    height:auto!important;
+    min-height:100svh!important;
+    min-height:100dvh!important;
+    max-height:none!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+  }
+  body.workspace-active .shell,
+  body.workspace-active main.shell {
+    display:flex!important;
+    flex-direction:column!important;
+    width:100%!important;
+    height:auto!important;
+    min-height:100svh!important;
+    min-height:100dvh!important;
+    max-height:none!important;
+    margin:0!important;
+    overflow:visible!important;
+    overflow-x:hidden!important;
+    overflow-y:visible!important;
+    padding-bottom:max(76px,env(safe-area-inset-bottom))!important;
+  }
+  body.workspace-active .shell > :not(#workspace-nav),
+  body.workspace-active main.shell > :not(#workspace-nav) {
+    flex:0 0 auto!important;
+    height:auto!important;
+    max-height:none!important;
+    min-height:max-content!important;
+    overflow:visible!important;
+  }
+  body.workspace-active #workspace-nav:not(.hidden) {
+    position:sticky!important;
+    bottom:0!important;
+    flex:0 0 auto!important;
+    margin-top:12px!important;
+  }
+}
+/* Registration and login content also needs to remain reachable on short
+   laptop displays, browser zoom and landscape phone orientation. */
+@media (min-width:521px) {
+  body:not(.workspace-active) .shell,
+  body:not(.workspace-active) main.shell {
+    min-height:0!important;
+    max-height:100dvh!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    -webkit-overflow-scrolling:touch!important;
+  }
+  body:not(.workspace-active) .shell > *,
+  body:not(.workspace-active) main.shell > * {
+    flex-shrink:0!important;
+    min-width:0!important;
+    max-width:100%!important;
+  }
+}
+@media (max-height:620px) {
+  body.workspace-active #workspace-nav:not(.hidden) {
+    position:relative!important;
+    bottom:auto!important;
+    margin-top:12px!important;
+  }
+  body:not(.workspace-active) .shell,
+  body:not(.workspace-active) main.shell {
+    justify-content:flex-start!important;
+  }
+}
