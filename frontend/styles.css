@@ -2571,3 +2571,11 @@ body.registration-open .registration-sticky-footer{
   body.registration-open #register-form input,
   body.registration-open #freelancer-register-form input{padding:10px;font-size:16px}
 }
+
+/* Shop staff invitations — green owner-only team card */
+.staff-team-card{margin:16px 0;padding:20px;background:linear-gradient(135deg,#e8f8ed 0%,#f5fff7 100%);border:1px solid #a8dfb7;border-left:5px solid #159447;border-radius:16px;color:#153d27;box-shadow:0 8px 24px rgba(21,148,71,.08)}
+.staff-team-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}.staff-team-kicker{font-size:11px;font-weight:800;letter-spacing:.12em;color:#168345}.staff-team-card h2{margin:5px 0 7px;font-size:21px;color:#12452a}.staff-team-card-head p{margin:0;color:#426451;line-height:1.5;font-size:13px}.staff-team-icon{display:grid;place-items:center;flex:0 0 42px;height:42px;border-radius:13px;background:#168345;color:#fff;font-size:25px;font-weight:700}.staff-invite-cta{background:#168345!important;border-color:#168345!important;color:#fff!important}.staff-invite-cta:hover{background:#106b36!important}.staff-team-card>.staff-invite-cta{margin-top:16px}.staff-invite-form{margin-top:16px;padding:16px;background:#fff;border:1px solid #c8e8d1;border-radius:12px}.staff-invite-help{font-size:12px;line-height:1.5;color:#496b55}.staff-invite-actions{display:flex;gap:10px;flex-wrap:wrap}.staff-invitations-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:22px}.staff-invitations-heading h3{margin:0;color:#16492c;font-size:16px}.staff-invitations-list{display:grid;gap:10px;margin-top:10px}.staff-team-card .history-row{background:#fff;border:1px solid #d5eadb;border-radius:10px;padding:12px;color:#173d27}
+
+/* Four account types on the AURORA sign-in screen, including invited Shop Staff. */
+.login-role-tabs{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(max-width:380px){.login-role-tabs{gap:3px}.login-role-tab{font-size:10px;padding:7px 2px}}

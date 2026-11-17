@@ -545,7 +545,7 @@
     syncGlobalBackButton();
   }
 
-  function showPOS(){ if(!state.token){showLogin();return;} document.body.classList.add('workspace-active'); $('login-view').classList.add('hidden'); $('back-to-login-btn')?.classList.remove('hidden'); $('pos-view').classList.remove('hidden'); $('welcome-back-banner')?.classList.add('hidden'); $('profile-menu-btn')?.classList.remove('hidden'); $('logout-btn')?.classList.remove('hidden'); const label=$('user-label');label.textContent=state.userName||state.staffTitle||(state.role==='cashier'?'Shop Attendant':state.role?state.role.replace('_',' '):'Staff');if(state.userPhotoData){const avatar=document.createElement('img');avatar.src=state.userPhotoData;avatar.alt='Profile photo';avatar.style.cssText='width:30px;height:30px;object-fit:cover;border-radius:50%;vertical-align:middle;margin-right:8px';label.prepend(avatar);} $('dashboard-link').classList.toggle('hidden', !['owner','manager','vendor','freelancer'].includes(state.role));$('workspace-nav').classList.remove('hidden');const isCustomerAccount=state.role==='customer';document.body.classList.toggle('customer-account-active',isCustomerAccount);document.body.classList.toggle('freelancer-account-active',state.role==='freelancer');const canAccessShopTab=!isCustomerAccount&&['owner','freelancer'].includes(state.role);document.querySelectorAll('#workspace-nav [data-workspace="shop"]').forEach(el=>{el.hidden=!canAccessShopTab;el.classList.toggle('hidden',!canAccessShopTab);el.style.setProperty('display',canAccessShopTab?'':'none','important');el.setAttribute('aria-hidden',canAccessShopTab?'false':'true');});document.querySelectorAll('#workspace-nav [data-workspace="customers"]').forEach(el=>{el.hidden=true;el.classList.add('hidden');el.style.setProperty('display','none','important');el.setAttribute('aria-hidden','true');});if(state.role==='customer')enforceCustomerReceiptActions();syncGlobalBackButton();  }
+  function showPOS(){ if(!state.token){showLogin();return;} document.body.classList.add('workspace-active'); $('login-view').classList.add('hidden'); $('back-to-login-btn')?.classList.remove('hidden'); $('pos-view').classList.remove('hidden'); $('welcome-back-banner')?.classList.add('hidden'); $('profile-menu-btn')?.classList.remove('hidden'); $('logout-btn')?.classList.remove('hidden'); const label=$('user-label');label.textContent=state.userName||state.staffTitle||(state.role==='cashier'?'Shop Attendant':state.role?state.role.replace('_',' '):'Staff');if(state.userPhotoData){const avatar=document.createElement('img');avatar.src=state.userPhotoData;avatar.alt='Profile photo';avatar.style.cssText='width:30px;height:30px;object-fit:cover;border-radius:50%;vertical-align:middle;margin-right:8px';label.prepend(avatar);} $('dashboard-link').classList.toggle('hidden', !['owner','manager','vendor','freelancer'].includes(state.role));$('workspace-nav').classList.remove('hidden');const isCustomerAccount=state.role==='customer';document.body.classList.toggle('customer-account-active',isCustomerAccount);document.body.classList.toggle('freelancer-account-active',state.role==='freelancer');const canAccessShopTab=!isCustomerAccount&&['owner','vendor','freelancer'].includes(state.role);document.querySelectorAll('#workspace-nav [data-workspace="shop"]').forEach(el=>{el.hidden=!canAccessShopTab;el.classList.toggle('hidden',!canAccessShopTab);el.style.setProperty('display',canAccessShopTab?'':'none','important');el.setAttribute('aria-hidden',canAccessShopTab?'false':'true');});document.querySelectorAll('#workspace-nav [data-workspace="customers"]').forEach(el=>{el.hidden=true;el.classList.add('hidden');el.style.setProperty('display','none','important');el.setAttribute('aria-hidden','true');});if(state.role==='customer')enforceCustomerReceiptActions();syncGlobalBackButton();  }
   async function lookupCustomer(ev){
     ev.preventDefault();
     const phone=$('lookup-phone').value.trim();
@@ -1047,7 +1047,7 @@
   updateSignupAccountType();
   function updateLoginAccountType(){
     const selected = $('login-account-type').value;
-    const staffSelected = selected === 'freelancer';
+    const staffSelected = selected === 'freelancer' || selected === 'staff';
     $('owner-register-entry').classList.toggle('hidden', staffSelected);
     $('freelancer-register-entry')?.classList.toggle('hidden', selected !== 'freelancer');
     $('owner-register-entry')?.classList.toggle('hidden', staffSelected);
@@ -1079,7 +1079,13 @@
     setAuroraAuthTab('aurora-tab-signin');
   });
   $('aurora-tab-signup')?.addEventListener('click',()=>{
-    if($('login-account-type')?.value==='freelancer') $('show-freelancer-register')?.click();
+    const accountType=$('login-account-type')?.value;
+    if(accountType==='staff'){
+      $('login-error').textContent='Shop Staff accounts are created by the shop owner. Please use the invitation link sent to your email.';
+      setAuroraAuthTab('aurora-tab-signin');
+      return;
+    }
+    if(accountType==='freelancer') $('show-freelancer-register')?.click();
     else $('show-register')?.click();
     setAuroraAuthTab('aurora-tab-signup');
   });
@@ -2209,6 +2215,7 @@
       ['#shop-home > .loan-items-card','products'],
       ['#shop-goods-on-repair-card','repairs'],
       ['#shop-home > .shop-business-details-card','profile'],
+      ['#shop-home > #owner-staff-area','profile'],
       ['#shop-home > #shop-receipt-history-card','profile'],
       ['#shop-home > .profile-account-summary','profile']
     ];
@@ -2232,7 +2239,7 @@
       b.classList.toggle('active',b.dataset.shopTab===tab);
       b.setAttribute('aria-selected',String(b.dataset.shopTab===tab));
     });
-    if(tab==='profile')void loadBusinessProfile().catch(e=>showNotice('Shop profile could not be loaded. '+(e.message||''),true));
+    if(tab==='profile'){void loadBusinessProfile().catch(e=>showNotice('Shop profile could not be loaded. '+(e.message||''),true));const staffCard=shop?.querySelector('#owner-staff-area');const ownerCanInvite=state.role==='owner';if(staffCard){staffCard.classList.toggle('hidden',!ownerCanInvite);staffCard.toggleAttribute('hidden',!ownerCanInvite);staffCard.style.setProperty('display',ownerCanInvite?'':'none','important');}if(ownerCanInvite)void loadStaffInvitations();}
     if(tab==='repairs')void loadShopRepairs();
   }
   document.querySelectorAll('[data-shop-tab]').forEach(b=>b.addEventListener('click',()=>setShopTab(b.dataset.shopTab)));
