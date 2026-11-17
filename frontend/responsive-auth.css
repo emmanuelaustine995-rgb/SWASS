@@ -561,3 +561,20 @@ body.registration-open #freelancer-register-form .btn {
 @media(prefers-reduced-motion:reduce) {
   .aurora-auth-logo { filter:none; }
 }
+
+
+/* Three simple account tabs and welcome artwork also appear on sign-in/recovery. */
+.aurora-auth-tabs {
+  display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:4px;
+  width:100%; margin:0 0 20px; padding:4px; border-radius:14px; background:#f0f5fb;
+}
+.aurora-auth-tabs button {
+  min-width:0; min-height:42px; padding:8px 6px; border:0; border-radius:10px;
+  background:transparent; color:#64748b; font:700 12px/1.25 system-ui,sans-serif; cursor:pointer;
+}
+.aurora-auth-tabs button.active { color:#183c75; background:#fff; box-shadow:0 2px 8px rgba(24,54,99,.10); }
+.aurora-auth-welcome { display:flex; flex-direction:column; align-items:center; justify-content:center; max-width:620px; padding:32px; text-align:center; color:#173d79; }
+.aurora-auth-welcome h1 { margin:12px 0 8px; color:#173d79; font-size:clamp(26px,3vw,42px); line-height:1.18; font-weight:850; }
+.aurora-auth-subtitle { margin:0; color:#4b1a91; font-size:25px; font-weight:800; }
+.aurora-auth-description { max-width:460px; margin:16px auto 0; color:#48658d; line-height:1.6; }
+@media(max-width:700px) { .aurora-auth-tabs { gap:2px; margin-bottom:14px; } .aurora-auth-tabs button { font-size:11px; padding:7px 3px; } }
