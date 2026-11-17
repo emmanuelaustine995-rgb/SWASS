@@ -1016,7 +1016,7 @@ body.registration-open:not(.workspace-active) #freelancer-register-form .btn { m
   body.workspace-active #workspace-nav.bottom-nav,
   body.workspace-active .shell>#workspace-nav {
     position:sticky!important;top:auto!important;bottom:0!important;left:auto!important;right:auto!important;
-    transform:none!important;flex:0 0 auto!important;
+    order:99!important;transform:none!important;flex:0 0 auto!important;
     width:100%!important;max-width:100%!important;min-width:0!important;
     height:auto!important;max-height:none!important;min-height:0!important;
     margin:auto 0 0!important;padding:7px!important;
