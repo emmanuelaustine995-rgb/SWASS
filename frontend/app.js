@@ -2194,6 +2194,7 @@
     finally{select.disabled=false;}
   });
   $('repair-refresh')?.addEventListener('click',()=>void loadShopRepairs());
+  $('shop-goods-on-repair-card')?.addEventListener('toggle',event=>{if(event.currentTarget.open)void loadShopRepairs();});
   function setShopTab(tab){
     if(!['products','repairs','profile'].includes(tab))tab='products';
     const shop=$('shop-home');
@@ -2220,7 +2221,7 @@
       el.setAttribute('aria-hidden',String(!visible));
     });
     const businessCard=shop?.querySelector(':scope > .shop-business-details-card');
-    if(tab==='profile'&&businessCard)businessCard.open=true;
+    // Keep Shop Details collapsed until the user taps its card.
     shop?.querySelectorAll(':scope > [data-shop-tab-panel]').forEach(el=>{
       const visible=el.dataset.shopTabPanel===tab;
       el.classList.toggle('hidden',!visible);el.toggleAttribute('hidden',!visible);
@@ -2231,7 +2232,7 @@
       b.setAttribute('aria-selected',String(b.dataset.shopTab===tab));
     });
     if(tab==='profile'){void loadBusinessProfile().catch(e=>showNotice('Shop profile could not be loaded. '+(e.message||''),true));const staffCard=shop?.querySelector('#owner-staff-area');const ownerCanInvite=state.role==='owner';if(staffCard){staffCard.classList.toggle('hidden',!ownerCanInvite);staffCard.toggleAttribute('hidden',!ownerCanInvite);staffCard.style.setProperty('display',ownerCanInvite?'':'none','important');}if(ownerCanInvite)void loadStaffInvitations();}
-    if(tab==='repairs')void loadShopRepairs();
+    // Repair records load only after the repair card is opened.
   }
   document.querySelectorAll('[data-shop-tab]').forEach(b=>b.addEventListener('click',()=>setShopTab(b.dataset.shopTab)));
   let lostAlarmAudio=null;

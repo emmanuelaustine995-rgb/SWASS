@@ -991,3 +991,95 @@ body.registration-open:not(.workspace-active) #freelancer-register-form .btn { m
     text-align:center!important;
   }
 }
+
+
+/* Correct laptop presentation: a centred, full-height phone workspace.
+   The app scrolls inside its 430px frame; navigation stays at that frame's
+   bottom rather than moving to the top or spanning the laptop screen. */
+@media (min-width:521px) and (hover:hover) and (pointer:fine) {
+  html,body {height:100%!important;min-height:100%!important;overflow:hidden!important}
+  body.workspace-active {display:block!important;overflow:hidden!important;background:#edf2f7!important}
+  body.workspace-active main.shell,
+  body.workspace-active .shell {
+    position:relative!important;box-sizing:border-box!important;
+    width:min(430px,100vw)!important;max-width:430px!important;min-width:0!important;
+    height:100dvh!important;min-height:100dvh!important;max-height:100dvh!important;
+    margin:0 auto!important;padding:10px 9px 0!important;
+    border:1px solid #d8e2eb!important;border-top:0!important;border-bottom:0!important;
+    border-radius:0!important;background:#fff!important;
+    box-shadow:0 0 34px rgba(16,42,67,.12)!important;
+    overflow-x:hidden!important;overflow-y:auto!important;
+    overscroll-behavior-y:contain!important;
+    display:flex!important;flex-direction:column!important;
+  }
+  body.workspace-active #workspace-nav,
+  body.workspace-active #workspace-nav.bottom-nav,
+  body.workspace-active .shell>#workspace-nav {
+    position:sticky!important;top:auto!important;bottom:0!important;left:auto!important;right:auto!important;
+    order:99!important;transform:none!important;flex:0 0 auto!important;
+    width:100%!important;max-width:100%!important;min-width:0!important;
+    height:auto!important;max-height:none!important;min-height:0!important;
+    margin:auto 0 0!important;padding:7px!important;
+    display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:5px!important;overflow:visible!important;
+    background:#f7fbff!important;border:1px solid #dce6ee!important;
+    border-radius:15px 15px 0 0!important;box-shadow:0 -5px 18px rgba(16,42,67,.10)!important;
+    z-index:1000!important;
+  }
+  body.workspace-active #workspace-nav button,
+  body.workspace-active #workspace-nav.bottom-nav button {
+    position:static!important;transform:none!important;rotate:none!important;
+    display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;
+    width:100%!important;min-width:0!important;max-width:100%!important;
+    min-height:46px!important;height:auto!important;margin:0!important;padding:6px 3px!important;
+    white-space:normal!important;overflow-wrap:anywhere!important;text-align:center!important;
+    font-size:10px!important;line-height:1.15!important;
+  }
+  body.workspace-active #workspace-nav .nav-icon {display:block!important;flex:0 0 auto!important}
+}
+/* Auth pages use the same centred phone-width frame and fill the laptop
+   viewport vertically. Long signup forms scroll inside the frame. */
+@media (min-width:521px) and (hover:hover) and (pointer:fine) {
+  html,body {height:100%!important;min-height:100%!important}
+  body:not(.workspace-active) {overflow:hidden!important;background:#edf2f7!important}
+  body:not(.workspace-active) .topbar {display:none!important}
+  body:not(.workspace-active) main.shell,
+  body:not(.workspace-active) .shell {
+    box-sizing:border-box!important;width:min(430px,100vw)!important;max-width:430px!important;min-width:0!important;
+    height:100dvh!important;min-height:100dvh!important;max-height:100dvh!important;
+    margin:0 auto!important;padding:14px 12px!important;
+    border-left:1px solid #d8e2eb!important;border-right:1px solid #d8e2eb!important;
+    border-radius:0!important;background:#fff!important;box-shadow:0 0 34px rgba(16,42,67,.12)!important;
+    overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior-y:contain!important;
+    display:flex!important;flex-direction:column!important;justify-content:center!important;
+  }
+  body:not(.workspace-active) #login-view,
+  body:not(.workspace-active) .login-wrap {width:100%!important;max-width:100%!important;margin:auto 0!important}
+  body:not(.workspace-active) #login-view .login-card {width:100%!important;max-width:100%!important;margin:0!important}
+  body.registration-open:not(.workspace-active) .shell {justify-content:flex-start!important}
+  body.registration-open:not(.workspace-active) #login-view,
+  body.registration-open:not(.workspace-active) .login-wrap {margin:0!important}
+}
+/* Remove the extra top account-access strip; the login card is the page focus. */
+.aurora-auth-tabs {display:none!important}
+@media (max-width:520px) {
+  .aurora-auth-tabs {display:none!important}
+}
+/* Shop cards stay closed until the user taps their summary. */
+.shop-business-details-card:not([open])>.profile-card-body,
+#shop-goods-on-repair-card:not([open])>.repair-card-content {display:none!important}
+#shop-goods-on-repair-card {
+  display:block!important;box-sizing:border-box!important;width:100%!important;max-width:100%!important;
+  margin:10px 0!important;padding:0!important;border:1px solid #dce6ee!important;
+  border-radius:15px!important;background:#fff!important;overflow:hidden!important;
+}
+#shop-goods-on-repair-card>summary {
+  display:flex!important;align-items:center!important;justify-content:space-between!important;
+  gap:12px!important;min-height:76px!important;padding:15px!important;
+  list-style:none!important;cursor:pointer!important;background:#f8fbff!important;
+}
+#shop-goods-on-repair-card>summary::-webkit-details-marker {display:none!important}
+#shop-goods-on-repair-card>summary strong {display:block!important;color:#17345c!important;font-size:15px!important}
+#shop-goods-on-repair-card>summary small {display:block!important;margin-top:4px!important;color:#64748b!important;font-size:12px!important}
+#shop-goods-on-repair-card .repair-card-content {padding:14px!important;border-top:1px solid #e5edf5!important}
+#shop-goods-on-repair-card .repair-card-heading {margin:0 0 12px!important}
