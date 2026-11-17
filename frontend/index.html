@@ -30,7 +30,7 @@
   <link rel="stylesheet" href="./styles.css?v=gold-repair-card-20261115">
   <link rel="stylesheet" href="./dashboard.css?v=desktop-phone-frame-20261117">
   <link rel="stylesheet" href="./registration-layout.css?v=aurora-purple-auth-20261117">
-  <link rel="stylesheet" href="./responsive-auth.css?v=bottom-nav-full-scroll-20261118">
+  <link rel="stylesheet" href="./responsive-auth.css?v=phone-frame-sticky-nav-shop-cards-20261118">
 </head>
 <body>
   <header class="topbar"><a class="brand" href="#" aria-label="AURORA E-RECEIPT PLATFORM"><span>AURORA E-RECEIPT PLATFORM</span></a><div class="topbar-actions"></div></header>
@@ -45,11 +45,7 @@
   <main class="shell">
     <section id="login-view" class="login-wrap">
       <div class="login-card">
-        <nav class="aurora-auth-tabs" aria-label="Account access">
-          <button type="button" id="aurora-tab-signin" class="active" aria-pressed="true">Sign In</button>
-          <button type="button" id="aurora-tab-signup" aria-pressed="false">Sign Up</button>
-          <button type="button" id="aurora-tab-recovery" aria-pressed="false">Password recovery</button>
-        </nav>
+        
         <div class="aurora-brand-lockup" aria-label="AURORA E-RECEIPT">
           <svg class="aurora-login-logo" viewBox="0 0 360 142" role="img" aria-labelledby="aurora-logo-title">
             <title id="aurora-logo-title">AURORA E-RECEIPT</title>
@@ -230,8 +226,10 @@
           </form>
         </div>
       </details>
-      <section id="shop-goods-on-repair-card" class="shop-goods-on-repair-card hidden" aria-label="Goods on Repair">
-        <header class="repair-card-heading"><div><span class="repair-card-kicker">SHOP SERVICE DESK</span><h2>Goods on Repair</h2><p>Record items received for repair and track their expected collection dates.</p></div><span class="repair-gold-mark" aria-hidden="true">⚒</span></header>
+      <details id="shop-goods-on-repair-card" class="shop-goods-on-repair-card hidden" aria-label="Goods on Repair">
+        <summary class="repair-card-summary"><span><strong>Goods on Repair</strong><small>Record items received for repair and track collection dates.</small></span><span class="repair-gold-mark" aria-hidden="true">⚒</span></summary>
+        <div class="repair-card-content">
+        <header class="repair-card-heading"><div><span class="repair-card-kicker">SHOP SERVICE DESK</span><h2>Repair Register</h2><p>Record items received for repair and track their expected collection dates.</p></div></header>
         <form id="shop-repair-form" class="shop-repair-form">
           <div class="form-two"><label>Goods / item name<input id="repair-item-name" maxlength="160" required placeholder="e.g. Samsung Galaxy A15"></label><label>Item ID / serial number<input id="repair-item-identifier" maxlength="100" required placeholder="Serial number or IMEI"></label></div>
           <div class="form-two"><label>Customer name<input id="repair-customer-name" maxlength="160" required></label><label>Customer ID number<input id="repair-customer-id" maxlength="50" required></label></div>
@@ -244,7 +242,8 @@
         </form>
         <div class="repair-records-heading"><h3>Repair Register</h3><button id="repair-refresh" class="btn btn-light btn-small" type="button">Refresh</button></div>
         <div id="repair-records-list" class="repair-records-list" aria-live="polite"><p class="muted small">Open Goods on Repair to load the repair register.</p></div>
-      </section>
+        </div>
+      </details>
       <details class="profile-shop-card profile-card panel shop-business-details-card hidden"><summary class="profile-card-summary"><span><strong>Shop Details</strong><small>Business information, branding and shop photos</small></span><span class="profile-card-chevron" aria-hidden="true">⌄</span></summary><div class="profile-card-body"><p id="profile-readonly-note" class="profile-readonly-note hidden">Viewing mode · Shop owners can edit these details. Vendors and freelancers can view them only.</p><form id="profile-form">
 <div class="profile-logo-row"><img id="logo-preview" alt="Business logo preview" class="logo-preview hidden"><label>Business logo (optional)<input id="business-logo" type="file" accept="image/png,image/jpeg,image/webp"></label></div>
 <div class="form-two"><label>Company / trading name<input id="profile-business-name" maxlength="120" required></label><label>Support telephone number<input id="profile-business-phone" maxlength="30" required></label></div>
