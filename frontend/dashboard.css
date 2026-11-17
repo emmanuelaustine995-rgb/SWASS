@@ -2664,3 +2664,79 @@ td,th{overflow-wrap:anywhere;word-break:normal}
   .modal-card{max-height:calc(100dvh - 24px);overflow-y:auto}
   .workspace-active .shell{min-height:0}
 }
+
+
+/* Stable workspace flow: keep every page in normal document flow so short
+   laptop screens and mobile browsers scroll the page instead of clipping it
+   inside a fixed-height shell. Navigation no longer causes scroll jumps. */
+html,body{scroll-behavior:auto!important;overflow-anchor:none}
+body.workspace-active{height:auto!important;min-height:100vh;overflow-x:hidden!important;overflow-y:auto!important}
+html body.workspace-active .shell{
+  display:flex!important;flex-direction:column!important;align-items:stretch!important;
+  width:min(100% - 24px,1280px)!important;max-width:1280px!important;
+  height:auto!important;min-height:calc(100vh - 70px)!important;min-height:calc(100dvh - 70px)!important;
+  max-height:none!important;overflow:visible!important;gap:12px!important;
+  margin:0 auto!important;padding:12px 12px 28px!important;box-sizing:border-box!important;
+}
+html body.workspace-active #workspace-nav,
+html body.workspace-active #workspace-nav.bottom-nav{
+  position:sticky!important;top:0!important;left:auto!important;right:auto!important;bottom:auto!important;
+  transform:none!important;order:0!important;z-index:40!important;
+  display:flex!important;flex:0 0 auto!important;align-items:center!important;
+  width:100%!important;max-width:100%!important;height:auto!important;max-height:none!important;
+  margin:0 0 8px!important;padding:8px!important;overflow-x:auto!important;overflow-y:hidden!important;
+  flex-wrap:nowrap!important;gap:8px!important;border-radius:12px!important;
+  background:rgba(255,255,255,.97)!important;backdrop-filter:blur(8px);
+  -webkit-overflow-scrolling:touch;scrollbar-width:thin;
+}
+html body.workspace-active #workspace-nav button,
+html body.workspace-active #workspace-nav.bottom-nav button{
+  position:static!important;transform:none!important;flex:0 0 auto!important;
+  min-width:max-content!important;min-height:42px!important;height:auto!important;
+  padding:9px 13px!important;white-space:nowrap!important;
+}
+html body.workspace-active #owner-home:not(.hidden),
+html body.workspace-active #receipts-home:not(.hidden),
+html body.workspace-active #pos-view:not(.hidden),
+html body.workspace-active #shop-home:not(.hidden),
+html body.workspace-active #subscription-home:not(.hidden),
+html body.workspace-active #owner-dashboard-view.profile-workspace-mode:not(.hidden),
+html body.workspace-active #platform-referral-admin:not(.hidden),
+html body.workspace-active #staff-profile-panel:not(.hidden),
+html body.workspace-active #staff-sales-summary:not(.hidden){
+  display:block!important;flex:0 0 auto!important;width:100%!important;max-width:100%!important;
+  height:auto!important;min-height:0!important;max-height:none!important;
+  overflow:visible!important;overflow-x:clip!important;overflow-y:visible!important;
+  contain:none!important;overscroll-behavior:auto!important;
+  scroll-margin-top:76px;
+}
+html body.workspace-active #owner-home:not(.hidden),
+html body.workspace-active #receipts-home:not(.hidden),
+html body.workspace-active #shop-home:not(.hidden),
+html body.workspace-active #pos-view:not(.hidden){padding-bottom:24px!important}
+html body.workspace-active .shell>*{min-width:0!important;max-width:100%!important}
+html body.workspace-active .shell>*:not(.hidden){scroll-margin-top:76px}
+html body.workspace-active .shell>*{animation:none!important;transition:none!important}
+html body.workspace-active #workspace-nav button.active{transform:none!important}
+@media(max-width:760px){
+  html body.workspace-active .shell{
+    width:100%!important;min-height:calc(100dvh - 56px)!important;
+    margin:0!important;padding:8px 10px calc(18px + env(safe-area-inset-bottom))!important;
+    gap:8px!important;
+  }
+  html body.workspace-active #workspace-nav,
+  html body.workspace-active #workspace-nav.bottom-nav{
+    position:sticky!important;top:0!important;bottom:auto!important;
+    display:flex!important;flex-wrap:nowrap!important;max-height:none!important;
+    margin:0 0 6px!important;padding:6px!important;overflow-x:auto!important;
+  }
+  html body.workspace-active #workspace-nav button,
+  html body.workspace-active #workspace-nav.bottom-nav button{
+    flex:0 0 auto!important;min-width:max-content!important;min-height:42px!important;
+    height:auto!important;padding:8px 11px!important;
+  }
+}
+@media(max-height:620px) and (min-width:761px){
+  html body.workspace-active .shell{min-height:0!important;padding-bottom:24px!important}
+  html body.workspace-active #workspace-nav{position:relative!important;top:auto!important}
+}

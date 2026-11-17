@@ -507,7 +507,7 @@
       document.querySelector('.customer-lookup-panel')?.classList.add('hidden');
       $('owner-customers-section')?.classList.remove('hidden');
       $('owner-dashboard-view')?.classList.add('hidden');
-      $('owner-customers-section')?.scrollIntoView({behavior:'smooth',block:'start'});
+      // Keep workspace navigation stable; do not force-scroll the whole page when opening Customers.
       window.dispatchEvent(new Event('swass:dashboard-open'));
     }else if(screen==='profile'){
       renderAccountProfile();
@@ -523,16 +523,8 @@
         owner?.querySelectorAll(':scope > *:not(#profile-panel):not(#owner-staff-area)').forEach(el=>el.classList.add('hidden'));
         owner?.querySelector('#owner-staff-area')?.classList.remove('hidden');
         profile?.classList.remove('hidden');
-        // The dashboard and profile share this scroll container. Always reset
-        // every nested scroll position when opening Profile so it starts at
-        // the top instead of inheriting the dashboard's previous scroll.
-        if(owner) owner.scrollTop=0;
-        if(profile) profile.scrollTop=0;
-        requestAnimationFrame(()=>{
-          if(owner) owner.scrollTop=0;
-          if(profile) profile.scrollTop=0;
-          window.scrollTo(0,0);
-        });
+        // Preserve the user's current scroll position when switching workspace sections.
+        // Avoid delayed scroll resets that make the page visibly jump.
         void Promise.resolve().then(()=>renderAccountProfile());
       }else{
         document.getElementById('staff-profile-panel')?.classList.remove('hidden');
