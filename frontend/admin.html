@@ -307,6 +307,14 @@ body{background:#eef3fb}
  <div class="panel settings-panel"><div class="settings-panel-head"><div><h3>Security configuration baseline</h3><p>Verified configuration presence and runtime checks</p></div><span class="settings-live">LIVE CHECK</span></div><div id="settings-checks" class="settings-check-list"><div class="settings-loading">Checking API configuration…</div></div></div>
  <div class="panel settings-panel"><div class="settings-panel-head"><div><h3>Connected services</h3><p>Integration status must be verified, not assumed</p></div></div><div id="settings-integrations" class="settings-check-list"><div class="settings-loading">Checking integrations…</div></div></div>
 </div>
+<div class="panel settings-panel" style="margin-top:14px">
+ <div class="settings-panel-head"><div><h3>Platform maintenance control</h3><p>Temporarily pause customer and shop API activity while keeping Super Admin access available.</p></div><span id="maintenance-state" class="settings-state unknown">CHECKING</span></div>
+ <label for="maintenance-title">Customer notice title</label><input id="maintenance-title" maxlength="120" value="Scheduled maintenance" placeholder="Scheduled maintenance">
+ <label for="maintenance-message">Message displayed to customers</label><textarea id="maintenance-message" maxlength="600" rows="4" style="width:100%;padding:12px;border:1px solid #d5deea;border-radius:10px;font:inherit" placeholder="AURORA is temporarily unavailable while we improve our services. Please try again shortly.">AURORA is temporarily unavailable while we improve our services. Please try again shortly.</textarea>
+ <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><button id="maintenance-enable" class="primary" type="button" style="width:auto;margin:0">ENABLE MAINTENANCE</button><button id="maintenance-disable" class="secondary" type="button" style="width:auto;margin:0">RESTORE LIVE SERVICE</button></div>
+ <p id="maintenance-status" class="settings-footnote" role="status">Loading current maintenance state…</p>
+ <p class="muted">When enabled, public API requests receive HTTP 503 with this notice. Super Admin routes and health checks remain available. Allow up to 5 seconds for the switch to propagate.</p>
+</div>
 <div class="panel settings-guidance"><h3>Operational security controls</h3><div class="settings-guidance-grid">
  <div><b>Secrets management</b><p>Manage API keys and passwords only in Render environment variables. Never paste secret values into this dashboard or GitHub source files.</p></div>
  <div><b>Backups &amp; recovery</b><p>Backup schedules, encryption and restore drills must be confirmed in the database hosting provider. This portal does not claim backups are active.</p></div>
@@ -526,6 +534,36 @@ body{background:#eef3fb}
     }catch(e){status.textContent='Lost / found phone register unavailable: '+e.message;const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=6;td.textContent='Could not load phone reports.';tr.append(td);}
   }
 
+  async function loadMaintenance(){
+    const state=$('maintenance-state'),status=$('maintenance-status');
+    try{
+      const data=await api('/platform-admin/operations/maintenance');
+      $('maintenance-title').value=data.title||'Scheduled maintenance';
+      $('maintenance-message').value=data.message||'AURORA is temporarily unavailable while we improve our services. Please try again shortly.';
+      state.textContent=data.enabled?'MAINTENANCE ON':'LIVE SERVICE';
+      state.className='settings-state '+(data.enabled?'attention':'ready');
+      status.textContent=data.enabled?'Maintenance is active. Public API traffic is paused.':'Live service is active. Maintenance is off.';
+    }catch(e){state.textContent='UNKNOWN';state.className='settings-state unknown';status.textContent='Could not verify maintenance state: '+e.message;}
+  }
+  async function saveMaintenance(enabled){
+    const button=$(enabled?'maintenance-enable':'maintenance-disable'),status=$('maintenance-status');
+    const title=$('maintenance-title').value.trim(),message=$('maintenance-message').value.trim();
+    if(enabled&&!message){status.textContent='Enter the customer-facing maintenance message first.';return;}
+    if(enabled&&!window.confirm('Enable maintenance now? Shop owners, freelancers and customers will temporarily be unable to use the API.'))return;
+    if(!enabled&&!window.confirm('Restore live service now?'))return;
+    button.disabled=true;status.textContent=enabled?'Enabling maintenance…':'Restoring live service…';
+    try{
+      const res=await fetch(API+'/platform-admin/operations/maintenance',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token,Accept:'application/json'},body:JSON.stringify({enabled,title,message})});
+      const data=await res.json().catch(()=>({}));
+      if(!res.ok)throw new Error(data.message||'Could not update maintenance mode.');
+      status.textContent=data.message||'Maintenance setting updated.';
+      await loadMaintenance();
+    }catch(e){status.textContent='No confirmation received: '+e.message+'. Refresh the status before trying again.';}
+    finally{button.disabled=false;}
+  }
+  $('maintenance-enable').addEventListener('click',()=>saveMaintenance(true));
+  $('maintenance-disable').addEventListener('click',()=>saveMaintenance(false));
+
   async function loadSettings(){
     const status=$('settings-status');
     status.textContent='Running live system configuration checks…';
@@ -533,6 +571,7 @@ body{background:#eef3fb}
     $('settings-integrations').textContent='Checking integration status…';
     try{
       const data=await api('/platform-admin/system/status');
+      await loadMaintenance();
       $('settings-runtime').textContent=data.runtime||'API';
       $('settings-env').textContent='Environment: '+(data.environment||'unknown');
       $('settings-db').textContent=data.database==='connected'?'CONNECTED':'ATTENTION';
@@ -684,7 +723,7 @@ body{background:#eef3fb}
   document.querySelectorAll('.nav button').forEach(btn=>btn.addEventListener('click',()=>{
     document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b===btn));
     document.querySelectorAll('main.content section').forEach(s=>s.classList.add('hidden'));
-    $('section-'+btn.dataset.section).classList.remove('hidden');$('admin-welcome').textContent=btn.textContent;menu.hidden=true;menuToggle.setAttribute('aria-expanded','false');if(btn.dataset.section==='shops')loadShops();if(btn.dataset.section==='accounts')loadPeople();if(btn.dataset.section==='security')loadSecurity();if(btn.dataset.section==='reports')loadReports();if(btn.dataset.section==='settings')loadSettings();
+    $('section-'+btn.dataset.section).classList.remove('hidden');$('admin-welcome').textContent=btn.textContent;menu.hidden=true;menuToggle.setAttribute('aria-expanded','false');if(btn.dataset.section==='shops')loadShops();if(btn.dataset.section==='accounts')loadPeople();if(btn.dataset.section==='security')loadSecurity();if(btn.dataset.section==='reports')loadReports();if(btn.dataset.section==='settings'){loadSettings();loadMaintenance();}
   }));
 })();
 </script>
