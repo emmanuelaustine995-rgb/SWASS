@@ -732,3 +732,72 @@ body.registration-open:not(.workspace-active) #freelancer-register-form .btn { m
   body:not(.workspace-active) *, body:not(.workspace-active) *::before,
   body:not(.workspace-active) *::after { animation:none !important; transition:none !important; }
 }
+
+
+/* Final workspace frame override: laptop and desktop browsers use the same
+   narrow, centred phone workspace; real phone-sized viewports stay full width.
+   Kept in the last-loaded stylesheet so earlier responsive rules cannot undo it. */
+@media (min-width:521px) {
+  html body.workspace-active main.shell,
+  html body.workspace-active .shell {
+    display:block!important;
+    box-sizing:border-box!important;
+    width:min(430px,calc(100vw - 24px))!important;
+    min-width:0!important;
+    max-width:430px!important;
+    margin:14px auto 24px!important;
+    padding:10px 9px 28px!important;
+    border:1px solid #d8e2eb!important;
+    border-radius:22px!important;
+    background:#fff!important;
+    box-shadow:0 14px 48px rgba(16,42,67,.15)!important;
+    container-name:aurora-phone-workspace!important;
+    container-type:inline-size!important;
+  }
+  html body.workspace-active {
+    width:100%!important;
+    min-width:0!important;
+    overflow-x:hidden!important;
+    background:#edf2f7!important;
+  }
+  html body.workspace-active #workspace-nav,
+  html body.workspace-active #workspace-nav.bottom-nav {
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    flex-wrap:nowrap!important;
+    overflow-x:auto!important;
+    overscroll-behavior-inline:contain!important;
+  }
+}
+@container aurora-phone-workspace (max-width:600px) {
+  .dashboard-layout,.dashboard-main-grid,.content-grid,.dashboard-grid,
+  .profile-grid,.shop-grid,.form-two,.buyer-fields,.comparison-grid {
+    grid-template-columns:minmax(0,1fr)!important;
+    min-width:0!important;
+  }
+  .dashboard-layout {display:grid!important;gap:10px!important}
+  .dashboard-sidebar {position:static!important;width:100%!important;max-width:100%!important}
+  .dashboard-main,.dashboard-layout>main,.dashboard-layout>section {
+    width:100%!important;min-width:0!important;max-width:100%!important;
+  }
+  .panel,.card,.profile-panel,.shop-panel {
+    box-sizing:border-box!important;width:100%!important;min-width:0!important;max-width:100%!important;
+  }
+  .metric-grid,.owner-stats,.channel-grid {
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+  .table-wrap,.table-responsive,.history-table-wrap,.data-table-wrap {
+    width:100%!important;max-width:100%!important;overflow-x:auto!important;
+  }
+  input,select,textarea {box-sizing:border-box!important;width:100%!important;max-width:100%!important;min-width:0!important}
+  .modal-card {width:100%!important;max-width:100%!important;max-height:calc(100dvh - 24px)!important;overflow:auto!important}
+}
+@media (max-width:520px) {
+  html body.workspace-active main.shell,
+  html body.workspace-active .shell {
+    width:100%!important;max-width:100%!important;min-width:0!important;
+    margin:0!important;padding:8px 8px 24px!important;
+    border:0!important;border-radius:0!important;box-shadow:none!important;
+  }
+}
