@@ -119,7 +119,7 @@ export class AuthGuard implements CanActivate {
           );
         }
       }
-    } else if (user.tenantId && !['super_admin','vendor'].includes(user.role) && !paymentRoute) {
+    } else if (user.tenantId && user.role !== 'super_admin' && !paymentRoute) {
       const active = await this.db.pool.query(
         `SELECT 1 FROM subscriptions
           WHERE tenant_id=$1 AND status='active' AND ends_at>now()
