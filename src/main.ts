@@ -62,7 +62,7 @@ async function bootstrap() {
   let maintenanceCache: { enabled: boolean; title: string; message: string; expiresAt: number } = { enabled: false, title: 'Scheduled maintenance', message: '', expiresAt: 0 };
   app.use(async (req: any, res: any, next: () => void) => {
     const path = String(req.path || req.url || '').split('?')[0];
-    if (!path.startsWith('/api/v1/') || path.startsWith('/api/v1/platform-admin/') || path === '/api/v1/health' || path === '/api/v1/health/maintenance') return next();
+    if (!path.startsWith('/api/v1/') || path.startsWith('/api/v1/platform-admin/') || path.startsWith('/api/v1/auth/admin/') || path === '/api/v1/health' || path === '/api/v1/health/maintenance') return next();
     try {
       if (Date.now() >= maintenanceCache.expiresAt) {
         const result = await operationsDb.pool.query('SELECT maintenance_enabled AS enabled, maintenance_title AS title, maintenance_message AS message FROM aurora_platform_operations WHERE id=1');
