@@ -9,6 +9,26 @@ export class PlatformAdminController {
   constructor(private db: DbService) {}
 
 
+  @Get('operations/maintenance')
+  async getMaintenance() {
+    await this.db.ensureOperationsSchema();
+    const result = await this.db.pool.query('SELECT maintenance_enabled AS enabled, maintenance_title AS title, maintenance_message AS message, maintenance_starts_at AS starts_at, updated_at AS updated_at FROM aurora_platform_operations WHERE id=1');
+    return result.rows[0] || { enabled: false };
+  }
+
+  @Post('operations/maintenance')
+  async setMaintenance(@Body() body: { enabled?: boolean; title?: string; message?: string }, @Req() req: any) {
+    if (typeof body?.enabled !== 'boolean') throw new BadRequestException('Choose whether maintenance mode should be enabled or disabled.');
+    const title = String(body.title || 'Scheduled maintenance').trim().slice(0,120);
+    const message = String(body.message || '').trim();
+    if (body.enabled && !message) throw new BadRequestException('Enter the maintenance message customers should see.');
+    if (message.length > 600) throw new BadRequestException('Maintenance message must be 600 characters or fewer.');
+    await this.db.ensureOperationsSchema();
+    const result = await this.db.pool.query('UPDATE aurora_platform_operations SET maintenance_enabled=$1, maintenance_title=$2, maintenance_message=$3, maintenance_starts_at=CASE WHEN $1 THEN COALESCE(maintenance_starts_at,now()) ELSE NULL END, updated_by=$4, updated_at=now() WHERE id=1 RETURNING maintenance_enabled AS enabled, maintenance_title AS title, maintenance_message AS message, maintenance_starts_at AS starts_at, updated_at AS updated_at', [body.enabled,title,message || 'AURORA is temporarily unavailable while we improve our services. Please try again shortly.',req.user?.sub || null]);
+    await this.db.recordSecurityEvent({ eventType: body.enabled ? 'maintenance_enabled' : 'maintenance_disabled', severity: body.enabled ? 'high' : 'medium', outcome: 'completed', actorUserId: req.user?.sub, sourceIp: req.ip, userAgent: req.headers?.['user-agent'], metadata: { title, message, enabled: body.enabled } });
+    return { ...result.rows[0], message: body.enabled ? 'Maintenance mode is now active.' : 'Maintenance mode has been turned off.' };
+  }
+
   @Get('overview')
   async overview() {
     const [shops, stores, users, customers, receipts, subscriptions] = await Promise.all([

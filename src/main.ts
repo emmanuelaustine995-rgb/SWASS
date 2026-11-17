@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { json, urlencoded } from 'express';
 import { AppModule } from './app.module';
+import { DbService } from './db/db.service';
 
 async function bootstrap() {
   for (const key of ['DATABASE_URL', 'JWT_SECRET', 'SWASS_ID_SECRET']) {
@@ -53,6 +54,27 @@ async function bootstrap() {
       res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
     }
     next();
+  });
+  // Platform-wide maintenance gate. The state is cached briefly to avoid a database
+  // read on every request; Super Admin and health routes remain reachable.
+  const operationsDb = app.get(DbService);
+  await operationsDb.ensureOperationsSchema();
+  let maintenanceCache: { enabled: boolean; title: string; message: string; expiresAt: number } = { enabled: false, title: 'Scheduled maintenance', message: '', expiresAt: 0 };
+  app.use(async (req: any, res: any, next: () => void) => {
+    const path = String(req.path || req.url || '').split('?')[0];
+    if (!path.startsWith('/api/v1/') || path.startsWith('/api/v1/platform-admin/') || path.startsWith('/api/v1/auth/admin/') || path === '/api/v1/health' || path === '/api/v1/health/maintenance') return next();
+    try {
+      if (Date.now() >= maintenanceCache.expiresAt) {
+        const result = await operationsDb.pool.query('SELECT maintenance_enabled AS enabled, maintenance_title AS title, maintenance_message AS message FROM aurora_platform_operations WHERE id=1');
+        const row = result.rows[0] || {};
+        maintenanceCache = { enabled: row.enabled === true, title: row.title || 'Scheduled maintenance', message: row.message || 'AURORA is temporarily unavailable while we improve our services. Please try again shortly.', expiresAt: Date.now() + 5000 };
+      }
+      if (maintenanceCache.enabled) return res.status(503).set('Retry-After','300').json({ status: 'maintenance', maintenance: true, title: maintenanceCache.title, message: maintenanceCache.message, retryAfterSeconds: 300 });
+      return next();
+    } catch (error) {
+      // Fail closed only if the maintenance state cannot be checked; never silently bypass the gate.
+      return res.status(503).json({ status: 'temporarily_unavailable', message: 'AURORA is temporarily unable to verify service status. Please try again shortly.' });
+    }
   });
   await app.listen(Number(process.env.PORT ?? 3000), '0.0.0.0');
 }

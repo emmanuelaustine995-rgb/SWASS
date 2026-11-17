@@ -45,6 +45,17 @@ export class DbService implements OnModuleDestroy, OnModuleInit {
   }
 
   private securitySchemaPromise: Promise<void> | null = null;
+  private operationsSchemaPromise: Promise<void> | null = null;
+
+  async ensureOperationsSchema(): Promise<void> {
+    if (!this.operationsSchemaPromise) {
+      this.operationsSchemaPromise = this.pool.query(
+        'CREATE TABLE IF NOT EXISTS aurora_platform_operations (id SMALLINT PRIMARY KEY DEFAULT 1 CHECK (id=1), maintenance_enabled BOOLEAN NOT NULL DEFAULT false, maintenance_title VARCHAR(120) NOT NULL DEFAULT \'Scheduled maintenance\', maintenance_message VARCHAR(600) NOT NULL DEFAULT \'AURORA is temporarily unavailable while we improve our services. Please try again shortly.\', maintenance_starts_at TIMESTAMPTZ NULL, updated_by UUID NULL, updated_at TIMESTAMPTZ NOT NULL DEFAULT now()); INSERT INTO aurora_platform_operations (id) VALUES (1) ON CONFLICT (id) DO NOTHING;'
+      ).then(() => undefined).catch(err => { this.operationsSchemaPromise = null; throw err; });
+    }
+    await this.operationsSchemaPromise;
+  }
+
 
   private repairSchemaPromise: Promise<void> | null = null;
 
