@@ -349,6 +349,61 @@ export class PlatformAdminController {
     return { deactivated: true, shop: result.rows[0], message: 'Shop deactivated successfully.' };
   }
 
+  @Post('shops/:tenantId/restore')
+  async restoreSuspendedShop(@Param('tenantId') tenantId: string, @Req() req: any) {
+    const id = String(tenantId || '').trim();
+    if (!id || id.length > 80) throw new BadRequestException('A valid shop identifier is required');
+    const result = await this.db.pool.query(
+      `UPDATE tenants SET status='active' WHERE id=$1 AND status='suspended'
+       RETURNING id AS "tenantId",name AS "businessName",status`, [id],
+    );
+    if (!result.rowCount) {
+      const existing = await this.db.pool.query('SELECT id,status FROM tenants WHERE id=$1 LIMIT 1', [id]);
+      if (!existing.rowCount) throw new NotFoundException('Shop not found');
+      throw new BadRequestException(existing.rows[0].status === 'closed'
+        ? 'Archived shops cannot be restored from this action.'
+        : 'Only suspended shops can be restored.');
+    }
+    await this.db.recordSecurityEvent({
+      eventType: 'shop_reactivated', severity: 'high', outcome: 'completed',
+      actorUserId: req.user?.sub, sourceIp: req.ip, userAgent: req.headers?.['user-agent'],
+      metadata: { tenantId: id, businessName: result.rows[0].businessName },
+    });
+    return { restored: true, shop: result.rows[0], message: 'Shop access restored. Subscription status remains unchanged.' };
+  }
+
+  @Post('people/:userId/status')
+  async setPersonAccountStatus(
+    @Param('userId') userId: string,
+    @Body() body: { active?: boolean },
+    @Req() req: any,
+  ) {
+    const id = String(userId || '').trim();
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) {
+      throw new BadRequestException('A valid account identifier is required.');
+    }
+    if (typeof body?.active !== 'boolean') throw new BadRequestException('Choose whether the account should be active.');
+    if (id === String(req.user?.sub || '')) throw new BadRequestException('You cannot deactivate your own signed-in account.');
+    const result = await this.db.pool.query(
+      `UPDATE users
+          SET is_active=$2
+        WHERE id=$1 AND role IN ('owner','manager','freelancer')
+        RETURNING id,full_name AS "fullName",role,is_active AS "isActive"`,
+      [id, body.active],
+    );
+    if (!result.rowCount) throw new NotFoundException('Eligible shop-owner, manager or freelancer account not found.');
+    await this.db.recordSecurityEvent({
+      eventType: body.active ? 'user_account_reactivated' : 'user_account_deactivated',
+      severity: body.active ? 'medium' : 'high', outcome: 'completed',
+      actorUserId: req.user?.sub, sourceIp: req.ip, userAgent: req.headers?.['user-agent'],
+      metadata: { targetUserId: id, role: result.rows[0].role, active: body.active },
+    });
+    return {
+      updated: true, person: result.rows[0],
+      message: body.active ? 'Account access restored.' : 'Account deactivated. The account can no longer sign in.',
+    };
+  }
+
   @Post('shops/:tenantId/delete')
   async deleteDeactivatedShop(@Param('tenantId') tenantId: string, @Req() req: any) {
     const id = String(tenantId || '').trim();
