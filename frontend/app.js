@@ -1034,12 +1034,17 @@
     $('reg-business').required=!customerSignupMode;
     $('reg-location').required=!customerSignupMode;
     $('reg-national-id').required=true;
-    $('reg-id-photo').required=!customerSignupMode;
-    $('reg-passport-photo').required=!customerSignupMode;
+    // Legacy identity-photo inputs are not part of the current no-photo signup flow.
+    const idPhotoInput=$('reg-id-photo');
+    const passportPhotoInput=$('reg-passport-photo');
+    if(idPhotoInput)idPhotoInput.required=!customerSignupMode;
+    if(passportPhotoInput)passportPhotoInput.required=!customerSignupMode;
     $('reg-email').required=true;
     $('reg-password').required=true;
     $('reg-confirm-password').required=true;
-    $('owner-identity-uploads').classList.toggle('hidden',customerSignupMode);
+    // The legacy owner-identity-uploads wrapper is not present in the current
+    // registration markup. The guarded helper above already handles it when
+    // available; do not dereference a missing element during app startup.
     $('register-submit').textContent=customerSignupMode?'Create customer account · Send code':'Create shop owner account · Send verification code';
     const eyebrow=$('register-form').querySelector('.eyebrow');
     if(eyebrow)eyebrow.textContent=customerSignupMode?'CREATE YOUR AURORA CUSTOMER ACCOUNT':'CREATE YOUR AURORA SHOP OWNER ACCOUNT';
