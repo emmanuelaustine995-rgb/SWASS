@@ -1058,17 +1058,27 @@
     }
   }
   // Reference-style auth tabs reuse the existing sign-in, signup and recovery flows.
+  function setAuthReferenceTab(activeId){
+    ['auth-tab-signin','auth-tab-signup','auth-tab-recovery'].forEach(id=>{
+      const button=$(id);if(!button)return;
+      const active=id===activeId;button.classList.toggle('active',active);
+      if(active)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');
+    });
+  }
   $('auth-tab-signin')?.addEventListener('click',()=>{
+    setAuthReferenceTab('auth-tab-signin');
     if(!$('register-form').classList.contains('hidden'))$('show-login')?.click();
     if(!$('freelancer-register-form').classList.contains('hidden'))$('freelancer-back-login')?.click();
     $('login-form')?.classList.remove('hidden');$('password-reset-form')?.classList.add('hidden');
     document.body.classList.remove('registration-open');
   });
   $('auth-tab-signup')?.addEventListener('click',()=>{
+    setAuthReferenceTab('auth-tab-signup');
     if($('login-account-type').value==='freelancer')$('show-freelancer-register')?.click();
     else $('show-register')?.click();
   });
   $('auth-tab-recovery')?.addEventListener('click',()=>{
+    setAuthReferenceTab('auth-tab-recovery');
     if(!$('register-form').classList.contains('hidden'))$('show-login')?.click();
     $('show-password-reset')?.click();
   });
@@ -1099,7 +1109,7 @@
     $('signup-otp-message').textContent='';
     $('login-error').textContent='';
   }
-  $('show-login')?.addEventListener('click',returnFromSignupToLogin);
+  $('show-login')?.addEventListener('click',()=>{returnFromSignupToLogin();setAuthReferenceTab('auth-tab-signin');});
   $('signup-back-btn')?.addEventListener('click',returnFromSignupToLogin);
   $('signup-back-btn')?.classList.toggle('hidden',!customerSignupMode);
   $('login-account-type').addEventListener('change', updateLoginAccountType);
@@ -1129,7 +1139,7 @@
     if(form)form.scrollTop=0;
     requestAnimationFrame(()=>{if(card)card.scrollTo({top:0,behavior:'instant'});if(form)form.scrollTo({top:0,behavior:'instant'});});
   });
-  $('freelancer-back-login')?.addEventListener('click',()=>{
+  $('freelancer-back-login')?.addEventListener('click',()=>{setAuthReferenceTab('auth-tab-signin');
     document.body.classList.remove('registration-open');$('freelancer-register-form')?.classList.add('hidden');$('login-form').classList.remove('hidden');
     $('freelancer-register-entry')?.classList.remove('hidden');$('login-account-type').value='freelancer';updateLoginAccountType();
   });
