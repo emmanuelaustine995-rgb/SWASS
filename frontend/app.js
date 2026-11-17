@@ -1062,7 +1062,33 @@
       $('login-form').classList.remove('hidden');
     }
   }
+  function setAuroraAuthTab(active){
+    document.querySelectorAll('.aurora-auth-tabs button').forEach(button=>{
+      const selected=button.id===active;
+      button.classList.toggle('active',selected);
+      button.setAttribute('aria-pressed',selected?'true':'false');
+    });
+  }
+  $('aurora-tab-signin')?.addEventListener('click',()=>{
+    if(!$('register-form').classList.contains('hidden')) returnFromSignupToLogin();
+    if(!$('freelancer-register-form').classList.contains('hidden')) $('freelancer-back-login')?.click();
+    if(!$('password-reset-form').classList.contains('hidden')) $('cancel-password-reset')?.click();
+    $('login-form')?.classList.remove('hidden');
+    $('first-password-form')?.classList.add('hidden');
+    document.body.classList.remove('registration-open');
+    setAuroraAuthTab('aurora-tab-signin');
+  });
+  $('aurora-tab-signup')?.addEventListener('click',()=>{
+    if($('login-account-type')?.value==='freelancer') $('show-freelancer-register')?.click();
+    else $('show-register')?.click();
+    setAuroraAuthTab('aurora-tab-signup');
+  });
+  $('aurora-tab-recovery')?.addEventListener('click',()=>{
+    $('show-password-reset')?.click();
+    setAuroraAuthTab('aurora-tab-recovery');
+  });
   $('show-register')?.addEventListener('click',()=>{
+    setAuroraAuthTab('aurora-tab-signup');
     document.body.classList.add('registration-open');$('login-form').classList.add('hidden');$('password-reset-form')?.classList.add('hidden');$('first-password-form')?.classList.add('hidden');$('owner-register-entry').classList.add('hidden');$('register-form').classList.remove('hidden');$('register-error').textContent='';$('signup-otp-message').textContent='';updateSignupAccountType();
     // Start the customer registration screen at its top so the first fields
     // and the small Back control are visible on desktop.
@@ -1089,7 +1115,7 @@
     $('signup-otp-message').textContent='';
     $('login-error').textContent='';
   }
-  $('show-login')?.addEventListener('click',returnFromSignupToLogin);
+  $('show-login')?.addEventListener('click',()=>{returnFromSignupToLogin();setAuroraAuthTab('aurora-tab-signin');});
   $('signup-back-btn')?.addEventListener('click',returnFromSignupToLogin);
   $('signup-back-btn')?.classList.toggle('hidden',!customerSignupMode);
   $('login-account-type').addEventListener('change', updateLoginAccountType);
@@ -1110,6 +1136,7 @@
   }));
   updateLoginAccountType();
   $('show-freelancer-register')?.addEventListener('click',()=>{
+    setAuroraAuthTab('aurora-tab-signup');
     document.body.classList.add('registration-open');$('login-form').classList.add('hidden');$('password-reset-form')?.classList.add('hidden');
     $('freelancer-register-entry')?.classList.add('hidden');$('freelancer-register-form')?.classList.remove('hidden');
     $('freelancer-register-message').textContent='';
@@ -1556,6 +1583,7 @@
     finally{btn.disabled=false;btn.textContent='Save my password';}
   });
   $('show-password-reset').addEventListener('click',()=>{
+    setAuroraAuthTab('aurora-tab-recovery');
     $('reset-phone').value=$('login-phone').value.trim();
     $('login-form').classList.add('hidden');
     $('password-reset-form').classList.remove('hidden');
@@ -1563,6 +1591,7 @@
     $('password-reset-confirm-fields').classList.add('hidden');
   });
   $('cancel-password-reset').addEventListener('click',()=>{
+    setAuroraAuthTab('aurora-tab-signin');
     $('password-reset-form').classList.add('hidden');
     $('login-form').classList.remove('hidden');
   });
