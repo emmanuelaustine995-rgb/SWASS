@@ -461,4 +461,45 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="./app.js?v=owner-signup-no-photo-20261116"></script>
   <script src="./dashboard.js?v=aurora-freelancer-shop-dashboard-20261113-v2"></script>
+
+<script>
+(() => {
+  const statusUrl = 'https://swass-api.onrender.com/health/maintenance';
+  let notice = null;
+  async function checkAURORAMaintenance() {
+    try {
+      const response = await fetch(statusUrl, { cache: 'no-store', headers: { Accept: 'application/json' } });
+      if (!response.ok) return;
+      const state = await response.json();
+      if (state.enabled) {
+        if (!notice) {
+          notice = document.createElement('section');
+          notice.id = 'aurora-maintenance-notice';
+          notice.setAttribute('role', 'alert');
+          notice.setAttribute('aria-live', 'assertive');
+          notice.style.cssText = 'position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;padding:24px;background:linear-gradient(145deg,#071a39,#123d70);color:#fff;font-family:system-ui,-apple-system,Segoe UI,sans-serif;text-align:center;overflow:auto';
+          const card = document.createElement('div');
+          card.style.cssText = 'width:min(100%,560px);padding:clamp(24px,5vw,44px);border:1px solid #ffffff35;border-radius:22px;background:#ffffff12;box-shadow:0 24px 70px #0005';
+          const brand = document.createElement('div'); brand.textContent = 'AURORA E-RECEIPT'; brand.style.cssText = 'font-size:12px;font-weight:800;letter-spacing:2px;color:#9bd8ff';
+          const heading = document.createElement('h1'); heading.id = 'aurora-maintenance-title'; heading.style.cssText = 'font-size:clamp(25px,5vw,36px);line-height:1.2;margin:22px 0 12px';
+          const message = document.createElement('p'); message.id = 'aurora-maintenance-message'; message.style.cssText = 'font-size:16px;line-height:1.7;color:#e1edff;margin:0 0 24px;white-space:pre-wrap';
+          const retry = document.createElement('button'); retry.type = 'button'; retry.textContent = 'CHECK AGAIN'; retry.style.cssText = 'border:0;border-radius:999px;padding:13px 24px;background:#fff;color:#123d70;font-weight:800;font-size:13px;cursor:pointer';
+          retry.addEventListener('click', checkAURORAMaintenance);
+          const note = document.createElement('small'); note.textContent = 'Your account and business records remain stored securely. Please try again later.'; note.style.cssText = 'display:block;margin-top:20px;color:#b9cde8;line-height:1.5';
+          card.append(brand, heading, message, retry, note); notice.append(card); document.body.append(notice);
+        }
+        notice.querySelector('#aurora-maintenance-title').textContent = state.title || 'Scheduled maintenance';
+        notice.querySelector('#aurora-maintenance-message').textContent = state.message || 'AURORA is temporarily unavailable while we improve our services. Please try again shortly.';
+      } else if (notice) {
+        notice.remove(); notice = null;
+      }
+    } catch (_) {
+      // A temporary health-check failure must not fabricate a maintenance notice.
+    }
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', checkAURORAMaintenance, { once: true });
+  else checkAURORAMaintenance();
+  window.setInterval(checkAURORAMaintenance, 60000);
+})();
+</script>
 </body></html>
