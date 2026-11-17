@@ -283,7 +283,7 @@ body{background:#eef3fb}
  <div class="heading"><div><h2>People &amp; Account Directory</h2><p>All shop owners, managers and freelancers remain visible here, including deactivated accounts.</p></div></div>
  <div class="panel">
   <div class="soc-panel-head"><div><h3>Registered people</h3><p id="people-status">Loading account records…</p></div><div style="display:flex;gap:8px;flex-wrap:wrap"><input id="people-search" type="search" placeholder="Search name, phone, email or shop" style="max-width:320px"><button class="secondary" id="people-refresh" type="button" style="width:auto;margin:0">Refresh</button></div></div>
-  <div class="table-wrap"><table><thead><tr><th>Name</th><th>Account type</th><th>Business</th><th>Phone</th><th>Email</th><th>Login status</th><th>Registered</th></tr></thead><tbody id="people-rows"><tr><td colspan="7">Loading…</td></tr></tbody></table></div>
+  <div class="table-wrap"><table><thead><tr><th>Name</th><th>Account type</th><th>Business</th><th>Phone</th><th>Email</th><th>Login status</th><th>Registered</th><th>Super Admin action</th></tr></thead><tbody id="people-rows"><tr><td colspan="8">Loading…</td></tr></tbody></table></div>
  </div>
  <div class="heading" style="margin-top:28px"><div><h2>Registered Account Reset</h2><p>Deactivate old login accounts and expire subscriptions while preserving business and transaction history.</p></div></div>
  <div class="panel">
@@ -382,7 +382,9 @@ body{background:#eef3fb}
         const feedback=document.createElement('td');feedback.textContent='Not yet tracked';feedback.dataset.label='Customer feedback';tr.append(feedback);
         const action=document.createElement('td');action.dataset.label='Action';
         if(shop.status==='suspended'){
-          const remove=document.createElement('button');remove.type='button';remove.textContent='Delete shop';remove.style.cssText='background:#9f1239;color:#fff;border:0;border-radius:8px;padding:9px 11px;font-weight:800;cursor:pointer;white-space:nowrap';
+          const restore=document.createElement('button');restore.type='button';restore.textContent='Restore shop';restore.style.cssText='background:#087a55;color:#fff;border:0;border-radius:8px;padding:9px 11px;font-weight:800;cursor:pointer;white-space:nowrap;margin:0 6px 6px 0';
+          restore.addEventListener('click',()=>restoreShop(shop.tenantId,shop.businessName||'this shop',restore));action.append(restore);
+          const remove=document.createElement('button');remove.type='button';remove.textContent='Delete / archive';remove.style.cssText='background:#9f1239;color:#fff;border:0;border-radius:8px;padding:9px 11px;font-weight:800;cursor:pointer;white-space:nowrap';
           remove.addEventListener('click',()=>deleteShop(shop.tenantId,shop.businessName||'this shop',remove));action.append(remove);
         }else if(shop.status==='closed'){
           const deleted=document.createElement('span');deleted.textContent='Deleted / archived';deleted.style.cssText='color:#64748b;font-weight:800;font-size:12px';action.append(deleted);
@@ -410,6 +412,17 @@ body{background:#eef3fb}
     }catch(e){alert(e.message||'Could not deactivate this shop.');button.disabled=false;button.textContent='Deactivate this shop';}
   }
 
+  async function restoreShop(tenantId,businessName,button){
+    if(!tenantId){alert('This shop record has no valid identifier.');return;}
+    if(!window.confirm('Restore access for '+businessName+'? Its subscription status will not be changed.'))return;
+    button.disabled=true;button.textContent='Restoring…';
+    try{
+      const res=await fetch(API+'/platform-admin/shops/'+encodeURIComponent(tenantId)+'/restore',{method:'POST',headers:{Authorization:'Bearer '+token,Accept:'application/json'}});
+      const data=await res.json().catch(()=>({}));if(!res.ok)throw new Error(data.message||'Shop restoration failed.');
+      alert(data.message||'Shop access restored.');await loadShops();await loadOverview();await loadSecurity();
+    }catch(e){alert(e.message||'Could not restore this shop.');button.disabled=false;button.textContent='Restore shop';}
+  }
+
   async function deleteShop(tenantId,businessName,button){
     if(!tenantId){alert('This shop record has no valid identifier.');return;}
     const confirmed=window.confirm('DELETE / ARCHIVE '+businessName+'?\n\nThis option is available only after deactivation. The shop will disappear from the active shop directory and its users will remain blocked. Receipts, sales, payment records and audit history will be preserved. This action cannot be undone from this page.');
@@ -435,11 +448,26 @@ body{background:#eef3fb}
         const values=[person.fullName||'—',String(person.role||'').replace(/_/g,' '),person.businessName||'—',person.phone||'—',person.email||'—',person.isActive?'Active':'Deactivated',person.createdAt?new Date(person.createdAt).toLocaleDateString():'—'];
         const labels=['Name','Account type','Business','Phone','Email','Login status','Registered'];
         values.forEach((value,i)=>{const td=document.createElement('td');td.textContent=String(value);td.dataset.label=labels[i];tr.append(td);});
-        rows.append(tr);
+        const action=document.createElement('td');action.dataset.label='Super Admin action';
+        const control=document.createElement('button');control.type='button';control.textContent=person.isActive?'DEACTIVATE':'REACTIVATE';
+        control.style.cssText='border:0;border-radius:8px;padding:9px 11px;font-weight:800;cursor:pointer;color:#fff;background:'+(person.isActive?'#b42318':'#087a55');
+        control.addEventListener('click',()=>setPersonStatus(person,control));
+        action.append(control);tr.append(action);rows.append(tr);
       }
-      if(!rows.children.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=7;td.textContent='No matching owner or freelancer records found.';tr.append(td);rows.append(tr);}
+      if(!rows.children.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=8;td.textContent='No matching owner or freelancer records found.';tr.append(td);rows.append(tr);}
       status.textContent='Showing '+(data.people||[]).length+' people. Active and deactivated accounts are both included.';
-    }catch(e){status.textContent='Could not load people: '+e.message;const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=7;td.textContent='People directory unavailable.';tr.append(td);rows.append(tr);}
+    }catch(e){status.textContent='Could not load people: '+e.message;const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=8;td.textContent='People directory unavailable.';tr.append(td);rows.append(tr);}
+  }
+  async function setPersonStatus(person,button){
+    const nextActive=!person.isActive;
+    const action=nextActive?'restore access to':'deactivate';
+    if(!window.confirm('Are you sure you want to '+action+' '+(person.fullName||'this account')+'? This action will be recorded in the security audit log.'))return;
+    button.disabled=true;button.textContent=nextActive?'RESTORING…':'DEACTIVATING…';
+    try{
+      const res=await fetch(API+'/platform-admin/people/'+encodeURIComponent(person.id)+'/status',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token,Accept:'application/json'},body:JSON.stringify({active:nextActive})});
+      const data=await res.json().catch(()=>({}));if(!res.ok)throw new Error(data.message||'Account update failed.');
+      await loadPeople();await loadOverview();await loadSecurity();
+    }catch(e){alert(e.message||'Could not update account.');button.disabled=false;button.textContent=person.isActive?'DEACTIVATE':'REACTIVATE';}
   }
   $('people-refresh').addEventListener('click',loadPeople);
   $('people-search').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();loadPeople();}});
