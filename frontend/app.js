@@ -656,8 +656,6 @@
     btn.disabled=true;btn.textContent='Sending invitation…';message.textContent='Sending a secure invitation email…';
     try{
       const payload={fullName:$('staff-invite-name').value.trim(),email:$('staff-invite-email').value.trim(),phone:$('staff-invite-phone').value.trim(),role:$('staff-invite-role').value};
-      const ownerPaymentPhone=$('owner-mpesa-phone')?.value.trim()||'';
-      if(payload.role==='Vendor'&&!ownerPaymentPhone)throw new Error('Enter the business owner’s M-Pesa phone number in the dashboard payment section before inviting a Vendor.');
       const data=await request('/api/v1/staff/invitations',{method:'POST',body:JSON.stringify(payload)});
       if(payload.role==='Freelancer' && data.approvalRequired){
         message.textContent='Owner approval code sent to the registered phone ending '+data.ownerPhoneHint+'.';
@@ -666,14 +664,11 @@
         message.textContent='Verifying shop owner approval…';
         const approved=await request('/api/v1/staff/invitations/approve',{method:'POST',body:JSON.stringify({invitationId:data.invitationId,code:code.trim()})});
         message.textContent=approved.message||'Owner approved the freelancer. Invitation email sent.';
-      }else if(payload.role==='Vendor'){
-        message.textContent='Requesting the one-time KSh 50 vendor fee…';
-        const pay=await request('/api/v1/mpesa/stk-push',{method:'POST',body:JSON.stringify({purpose:'vendor_fee',invitationId:data.invitation.id,phone:ownerPaymentPhone})});
-        message.textContent='KSh 50 STK prompt sent to '+pay.phone+'. Enter your M-Pesa PIN to complete the one-time vendor fee.';
-        const deadline=Date.now()+90000;let feePaid=false,feeReceipt='';
-        while(Date.now()<deadline){await new Promise(resolve=>setTimeout(resolve,3000));const status=await request('/api/v1/mpesa/payments/'+encodeURIComponent(pay.paymentId));if(status.status==='success'){feePaid=true;feeReceipt=status.receiptNumber||'';break;}if(status.status==='failed')break;}
-        message.textContent=feePaid?'Vendor fee paid successfully'+(feeReceipt?' · M-Pesa receipt '+feeReceipt:'')+'. The invitation is active.':'Invitation sent, but KSh 50 payment is not confirmed yet. The vendor cannot activate until payment succeeds.';
-      }else if(payload.role==='Freelancer') message.textContent='Freelancer invitation email sent. Freelancers must pay their own subscription: KSh 100 monthly or KSh 900 yearly.';
+      }else{
+        message.textContent=payload.role==='Vendor'
+          ?'Free Shop Staff invitation sent. No M-Pesa payment or activation fee is required. Access follows the shop owner’s active subscription.'
+          :'Freelancer invitation sent after owner approval. Access follows the linked shop’s active subscription.';
+      }
       $('staff-invite-form').reset();setStaffInviteOpen(false);await loadStaffInvitations();
     }catch(err){message.textContent=err.message||'Could not send the staff invitation.';}
     finally{btn.disabled=false;btn.textContent='Send email invitation';}
@@ -823,7 +818,7 @@
       if (team) team.open = true;
       setStaffInviteOpen(true);
       $('staff-invite-role').value = 'Vendor';
-      $('staff-invite-message').textContent = 'Each Vendor has a one-time KSh 50 activation fee, paid by the business owner through M-Pesa. Freelancers are free.';
+      $('staff-invite-message').textContent = 'Shop Staff and linked Freelancers do not pay an individual activation fee or subscription. Access follows the shop owner’s active subscription.';
       requestAnimationFrame(() => team?.scrollIntoView({behavior:'smooth',block:'center'}));
     });
   }
