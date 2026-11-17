@@ -1583,6 +1583,7 @@
     finally{btn.disabled=false;btn.textContent='Save my password';}
   });
   $('show-password-reset').addEventListener('click',()=>{
+    setAuroraAuthTab('aurora-tab-recovery');
     $('reset-phone').value=$('login-phone').value.trim();
     $('login-form').classList.add('hidden');
     $('password-reset-form').classList.remove('hidden');
@@ -1590,6 +1591,7 @@
     $('password-reset-confirm-fields').classList.add('hidden');
   });
   $('cancel-password-reset').addEventListener('click',()=>{
+    setAuroraAuthTab('aurora-tab-signin');
     $('password-reset-form').classList.add('hidden');
     $('login-form').classList.remove('hidden');
   });
