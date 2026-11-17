@@ -1400,3 +1400,84 @@ body.workspace-active main.shell > #workspace-nav:not(.hidden) {
     flex:0 0 auto!important;
   }
 }
+
+
+/* AURORA long-workspace pages: use the document as the vertical scroll owner.
+   Keep the narrow phone-style frame on laptops, but never trap long forms or
+   profile settings inside a viewport-height shell. */
+html {
+  height:auto!important;
+  min-height:100%!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  scroll-behavior:auto!important;
+}
+body.workspace-active {
+  display:block!important;
+  position:relative!important;
+  height:auto!important;
+  min-height:100vh!important;
+  min-height:100dvh!important;
+  max-height:none!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  overscroll-behavior-y:auto!important;
+  -webkit-overflow-scrolling:touch!important;
+  touch-action:pan-y!important;
+}
+body.workspace-active main.shell {
+  display:flex!important;
+  flex-direction:column!important;
+  position:relative!important;
+  height:auto!important;
+  min-height:100vh!important;
+  min-height:100dvh!important;
+  max-height:none!important;
+  overflow:visible!important;
+  overflow-x:clip!important;
+  overflow-y:visible!important;
+  contain:none!important;
+  isolation:auto!important;
+}
+body.workspace-active main.shell > :not(#workspace-nav) {
+  flex:0 0 auto!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow:visible!important;
+  overflow-y:visible!important;
+}
+body.workspace-active main.shell #profile-view,
+body.workspace-active main.shell #profile-view *,
+body.workspace-active main.shell #shop-home,
+body.workspace-active main.shell #shop-home *,
+body.workspace-active main.shell #owner-home,
+body.workspace-active main.shell #owner-home *,
+body.workspace-active main.shell #owner-dashboard-view,
+body.workspace-active main.shell #owner-dashboard-view * {
+  max-height:none!important;
+}
+body.workspace-active main.shell > #workspace-nav:not(.hidden) {
+  position:sticky!important;
+  top:auto!important;
+  bottom:0!important;
+  margin-top:auto!important;
+  flex:0 0 auto!important;
+}
+@media (min-width:521px) {
+  body.workspace-active main.shell {
+    width:min(100%,430px)!important;
+    max-width:430px!important;
+    min-height:100dvh!important;
+    margin-left:auto!important;
+    margin-right:auto!important;
+  }
+}
+@media (max-width:520px) {
+  body.workspace-active main.shell {
+    width:100%!important;
+    max-width:100%!important;
+    min-height:100dvh!important;
+    margin:0!important;
+  }
+}
