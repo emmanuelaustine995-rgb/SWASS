@@ -2740,3 +2740,61 @@ html body.workspace-active #workspace-nav button.active{transform:none!important
   html body.workspace-active .shell{min-height:0!important;padding-bottom:24px!important}
   html body.workspace-active #workspace-nav{position:relative!important;top:auto!important}
 }
+
+
+/* Cross-device layout pass: preserve each page's structure while making every
+   workspace fit compact laptops, standard laptops, tablets and phones. */
+html,body{width:100%;max-width:100%;min-width:0}
+body{overflow-x:hidden}
+#app,.app,.main-content,.workspace-content,.shell{min-width:0;max-width:100%}
+.shell{width:min(100% - 24px,1280px);margin-inline:auto}
+.shell>*,
+.dashboard-layout>*,
+.dashboard-main>*,
+.dashboard-sidebar>*,
+.profile-grid>*,
+.shop-grid>*,
+.content-grid>*,
+.metric-grid>*,
+.owner-stats>*{min-width:0;max-width:100%}
+button,.btn,a.button{overflow-wrap:anywhere}
+input,select,textarea{box-sizing:border-box;min-width:0;max-width:100%}
+.table-wrap,.table-responsive,.history-table-wrap,.data-table-wrap{width:100%;max-width:100%;overflow-x:auto;overscroll-behavior-inline:contain}
+@media (min-width:761px) and (max-width:1440px){
+  .shell{width:calc(100% - 32px);max-width:1280px;padding-inline:clamp(12px,2vw,24px)}
+  .dashboard-layout{grid-template-columns:minmax(220px, min(27%,300px)) minmax(0,1fr);gap:clamp(12px,1.8vw,22px)}
+  .dashboard-main,.dashboard-sidebar{min-width:0;width:auto}
+  .content-grid,.dashboard-grid,.profile-grid,.shop-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .metric-grid,.owner-stats,.channel-grid,.comparison-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr))}
+  .page-heading,.panel-heading,.section-heading,.toolbar,.command-bar{min-width:0;flex-wrap:wrap}
+  .panel,.card,.modal-card,.profile-panel,.shop-panel{min-width:0;max-width:100%}
+}
+@media (min-width:761px) and (max-width:1024px){
+  .dashboard-layout{grid-template-columns:minmax(0,1fr)!important}
+  .dashboard-sidebar{position:static!important;width:100%!important}
+  .dashboard-main{width:100%!important}
+  .content-grid,.dashboard-grid,.profile-grid,.shop-grid,.form-two,.buyer-fields{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media (max-width:760px){
+  html,body{min-width:320px;width:100%;overflow-x:hidden}
+  .shell{width:100%!important;max-width:100%!important;margin:0!important;padding-inline:10px!important}
+  .dashboard-layout,.dashboard-main,.dashboard-sidebar{width:100%;min-width:0}
+  .content-grid,.dashboard-grid,.profile-grid,.shop-grid,.form-two,.buyer-fields,
+  .dashboard-main-grid{grid-template-columns:minmax(0,1fr)!important}
+  .metric-grid,.owner-stats,.channel-grid,.comparison-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .panel,.card,.profile-panel,.shop-panel{width:100%;min-width:0}
+  .table-wrap,.table-responsive,.history-table-wrap,.data-table-wrap{max-width:100%;overflow-x:auto}
+  .modal{max-width:100vw}
+}
+@media (max-width:420px){
+  .shell{padding-inline:8px!important}
+  .metric-grid,.owner-stats,.channel-grid,.comparison-grid{grid-template-columns:minmax(0,1fr)!important}
+  .page-heading h1{font-size:clamp(19px,6vw,24px)}
+  .form-actions,.command-actions,.staff-invite-actions{display:flex;flex-wrap:wrap}
+  .form-actions>* ,.command-actions>* ,.staff-invite-actions>*{flex:1 1 130px;min-width:0}
+}
+@media (max-height:760px) and (min-width:761px){
+  body.workspace-active{overflow-y:auto!important}
+  body.workspace-active .shell{height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important}
+  body.workspace-active .modal-card{max-height:calc(100dvh - 24px);overflow:auto}
+}
