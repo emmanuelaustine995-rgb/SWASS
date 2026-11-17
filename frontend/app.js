@@ -1028,18 +1028,13 @@
       else element.style.setProperty('display','none','important');
     };
     setOwnerOnlyVisible('owner-signup-fields',!customerSignupMode);
-    setOwnerOnlyVisible('reg-id-photo-wrap',!customerSignupMode);
-    setOwnerOnlyVisible('owner-identity-uploads',!customerSignupMode);
     setOwnerOnlyVisible('reg-kra-wrap',!customerSignupMode);
     $('reg-business').required=!customerSignupMode;
     $('reg-location').required=!customerSignupMode;
     $('reg-national-id').required=true;
-    $('reg-id-photo').required=!customerSignupMode;
-    $('reg-passport-photo').required=!customerSignupMode;
     $('reg-email').required=true;
     $('reg-password').required=true;
     $('reg-confirm-password').required=true;
-    $('owner-identity-uploads').classList.toggle('hidden',customerSignupMode);
     $('register-submit').textContent=customerSignupMode?'Create customer account · Send code':'Create shop owner account · Send verification code';
     const eyebrow=$('register-form').querySelector('.eyebrow');
     if(eyebrow)eyebrow.textContent=customerSignupMode?'CREATE YOUR AURORA CUSTOMER ACCOUNT':'CREATE YOUR AURORA SHOP OWNER ACCOUNT';
@@ -1062,6 +1057,31 @@
       $('login-form').classList.remove('hidden');
     }
   }
+  // Reference-style auth tabs reuse the existing sign-in, signup and recovery flows.
+  function setAuthReferenceTab(activeId){
+    ['auth-tab-signin','auth-tab-signup','auth-tab-recovery'].forEach(id=>{
+      const button=$(id);if(!button)return;
+      const active=id===activeId;button.classList.toggle('active',active);
+      if(active)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');
+    });
+  }
+  $('auth-tab-signin')?.addEventListener('click',()=>{
+    setAuthReferenceTab('auth-tab-signin');
+    if(!$('register-form').classList.contains('hidden'))$('show-login')?.click();
+    if(!$('freelancer-register-form').classList.contains('hidden'))$('freelancer-back-login')?.click();
+    $('login-form')?.classList.remove('hidden');$('password-reset-form')?.classList.add('hidden');
+    document.body.classList.remove('registration-open');
+  });
+  $('auth-tab-signup')?.addEventListener('click',()=>{
+    setAuthReferenceTab('auth-tab-signup');
+    if($('login-account-type').value==='freelancer')$('show-freelancer-register')?.click();
+    else $('show-register')?.click();
+  });
+  $('auth-tab-recovery')?.addEventListener('click',()=>{
+    setAuthReferenceTab('auth-tab-recovery');
+    if(!$('register-form').classList.contains('hidden'))$('show-login')?.click();
+    $('show-password-reset')?.click();
+  });
   $('show-register')?.addEventListener('click',()=>{
     document.body.classList.add('registration-open');$('login-form').classList.add('hidden');$('password-reset-form')?.classList.add('hidden');$('first-password-form')?.classList.add('hidden');$('owner-register-entry').classList.add('hidden');$('register-form').classList.remove('hidden');$('register-error').textContent='';$('signup-otp-message').textContent='';updateSignupAccountType();
     // Start the customer registration screen at its top so the first fields
@@ -1089,7 +1109,7 @@
     $('signup-otp-message').textContent='';
     $('login-error').textContent='';
   }
-  $('show-login')?.addEventListener('click',returnFromSignupToLogin);
+  $('show-login')?.addEventListener('click',()=>{returnFromSignupToLogin();setAuthReferenceTab('auth-tab-signin');});
   $('signup-back-btn')?.addEventListener('click',returnFromSignupToLogin);
   $('signup-back-btn')?.classList.toggle('hidden',!customerSignupMode);
   $('login-account-type').addEventListener('change', updateLoginAccountType);
@@ -1119,7 +1139,7 @@
     if(form)form.scrollTop=0;
     requestAnimationFrame(()=>{if(card)card.scrollTo({top:0,behavior:'instant'});if(form)form.scrollTo({top:0,behavior:'instant'});});
   });
-  $('freelancer-back-login')?.addEventListener('click',()=>{
+  $('freelancer-back-login')?.addEventListener('click',()=>{setAuthReferenceTab('auth-tab-signin');
     document.body.classList.remove('registration-open');$('freelancer-register-form')?.classList.add('hidden');$('login-form').classList.remove('hidden');
     $('freelancer-register-entry')?.classList.remove('hidden');$('login-account-type').value='freelancer';updateLoginAccountType();
   });

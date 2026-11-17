@@ -31,6 +31,7 @@
   <link rel="stylesheet" href="./dashboard.css?v=gold-repair-diagnosis-20261115">
   <link rel="stylesheet" href="./registration-layout.css?v=equity-inspired-signup-20261116">
   <link rel="stylesheet" href="./responsive-auth.css?v=desktop-registration-visible-20261116">
+  <link rel="stylesheet" href="./aurora-auth-reference.css?v=aurora-split-auth-20261117">
 </head>
 <body>
   <header class="topbar"><a class="brand" href="#" aria-label="AURORA E-RECEIPT PLATFORM"><span>AURORA E-RECEIPT PLATFORM</span></a><div class="topbar-actions"></div></header>
@@ -45,21 +46,13 @@
   <main class="shell">
     <section id="login-view" class="login-wrap">
       <div class="login-card">
+        <nav class="auth-reference-tabs" aria-label="Account access">
+          <button id="auth-tab-signin" type="button" class="active" aria-current="page">Sign In</button>
+          <button id="auth-tab-signup" type="button">Sign Up</button>
+          <button id="auth-tab-recovery" type="button">Password recovery</button>
+        </nav>
         <div class="aurora-brand-lockup" aria-label="AURORA E-RECEIPT">
-          <svg class="aurora-login-logo" viewBox="0 0 360 142" role="img" aria-labelledby="aurora-logo-title">
-            <title id="aurora-logo-title">AURORA E-RECEIPT</title>
-            <defs><linearGradient id="auroraPurple" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6500d8"/><stop offset="1" stop-color="#320078"/></linearGradient></defs>
-            <g transform="translate(8 5)" fill="none" stroke="url(#auroraPurple)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M18 16 Q20 8 31 8 H105 Q116 8 116 20 V91 L103 101 L91 93 L78 103 L65 94 L52 104 L39 95 L26 103 L13 94 Z" fill="#fff" />
-              <path d="M40 29 H89 M40 40 H78" stroke-width="5"/>
-              <path d="M37 78 L63 48 L91 78 H75 L63 61 L51 78 Z" fill="url(#auroraPurple)" stroke="none"/>
-              <path d="M32 86 H92" stroke-width="4"/>
-            </g>
-            <text x="145" y="70" fill="url(#auroraPurple)" font-size="49" font-weight="850" font-style="italic" letter-spacing="-2">Aurora</text>
-            <path d="M148 91 H337" stroke="#8b55cf" stroke-width="2.5" stroke-linecap="round"/>
-            <text x="150" y="119" fill="#4a168e" font-size="17" font-weight="800" letter-spacing="7">E-RECEIPT</text>
-          </svg>
-          <p class="aurora-tagline"><span>Timeless receipts, never lose a receipt.</span></p>
+          <img class="aurora-login-logo" src="./aurora-logo.svg" alt="Aurora E-Receipt logo">
         </div>
         <form id="login-form"><div class="login-role-tabs" role="group" aria-label="Choose account type"><button class="login-role-tab active" type="button" data-login-role="owner" aria-pressed="true">Shop Owner</button><button class="login-role-tab" type="button" data-login-role="freelancer" aria-pressed="false">Freelancer</button><button class="login-role-tab" type="button" data-login-role="customer" aria-pressed="false">Customer</button></div><select id="login-account-type" class="hidden" aria-hidden="true" tabindex="-1"><option value="owner">Shop Owner</option><option value="freelancer">Freelancer</option><option value="customer">Customer</option></select><label>Phone number<input id="login-phone" name="phone" autocomplete="username" inputmode="tel" placeholder="07XX XXX XXX" required></label><label>Password<input id="login-password" name="password" type="password" autocomplete="current-password" required></label><button class="btn btn-primary full login-submit-compact" type="submit">LOG IN</button><p id="login-error" class="error" role="alert"></p></form><p class="login-forgot-wrap"><button id="show-password-reset" class="text-btn login-forgot-btn" type="button">FORGOT PASSWORD</button></p>
         <form id="first-password-form" class="hidden">
@@ -139,6 +132,21 @@
           <div class="registration-sticky-footer"><span>Already registered?</span><button id="show-login" type="button" class="registration-back-button">← Back to sign in</button></div>
         </form>
       </div>
+      <aside class="aurora-welcome-panel" aria-label="Welcome to AURORA">
+        <div class="aurora-welcome-content">
+          <img src="./aurora-logo.svg" alt="Aurora E-Receipt" class="aurora-welcome-logo">
+          <h1>Welcome to Auroraskyholdings.co.ke</h1>
+          <p>digital E-RECEIPT</p>
+          <div class="aurora-hero-art" aria-hidden="true">
+            <div class="aurora-hero-monogram">A</div>
+            <div class="aurora-hero-screen"><span class="hero-screen-mark">AURORA</span><span class="hero-screen-sub">E-RECEIPT</span><span class="hero-screen-lines"></span></div>
+            <div class="aurora-hero-person person-left"><i></i><b></b><em></em></div>
+            <div class="aurora-hero-person person-right"><i></i><b></b><em></em></div>
+            <div class="aurora-hero-blocks"><i></i><i></i><i></i><i></i></div>
+            <div class="aurora-hero-base"></div>
+          </div>
+        </div>
+      </aside>
       <section id="aurora-policy-center" class="aurora-policy-center" aria-label="AURORA policies">
         <details>
           <summary><strong>Terms, Privacy &amp; Security Policies</strong></summary>
