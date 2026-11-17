@@ -103,7 +103,27 @@ export class AuthGuard implements CanActivate {
     // not yet been purchased. All business-operation APIs remain locked.
     const paymentRoute = path === '/api/v1/mpesa/stk-push' || path === '/api/v1/mpesa/account-summary' || path === '/api/v1/auth/change-password' ||
       /^\/api\/v1\/mpesa\/payments\/[0-9a-f-]+$/i.test(path);
-    if (user.role === 'freelancer') {
+    if (user.role === 'freelancer' && user.tenantId) {
+      // A freelancer linked to a shop works inside that shop's tenant.
+      // Their access follows the shop owner's subscription; do not block the
+      // linked freelancer behind a separate personal freelancer subscription.
+      if (!paymentRoute) {
+        const active = await this.db.pool.query(
+          `SELECT 1 FROM subscriptions
+            WHERE tenant_id=$1 AND status='active' AND ends_at>now()
+            LIMIT 1`,
+          [user.tenantId],
+        );
+        if (!active.rowCount) {
+          throw new HttpException(
+            'The linked shop subscription is inactive. Ask the shop owner to renew the AURORA shop plan.',
+            HttpStatus.PAYMENT_REQUIRED,
+          );
+        }
+      }
+    } else if (user.role === 'freelancer') {
+      // Legacy freelancer accounts without a shop link retain the individual plan
+      // requirement until they are safely matched to exactly one shop.
       await this.db.ensureFreelancerSubscriptionSchema();
       if (!paymentRoute) {
         const active = await this.db.pool.query(
@@ -114,7 +134,7 @@ export class AuthGuard implements CanActivate {
         );
         if (!active.rowCount) {
           throw new HttpException(
-            'An active personal SWASS freelancer subscription is required. Pay KSh 100 monthly or KSh 900 yearly to unlock your freelancer workspace.',
+            'This freelancer account is not linked to a shop yet. Complete shop matching or contact the shop owner before opening the workspace.',
             HttpStatus.PAYMENT_REQUIRED,
           );
         }
