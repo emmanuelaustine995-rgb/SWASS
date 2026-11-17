@@ -1481,3 +1481,48 @@ body.workspace-active main.shell > #workspace-nav:not(.hidden) {
     margin:0!important;
   }
 }
+
+
+/* AURORA navigation must stay in one screen position while page content scrolls.
+   The bar is fixed to the viewport, aligned with the centred phone frame on
+   laptops and full-width on phones. Extra bottom space keeps content reachable. */
+body.workspace-active {
+  padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))!important;
+}
+body.workspace-active main.shell {
+  padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))!important;
+}
+body.workspace-active main.shell > #workspace-nav:not(.hidden) {
+  position:fixed!important;
+  left:50%!important;
+  right:auto!important;
+  top:auto!important;
+  bottom:0!important;
+  transform:translateX(-50%)!important;
+  width:min(100vw,430px)!important;
+  max-width:430px!important;
+  min-width:0!important;
+  height:auto!important;
+  max-height:none!important;
+  margin:0!important;
+  z-index:2147482000!important;
+  flex:none!important;
+  align-self:auto!important;
+  box-sizing:border-box!important;
+  padding-bottom:env(safe-area-inset-bottom,0px)!important;
+}
+@media (max-width:520px) {
+  body.workspace-active main.shell > #workspace-nav:not(.hidden) {
+    left:0!important;
+    right:0!important;
+    width:100vw!important;
+    max-width:100vw!important;
+    transform:none!important;
+  }
+}
+@media (min-width:521px) {
+  body.workspace-active main.shell > #workspace-nav:not(.hidden) {
+    width:430px!important;
+    max-width:430px!important;
+  }
+}
