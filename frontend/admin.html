@@ -264,6 +264,19 @@ body{background:#eef3fb}
   <div class="table-wrap"><table class="soc-table"><thead><tr><th>Phone / identifiers</th><th>Status &amp; OB</th><th>Shop / branch</th><th>Lost / reported</th><th>Finder reports</th><th>Latest search</th></tr></thead><tbody id="lost-phone-rows"><tr><td colspan="6">Loading reported phones…</td></tr></tbody></table></div>
  </div>
  <div class="panel"><h3>Security controls &amp; audit coverage</h3><div class="soc-control-grid"><div><b>HTTPS and browser security headers</b><span>Configured in API gateway application</span></div><div><b>Administrator-only endpoints</b><span>JWT authentication and super-admin role checks</span></div><div><b>Login event recording</b><span>Successful and failed customer, owner and admin sign-ins</span></div><div><b>Shop action audit</b><span>Shop deactivation events recorded with administrator identity</span></div></div></div>
+ <div class="panel" style="margin-top:14px">
+  <div class="soc-panel-head"><div><h3>Incident response &amp; IT maintenance register</h3><p id="ops-work-status">Loading incidents, changes, maintenance and recovery tasks…</p></div><button id="ops-work-refresh" class="secondary" type="button" style="width:auto">Refresh register</button></div>
+  <form id="ops-work-form" class="settings-layout" style="grid-template-columns:repeat(2,minmax(0,1fr));margin-top:12px">
+   <div><label for="ops-kind">Record type</label><select id="ops-kind" required><option value="incident">Security / service incident</option><option value="maintenance">IT maintenance</option><option value="change">System change</option><option value="recovery">Backup / recovery exercise</option></select></div>
+   <div><label for="ops-severity">Severity</label><select id="ops-severity" required><option value="medium">Medium</option><option value="critical">Critical</option><option value="high">High</option><option value="low">Low</option><option value="info">Information</option></select></div>
+   <div style="grid-column:1/-1"><label for="ops-title">Title</label><input id="ops-title" maxlength="160" required placeholder="e.g. Investigate repeated failed sign-ins"></div>
+   <div style="grid-column:1/-1"><label for="ops-description">Details / action taken</label><textarea id="ops-description" maxlength="2000" rows="3" style="width:100%;padding:12px;border:1px solid #d5deea;border-radius:10px;font:inherit" placeholder="Record symptoms, affected service, containment steps and next action. Do not enter passwords, OTPs or full identity numbers."></textarea></div>
+   <div><label for="ops-owner">Assigned to</label><input id="ops-owner" maxlength="120" placeholder="Team or responsible person"></div>
+   <div><label for="ops-due">Due date (optional)</label><input id="ops-due" type="datetime-local"></div>
+   <div style="grid-column:1/-1"><button class="primary" id="ops-work-submit" type="submit" style="width:auto">CREATE OPERATIONS RECORD</button></div>
+  </form>
+  <div id="ops-work-items" class="settings-check-list"><div class="settings-loading">Loading operations register…</div></div>
+ </div>
 </section>
 <section id="section-access" class="hidden"><div class="heading"><div><h2>Admin Access Control</h2><p>Up to three authorised people, with multiple approved email aliases per person.</p></div></div><div class="cards"><div class="card"><small>Registered shops</small><div id="access-shops" class="metric">—</div></div><div class="card"><small>Active shop owners</small><div id="access-owners" class="metric">—</div></div><div class="card"><small>Active customer accounts</small><div id="access-customers" class="metric">—</div></div><div class="card"><small>Inactive user accounts</small><div id="access-inactive" class="metric">—</div></div></div><div class="chart-grid"><div class="chart-panel"><h3>Account security posture</h3><p>Live account counts from the platform database—not a threat-detection score</p><div class="chart-row"><span>Active owners</span><div class="chart-track"><div id="access-owner-fill" class="chart-fill"></div></div><strong id="access-owner-value" class="chart-value">—</strong></div><div class="chart-row"><span>Customers</span><div class="chart-track"><div id="access-customer-fill" class="chart-fill"></div></div><strong id="access-customer-value" class="chart-value">—</strong></div><div class="chart-row"><span>Inactive users</span><div class="chart-track"><div id="access-inactive-fill" class="chart-fill"></div></div><strong id="access-inactive-value" class="chart-value">—</strong></div><div id="access-chart-note" class="chart-empty">Waiting for verified platform counts…</div></div><div class="panel"><h3>Authorised administrator identities</h3><p>Registration is checked against the server-side AURORA_ADMIN_IDENTITIES configuration. Each person has one approved phone number and one or more approved email addresses. Phone verification and email verification are required before admin sign-in. National ID numbers are stored only as protected hashes. Individual permissions, login MFA, and append-only administrator audit history still require backend implementation.</p></div></div></section>
 <section id="section-accounts" class="hidden">
@@ -462,6 +475,54 @@ body{background:#eef3fb}
     }finally{button.disabled=false;button.textContent='RESET NON-ADMIN LOGIN ACCOUNTS';}
   }
   $('account-reset-run').addEventListener('click',resetRegisteredAccounts);
+
+  async function loadOperationsWorkItems(){
+    const status=$('ops-work-status'),list=$('ops-work-items');
+    if(!status||!list)return;
+    status.textContent='Loading live incident and IT operations records…';
+    try{
+      const data=await api('/platform-admin/operations/work-items?limit=100');
+      list.replaceChildren();
+      for(const item of (data.items||[])){
+        const card=document.createElement('div');card.className='settings-check';card.style.display='block';
+        const top=document.createElement('div');top.style.display='flex';top.style.justifyContent='space-between';top.style.gap='10px';top.style.flexWrap='wrap';
+        const title=document.createElement('b');title.textContent='#'+item.id+' · '+String(item.kind||'').toUpperCase()+' · '+item.title;
+        const badge=document.createElement('span');badge.className='soc-severity sev-'+(item.severity||'info');badge.textContent=(item.severity||'info')+' · '+(item.status||'open');
+        top.append(title,badge);card.append(top);
+        const details=document.createElement('p');details.textContent=item.description||'No details recorded.';details.style.margin='8px 0';
+        const meta=document.createElement('p');meta.textContent='Assigned: '+(item.ownerLabel||'Unassigned')+' · Created: '+(item.createdAt?new Date(item.createdAt).toLocaleString():'—')+(item.dueAt?' · Due: '+new Date(item.dueAt).toLocaleString():'');
+        card.append(details,meta);
+        const controls=document.createElement('div');controls.style.display='flex';controls.style.gap='8px';controls.style.flexWrap='wrap';
+        const select=document.createElement('select');select.setAttribute('aria-label','Update status for record '+item.id);
+        ['open','investigating','mitigated','resolved','closed'].forEach(value=>{const option=document.createElement('option');option.value=value;option.textContent=value.toUpperCase();option.selected=value===item.status;select.append(option);});
+        const save=document.createElement('button');save.type='button';save.className='secondary';save.style.width='auto';save.textContent='SAVE STATUS';
+        save.addEventListener('click',()=>updateOperationsWorkItem(item.id,{status:select.value}));
+        controls.append(select,save);
+        if(item.resolution){const resolution=document.createElement('p');resolution.textContent='Resolution: '+item.resolution;card.append(resolution);}
+        card.append(controls);list.append(card);
+      }
+      if(!list.children.length){const empty=document.createElement('p');empty.className='settings-loading';empty.textContent='No incidents or IT operations records have been created yet.';list.append(empty);}
+      status.textContent='Showing '+(data.items||[]).length+' live records. Changes are recorded in the Super Admin security audit log.';
+    }catch(e){status.textContent='Operations register unavailable: '+e.message;list.textContent='Could not load operations records.';}
+  }
+  async function updateOperationsWorkItem(id,changes){
+    try{
+      const res=await fetch(API+'/platform-admin/operations/work-items/'+encodeURIComponent(id),{method:'PATCH',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token,Accept:'application/json'},body:JSON.stringify(changes)});
+      const data=await res.json().catch(()=>({}));if(!res.ok)throw new Error(data.message||'Update failed.');
+      await loadOperationsWorkItems();
+    }catch(e){$('ops-work-status').textContent='Update not confirmed: '+e.message;}
+  }
+  $('ops-work-form').addEventListener('submit',async e=>{
+    e.preventDefault();const button=$('ops-work-submit'),status=$('ops-work-status');button.disabled=true;status.textContent='Saving operations record…';
+    const due=$('ops-due').value;
+    try{
+      const res=await fetch(API+'/platform-admin/operations/work-items',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token,Accept:'application/json'},body:JSON.stringify({kind:$('ops-kind').value,severity:$('ops-severity').value,title:$('ops-title').value.trim(),description:$('ops-description').value.trim(),ownerLabel:$('ops-owner').value.trim(),dueAt:due?new Date(due).toISOString():null})});
+      const data=await res.json().catch(()=>({}));if(!res.ok)throw new Error(data.message||'Could not create operations record.');
+      $('ops-work-form').reset();status.textContent='Record #'+data.item.id+' created.';await loadOperationsWorkItems();
+    }catch(err){status.textContent='Record not saved: '+err.message;}
+    finally{button.disabled=false;}
+  });
+  $('ops-work-refresh').addEventListener('click',loadOperationsWorkItems);
 
   async function loadSecurity(){
     void loadLostPhones();
@@ -723,7 +784,7 @@ body{background:#eef3fb}
   document.querySelectorAll('.nav button').forEach(btn=>btn.addEventListener('click',()=>{
     document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b===btn));
     document.querySelectorAll('main.content section').forEach(s=>s.classList.add('hidden'));
-    $('section-'+btn.dataset.section).classList.remove('hidden');$('admin-welcome').textContent=btn.textContent;menu.hidden=true;menuToggle.setAttribute('aria-expanded','false');if(btn.dataset.section==='shops')loadShops();if(btn.dataset.section==='accounts')loadPeople();if(btn.dataset.section==='security')loadSecurity();if(btn.dataset.section==='reports')loadReports();if(btn.dataset.section==='settings'){loadSettings();loadMaintenance();}
+    $('section-'+btn.dataset.section).classList.remove('hidden');$('admin-welcome').textContent=btn.textContent;menu.hidden=true;menuToggle.setAttribute('aria-expanded','false');if(btn.dataset.section==='shops')loadShops();if(btn.dataset.section==='accounts')loadPeople();if(btn.dataset.section==='security'){loadSecurity();loadOperationsWorkItems();}if(btn.dataset.section==='reports')loadReports();if(btn.dataset.section==='settings'){loadSettings();loadMaintenance();}
   }));
 })();
 </script>
