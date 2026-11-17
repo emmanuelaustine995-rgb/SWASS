@@ -1,0 +1,156 @@
+/* AURORA split-screen authentication inspired by the supplied reference.
+   Keep the existing forms, validation, OTP flow and policies intact. */
+html,body{min-height:100%;max-width:100%;overflow-x:hidden}
+body:not(.workspace-active){
+  background:
+    radial-gradient(ellipse at 82% 84%,rgba(79,115,244,.30),transparent 34%),
+    radial-gradient(ellipse at 93% 7%,rgba(87,225,234,.40),transparent 38%),
+    linear-gradient(120deg,#dff8ff 0%,#d9f2ff 52%,#e8fbff 100%)!important;
+  color:#18345d;
+}
+body:not(.workspace-active) .topbar,
+body:not(.workspace-active) .global-back-row{display:none!important}
+body:not(.workspace-active) .shell{
+  width:min(calc(100% - 24px),1380px)!important;max-width:1380px!important;
+  min-height:calc(100vh - 24px);min-height:calc(100dvh - 24px);
+  margin:12px auto!important;padding:clamp(14px,3vw,30px)!important;
+  border:1px solid rgba(255,255,255,.8);border-radius:28px;
+  background:linear-gradient(135deg,rgba(255,255,255,.34),rgba(255,255,255,.13));
+  box-shadow:0 18px 70px rgba(58,112,169,.12);box-sizing:border-box;
+}
+body:not(.workspace-active) #login-view{
+  display:grid!important;grid-template-columns:minmax(350px,.82fr) minmax(0,1.18fr);
+  grid-template-rows:minmax(0,1fr) auto;gap:clamp(22px,4vw,58px);
+  align-items:center;width:100%!important;max-width:none!important;min-height:calc(100dvh - 100px);
+  margin:0!important;padding:0!important;overflow:visible!important;
+}
+body:not(.workspace-active) #login-view>.login-card{
+  grid-column:1;grid-row:1;align-self:center;justify-self:center;
+  width:min(100%,470px)!important;max-width:470px!important;min-width:0;
+  height:auto!important;max-height:none!important;min-height:0!important;
+  padding:clamp(18px,2.2vw,30px)!important;margin:0!important;overflow:visible!important;
+  border:1px solid rgba(255,255,255,.95)!important;border-radius:24px!important;
+  background:rgba(255,255,255,.96)!important;color:#18345d!important;
+  box-shadow:0 20px 65px rgba(30,77,131,.16)!important;box-sizing:border-box;
+}
+body:not(.workspace-active) .aurora-brand-lockup{display:flex!important;justify-content:center;align-items:center;margin:12px auto 16px!important}
+body:not(.workspace-active) .aurora-login-logo{display:block;width:min(100%,245px);height:auto;margin:0 auto}
+body:not(.workspace-active) .auth-reference-tabs{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;
+  width:100%;padding:4px;border-radius:13px;background:#f0f5fb;
+}
+.auth-reference-tabs button{
+  min-width:0;min-height:42px;padding:7px 4px;border:0;border-radius:10px;
+  background:transparent;color:#72839b;font:600 12px/1.25 inherit;cursor:pointer;
+}
+.auth-reference-tabs button.active{background:#fff;color:#174575;box-shadow:0 2px 9px rgba(29,72,120,.10)}
+body:not(.workspace-active) #login-form,
+body:not(.workspace-active) #register-form,
+body:not(.workspace-active) #password-reset-form,
+body:not(.workspace-active) #freelancer-register-form{width:100%;min-width:0}
+body:not(.workspace-active) #login-form label,
+body:not(.workspace-active) #register-form label,
+body:not(.workspace-active) #password-reset-form label,
+body:not(.workspace-active) #freelancer-register-form label{
+  color:#274365;font-weight:650;font-size:13px;line-height:1.45;
+}
+body:not(.workspace-active) #login-form input,
+body:not(.workspace-active) #register-form input:not([type=checkbox]),
+body:not(.workspace-active) #password-reset-form input,
+body:not(.workspace-active) #freelancer-register-form input:not([type=checkbox]){
+  box-sizing:border-box;width:100%;max-width:100%;min-width:0;min-height:48px;
+  border:1px solid #d1deeb;border-radius:11px;background:#f8fbff;color:#172f4d;
+  padding:11px 13px;font-size:16px;
+}
+body:not(.workspace-active) #login-form input:focus,
+body:not(.workspace-active) #register-form input:focus,
+body:not(.workspace-active) #password-reset-form input:focus,
+body:not(.workspace-active) #freelancer-register-form input:focus{
+  outline:3px solid rgba(31,133,218,.14);border-color:#4a9bd9;
+}
+body:not(.workspace-active) #register-form:not(.hidden),
+body:not(.workspace-active) #freelancer-register-form:not(.hidden){
+  display:grid!important;grid-template-columns:minmax(0,1fr);gap:12px;
+  max-height:none!important;overflow:visible!important;margin-top:12px;
+}
+body:not(.workspace-active) #owner-signup-fields,
+body:not(.workspace-active) #register-fields{display:grid;grid-template-columns:minmax(0,1fr);gap:11px}
+body:not(.workspace-active) #register-form .aurora-policy-consent,
+body:not(.workspace-active) #freelancer-register-form .aurora-policy-consent{
+  display:flex;align-items:flex-start;gap:9px;padding:11px;border:1px solid #e3edf7;
+  border-radius:11px;background:#f8fbff;color:#536a84;font-size:12px;
+}
+body:not(.workspace-active) .aurora-policy-consent input{width:18px;min-width:18px;height:18px;min-height:18px}
+body:not(.workspace-active) #register-form .btn-primary,
+body:not(.workspace-active) #freelancer-register-form .btn-primary,
+body:not(.workspace-active) #login-form .btn-primary,
+body:not(.workspace-active) #password-reset-form .btn-primary{
+  min-height:49px;border:0;border-radius:999px!important;
+  background:linear-gradient(100deg,#175be8 0%,#168fe9 54%,#08c8d6 100%)!important;
+  color:#fff!important;font-weight:750;box-shadow:0 7px 18px rgba(20,116,219,.18);
+}
+body:not(.workspace-active) .registration-sticky-footer{
+  position:static!important;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px;
+  border:0!important;background:transparent!important;padding:12px 0 0!important;
+}
+body:not(.workspace-active) .registration-back-button{color:#1263bd;font-weight:750}
+body:not(.workspace-active) #aurora-policy-center{
+  grid-column:1/-1;grid-row:2;width:100%!important;max-width:none!important;margin:0!important;
+}
+body:not(.workspace-active) #aurora-policy-center details{
+  border:1px solid rgba(255,255,255,.9);border-radius:14px;background:rgba(255,255,255,.74);padding:12px 16px;
+}
+.aurora-welcome-panel{
+  grid-column:2;grid-row:1;display:flex;align-items:center;justify-content:center;
+  align-self:stretch;min-width:0;overflow:hidden;position:relative;border-radius:24px;
+  background:radial-gradient(ellipse at 50% 83%,rgba(74,87,220,.36),transparent 52%),
+    linear-gradient(135deg,rgba(255,255,255,.05),rgba(255,255,255,.28));
+}
+.aurora-welcome-content{position:relative;z-index:1;width:min(100%,700px);padding:clamp(16px,3vw,34px);text-align:center}
+.aurora-welcome-logo{display:block;width:min(52%,300px);max-height:180px;object-fit:contain;margin:0 auto 18px;filter:drop-shadow(0 7px 12px rgba(57,28,120,.12))}
+.aurora-welcome-content h1{max-width:690px;margin:0 auto;color:#153b70;font-size:clamp(25px,3vw,42px);line-height:1.25;font-weight:800;letter-spacing:-.035em}
+.aurora-welcome-content>p{margin:8px 0 0;color:#174b85;font-size:clamp(20px,2.2vw,30px);font-weight:700}
+.aurora-hero-art{position:relative;width:min(100%,650px);height:clamp(260px,38vw,440px);margin:22px auto 0}
+.aurora-hero-monogram{position:absolute;left:7%;top:12%;font-size:clamp(150px,20vw,280px);font-weight:900;line-height:1;color:rgba(255,255,255,.56);text-shadow:0 3px 0 rgba(55,114,210,.08)}
+.aurora-hero-screen{
+  position:absolute;left:32%;top:29%;width:48%;height:43%;transform:rotate(-8deg) skewY(-2deg);
+  display:flex;flex-direction:column;justify-content:center;align-items:center;gap:8px;
+  border:9px solid #f8fdff;border-radius:10px;background:linear-gradient(145deg,#061c59,#174fc0 65%,#152f82);
+  box-shadow:0 20px 32px rgba(28,50,130,.24),inset 0 0 28px rgba(65,166,255,.28);
+  color:white;
+}
+.hero-screen-mark{font-size:clamp(16px,2.1vw,28px);font-weight:900;letter-spacing:.08em}
+.hero-screen-sub{font-size:clamp(9px,1vw,13px);letter-spacing:.25em;color:#8be9ff}
+.hero-screen-lines{width:44%;height:4px;border-radius:9px;background:linear-gradient(90deg,#fff,#4bd7ff)}
+.aurora-hero-person{position:absolute;z-index:2;width:11%;height:53%;bottom:7%}
+.aurora-hero-person i{position:absolute;top:0;left:35%;width:30%;aspect-ratio:1;border-radius:50%;background:#b77b59}
+.aurora-hero-person b{position:absolute;top:18%;left:18%;width:64%;height:45%;border-radius:18px 18px 8px 8px;background:#2374c9;transform:skewY(-8deg)}
+.aurora-hero-person em{position:absolute;top:57%;left:27%;width:22%;height:40%;border-radius:8px;background:#173d78;transform:rotate(7deg);box-shadow:17px 3px 0 #173d78}
+.person-left{left:21%}.person-right{right:12%;height:49%;bottom:5%}
+.person-right b{background:#2679c8}.person-right em{background:#183c78;transform:rotate(-5deg)}
+.aurora-hero-blocks{position:absolute;right:2%;top:15%;display:flex;align-items:flex-end;gap:8px;opacity:.72}
+.aurora-hero-blocks i{display:block;width:clamp(22px,3vw,42px);height:clamp(45px,6vw,85px);background:linear-gradient(145deg,#fff,#b9eaff);clip-path:polygon(50% 0,100% 16%,100% 100%,0 100%,0 16%)}
+.aurora-hero-blocks i:nth-child(2){height:clamp(70px,9vw,120px)}.aurora-hero-blocks i:nth-child(3){height:clamp(92px,11vw,150px)}.aurora-hero-blocks i:nth-child(4){height:clamp(60px,8vw,110px)}
+.aurora-hero-base{position:absolute;left:38%;bottom:4%;width:42%;height:8%;transform:skewX(-18deg);border:8px solid white;border-radius:8px;background:#d7f4ff;box-shadow:0 10px 24px rgba(40,73,160,.12)}
+body.registration-open .auth-reference-tabs button#auth-tab-signup,
+body:not(.workspace-active) .auth-reference-tabs button#auth-tab-signin{color:#174575}
+@media(max-width:760px){
+  body:not(.workspace-active) .shell{width:calc(100% - 12px)!important;min-height:calc(100dvh - 12px);margin:6px auto!important;padding:10px!important;border-radius:19px}
+  body:not(.workspace-active) #login-view{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto auto;gap:12px;min-height:0}
+  body:not(.workspace-active) #login-view>.login-card{grid-column:1;grid-row:1;width:min(100%,520px)!important;max-width:520px!important;padding:16px!important;border-radius:18px!important}
+  .aurora-welcome-panel{grid-column:1;grid-row:2;min-height:300px;border-radius:18px}
+  .aurora-welcome-content{padding:18px}
+  .aurora-welcome-logo{width:min(42%,190px);max-height:100px;margin-bottom:10px}
+  .aurora-welcome-content h1{font-size:clamp(21px,6vw,30px)}
+  .aurora-welcome-content>p{font-size:18px}
+  .aurora-hero-art{height:230px;margin-top:6px}
+  body:not(.workspace-active) #aurora-policy-center{grid-column:1;grid-row:3}
+}
+@media(max-width:390px){
+  body:not(.workspace-active) .shell{padding:7px!important}
+  body:not(.workspace-active) #login-view>.login-card{padding:12px!important}
+  .auth-reference-tabs button{font-size:11px;min-height:40px}
+  .aurora-welcome-panel{min-height:260px}
+  .aurora-hero-art{height:190px}
+}
+@media(prefers-reduced-motion:reduce){.aurora-welcome-panel *{animation:none!important;transition:none!important}}
