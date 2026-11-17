@@ -191,7 +191,7 @@
     $('account-profile-business').textContent=business.businessName||'Business details not added';
     const readOnlyProfile=state.role==='vendor';
     $('account-profile-photo-area').classList.toggle('hidden',state.role!=='cashier');
-    $('account-profile-business-edit').classList.toggle('hidden',!['owner','manager','freelancer'].includes(state.role));
+    $('account-profile-business-edit').classList.toggle('hidden',!['owner','manager'].includes(state.role));
     const profileForm=$('profile-form');
     if(profileForm){profileForm.querySelectorAll('input,select,textarea,button').forEach(control=>{control.disabled=readOnlyProfile;});const save=profileForm.querySelector('button[type="submit"]');if(save)save.classList.toggle('hidden',readOnlyProfile);}
     $('profile-panel')?.classList.toggle('profile-readonly',readOnlyProfile);
@@ -430,12 +430,14 @@
     document.getElementById('staff-profile-panel')?.classList.add('hidden');
     staffSummary?.classList.add('hidden');
     if(screen==='dashboard'){
-      if(state.role==='freelancer'){
-        owner?.classList.remove('hidden');
-        $('freelancer-home')?.classList.remove('hidden');
-        if($('freelancer-home-name'))$('freelancer-home-name').textContent=state.userName||'Freelancer';
-        renderFreelancerHomeShop();
-      }else{$('freelancer-home')?.classList.add('hidden');}
+      // Linked freelancers use the same shop dashboard as the owner. Their
+      // tenant/store context and shop subscription are already established by
+      // the authenticated account; do not send them to a separate mini-home.
+      $('freelancer-home')?.classList.add('hidden');
+      if(['owner','manager','vendor','freelancer'].includes(state.role)){
+        ownerHome?.classList.remove('hidden');
+        void loadOwnerHomeSummary();
+      }
       if(state.role==='customer'){
         dashboardBusinessCard?.classList.add('hidden');customerHome?.classList.remove('hidden');
         if($('customer-home-name'))$('customer-home-name').textContent=state.userName||'Welcome';
@@ -446,16 +448,13 @@
         dashboardBusinessCard?.classList.add('hidden');
         $('platform-referral-admin')?.classList.remove('hidden');
         void loadPlatformReferralAdmin();
-      }else if(['owner','manager','vendor'].includes(state.role)){
-        ownerHome?.classList.remove('hidden');
-        void loadOwnerHomeSummary();
-      }else if(state.role!=='customer'){
+      }else if(!['owner','manager','vendor','freelancer'].includes(state.role)&&state.role!=='customer'){
         staffSummary?.classList.remove('hidden');
         void loadStaffSalesSummary();
       }
     }else if(screen==='subscription'){
-      if(!['owner','manager','freelancer'].includes(state.role)){
-        showNotice('Subscription and payment management is available to the business owner or manager.',true);
+      if(!['owner','manager'].includes(state.role)){
+        showNotice('The shop subscription is managed by the shop owner. Your Freelancer access follows the shop’s active plan.',true);
         screen='dashboard';
         ownerHome?.classList.remove('hidden');
         void loadOwnerHomeSummary();
