@@ -1083,3 +1083,104 @@ body.registration-open:not(.workspace-active) #freelancer-register-form .btn { m
 #shop-goods-on-repair-card>summary small {display:block!important;margin-top:4px!important;color:#64748b!important;font-size:12px!important}
 #shop-goods-on-repair-card .repair-card-content {padding:14px!important;border-top:1px solid #e5edf5!important}
 #shop-goods-on-repair-card .repair-card-heading {margin:0 0 12px!important}
+
+
+/* FINAL navigation orientation/placement override.
+   Keep the four main destinations upright, left-to-right, and at the
+   bottom edge of the centred phone workspace on laptop and mobile. */
+body.workspace-active .shell,
+body.workspace-active main.shell {
+  display:flex!important;
+  flex-direction:column!important;
+}
+body.workspace-active #workspace-nav:not(.hidden),
+body.workspace-active #workspace-nav.bottom-nav:not(.hidden),
+body.workspace-active .shell>#workspace-nav:not(.hidden) {
+  position:sticky!important;
+  inset:auto!important;
+  top:auto!important;
+  right:auto!important;
+  bottom:0!important;
+  left:auto!important;
+  order:999!important;
+  align-self:stretch!important;
+  flex:0 0 auto!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  height:auto!important;
+  min-height:58px!important;
+  max-height:none!important;
+  margin: auto 0 0!important;
+  padding:6px 4px!important;
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  grid-auto-flow:row!important;
+  align-items:stretch!important;
+  gap:3px!important;
+  direction:ltr!important;
+  writing-mode:horizontal-tb!important;
+  transform:none!important;
+  rotate:none!important;
+  overflow:visible!important;
+  background:#f7fbff!important;
+  border:1px solid #dce6ee!important;
+  border-radius:14px 14px 0 0!important;
+  box-shadow:0 -4px 16px rgba(16,42,67,.12)!important;
+  z-index:1000!important;
+}
+body.workspace-active #workspace-nav:not(.hidden)>button,
+body.workspace-active #workspace-nav.bottom-nav:not(.hidden)>button {
+  position:static!important;
+  inset:auto!important;
+  display:flex!important;
+  flex-direction:column!important;
+  flex-wrap:nowrap!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:3px!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  min-height:46px!important;
+  height:auto!important;
+  max-height:none!important;
+  margin:0!important;
+  padding:5px 2px!important;
+  direction:ltr!important;
+  writing-mode:horizontal-tb!important;
+  text-orientation:mixed!important;
+  transform:none!important;
+  rotate:none!important;
+  white-space:normal!important;
+  overflow:visible!important;
+  overflow-wrap:anywhere!important;
+  text-align:center!important;
+  font-size:10px!important;
+  line-height:1.15!important;
+}
+body.workspace-active #workspace-nav .nav-icon,
+body.workspace-active #workspace-nav button>span:first-child {
+  display:block!important;
+  position:static!important;
+  transform:none!important;
+  rotate:none!important;
+  writing-mode:horizontal-tb!important;
+  direction:ltr!important;
+  text-orientation:mixed!important;
+  font-size:17px!important;
+  line-height:1!important;
+}
+body.workspace-active #workspace-nav button>span:not(.nav-icon) {
+  display:block!important;
+  position:static!important;
+  transform:none!important;
+  rotate:none!important;
+  writing-mode:horizontal-tb!important;
+  direction:ltr!important;
+  text-orientation:mixed!important;
+  white-space:normal!important;
+  overflow:visible!important;
+  text-align:center!important;
+  overflow-wrap:anywhere!important;
+}
