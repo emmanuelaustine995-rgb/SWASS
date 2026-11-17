@@ -1350,3 +1350,53 @@ body.workspace-active .modal-card {
     justify-content:flex-start!important;
   }
 }
+
+
+/* Navigation placement repair: move it after all workspace sections in the
+   DOM (app.js) and pin it to the bottom edge of the scrollable phone frame. */
+body.workspace-active main.shell > #workspace-nav:not(.hidden) {
+  order:999!important;
+  align-self:stretch!important;
+  flex:0 0 auto!important;
+  position:sticky!important;
+  top:auto!important;
+  bottom:0!important;
+  margin-top:auto!important;
+  margin-bottom:0!important;
+  z-index:1200!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  height:auto!important;
+  max-height:none!important;
+  overflow:visible!important;
+  transform:none!important;
+}
+@media (max-width:520px) {
+  body.workspace-active main.shell {
+    display:flex!important;
+    flex-direction:column!important;
+  }
+  body.workspace-active main.shell > #workspace-nav:not(.hidden) {
+    position:sticky!important;
+    top:auto!important;
+    bottom:0!important;
+    order:999!important;
+    margin-top:auto!important;
+    flex:0 0 auto!important;
+  }
+}
+@media (min-width:521px) and (hover:hover) and (pointer:fine) {
+  body.workspace-active main.shell {
+    display:flex!important;
+    flex-direction:column!important;
+  }
+  body.workspace-active main.shell > #workspace-nav:not(.hidden) {
+    position:sticky!important;
+    top:auto!important;
+    bottom:0!important;
+    order:999!important;
+    margin-top:auto!important;
+    flex:0 0 auto!important;
+  }
+}
