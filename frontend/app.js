@@ -356,7 +356,10 @@
     const issueStep=posVisible&&$('pos-view')?.classList.contains('workspace-issue-mode');
     const shopResults=shopVisible&&$('shop-product-results')&&!$('shop-product-results').classList.contains('hidden');
     // Back is only for moving within a multi-step task, never for switching workspaces.
-    const hasBack=!!state.token&&workspaceOpen&&(modalOpen||secondhandVisible||issueStep||shopResults);
+    // Freelancers share the shop-owner workspace; keep a clear way back to
+    // the main dashboard when they navigate into a workspace section.
+    const freelancerSectionBack=state.role==='freelancer'&&state.currentWorkspace!=='dashboard';
+    const hasBack=!!state.token&&workspaceOpen&&(modalOpen||secondhandVisible||issueStep||shopResults||freelancerSectionBack);
     button.classList.toggle('hidden',!hasBack);
     button.textContent=secondhandVisible?'← Back to Receipts':'← Back';
     button.setAttribute('aria-label',button.textContent.replace('← ','Go back to '));
