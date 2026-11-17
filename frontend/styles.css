@@ -2579,3 +2579,52 @@ body.registration-open .registration-sticky-footer{
 /* Four account types on the AURORA sign-in screen, including invited Shop Staff. */
 .login-role-tabs{grid-template-columns:repeat(4,minmax(0,1fr))}
 @media(max-width:380px){.login-role-tabs{gap:3px}.login-role-tab{font-size:10px;padding:7px 2px}}
+
+
+/* Shop workspace cards: keep every form inside its card until tapped.
+   A previous display:grid rule on <details> bypassed the browser's native
+   closed-details behaviour and exposed the search form immediately. */
+body.workspace-active #shop-home details.shop-register-product-card,
+body.workspace-active #shop-home details.shop-search-directory-card,
+body.workspace-active #shop-home details.loan-items-card,
+body.workspace-active #shop-home details.shop-goods-on-repair-card,
+body.workspace-active #shop-home details.shop-business-details-card {
+  display:block!important;
+  width:100%!important;
+  box-sizing:border-box!important;
+  margin:10px 0!important;
+  overflow:hidden!important;
+}
+body.workspace-active #shop-home details.shop-register-product-card:not([open]) > :not(summary),
+body.workspace-active #shop-home details.shop-search-directory-card:not([open]) > :not(summary),
+body.workspace-active #shop-home details.loan-items-card:not([open]) > :not(summary),
+body.workspace-active #shop-home details.shop-goods-on-repair-card:not([open]) > :not(summary),
+body.workspace-active #shop-home details.shop-business-details-card:not([open]) > :not(summary) {
+  display:none!important;
+}
+body.workspace-active #shop-home details.shop-register-product-card > summary,
+body.workspace-active #shop-home details.shop-search-directory-card > summary,
+body.workspace-active #shop-home details.loan-items-card > summary,
+body.workspace-active #shop-home details.shop-goods-on-repair-card > summary,
+body.workspace-active #shop-home details.shop-business-details-card > summary {
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:10px!important;
+  width:100%!important;
+  min-height:68px!important;
+  box-sizing:border-box!important;
+  padding:13px 14px!important;
+  list-style:none!important;
+  cursor:pointer!important;
+}
+body.workspace-active #shop-home details > summary::-webkit-details-marker {display:none!important}
+body.workspace-active #shop-home details.shop-search-directory-card > .shop-product-search-form,
+body.workspace-active #shop-home details.shop-register-product-card > .shop-register-product-body,
+body.workspace-active #shop-home details.loan-items-card > .loan-card-body,
+body.workspace-active #shop-home details.shop-goods-on-repair-card > .repair-card-content {
+  display:grid!important;
+  gap:10px!important;
+  padding:12px!important;
+  border-top:1px solid #e2edf5!important;
+}
