@@ -2798,3 +2798,42 @@ input,select,textarea{box-sizing:border-box;min-width:0;max-width:100%}
   body.workspace-active .shell{height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important}
   body.workspace-active .modal-card{max-height:calc(100dvh - 24px);overflow:auto}
 }
+
+
+/* PC phone-frame mode: centred phone-width workspace on desktop monitors. */
+@media (min-width:761px){
+  html body.workspace-active .shell{
+    width:min(100% - 40px,430px)!important;max-width:430px!important;
+    min-height:calc(100dvh - 32px)!important;margin:16px auto!important;
+    padding:10px 9px 26px!important;border:1px solid #d8e2eb!important;
+    border-radius:24px!important;background:#fff!important;
+    box-shadow:0 16px 55px rgba(16,42,67,.16)!important;
+    container-name:aurora-phone-workspace;container-type:inline-size;
+  }
+  body.workspace-active{background:#edf2f7!important}
+  html body.workspace-active #workspace-nav,
+  html body.workspace-active #workspace-nav.bottom-nav{
+    width:100%!important;max-width:100%!important;flex-wrap:nowrap!important;
+    overflow-x:auto!important;border-radius:14px!important;
+  }
+}
+@container aurora-phone-workspace (max-width:600px){
+  .dashboard-layout,.content-grid,.dashboard-grid,.profile-grid,.shop-grid,
+  .form-two,.buyer-fields,.dashboard-main-grid,.comparison-grid{
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+  .metric-grid,.owner-stats,.channel-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .dashboard-layout{gap:10px!important}
+  .dashboard-sidebar{position:static!important;width:100%!important;max-width:100%!important}
+  .dashboard-main,.dashboard-layout>main,.dashboard-layout>section{width:100%!important;min-width:0!important}
+  .page-heading,.panel-heading,.section-heading,.toolbar,.command-bar,
+  .command-actions,.form-actions,.staff-invite-actions{min-width:0!important;flex-wrap:wrap!important}
+  .page-heading h1{font-size:clamp(20px,6cqi,25px)!important}
+  .panel,.card,.profile-panel,.shop-panel{width:100%!important;min-width:0!important;padding:12px!important}
+  .table-wrap,.table-responsive,.history-table-wrap,.data-table-wrap{
+    width:100%!important;max-width:100%!important;overflow-x:auto!important;
+  }
+  input,select,textarea{width:100%;max-width:100%;min-width:0}
+  .modal{padding:8px!important}
+  .modal-card{width:100%!important;max-width:100%!important;max-height:calc(100dvh - 24px)!important;overflow:auto!important}
+}
