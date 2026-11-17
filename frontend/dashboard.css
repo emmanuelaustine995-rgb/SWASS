@@ -2596,3 +2596,71 @@ html body.workspace-active #receipts-home .receipt-actions-grid .receipt-choice 
 .repair-record-tools textarea{resize:vertical;min-height:54px}
 .repair-record-tools .btn{min-height:34px;font-size:11px}
 @media(max-width:520px){.repair-record-tools{width:100%;max-width:none;min-width:0}}
+
+
+/* AURORA responsive layout hardening: compact laptops, tablets and phones.
+   Content-first breakpoints avoid assuming a particular device model. */
+html{max-width:100%;overflow-x:hidden}
+body{max-width:100%;overflow-x:hidden}
+*,*::before,*::after{box-sizing:border-box}
+img,video,canvas,svg,iframe{max-width:100%}
+input,select,textarea,button{max-width:100%;font:inherit}
+input,select,textarea{min-width:0}
+pre,code{white-space:pre-wrap;overflow-wrap:anywhere}
+table{max-width:100%}
+td,th{overflow-wrap:anywhere;word-break:normal}
+.panel,.card,.metric,.owner-stat,.content-grid>*,
+.dashboard-layout>* ,.dashboard-main,.dashboard-sidebar,
+.profile-panel,.shop-panel,.modal-card{min-width:0;max-width:100%}
+.dashboard-layout,.dashboard-main,.dashboard-sidebar,
+.content-grid,.dashboard-grid,.metric-grid,.owner-stats,
+.channel-grid,.comparison-grid,.form-two,.buyer-fields,
+.profile-grid,.shop-grid{min-width:0}
+@media (max-width:1100px){
+  .shell{width:min(100% - 32px,1100px);max-width:100%}
+  .dashboard-layout{grid-template-columns:minmax(0,1fr)!important;gap:16px}
+  .dashboard-sidebar{position:static!important;width:100%;max-width:none}
+  .dashboard-main,.dashboard-layout>main,.dashboard-layout>section{width:100%;min-width:0}
+  .content-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .metric-grid,.owner-stats,.channel-grid,.comparison-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .page-heading,.panel-heading,.section-heading{flex-wrap:wrap;align-items:flex-start}
+}
+@media (max-width:760px){
+  html,body{width:100%;min-width:0}
+  body.workspace-active{overflow-x:hidden}
+  .shell,.container,.workspace,.workspace-shell{width:100%;max-width:100%;margin-left:auto;margin-right:auto}
+  .shell{padding-left:12px;padding-right:12px}
+  .dashboard-layout,.content-grid,.dashboard-grid,.profile-grid,
+  .shop-grid,.form-two,.buyer-fields,.referral-area,
+  .content-grid,.dashboard-main-grid{grid-template-columns:minmax(0,1fr)!important}
+  .metric-grid,.owner-stats,.channel-grid,.comparison-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .page-heading,.panel-heading,.section-heading,.toolbar,.command-bar,
+  .command-actions,.form-actions,.staff-invite-actions{flex-wrap:wrap;min-width:0}
+  .page-heading>* ,.panel-heading>*{min-width:0;max-width:100%}
+  .modal{padding:10px!important;align-items:flex-start!important;overflow-y:auto}
+  .modal-card{width:100%!important;max-width:620px!important;max-height:calc(100dvh - 20px);overflow-y:auto;margin:auto}
+  .table-wrap,.table-responsive,.history-table-wrap{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{min-width:560px}
+  .btn,button{min-height:40px}
+  input,select,textarea{width:100%;max-width:100%}
+  .topbar,.workspace-header{height:auto;min-height:0;flex-wrap:wrap}
+  .topbar>* ,.workspace-header>*{min-width:0}
+}
+@media (max-width:520px){
+  .shell{width:100%;padding-left:10px;padding-right:10px}
+  .metric-grid,.owner-stats,.channel-grid,.comparison-grid{grid-template-columns:minmax(0,1fr)!important}
+  .panel,.card{padding:12px!important;border-radius:13px}
+  .page-heading h1{font-size:clamp(20px,6vw,27px);overflow-wrap:anywhere}
+  .page-heading p,.panel p,.muted{overflow-wrap:anywhere}
+  .date-filter{display:grid;grid-template-columns:minmax(0,1fr);width:100%}
+  .date-filter label,.date-filter input{width:100%;min-width:0}
+  .command-bar{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+  .command-actions{display:flex;flex-wrap:wrap}
+  .modal-card{padding:14px!important;border-radius:15px}
+  .receipt-paper{max-width:100%;overflow-wrap:anywhere}
+  .staff-invite-form,.staff-team-card{padding:12px!important}
+}
+@media (max-height:700px) and (min-width:761px){
+  .modal-card{max-height:calc(100dvh - 24px);overflow-y:auto}
+  .workspace-active .shell{min-height:0}
+}
