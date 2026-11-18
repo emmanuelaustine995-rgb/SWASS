@@ -3184,3 +3184,190 @@ html body.workspace-active #receipt-modal .receipt-actions{
   max-height:none!important;
   overflow:visible!important;
 }
+
+/* AURORA SCROLLING BASELINE — one vertical page scroller, cards stay in flow.
+   Only modal overlays and horizontal tab strips own their own overflow. */
+html:has(body.workspace-active){
+  height:auto!important;
+  min-height:100%!important;
+  max-height:none!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  overscroll-behavior-y:auto!important;
+}
+html body.workspace-active{
+  height:auto!important;
+  min-height:100dvh!important;
+  max-height:none!important;
+  overflow:visible!important;
+  overflow-x:clip!important;
+  overflow-y:visible!important;
+}
+html body.workspace-active .shell{
+  position:relative!important;
+  inset:auto!important;
+  transform:none!important;
+  display:flex!important;
+  flex:0 0 auto!important;
+  flex-direction:column!important;
+  width:100%!important;
+  height:auto!important;
+  min-height:100dvh!important;
+  max-height:none!important;
+  margin:0 auto!important;
+  overflow:visible!important;
+  padding-bottom:calc(104px + env(safe-area-inset-bottom))!important;
+}
+html body.workspace-active #pos-view:not(.hidden),
+html body.workspace-active #receipts-home:not(.hidden),
+html body.workspace-active #shop-home:not(.hidden),
+html body.workspace-active #owner-home:not(.hidden),
+html body.workspace-active #owner-dashboard-view:not(.hidden),
+html body.workspace-active #subscription-home:not(.hidden){
+  position:relative!important;
+  flex:0 0 auto!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow:visible!important;
+  contain:none!important;
+}
+html body.workspace-active #receipts-home:not(.hidden) #secondhand-panel:not(.hidden){
+  display:block!important;
+  position:relative!important;
+  flex:none!important;
+  width:100%!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow:visible!important;
+  contain:none!important;
+  transform:none!important;
+  /* Keep this as the ordinary in-page declaration card, not a full-screen view. */
+  border-radius:16px;
+  scroll-margin-top:16px;
+  padding-bottom:24px!important;
+}
+html body.workspace-active #receipts-home #secondhand-panel .secondhand-form,
+html body.workspace-active #receipts-home #secondhand-panel .secondhand-form fieldset,
+html body.workspace-active #receipts-home #secondhand-panel .secondhand-form .secondhand-fields,
+html body.workspace-active #receipts-home #secondhand-panel .secondhand-form .secondhand-pad-wrap{
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow:visible!important;
+  contain:none!important;
+}
+html body.workspace-active #receipts-home #secondhand-panel .secondhand-form{
+  padding-bottom:24px!important;
+}
+html body.workspace-active #shop-home:not(.hidden) [data-shop-tab-panel]:not([hidden]),
+html body.workspace-active #shop-home:not(.hidden) .shop-product-list,
+html body.workspace-active #shop-home:not(.hidden) .shop-products-grid,
+html body.workspace-active #shop-home:not(.hidden) .shop-content,
+html body.workspace-active #shop-home:not(.hidden) .shop-panel,
+html body.workspace-active #shop-home:not(.hidden) .panel,
+html body.workspace-active #receipts-home:not(.hidden) .receipt-history-panel{
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow:visible!important;
+  contain:none!important;
+}
+html body.workspace-active #shop-home:not(.hidden) .shop-section-tabs{
+  max-width:100%!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  -webkit-overflow-scrolling:touch;
+}
+html body.workspace-active #workspace-nav,
+html body.workspace-active #workspace-nav.bottom-nav{
+  z-index:2000!important;
+}
+@media(max-width:760px){
+  html body.workspace-active .shell{
+    height:auto!important;
+    min-height:100dvh!important;
+    max-height:none!important;
+    overflow:visible!important;
+    padding-bottom:calc(108px + env(safe-area-inset-bottom))!important;
+  }
+  html body.workspace-active #workspace-nav,
+  html body.workspace-active #workspace-nav.bottom-nav{
+    position:fixed!important;
+    inset:auto 0 0 0!important;
+    width:100%!important;
+    max-width:100%!important;
+    height:auto!important;
+    max-height:none!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+    padding:7px 6px calc(7px + env(safe-area-inset-bottom))!important;
+    touch-action:pan-x!important;
+  }
+}
+/* A modal overlay is the single scroll owner for a long dialog. Its card and
+   form remain natural-height content, avoiding competing nested scroll areas. */
+html body.workspace-active .modal:not(.hidden),
+html body.workspace-active [role="dialog"]:not(.hidden),
+html body.workspace-active .dialog:not(.hidden),
+html body.workspace-active .modal-overlay:not(.hidden){
+  box-sizing:border-box!important;
+  position:fixed!important;
+  inset:0!important;
+  width:100%!important;
+  max-width:100%!important;
+  height:100dvh!important;
+  max-height:100dvh!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  overscroll-behavior-y:contain!important;
+  -webkit-overflow-scrolling:touch!important;
+  touch-action:pan-y!important;
+  align-items:flex-start!important;
+  justify-content:center!important;
+  padding:calc(8px + env(safe-area-inset-top)) 8px calc(16px + env(safe-area-inset-bottom))!important;
+}
+html body.workspace-active .modal-card,
+html body.workspace-active [role="dialog"] .modal-card,
+html body.workspace-active .dialog-card{
+  box-sizing:border-box!important;
+  flex:0 0 auto!important;
+  width:100%!important;
+  max-width:620px!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  margin:0 auto!important;
+  overflow:visible!important;
+  overscroll-behavior:auto!important;
+  touch-action:pan-y!important;
+}
+html body.workspace-active .modal-card form,
+html body.workspace-active [role="dialog"] form,
+html body.workspace-active form{
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow:visible!important;
+  touch-action:pan-y!important;
+}
+html body.workspace-active .modal-card fieldset,
+html body.workspace-active .modal-card .form-section,
+html body.workspace-active .modal-card .form-fields,
+html body.workspace-active .modal-card .form-body{
+  min-height:0!important;
+  max-height:none!important;
+  overflow:visible!important;
+}
+html body.workspace-active .modal-card button[type="submit"],
+html body.workspace-active .modal-card .form-actions{
+  position:static!important;
+  flex-shrink:0!important;
+  margin-bottom:8px!important;
+}
+html body.workspace-active .modal-card input,
+html body.workspace-active .modal-card select,
+html body.workspace-active .modal-card textarea{
+  scroll-margin-bottom:28px!important;
+}
