@@ -3817,3 +3817,100 @@ html body.workspace-active .shell::-webkit-scrollbar-button,
 html body.workspace-active main.shell::-webkit-scrollbar-button {
   all:revert!important;
 }
+
+
+/* FINAL NORMAL DOCUMENT SCROLL — remove viewport locking on every device. */
+html, body {
+  height: auto !important;
+  min-height: 100% !important;
+  max-height: none !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: auto !important;
+  scroll-behavior: auto !important;
+  touch-action: auto !important;
+}
+body.workspace-active {
+  position: static !important;
+  inset: auto !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 100vh !important;
+  max-height: none !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  touch-action: pan-y !important;
+}
+html body.workspace-active .shell {
+  position: static !important;
+  display: block !important;
+  width: min(100% - 24px, 1280px) !important;
+  max-width: 1280px !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  margin: 0 auto !important;
+  padding: 12px 12px 40px !important;
+  overflow: visible !important;
+  contain: none !important;
+}
+html body.workspace-active #workspace-nav,
+html body.workspace-active #workspace-nav.bottom-nav {
+  position: static !important;
+  inset: auto !important;
+  transform: none !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+}
+html body.workspace-active #owner-home:not(.hidden),
+html body.workspace-active #receipts-home:not(.hidden),
+html body.workspace-active #pos-view:not(.hidden),
+html body.workspace-active #shop-home:not(.hidden),
+html body.workspace-active #subscription-home:not(.hidden),
+html body.workspace-active #owner-dashboard-view:not(.hidden),
+html body.workspace-active #profile-panel:not(.hidden),
+html body.workspace-active #staff-profile-panel:not(.hidden),
+html body.workspace-active #staff-sales-summary:not(.hidden),
+html body.workspace-active #platform-referral-admin:not(.hidden),
+html body.workspace-active [data-workspace-page]:not(.hidden) {
+  position: static !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+  contain: none !important;
+  overscroll-behavior: auto !important;
+  touch-action: auto !important;
+}
+html body.workspace-active form,
+html body.workspace-active .form-scroll,
+html body.workspace-active .declaration-form,
+html body.workspace-active #register-form,
+html body.workspace-active #profile-form {
+  max-height: none !important;
+  height: auto !important;
+  overflow: visible !important;
+  overscroll-behavior: auto !important;
+  touch-action: auto !important;
+}
+html body.workspace-active .bottom-nav {
+  position: static !important;
+  inset: auto !important;
+}
+html, body, body.workspace-active, body.workspace-active .shell {
+  scrollbar-width: auto !important;
+}
+@media (max-width: 760px) {
+  html body.workspace-active .shell {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 8px 10px calc(28px + env(safe-area-inset-bottom)) !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+}
