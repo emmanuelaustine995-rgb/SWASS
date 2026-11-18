@@ -471,6 +471,11 @@
       }
     }else if(screen==='receipts'){
       receiptHome?.classList.remove('hidden');
+      const ownerHistory=$('shop-receipt-history-card');
+      ownerHistory?.classList.toggle('hidden',state.role!=='owner');
+      ownerHistory?.toggleAttribute('hidden',state.role!=='owner');
+      if(ownerHistory)ownerHistory.style.setProperty('display',state.role==='owner'?'':'none','important');
+      if(state.role==='owner')history?.classList.remove('hidden');
       // Re-apply account permissions every time the Receipts page is opened.
       const isCustomerAccount=state.role==='customer';
       document.body.classList.toggle('customer-account-active',isCustomerAccount);
@@ -2214,7 +2219,6 @@
       ['#shop-goods-on-repair-card','repairs'],
       ['#shop-home > .shop-business-details-card','profile'],
       ['#shop-home > #owner-staff-area','profile'],
-      ['#shop-home > #shop-receipt-history-card','profile'],
       ['#shop-home > .profile-account-summary','profile']
     ];
     visibility.forEach(([selector,ownerTab])=>{
