@@ -3692,3 +3692,41 @@ html body.workspace-active #workspace-nav.bottom-nav {
     z-index:100!important;
   }
 }
+
+/* Native scrolling without the old scrollbar arrow buttons.
+   Keep the scrollbar thumb available on desktop; hide only arrow controls. */
+html, body, body *, body *::before, body *::after {
+  scrollbar-width:thin;
+  scrollbar-color:rgba(72,105,132,.42) transparent;
+}
+html::-webkit-scrollbar-button,
+body::-webkit-scrollbar-button,
+body *::-webkit-scrollbar-button,
+html::-webkit-scrollbar-button:single-button,
+body::-webkit-scrollbar-button:single-button,
+body *::-webkit-scrollbar-button:single-button {
+  display:none!important;
+  width:0!important;
+  height:0!important;
+  min-width:0!important;
+  min-height:0!important;
+}
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+body *::-webkit-scrollbar {
+  width:8px;
+  height:8px;
+}
+html::-webkit-scrollbar-thumb,
+body::-webkit-scrollbar-thumb,
+body *::-webkit-scrollbar-thumb {
+  background:rgba(72,105,132,.42);
+  border:2px solid transparent;
+  background-clip:padding-box;
+  border-radius:99px;
+}
+html::-webkit-scrollbar-track,
+body::-webkit-scrollbar-track,
+body *::-webkit-scrollbar-track {
+  background:transparent;
+}
