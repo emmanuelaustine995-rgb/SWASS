@@ -459,7 +459,7 @@
         void loadStaffSalesSummary();
       }
     }else if(screen==='subscription'){
-      if(!['owner','manager'].includes(state.role)){
+      if(!['owner','manager','freelancer'].includes(state.role)){
         showNotice('The shop subscription is managed by the shop owner. Your Freelancer access follows the shop’s active plan.',true);
         screen='dashboard';
         ownerHome?.classList.remove('hidden');
