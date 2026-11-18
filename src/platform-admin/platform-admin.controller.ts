@@ -501,4 +501,123 @@ export class PlatformAdminController {
     };
   }
 
+
+  // Super Admin reconciliation queue: only subscription payments that the
+  // gateway has not completed are shown. Never expose credentials or secrets.
+  @Get('subscription-payments')
+  async subscriptionPaymentQueue(@Query('limit') limit = '100') {
+    await this.db.ensureFreelancerSubscriptionSchema();
+    const take = Math.min(200, Math.max(1, Number.parseInt(String(limit), 10) || 100));
+    const result = await this.db.pool.query(
+      `SELECT p.id,p.tenant_id AS "tenantId",p.subscriber_user_id AS "subscriberUserId",
+              p.amount_kes AS "amountKes",p.phone,p.status,p.checkout_request_id AS "checkoutRequestId",
+              p.mpesa_receipt_no AS "receiptNumber",p.created_at AS "createdAt",
+              t.name AS "businessName",u.full_name AS "subscriberName",u.email AS "subscriberEmail"
+         FROM payments p
+         LEFT JOIN tenants t ON t.id=p.tenant_id
+         LEFT JOIN users u ON u.id=p.subscriber_user_id
+        WHERE p.purpose='subscription' AND p.status IN ('pending','failed')
+        ORDER BY p.created_at DESC LIMIT $1`,
+      [take],
+    );
+    return { payments: result.rows.map((p:any)=>({...p,amountKes:Number(p.amountKes)})) };
+  }
+
+  // Manual recovery is allowed only after the administrator independently
+  // verifies the M-Pesa/Tuma transaction. Amount, payer phone and unique
+  // provider receipt are checked and the full action is written to audit log.
+  @Post('subscription-payments/:paymentId/reconcile')
+  async reconcileSubscriptionPayment(
+    @Param('paymentId') paymentId: string,
+    @Body() body: { receiptNumber?: string; amountKes?: number; phone?: string; verifiedExternally?: boolean; note?: string },
+    @Req() req: any,
+  ) {
+    const id = String(paymentId || '').trim();
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) {
+      throw new BadRequestException('A valid payment identifier is required.');
+    }
+    const receipt = String(body?.receiptNumber || '').trim().toUpperCase();
+    if (!/^[A-Z0-9]{6,24}$/.test(receipt)) throw new BadRequestException('Enter the exact M-Pesa/Tuma transaction receipt reference.');
+    if (body?.verifiedExternally !== true) throw new BadRequestException('Confirm that you verified this payment in the payment provider transaction records.');
+    const amount = Number(body?.amountKes);
+    if (!Number.isSafeInteger(amount) || ![100,900].includes(amount)) throw new BadRequestException('Subscription amount must be exactly KSh 100 or KSh 900.');
+    const normalizePhone = (value:string) => String(value || '').replace(/\\D/g,'').replace(/^254/,'0');
+    const confirmedPhone = normalizePhone(String(body?.phone || ''));
+    if (!/^0[17]\\d{8}$/.test(confirmedPhone)) throw new BadRequestException('Enter the payer phone number shown in the provider transaction record.');
+    const note = String(body?.note || '').trim().slice(0,500);
+
+    await this.db.ensureFreelancerSubscriptionSchema();
+    const reconciled = await this.db.tx(async c => {
+      const found = await c.query(
+        `SELECT p.*,t.name AS business_name,u.full_name AS subscriber_name
+           FROM payments p
+           LEFT JOIN tenants t ON t.id=p.tenant_id
+           LEFT JOIN users u ON u.id=p.subscriber_user_id
+          WHERE p.id=$1 AND p.purpose='subscription'
+          FOR UPDATE OF p`,
+        [id],
+      );
+      if (!found.rowCount) throw new NotFoundException('Subscription payment was not found.');
+      const p = found.rows[0];
+      if (p.status === 'success') throw new BadRequestException('This payment is already marked successful. Refresh the customer subscription before taking another action.');
+      if (!['pending','failed'].includes(p.status)) throw new BadRequestException('Only pending or failed subscription payments can be reconciled.');
+      if (Number(p.amount_kes) !== amount) throw new BadRequestException('The confirmed amount does not match the original payment request.');
+      if (normalizePhone(p.phone) !== confirmedPhone) throw new BadRequestException('The confirmed payer phone does not match the original payment request.');
+      const duplicate = await c.query('SELECT id FROM payments WHERE mpesa_receipt_no=$1 AND id<>$2 LIMIT 1', [receipt,id]);
+      if (duplicate.rowCount) throw new BadRequestException('That provider receipt reference is already linked to another payment.');
+
+      const saved = await c.query(
+        `UPDATE payments SET status='success',mpesa_receipt_no=$1
+          WHERE id=$2 AND status IN ('pending','failed')
+          RETURNING id,tenant_id,subscriber_user_id,amount_kes,phone,status,mpesa_receipt_no`,
+        [receipt,id],
+      );
+      if (!saved.rowCount) throw new BadRequestException('Payment status changed while reconciliation was in progress. Refresh and try again.');
+
+      await c.query(
+        `INSERT INTO platform_financial_ledger(tenant_id,payment_id,entry_type,amount_kes,external_reference)
+         VALUES($1,$2,'subscription_revenue',$3,$4)
+         ON CONFLICT DO NOTHING`,
+        [p.tenant_id,id,p.amount_kes,receipt],
+      );
+      const plan = Number(p.amount_kes) === 900 ? 'yearly' : 'monthly';
+      const interval = plan === 'yearly' ? '1 year' : '1 month';
+      if (p.subscriber_user_id) {
+        await c.query(
+          `INSERT INTO freelancer_subscriptions(user_id,payment_id,plan,price_kes,starts_at,ends_at,status)
+           VALUES($1,$2,$3,$4,
+             COALESCE((SELECT MAX(ends_at) FROM freelancer_subscriptions WHERE user_id=$1 AND status='active' AND ends_at>now()),now()),
+             COALESCE((SELECT MAX(ends_at) FROM freelancer_subscriptions WHERE user_id=$1 AND status='active' AND ends_at>now()),now())+$5::interval,
+             'active')
+           ON CONFLICT(payment_id) DO NOTHING`,
+          [p.subscriber_user_id,id,plan,p.amount_kes,interval],
+        );
+      } else {
+        await c.query(
+          `INSERT INTO subscriptions(tenant_id,plan,price_kes,starts_at,ends_at,status,auto_renew)
+           VALUES($1,$2,$3,
+             COALESCE((SELECT MAX(ends_at) FROM subscriptions WHERE tenant_id=$1 AND status='active' AND ends_at>now()),now()),
+             COALESCE((SELECT MAX(ends_at) FROM subscriptions WHERE tenant_id=$1 AND status='active' AND ends_at>now()),now())+$4::interval,
+             'active',false)`,
+          [p.tenant_id,plan,p.amount_kes,interval],
+        );
+      }
+      return {
+        paymentId:id,tenantId:p.tenant_id,subscriberUserId:p.subscriber_user_id || null,
+        businessName:p.business_name || null,subscriberName:p.subscriber_name || null,
+        amountKes:Number(p.amount_kes),plan,receiptNumber:receipt,
+      };
+    });
+
+    await this.db.recordSecurityEvent({
+      eventType:'subscription_payment_manually_reconciled',severity:'high',outcome:'completed',
+      actorUserId:req.user?.sub,sourceIp:req.ip,userAgent:req.headers?.['user-agent'],
+      metadata:{...reconciled,verifiedExternally:true,note},
+    });
+    return {
+      reconciled:true,payment:reconciled,
+      message:'Payment reconciled and subscription activated. Ask the customer to refresh or sign in again to see the updated subscription.',
+    };
+  }
+
 }
