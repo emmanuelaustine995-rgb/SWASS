@@ -6,7 +6,7 @@ export class WhatsAppReceiptService {
     const phone=input.to.replace(/\D/g,'');
     const normalised=phone.startsWith('0')?'254'+phone.slice(1):phone.startsWith('254')?phone:'254'+phone;
     if(!/^254[17]\d{8}$/.test(normalised))throw new Error('Invalid WhatsApp number');
-    const provider=(process.env.WHATSAPP_PROVIDER||'flaresend').trim().toLowerCase();
+    const provider=(process.env.WHATSAPP_PROVIDER || 'cloud').trim().toLowerCase();
     if(provider==='flaresend'){
       const apiKey=process.env.FLARESEND_API_KEY?.trim();if(!apiKey)throw new Error('FlareSend API key is not configured');
       const response=await fetch('https://api.flaresend.com/send-message',{method:'POST',headers:{Authorization:'Bearer '+apiKey,'Content-Type':'application/json'},body:JSON.stringify({recipients:[normalised],type:'text',text:input.text}),signal:AbortSignal.timeout(15000)});
@@ -27,7 +27,7 @@ export class WhatsAppReceiptService {
     const normalised = phone.startsWith('0') ? '254' + phone.slice(1) : phone.startsWith('254') ? phone : '254' + phone;
     if (!/^254[17]\d{8}$/.test(normalised)) throw new Error('Invalid customer WhatsApp number');
 
-    const provider = (process.env.WHATSAPP_PROVIDER || 'flaresend').trim().toLowerCase();
+    const provider = (process.env.WHATSAPP_PROVIDER || 'cloud').trim().toLowerCase();
     if (provider === 'flaresend') return this.sendWithFlareSend({ ...input, phone: normalised });
     if (provider !== 'cloud') throw new Error('Unsupported WHATSAPP_PROVIDER. Use cloud or flaresend.');
 

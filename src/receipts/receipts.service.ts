@@ -220,7 +220,8 @@ export class ReceiptsService {
           emailDelivery.sent = true; emailDelivery.message = 'Receipt PDF emailed to the customer.';
         } catch (error) {
           console.error('[SWASS] Receipt email delivery failed:', error instanceof Error ? error.message : 'Email provider error');
-          emailDelivery.message = 'Receipt issued, but the PDF email failed. Check Brevo settings.';
+          const reason = error instanceof Error ? error.message : 'Unknown email provider error';
+          emailDelivery.message = `Receipt issued, but email delivery failed: ${reason.slice(0, 180)}`;
         }
       }
       if (dto.customer?.phone?.trim()) {
@@ -233,7 +234,8 @@ export class ReceiptsService {
           whatsappMessageId = sent.messageId || null;
         } catch (error) {
           console.error('[SWASS] Receipt WhatsApp delivery failed:', error instanceof Error ? error.message : 'WhatsApp provider error');
-          whatsappDelivery.message = 'Receipt issued, but WhatsApp PDF delivery failed. Check your WhatsApp provider connection and API key.';
+          const reason = error instanceof Error ? error.message : 'Unknown WhatsApp provider error';
+          whatsappDelivery.message = `Receipt issued, but WhatsApp delivery failed: ${reason.slice(0, 180)}`;
         }
       }
       await this.db.pool.query(
