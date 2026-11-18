@@ -2224,7 +2224,8 @@
     visibility.forEach(([selector,ownerTab])=>{
       const el=shop?.querySelector(selector);
       if(!el)return;
-      const visible=tab===ownerTab;
+      const ownerOnlyLoanCard=selector==='#shop-home > .loan-items-card';
+      const visible=tab===ownerTab&&(!ownerOnlyLoanCard||state.role==='owner');
       el.classList.toggle('hidden',!visible);
       el.toggleAttribute('hidden',!visible);
       el.style.setProperty('display',visible?'':'none','important');
