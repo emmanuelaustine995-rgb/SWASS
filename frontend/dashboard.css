@@ -3371,3 +3371,83 @@ html body.workspace-active .modal-card select,
 html body.workspace-active .modal-card textarea{
   scroll-margin-bottom:28px!important;
 }
+
+/* TARGETED REPAIR: Lost Items and Shop Profile are normal page content.
+   Earlier legacy rules pinned Lost Items to the viewport and made it its own
+   scroll box; release it back into the document so the page scrolls naturally. */
+html body.workspace-active #shop-lost-items-panel:not(.hidden){
+  position:relative!important;
+  inset:auto!important;
+  top:auto!important;right:auto!important;bottom:auto!important;left:auto!important;
+  display:block!important;
+  flex:0 0 auto!important;
+  align-self:stretch!important;
+  width:100%!important;
+  max-width:100%!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  margin:0!important;
+  padding:8px 4px 28px!important;
+  overflow:visible!important;
+  overflow-x:clip!important;
+  overflow-y:visible!important;
+  contain:none!important;
+  transform:none!important;
+  overscroll-behavior:auto!important;
+  z-index:auto!important;
+}
+html body.workspace-active #shop-lost-items-panel:not(.hidden) #lost-goods-cards,
+html body.workspace-active #shop-lost-items-panel:not(.hidden) #lost-item-register,
+html body.workspace-active #shop-lost-items-panel:not(.hidden) #lost-item-checker,
+html body.workspace-active #shop-lost-items-panel:not(.hidden) #lost-items-list,
+html body.workspace-active #shop-lost-items-panel:not(.hidden) [data-lost-panel]:not(.hidden){
+  position:relative!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow:visible!important;
+  contain:none!important;
+}
+html body.workspace-active #shop-lost-items-panel:not(.hidden) #lost-item-register[open],
+html body.workspace-active #shop-lost-items-panel:not(.hidden) #lost-item-checker:not(.hidden){
+  display:block!important;
+  padding-bottom:24px!important;
+}
+html body.workspace-active #shop-home:not(.hidden) #owner-staff-area[data-shop-tab-panel]:not(.hidden),
+html body.workspace-active #shop-home:not(.hidden) [data-shop-tab-panel="profile"]:not(.hidden){
+  position:relative!important;
+  display:block!important;
+  flex:0 0 auto!important;
+  width:100%!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow:visible!important;
+  overflow-x:clip!important;
+  overflow-y:visible!important;
+  contain:none!important;
+  transform:none!important;
+  padding-bottom:calc(32px + env(safe-area-inset-bottom))!important;
+}
+html body.workspace-active #shop-home:not(.hidden) #owner-staff-area *,
+html body.workspace-active #shop-home:not(.hidden) [data-shop-tab-panel="profile"] *{
+  max-height:none;
+}
+@media(max-width:760px){
+  html:has(body.workspace-active),
+  html body.workspace-active{
+    height:auto!important;
+    min-height:100dvh!important;
+    max-height:none!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+  }
+  html body.workspace-active .shell{
+    position:relative!important;
+    height:auto!important;
+    min-height:100dvh!important;
+    max-height:none!important;
+    overflow:visible!important;
+  }
+}
