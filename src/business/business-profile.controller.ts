@@ -22,7 +22,7 @@ export class BusinessProfileController {
   }
 
   @Patch()
-  @Roles('owner')
+  @Roles('owner', 'manager')
   async updateProfile(@Req() req:any,@Body() b:any) {
     const u=req.user;
     if (u?.role !== 'owner' && u?.role !== 'manager') throw new ForbiddenException('Only the shop owner can edit business profile details.');
