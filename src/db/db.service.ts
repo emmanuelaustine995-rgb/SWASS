@@ -19,6 +19,25 @@ export class DbService implements OnModuleDestroy, OnModuleInit {
 
   async onModuleInit(): Promise<void> {
     await this.ensureFreelancerSubscriptionSchema();
+    await this.ensurePaymentPurposeSchema();
+  }
+
+  // Keep the live database constraint aligned with the payment purposes
+  // accepted by MpesaController. This is safe to run on every startup.
+  private paymentPurposeSchemaPromise: Promise<void> | null = null;
+
+  async ensurePaymentPurposeSchema(): Promise<void> {
+    if (!this.paymentPurposeSchemaPromise) {
+      this.paymentPurposeSchemaPromise = this.pool.query(`
+        ALTER TABLE payments DROP CONSTRAINT IF EXISTS payments_purpose_check;
+        ALTER TABLE payments ADD CONSTRAINT payments_purpose_check
+          CHECK (purpose IN ('subscription','wallet_topup','vendor_fee','receipt_sale'));
+      `).then(() => undefined).catch(err => {
+        this.paymentPurposeSchemaPromise = null;
+        throw err;
+      });
+    }
+    await this.paymentPurposeSchemaPromise;
   }
 
   async ensureFreelancerSubscriptionSchema(): Promise<void> {
