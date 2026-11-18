@@ -1,0 +1,279 @@
+/* AURORA workspace responsive baseline
+   Loaded after legacy stylesheets to resolve conflicting viewport and scroll rules.
+   The document is the single vertical scroll owner on every device. */
+
+html {
+  width: 100%;
+  min-height: 100%;
+  height: auto !important;
+  max-height: none !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+body.workspace-active {
+  display: block !important;
+  position: relative !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 100vh !important;
+  min-height: 100dvh !important;
+  max-height: none !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior-y: auto !important;
+  touch-action: auto !important;
+  padding: 0 0 calc(104px + env(safe-area-inset-bottom, 0px)) !important;
+}
+
+body.workspace-active main.shell,
+body.workspace-active .shell {
+  box-sizing: border-box !important;
+  display: block !important;
+  position: relative !important;
+  inset: auto !important;
+  width: min(100%, 1440px) !important;
+  max-width: 1440px !important;
+  height: auto !important;
+  min-height: 100vh !important;
+  min-height: 100dvh !important;
+  max-height: none !important;
+  margin: 0 auto !important;
+  padding: clamp(14px, 2.2vw, 30px) clamp(12px, 2.4vw, 32px) calc(112px + env(safe-area-inset-bottom, 0px)) !important;
+  overflow: visible !important;
+  overflow-x: clip !important;
+  overflow-y: visible !important;
+  contain: none !important;
+  touch-action: auto !important;
+}
+
+body.workspace-active main.shell > :not(#workspace-nav) {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  max-height: none !important;
+}
+
+body.workspace-active #owner-home:not(.hidden),
+body.workspace-active #receipts-home:not(.hidden),
+body.workspace-active #pos-view:not(.hidden),
+body.workspace-active #shop-home:not(.hidden),
+body.workspace-active #subscription-home:not(.hidden),
+body.workspace-active #owner-dashboard-view:not(.hidden),
+body.workspace-active #profile-panel:not(.hidden),
+body.workspace-active #staff-profile-panel:not(.hidden),
+body.workspace-active [data-workspace-page]:not(.hidden) {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  contain: none !important;
+}
+
+body.workspace-active .dashboard-wrap {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1440px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+body.workspace-active .dashboard-layout {
+  grid-template-columns: minmax(190px, 230px) minmax(0, 1fr);
+  min-width: 0;
+}
+
+body.workspace-active .dashboard-main,
+body.workspace-active .panel,
+body.workspace-active .card,
+body.workspace-active .profile-grid,
+body.workspace-active .shop-grid,
+body.workspace-active .content-grid {
+  min-width: 0;
+  max-width: 100%;
+}
+
+body.workspace-active input,
+body.workspace-active select,
+body.workspace-active textarea,
+body.workspace-active button {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+body.workspace-active input,
+body.workspace-active select,
+body.workspace-active textarea {
+  min-width: 0;
+}
+
+body.workspace-active form,
+body.workspace-active .form-scroll,
+body.workspace-active .declaration-form,
+body.workspace-active #profile-form {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  touch-action: auto !important;
+}
+
+/* Keep horizontal scrolling local to genuinely wide data tables only. */
+body.workspace-active .table-scroll,
+body.workspace-active .table-wrap,
+body.workspace-active .table-responsive,
+body.workspace-active .history-table-wrap,
+body.workspace-active .data-table-wrap,
+body.workspace-active .table-overflow {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+body.workspace-active table {
+  max-width: 100%;
+}
+
+/* A single, predictable navigation dock; it never becomes a page scroller. */
+body.workspace-active #workspace-nav:not(.hidden),
+body.workspace-active #workspace-nav.bottom-nav:not(.hidden) {
+  box-sizing: border-box !important;
+  position: fixed !important;
+  left: 50% !important;
+  right: auto !important;
+  top: auto !important;
+  bottom: max(8px, env(safe-area-inset-bottom, 0px)) !important;
+  transform: translateX(-50%) !important;
+  width: min(calc(100vw - 32px), 860px) !important;
+  max-width: 860px !important;
+  min-width: 0 !important;
+  height: auto !important;
+  max-height: 76px !important;
+  margin: 0 !important;
+  padding: 7px 10px !important;
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: stretch !important;
+  justify-content: space-around !important;
+  gap: 6px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  overscroll-behavior-x: contain;
+  touch-action: pan-x;
+  z-index: 2147482000 !important;
+}
+
+body.workspace-active #workspace-nav:not(.hidden) > button {
+  box-sizing: border-box !important;
+  flex: 1 1 0 !important;
+  min-width: 64px !important;
+  max-width: 220px !important;
+  min-height: 48px !important;
+  height: auto !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+  touch-action: manipulation;
+}
+
+@media (max-width: 900px) {
+  body.workspace-active main.shell,
+  body.workspace-active .shell {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  body.workspace-active .dashboard-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  body.workspace-active .dashboard-sidebar {
+    position: static !important;
+    min-height: 0 !important;
+  }
+}
+
+@media (max-width: 700px) {
+  body.workspace-active main.shell,
+  body.workspace-active .shell {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 12px 12px calc(112px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  body.workspace-active .dashboard-layout {
+    display: block;
+  }
+
+  body.workspace-active .dashboard-sidebar {
+    position: static !important;
+    min-height: 0 !important;
+    margin-bottom: 14px;
+  }
+
+  body.workspace-active .metric-grid,
+  body.workspace-active .headline-metrics,
+  body.workspace-active .owner-stats,
+  body.workspace-active .channel-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  body.workspace-active .content-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  body.workspace-active .page-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  body.workspace-active .page-heading > *,
+  body.workspace-active .panel-heading > * {
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  body.workspace-active main.shell,
+  body.workspace-active .shell {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+
+  body.workspace-active .metric-grid,
+  body.workspace-active .headline-metrics {
+    gap: 8px;
+  }
+
+  body.workspace-active .metric,
+  body.workspace-active .panel {
+    min-width: 0;
+  }
+
+  body.workspace-active #workspace-nav:not(.hidden) {
+    width: calc(100vw - 16px) !important;
+    padding-left: 5px !important;
+    padding-right: 5px !important;
+    gap: 3px !important;
+  }
+
+  body.workspace-active #workspace-nav:not(.hidden) > button {
+    min-width: 58px !important;
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+    font-size: 11px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.workspace-active *,
+  body.workspace-active *::before,
+  body.workspace-active *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
