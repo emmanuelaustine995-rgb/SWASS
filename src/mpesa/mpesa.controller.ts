@@ -288,9 +288,17 @@ export class MpesaController {
         }
         const receipt = typeof body?.mpesa_receipt_number === 'string' ? body.mpesa_receipt_number.trim() : '';
         const amount = Number(body?.amount);
-        const callbackPhone = typeof body?.phone === 'string' ? body.phone.replace(/^\+/, '') : '';
+        const callbackPhoneRaw = typeof body?.phone === 'string' ? body.phone : '';
+        const canonicalPhone = (value: string) => {
+          let digits = value.replace(/\D/g, '');
+          if (digits.startsWith('0') && digits.length === 10) digits = '254' + digits.slice(1);
+          if (/^[17]\d{8}$/.test(digits)) digits = '254' + digits;
+          return /^254[17]\d{8}$/.test(digits) ? digits : '';
+        };
+        const callbackPhone = canonicalPhone(callbackPhoneRaw);
         if (!receipt || !Number.isSafeInteger(amount) || amount !== Number(p.amount_kes)) return;
-        if (callbackPhone && callbackPhone !== p.phone) return;
+        // Tuma may send 07..., 01..., 2547... or +2547... for the same payer.
+        if (callbackPhoneRaw && (!callbackPhone || callbackPhone !== canonicalPhone(String(p.phone)))) return;
 
         await c.query(`UPDATE payments SET status='success', mpesa_receipt_no=$1 WHERE id=$2 AND status='pending'`, [receipt, p.id]);
         if (p.purpose === 'vendor_fee') {
