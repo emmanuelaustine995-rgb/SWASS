@@ -241,7 +241,7 @@ body{background:#eef3fb}
 <div class="panel"><h3>Platform activity</h3><p>Live counts are read directly from the platform database. Shop sales are not counted as platform revenue.</p><div id="home-status" class="status">Loading verified platform summary…</div></div>
 </section>
 <section id="section-shops" class="hidden"><div class="heading"><div><h2>Shop Management</h2><p>Search registered shops and review their subscription and workspace activity.</p></div></div><div class="panel"><label for="shop-search">Search by business name, phone or email</label><input id="shop-search" type="search" placeholder="Search shops…" style="max-width:480px"><button id="shop-search-btn" class="primary" style="width:auto;padding:12px 20px;margin:10px 0">Search shops</button><p id="shops-status">Loading shop directory…</p><div class="table-wrap"><table><thead><tr><th>Business</th><th>Store</th><th>Phone</th><th>Active users</th><th>Receipts</th><th>Subscription</th><th>Ends</th><th>Status</th><th>Customer feedback</th><th>Action</th></tr></thead><tbody id="shops-rows"><tr><td colspan="10">Loading…</td></tr></tbody></table></div></div></section>
-<section id="section-finance" class="hidden"><div class="heading"><div><h2>Finance &amp; Payments</h2><p>Platform revenue, subscriptions, receipt credits and payment reconciliation.</p></div></div><div class="cards"><div class="card"><small>Subscription revenue</small><div id="finance-subscriptions" class="metric">—</div></div><div class="card"><small>Receipt fee revenue</small><div id="finance-receipts" class="metric">—</div></div><div class="card"><small>Total revenue</small><div id="finance-total" class="metric">—</div></div><div class="card"><small>Ledger entries</small><div id="finance-entries" class="metric">—</div></div></div><div class="panel"><h3>Financial ledger</h3><p id="finance-status">Loading recorded ledger entries…</p><div class="table-wrap"><table><thead><tr><th>Type</th><th>Amount</th><th>Reference</th><th>Date</th></tr></thead><tbody id="finance-rows"><tr><td colspan="4">Loading…</td></tr></tbody></table></div></div></section>
+<section id="section-finance" class="hidden"><div class="heading"><div><h2>Finance &amp; Payments</h2><p>Platform revenue, subscriptions, receipt credits and payment reconciliation.</p></div></div><div class="cards"><div class="card"><small>Subscription revenue</small><div id="finance-subscriptions" class="metric">—</div></div><div class="card"><small>Receipt fee revenue</small><div id="finance-receipts" class="metric">—</div></div><div class="card"><small>Total revenue</small><div id="finance-total" class="metric">—</div></div><div class="card"><small>Ledger entries</small><div id="finance-entries" class="metric">—</div></div></div><div class="panel"><h3>Subscription payment recovery</h3><p>Find pending or failed subscription payments. Reconcile only after checking the exact M-Pesa/Tuma transaction in the provider portal or bank records. The system checks amount and payer phone, prevents duplicate receipt references, activates the subscription and records an administrator audit event.</p><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button id="subscription-payments-refresh" class="secondary" type="button" style="width:auto;margin:0">↻ Refresh payment queue</button><span id="subscription-payments-status" class="status" role="status">Loading unresolved subscription payments…</span></div><div class="table-wrap"><table><thead><tr><th>Business / subscriber</th><th>Requested amount</th><th>Payer phone</th><th>Gateway status</th><th>Requested</th><th>Action</th></tr></thead><tbody id="subscription-payments-rows"><tr><td colspan="6">Loading…</td></tr></tbody></table></div></div><div class="panel"><h3>Financial ledger</h3><p id="finance-status">Loading recorded ledger entries…</p><div class="table-wrap"><table><thead><tr><th>Type</th><th>Amount</th><th>Reference</th><th>Date</th></tr></thead><tbody id="finance-rows"><tr><td colspan="4">Loading…</td></tr></tbody></table></div></div></section>
 <section id="section-security" class="hidden">
  <div class="heading"><div><h2>Cybersecurity Operations Centre</h2><p>Security event monitoring · authentication defence · administrator audit trail</p></div><button id="security-refresh" class="primary" style="width:auto;padding:10px 16px">↻ Refresh monitoring</button></div>
  <div class="soc-banner"><span class="soc-pulse"></span><div><strong>EVENT MONITORING ACTIVE</strong><small>Signals collected from AURORA authentication and administrator actions</small></div><span class="soc-live">DATABASE CONNECTED</span></div>
@@ -693,6 +693,53 @@ body{background:#eef3fb}
     }
   }
 
+
+  async function loadSubscriptionPaymentQueue(){
+    const status=$('subscription-payments-status'),rows=$('subscription-payments-rows');
+    if(!status||!rows)return;
+    status.textContent='Checking pending and failed subscription payments…';rows.replaceChildren();
+    try{
+      const data=await api('/platform-admin/subscription-payments?limit=100');
+      for(const payment of (data.payments||[])){
+        const tr=document.createElement('tr');
+        const values=[
+          (payment.businessName||'Personal freelancer subscription')+(payment.subscriberName?' · '+payment.subscriberName:''),
+          kes(payment.amountKes),payment.phone||'—',String(payment.status||'unknown').toUpperCase(),
+          payment.createdAt?new Date(payment.createdAt).toLocaleString():'—'
+        ];
+        const labels=['Business / subscriber','Amount','Payer phone','Status','Requested'];
+        values.forEach((value,i)=>{const td=document.createElement('td');td.textContent=String(value);td.dataset.label=labels[i];tr.append(td);});
+        const action=document.createElement('td');action.dataset.label='Action';
+        const button=document.createElement('button');button.type='button';button.textContent='Verify & reconcile';button.style.cssText='background:#087a55;color:#fff;border:0;border-radius:8px;padding:9px 11px;font-weight:800;cursor:pointer;white-space:nowrap';
+        button.addEventListener('click',()=>reconcileSubscriptionPayment(payment,button));action.append(button);tr.append(action);rows.append(tr);
+      }
+      if(!rows.children.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=6;td.textContent='No pending or failed subscription payments were found.';tr.append(td);rows.append(tr);}
+      status.textContent='Showing '+(data.payments||[]).length+' unresolved subscription payment(s). Successful payments are excluded.';
+    }catch(error){status.textContent='Payment queue unavailable: '+error.message;const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=6;td.textContent='Could not load unresolved payments.';tr.append(td);rows.append(tr);}
+  }
+  async function reconcileSubscriptionPayment(payment,button){
+    const receiptNumber=window.prompt('Enter the exact M-Pesa/Tuma receipt reference after verifying the transaction in the provider portal. Do not use a customer screenshot alone.');
+    if(receiptNumber===null||!receiptNumber.trim())return;
+    const amountText=window.prompt('Confirm the exact amount received in KSh. Expected: '+Number(payment.amountKes),String(payment.amountKes));
+    if(amountText===null)return;
+    const phone=window.prompt('Confirm the payer phone shown in the provider transaction record. Expected: '+payment.phone,payment.phone||'');
+    if(phone===null||!phone.trim())return;
+    const note=window.prompt('Optional administrator note (e.g. verified in Tuma dashboard).','Verified in payment provider records.')||'';
+    const amountKes=Number(amountText);
+    if(!Number.isSafeInteger(amountKes)||amountKes!==Number(payment.amountKes)){alert('The confirmed amount must exactly match the original requested amount. No changes were made.');return;}
+    if(!window.confirm('FINAL CHECK\n\nPayment: '+payment.id+'\nAmount: '+kes(amountKes)+'\nPayer: '+phone+'\nReceipt: '+receiptNumber+'\n\nConfirm you independently verified this exact transaction in Tuma/M-Pesa records and want to activate the customer subscription?'))return;
+    button.disabled=true;button.textContent='Reconciling…';
+    try{
+      const res=await fetch(API+'/platform-admin/subscription-payments/'+encodeURIComponent(payment.id)+'/reconcile',{
+        method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token,Accept:'application/json'},
+        body:JSON.stringify({receiptNumber:receiptNumber.trim(),amountKes,phone:phone.trim(),verifiedExternally:true,note})
+      });
+      const result=await res.json().catch(()=>({}));
+      if(!res.ok)throw new Error(result.message||'Subscription payment reconciliation failed.');
+      alert(result.message||'Payment reconciled and subscription activated.');
+      await Promise.all([loadSubscriptionPaymentQueue(),loadFinance(),loadShops()]);
+    }catch(error){alert('Not reconciled: '+error.message);button.disabled=false;button.textContent='Verify & reconcile';}
+  }
   async function loadFinance(){
     try{
       const [summary,entries]=await Promise.all([api('/platform-finance/summary'),api('/platform-finance/entries')]);
@@ -801,7 +848,7 @@ body{background:#eef3fb}
     finally{btn.disabled=false;btn.textContent='SECURE ADMIN LOGIN';}
   });
   $('admin-logout').addEventListener('click',logout);
-  $('shop-search-btn').addEventListener('click',loadShops);
+  $('shop-search-btn').addEventListener('click',loadShops);\n  $('subscription-payments-refresh')?.addEventListener('click',loadSubscriptionPaymentQueue);
   $('security-refresh').addEventListener('click',loadSecurity);
   $('soc-severity').addEventListener('change',loadSecurity);
   $('shop-search').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();loadShops();}});
@@ -812,7 +859,7 @@ body{background:#eef3fb}
   document.querySelectorAll('.nav button').forEach(btn=>btn.addEventListener('click',()=>{
     document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b===btn));
     document.querySelectorAll('main.content section').forEach(s=>s.classList.add('hidden'));
-    $('section-'+btn.dataset.section).classList.remove('hidden');$('admin-welcome').textContent=btn.textContent;menu.hidden=true;menuToggle.setAttribute('aria-expanded','false');if(btn.dataset.section==='shops')loadShops();if(btn.dataset.section==='accounts')loadPeople();if(btn.dataset.section==='security'){loadSecurity();loadOperationsWorkItems();}if(btn.dataset.section==='reports')loadReports();if(btn.dataset.section==='settings'){loadSettings();loadMaintenance();}
+    $('section-'+btn.dataset.section).classList.remove('hidden');$('admin-welcome').textContent=btn.textContent;menu.hidden=true;menuToggle.setAttribute('aria-expanded','false');if(btn.dataset.section==='shops')loadShops();if(btn.dataset.section==='finance'){loadFinance();loadSubscriptionPaymentQueue();}if(btn.dataset.section==='accounts')loadPeople();if(btn.dataset.section==='security'){loadSecurity();loadOperationsWorkItems();}if(btn.dataset.section==='reports')loadReports();if(btn.dataset.section==='settings'){loadSettings();loadMaintenance();}
   }));
 })();
 </script>
