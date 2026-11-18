@@ -3451,3 +3451,120 @@ html body.workspace-active #shop-home:not(.hidden) [data-shop-tab-panel="profile
     overflow:visible!important;
   }
 }
+
+/* SHOP SCROLL FIX — Products, Goods on Repair and Profile all grow with
+   their content. The document remains the only vertical page scroller. */
+html body.workspace-active #shop-home:not(.hidden){
+  position:relative!important;
+  display:block!important;
+  flex:0 0 auto!important;
+  width:100%!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow:visible!important;
+  overflow-x:clip!important;
+  overflow-y:visible!important;
+  contain:none!important;
+  transform:none!important;
+  padding-bottom:calc(34px + env(safe-area-inset-bottom))!important;
+}
+html body.workspace-active #shop-home:not(.hidden) > *,
+html body.workspace-active #shop-home:not(.hidden) [data-shop-tab-panel]:not(.hidden),
+html body.workspace-active #shop-home:not(.hidden) .shop-panel,
+html body.workspace-active #shop-home:not(.hidden) .shop-content,
+html body.workspace-active #shop-home:not(.hidden) .shop-product-list,
+html body.workspace-active #shop-home:not(.hidden) .shop-products-grid{
+  position:relative!important;
+  flex:0 0 auto!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow:visible!important;
+  overflow-x:clip!important;
+  overflow-y:visible!important;
+  contain:none!important;
+  transform:none!important;
+}
+html body.workspace-active #shop-home:not(.hidden) details.shop-goods-on-repair-card,
+html body.workspace-active #shop-home:not(.hidden) details.shop-register-product-card,
+html body.workspace-active #shop-home:not(.hidden) details.shop-find-products-card,
+html body.workspace-active #shop-home:not(.hidden) details.loan-items-card,
+html body.workspace-active #shop-home:not(.hidden) details.shop-business-details-card,
+html body.workspace-active #shop-home:not(.hidden) details#shop-receipt-history-card{
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow:visible!important;
+  contain:none!important;
+}
+html body.workspace-active #shop-home:not(.hidden) details[open] > :not(summary),
+html body.workspace-active #shop-home:not(.hidden) .repair-card-content,
+html body.workspace-active #shop-home:not(.hidden) .shop-repair-form,
+html body.workspace-active #shop-home:not(.hidden) .repair-records-list,
+html body.workspace-active #shop-home:not(.hidden) .repair-record-row,
+html body.workspace-active #shop-home:not(.hidden) #owner-staff-area,
+html body.workspace-active #shop-home:not(.hidden) .shop-business-details-card,
+html body.workspace-active #shop-home:not(.hidden) .shop-register-product-card,
+html body.workspace-active #shop-home:not(.hidden) #product-list,
+html body.workspace-active #shop-home:not(.hidden) .shop-product-list{
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow:visible!important;
+  contain:none!important;
+}
+html body.workspace-active #shop-home:not(.hidden) .repair-card-content,
+html body.workspace-active #shop-home:not(.hidden) #owner-staff-area,
+html body.workspace-active #shop-home:not(.hidden) .shop-business-details-card,
+html body.workspace-active #shop-home:not(.hidden) .shop-repair-form{
+  padding-bottom:26px!important;
+}
+html body.workspace-active #shop-home:not(.hidden) .shop-section-tabs{
+  position:sticky!important;
+  top:0!important;
+  z-index:30!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+@media(max-width:760px){
+  html:has(body.workspace-active),
+  html body.workspace-active{
+    height:auto!important;
+    min-height:100dvh!important;
+    max-height:none!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    overscroll-behavior-y:auto!important;
+  }
+  html body.workspace-active .shell{
+    position:relative!important;
+    display:flex!important;
+    flex-direction:column!important;
+    height:auto!important;
+    min-height:100dvh!important;
+    max-height:none!important;
+    overflow:visible!important;
+    padding-bottom:calc(112px + env(safe-area-inset-bottom))!important;
+  }
+  html body.workspace-active #shop-home:not(.hidden){
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    overflow:visible!important;
+  }
+  html body.workspace-active #workspace-nav,
+  html body.workspace-active #workspace-nav.bottom-nav{
+    position:fixed!important;
+    inset:auto 0 0 0!important;
+    z-index:2000!important;
+    width:100%!important;
+    height:auto!important;
+    max-height:none!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+    touch-action:pan-x!important;
+    padding-bottom:calc(7px + env(safe-area-inset-bottom))!important;
+  }
+}
