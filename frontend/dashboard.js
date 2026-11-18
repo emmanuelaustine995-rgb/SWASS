@@ -168,33 +168,33 @@
   window.setInterval(()=>{if(state.token&&document.visibilityState==='visible'&&navigator.onLine){void loadDashboard();}},DASHBOARD_REFRESH_MS);
   window.addEventListener('online',()=>{if(state.token)void loadDashboard();});
   $('refresh-btn').addEventListener('click',loadDashboard);
-  $('mpesa-purpose').addEventListener('change',()=>{const subscription=$('mpesa-purpose').value==='subscription';$('topup-amount-wrap').classList.toggle('hidden',subscription);$('plan-wrap').classList.toggle('hidden',!subscription);});
-  $('mpesa-form').addEventListener('submit',async ev=>{ev.preventDefault();const message=$('mpesa-message');message.textContent='Requesting payment prompt…';try{const purpose=$('mpesa-purpose').value;const payload={purpose,phone:$('mpesa-phone').value.trim()};if(purpose==='wallet_topup')payload.amountKes=Number($('topup-amount').value);else payload.plan=$('subscription-plan').value;const result=await request('/api/v1/mpesa/stk-push',{method:'POST',body:JSON.stringify(payload)});message.textContent=`STK prompt requested for ${money(result.amountKes)}. Enter your M-Pesa PIN on your phone. Checking payment status…`;let attempts=0;const check=async()=>{try{const status=await request(`/api/v1/mpesa/payments/${result.paymentId}`);if(status.status==='success'){message.textContent=`Payment confirmed. M-Pesa receipt: ${status.receiptNumber||'recorded'}.`;await loadDashboard();return;}if(status.status==='failed'){message.textContent='Payment was not completed. You can try again.';return;}attempts++;if(attempts<12){setTimeout(check,5000);}else{message.textContent=`Payment is still pending. Use Refresh status later. Payment reference: ${result.paymentId}`;}}catch(e){message.textContent=e.message;}};await check();}catch(e){message.textContent=e.message;}});
+  $('owner-mpesa-purpose').addEventListener('change',()=>{const subscription=$('owner-mpesa-purpose').value==='subscription';$('owner-topup-amount-wrap').classList.toggle('hidden',subscription);$('owner-plan-wrap').classList.toggle('hidden',!subscription);});
+  $('owner-mpesa-form').addEventListener('submit',async ev=>{ev.preventDefault();const message=$('owner-mpesa-message');message.textContent='Requesting payment prompt…';try{const purpose=$('owner-mpesa-purpose').value;const payload={purpose,phone:$('owner-mpesa-phone').value.trim()};if(purpose==='wallet_topup')payload.amountKes=Number($('owner-topup-amount').value);else payload.plan=$('owner-subscription-plan').value;const result=await request('/api/v1/mpesa/stk-push',{method:'POST',body:JSON.stringify(payload)});message.textContent=`STK prompt requested for ${money(result.amountKes)}. Enter your M-Pesa PIN on your phone. Checking payment status…`;let attempts=0;const check=async()=>{try{const status=await request(`/api/v1/mpesa/payments/${result.paymentId}`);if(status.status==='success'){message.textContent=`Payment confirmed. M-Pesa receipt: ${status.receiptNumber||'recorded'}.`;await loadDashboard();return;}if(status.status==='failed'){message.textContent='Payment was not completed. You can try again.';return;}attempts++;if(attempts<12){setTimeout(check,5000);}else{message.textContent=`Payment is still pending. Use Refresh status later. Payment reference: ${result.paymentId}`;}}catch(e){message.textContent=e.message;}};await check();}catch(e){message.textContent=e.message;}});
   $('owner-crm-refresh')?.addEventListener('click',loadCustomers);$('owner-crm-search-btn')?.addEventListener('click',loadCustomers);$('owner-crm-search')?.addEventListener('keydown',ev=>{if(ev.key==='Enter'){ev.preventDefault();loadCustomers();}});
-  $('expense-form').addEventListener('submit',async ev=>{ev.preventDefault();$('expense-message').textContent='Saving…';try{await request('/api/v1/dashboard/expenses',{method:'POST',body:JSON.stringify({amountKes:Number($('expense-amount').value),category:$('expense-category').value.trim(),note:$('expense-note').value.trim()||undefined})});$('expense-form').reset();$('expense-message').textContent='Expense saved.';await loadDashboard();}catch(e){$('expense-message').textContent=e.message;}});
+  $('owner-expense-form').addEventListener('submit',async ev=>{ev.preventDefault();$('owner-expense-message').textContent='Saving…';try{await request('/api/v1/dashboard/expenses',{method:'POST',body:JSON.stringify({amountKes:Number($('owner-expense-amount').value),category:$('owner-expense-category').value.trim(),note:$('owner-expense-note').value.trim()||undefined})});$('owner-expense-form').reset();$('owner-expense-message').textContent='Expense saved.';await loadDashboard();}catch(e){$('owner-expense-message').textContent=e.message;}});
   const themeKey='swass-dashboard-theme';
   function applyDashboardTheme(dark){
     document.body.classList.toggle('dashboard-dark',dark);
-    $('theme-toggle').textContent=dark?'☀ Light mode':'☾ Dark mode';
-    $('theme-toggle').setAttribute('aria-pressed',String(dark));
+    $('owner-theme-toggle').textContent=dark?'☀ Light mode':'☾ Dark mode';
+    $('owner-theme-toggle').setAttribute('aria-pressed',String(dark));
   }
   applyDashboardTheme(localStorage.getItem(themeKey)==='dark');
-  $('theme-toggle').addEventListener('click',()=>{
+  $('owner-theme-toggle').addEventListener('click',()=>{
     const dark=!document.body.classList.contains('dashboard-dark');
     applyDashboardTheme(dark);
     localStorage.setItem(themeKey,dark?'dark':'light');
   });
   function updateNetworkStatus(){
     const online=navigator.onLine;
-    $('network-status').classList.toggle('offline',!online);
-    $('network-status').innerHTML=online?'<i></i> Online':'<i></i> Offline · Sync unavailable';
+    $('owner-network-status').classList.toggle('offline',!online);
+    $('owner-network-status').innerHTML=online?'<i></i> Online':'<i></i> Offline · Sync unavailable';
   }
   window.addEventListener('online',updateNetworkStatus);
   window.addEventListener('offline',updateNetworkStatus);
   updateNetworkStatus();
   // Menu search visibly filters the single dashboard's navigation links.
-  $('workspace-search').addEventListener('input',()=>{
-    const q=$('workspace-search').value.trim().toLowerCase();
+  $('owner-workspace-search').addEventListener('input',()=>{
+    const q=$('owner-workspace-search').value.trim().toLowerCase();
     document.querySelectorAll('.dashboard-sidebar .sidebar-link').forEach(link=>{
       const haystack=(link.textContent+' '+(link.dataset.search||'')).toLowerCase();
       link.classList.toggle('hidden',!!q&&!haystack.includes(q));
