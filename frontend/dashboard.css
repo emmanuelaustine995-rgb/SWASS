@@ -3730,3 +3730,90 @@ body::-webkit-scrollbar-track,
 body *::-webkit-scrollbar-track {
   background:transparent;
 }
+
+
+/* RESTORE THE ORIGINAL NATIVE PAGE SCROLLING.
+   Remove the later fixed-height shell scrollbars that introduced the narrow
+   side rail/arrow controls. Let the browser document scroll naturally. */
+html,
+body,
+html body.workspace-active {
+  width:100%!important;
+  height:auto!important;
+  min-height:100%!important;
+  max-height:none!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  position:static!important;
+  overscroll-behavior-y:auto!important;
+  scrollbar-width:auto!important;
+  scrollbar-color:auto!important;
+}
+html body.workspace-active .shell,
+html body.workspace-active main.shell {
+  box-sizing:border-box!important;
+  position:relative!important;
+  inset:auto!important;
+  display:block!important;
+  flex:0 0 auto!important;
+  width:100%!important;
+  max-width:1280px!important;
+  height:auto!important;
+  min-height:100vh!important;
+  max-height:none!important;
+  margin:0 auto!important;
+  padding:12px 12px 36px!important;
+  overflow:visible!important;
+  overflow-x:clip!important;
+  overflow-y:visible!important;
+  overscroll-behavior:auto!important;
+  touch-action:auto!important;
+  scrollbar-width:auto!important;
+  scrollbar-color:auto!important;
+}
+html body.workspace-active .shell > * {
+  flex-shrink:initial!important;
+}
+@media(max-width:760px) {
+  html body.workspace-active .shell,
+  html body.workspace-active main.shell {
+    width:100%!important;
+    max-width:100%!important;
+    min-height:100vh!important;
+    height:auto!important;
+    max-height:none!important;
+    margin:0!important;
+    padding:8px 10px calc(112px + env(safe-area-inset-bottom))!important;
+    overflow:visible!important;
+  }
+  html body.workspace-active #workspace-nav,
+  html body.workspace-active #workspace-nav.bottom-nav {
+    position:fixed!important;
+    inset:auto 0 0 0!important;
+    z-index:3000!important;
+    width:100%!important;
+    height:auto!important;
+    max-height:none!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+  }
+}
+@media(min-width:761px) {
+  html body.workspace-active .shell,
+  html body.workspace-active main.shell {
+    padding:18px 20px 36px!important;
+  }
+}
+/* Do not draw a custom scrollbar rail or arrow buttons on app containers. */
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+html body.workspace-active .shell::-webkit-scrollbar,
+html body.workspace-active main.shell::-webkit-scrollbar {
+  all:revert!important;
+}
+html::-webkit-scrollbar-button,
+body::-webkit-scrollbar-button,
+html body.workspace-active .shell::-webkit-scrollbar-button,
+html body.workspace-active main.shell::-webkit-scrollbar-button {
+  all:revert!important;
+}
