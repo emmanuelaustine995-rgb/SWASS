@@ -160,7 +160,7 @@ body{background:#eef3fb}
 </head>
 <body>
 <section id="login-screen" class="login-screen">
-<form id="admin-login-form" class="login-card" method="post" onsubmit="return false;">
+<form id="admin-login-form" class="login-card" method="post">
 <div class="brand">AURORA E-RECEIPT</div>
 <p class="eyebrow">RESTRICTED PLATFORM ACCESS</p>
 <h1>Admin Login</h1>
@@ -848,7 +848,8 @@ body{background:#eef3fb}
     finally{btn.disabled=false;btn.textContent='SECURE ADMIN LOGIN';}
   });
   $('admin-logout').addEventListener('click',logout);
-  $('shop-search-btn').addEventListener('click',loadShops);\n  $('subscription-payments-refresh')?.addEventListener('click',loadSubscriptionPaymentQueue);
+  $('shop-search-btn').addEventListener('click',loadShops);
+  $('subscription-payments-refresh')?.addEventListener('click',loadSubscriptionPaymentQueue);
   $('security-refresh').addEventListener('click',loadSecurity);
   $('soc-severity').addEventListener('change',loadSecurity);
   $('shop-search').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();loadShops();}});
