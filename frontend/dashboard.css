@@ -3022,3 +3022,94 @@ html body.workspace-active #shop-home:not(.hidden) .panel{
     padding-bottom:calc(100px + env(safe-area-inset-bottom))!important;
   }
 }
+
+
+/* AURORA FORM COMPLETION FIX — ensure long customer, product, staff and
+   checkout forms can always reach their final fields and submit controls. */
+html body.workspace-active .modal,
+html body.workspace-active [role="dialog"],
+html body.workspace-active .dialog,
+html body.workspace-active .modal-overlay {
+  box-sizing:border-box!important;
+  max-height:100dvh!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  overscroll-behavior-y:contain!important;
+  -webkit-overflow-scrolling:touch!important;
+  touch-action:pan-y!important;
+  align-items:flex-start!important;
+}
+html body.workspace-active .modal-card,
+html body.workspace-active [role="dialog"] .modal-card,
+html body.workspace-active .dialog-card {
+  box-sizing:border-box!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:calc(100dvh - 16px - env(safe-area-inset-top) - env(safe-area-inset-bottom))!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  overscroll-behavior-y:contain!important;
+  -webkit-overflow-scrolling:touch!important;
+  touch-action:pan-y!important;
+  flex:0 0 auto!important;
+  margin-top:max(8px,env(safe-area-inset-top))!important;
+  margin-bottom:max(8px,env(safe-area-inset-bottom))!important;
+}
+html body.workspace-active .modal-card form,
+html body.workspace-active [role="dialog"] form,
+html body.workspace-active form {
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow:visible!important;
+  touch-action:pan-y!important;
+}
+html body.workspace-active .modal-card fieldset,
+html body.workspace-active .modal-card .form-section,
+html body.workspace-active .modal-card .form-fields,
+html body.workspace-active .modal-card .form-body {
+  min-height:0!important;
+  max-height:none!important;
+  overflow:visible!important;
+}
+html body.workspace-active .modal-card button[type="submit"],
+html body.workspace-active .modal-card .form-actions,
+html body.workspace-active .modal-card .form-actions:last-child {
+  position:static!important;
+  flex-shrink:0!important;
+  margin-bottom:8px!important;
+}
+@media(max-width:760px){
+  html body.workspace-active .modal,
+  html body.workspace-active [role="dialog"],
+  html body.workspace-active .dialog,
+  html body.workspace-active .modal-overlay {
+    position:fixed!important;
+    inset:0!important;
+    width:100%!important;
+    max-width:100%!important;
+    height:100dvh!important;
+    max-height:100dvh!important;
+    padding:calc(8px + env(safe-area-inset-top)) 8px calc(12px + env(safe-area-inset-bottom))!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    align-items:flex-start!important;
+    justify-content:center!important;
+  }
+  html body.workspace-active .modal-card,
+  html body.workspace-active [role="dialog"] .modal-card,
+  html body.workspace-active .dialog-card {
+    width:100%!important;
+    max-width:620px!important;
+    max-height:calc(100dvh - 20px - env(safe-area-inset-top) - env(safe-area-inset-bottom))!important;
+    margin:0 auto!important;
+    padding-bottom:calc(18px + env(safe-area-inset-bottom))!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+  }
+  html body.workspace-active .modal-card input,
+  html body.workspace-active .modal-card select,
+  html body.workspace-active .modal-card textarea {
+    scroll-margin-bottom:24px!important;
+  }
+}
