@@ -52,8 +52,6 @@
     $('product-legend').innerHTML='<p class="muted">Loading product sales…</p>';
     const currentRequest=request(`/api/v1/dashboard/summary${periodQuery()}`);
     const comparisonRequest=request(`/api/v1/dashboard/comparison${periodQuery()}`);
-    // Expenses are secondary; never make the sales dashboard wait for them.
-    void loadExpenses().catch(()=>{$('expense-list').innerHTML='<p class="muted">Expenses could not be loaded.</p>';});
     try {
       const [data,comparisonResult]=await Promise.all([
         currentRequest,
@@ -132,7 +130,6 @@
       $('crm-message').textContent=`${rows.length} customer record(s) shown.`;
     }catch(e){$('crm-rows').innerHTML='<tr><td colspan="6">Could not load customers.</td></tr>';$('crm-message').textContent=e.message;}
   }
-  async function loadExpenses(){const data=await request('/api/v1/dashboard/expenses?limit=8');$('expense-list').innerHTML=data.expenses?.length?data.expenses.map(x=>`<div class="expense-row"><div><strong>${esc(x.category)}</strong><small>${new Date(x.spentAt).toLocaleDateString('en-KE')}${x.note?` · ${esc(x.note)}`:''}</small></div><b>${money(x.amountKes)}</b></div>`).join(''):'<p class="muted">No expenses recorded.</p>';}
 
   function activateOwnerWorkspace(session){
     state.token=session?.token||null;state.role=session?.role||null;
