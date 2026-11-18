@@ -3113,3 +3113,74 @@ html body.workspace-active .modal-card .form-actions:last-child {
     scroll-margin-bottom:24px!important;
   }
 }
+
+
+/* TARGETED FIX: Sales Declaration and Issued Receipt must scroll to their
+   actual final field/action on Android as well as desktop. */
+html body.workspace-active #receipts-home #secondhand-panel:not(.hidden),
+html body.workspace-active #receipts-home #secondhand-panel[aria-label="Sales declaration form"]{
+  display:block!important;
+  position:relative!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow:visible!important;
+  overflow-x:clip!important;
+  overflow-y:visible!important;
+  contain:none!important;
+  transform:none!important;
+  padding-bottom:calc(36px + env(safe-area-inset-bottom))!important;
+}
+html body.workspace-active #receipts-home #secondhand-panel .secondhand-form,
+html body.workspace-active #receipts-home #secondhand-panel .secondhand-form fieldset,
+html body.workspace-active #receipts-home #secondhand-panel .secondhand-form .secondhand-fields,
+html body.workspace-active #receipts-home #secondhand-panel .secondhand-form .secondhand-pad-wrap{
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow:visible!important;
+  contain:none!important;
+}
+html body.workspace-active #receipts-home #secondhand-panel .secondhand-form{
+  padding-bottom:28px!important;
+}
+html body.workspace-active #receipt-modal.modal:not(.hidden){
+  position:fixed!important;
+  inset:0!important;
+  display:flex!important;
+  align-items:flex-start!important;
+  justify-content:center!important;
+  box-sizing:border-box!important;
+  width:100%!important;
+  height:100dvh!important;
+  max-height:100dvh!important;
+  padding:calc(8px + env(safe-area-inset-top)) 8px calc(12px + env(safe-area-inset-bottom))!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  overscroll-behavior-y:contain!important;
+  -webkit-overflow-scrolling:touch!important;
+  touch-action:pan-y!important;
+}
+html body.workspace-active #receipt-modal .receipt-card{
+  position:relative!important;
+  display:block!important;
+  box-sizing:border-box!important;
+  width:100%!important;
+  max-width:620px!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:calc(100dvh - 20px - env(safe-area-inset-top) - env(safe-area-inset-bottom))!important;
+  margin:0 auto!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  overscroll-behavior-y:contain!important;
+  -webkit-overflow-scrolling:touch!important;
+  touch-action:pan-y!important;
+  padding-bottom:calc(24px + env(safe-area-inset-bottom))!important;
+}
+html body.workspace-active #receipt-modal #receipt-paper,
+html body.workspace-active #receipt-modal .receipt-actions{
+  height:auto!important;
+  max-height:none!important;
+  overflow:visible!important;
+}
