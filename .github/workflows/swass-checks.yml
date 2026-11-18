@@ -29,7 +29,10 @@ jobs:
         with:
           node-version: 22
       - run: npm install --include=dev
-      - run: node --check frontend/app.js && node --check frontend/recover.js && node --check frontend/dashboard.js && node --check frontend/sw.js
+      - name: Check every JavaScript file
+        run: find . -type f \\( -name '*.js' -o -name '*.mjs' \\) -not -path './node_modules/*' -print0 | xargs -0 -r -n1 node --check
+      - name: Reject unresolved Git conflict markers
+        run: if grep -RInE '^(<<<<<<< |=======|>>>>>>> )' --exclude-dir=.git --exclude-dir=node_modules .; then echo 'Unresolved conflict markers found'; exit 1; else echo 'No unresolved conflict markers'; fi
       - run: npm run migrate:node
       - run: node test/verify-declaration-migration.mjs
       - run: npm run build
