@@ -324,3 +324,225 @@ body.workspace-active main.shell > #workspace-nav.bottom-nav:not(.hidden) > butt
     transform: translateX(-50%) !important;
   }
 }
+
+
+/* AURORA fixed-app / inner-page scrolling model (2026-11-19).
+   Keep the browser viewport still. Each active workspace page owns its
+   vertical scroll area, so long Shop > Profile and declaration content
+   remains reachable without moving the app frame or navigation. */
+html,
+body.workspace-active {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+}
+
+body.workspace-active {
+  position: fixed !important;
+  inset: 0 !important;
+  display: block !important;
+  touch-action: none !important;
+}
+
+body.workspace-active .topbar {
+  display: none !important;
+}
+
+body.workspace-active .global-back-row {
+  position: fixed !important;
+  inset: 0 auto auto 0 !important;
+  width: 100% !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  z-index: 2147482001 !important;
+}
+
+body.workspace-active .global-back-row .global-back-dock:not(.hidden) {
+  position: fixed !important;
+  top: max(8px, env(safe-area-inset-top, 0px)) !important;
+  left: 10px !important;
+  margin: 0 !important;
+}
+
+html body.workspace-active main.shell,
+html body.workspace-active .shell {
+  position: fixed !important;
+  inset: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  max-width: 1440px !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  margin: 0 auto !important;
+  padding: max(10px, env(safe-area-inset-top, 0px)) 12px calc(88px + env(safe-area-inset-bottom, 0px)) !important;
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+  contain: none !important;
+  transform: none !important;
+  touch-action: auto !important;
+}
+
+html body.workspace-active main.shell > :not(#workspace-nav) {
+  box-sizing: border-box !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+html body.workspace-active main.shell > section:not(.hidden),
+html body.workspace-active main.shell > main:not(.hidden),
+html body.workspace-active main.shell > .panel:not(.hidden) {
+  flex: 1 1 0 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior-y: contain !important;
+  -webkit-overflow-scrolling: touch !important;
+  touch-action: pan-y !important;
+  scrollbar-width: thin;
+  padding-bottom: max(18px, env(safe-area-inset-bottom, 0px)) !important;
+}
+
+/* Shop is one inner scroll surface: tabs remain visible while all profile
+   fields, shop details, photos and long declaration forms can be reached. */
+html body.workspace-active main.shell > #shop-home:not(.hidden) {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior-y: contain !important;
+  -webkit-overflow-scrolling: touch !important;
+  touch-action: pan-y !important;
+}
+
+html body.workspace-active #shop-home > .shop-section-tabs {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 30 !important;
+  flex: 0 0 auto !important;
+  max-width: 100% !important;
+}
+
+html body.workspace-active #shop-home form,
+html body.workspace-active #shop-home .shop-profile,
+html body.workspace-active #shop-home .shop-profile-content,
+html body.workspace-active #shop-home .shop-profile-panel,
+html body.workspace-active #shop-home .shop-details,
+html body.workspace-active #shop-home .shop-details-panel,
+html body.workspace-active #shop-home .shop-grid,
+html body.workspace-active #shop-home .profile-grid {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  touch-action: auto !important;
+}
+
+html body.workspace-active #receipts-home:not(.hidden),
+html body.workspace-active #subscription-home:not(.hidden),
+html body.workspace-active #pos-view:not(.hidden),
+html body.workspace-active #owner-home:not(.hidden),
+html body.workspace-active #owner-dashboard-view:not(.hidden),
+html body.workspace-active #customer-home:not(.hidden),
+html body.workspace-active #public-lost-item-view:not(.hidden),
+html body.workspace-active [data-workspace-page]:not(.hidden) {
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  overscroll-behavior-y: contain !important;
+  touch-action: pan-y !important;
+}
+
+html body.workspace-active #workspace-nav:not(.hidden),
+html body.workspace-active main.shell > #workspace-nav:not(.hidden) {
+  position: fixed !important;
+  left: 50% !important;
+  right: auto !important;
+  top: auto !important;
+  bottom: max(8px, env(safe-area-inset-bottom, 0px)) !important;
+  transform: translateX(-50%) !important;
+  box-sizing: border-box !important;
+  width: min(calc(100vw - 16px), 860px) !important;
+  max-width: 860px !important;
+  min-width: 0 !important;
+  height: auto !important;
+  max-height: 76px !important;
+  margin: 0 !important;
+  padding: 6px 8px !important;
+  display: flex !important;
+  flex: 0 0 auto !important;
+  flex-wrap: nowrap !important;
+  align-items: stretch !important;
+  justify-content: space-around !important;
+  gap: 5px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  overscroll-behavior-x: contain !important;
+  touch-action: pan-x !important;
+  z-index: 2147482000 !important;
+}
+
+html body.workspace-active #workspace-nav:not(.hidden) > button {
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  min-height: 46px !important;
+  height: auto !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+  touch-action: manipulation !important;
+}
+
+@media (min-width: 761px) {
+  html body.workspace-active main.shell,
+  html body.workspace-active .shell {
+    left: 50% !important;
+    right: auto !important;
+    width: min(100vw, 1440px) !important;
+    transform: translateX(-50%) !important;
+    padding: 16px 24px 96px !important;
+  }
+}
+
+@media (max-width: 420px) {
+  html body.workspace-active main.shell,
+  html body.workspace-active .shell {
+    padding-left: 9px !important;
+    padding-right: 9px !important;
+  }
+  html body.workspace-active #workspace-nav:not(.hidden) {
+    width: calc(100vw - 12px) !important;
+    gap: 2px !important;
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+  }
+  html body.workspace-active #workspace-nav:not(.hidden) > button {
+    font-size: 10px !important;
+    padding-left: 2px !important;
+    padding-right: 2px !important;
+  }
+}
