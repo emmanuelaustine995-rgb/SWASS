@@ -1795,7 +1795,7 @@
       message.textContent=(result.product?.name||payload.name)+' has been listed for customers across AURORA.';
       message.style.color='#176b52';
     }catch(err){message.textContent=err.message||'Could not add this product.';message.style.color='#a12b22';}
-    finally{btn.disabled=false;btn.textContent='＋ Add Products';}
+    finally{btn.disabled=false;btn.textContent='＋ Add Product';}
   });
 
   // Second-hand product seller declaration workspace.
