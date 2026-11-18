@@ -2837,3 +2837,86 @@ input,select,textarea{box-sizing:border-box;min-width:0;max-width:100%}
   .modal{padding:8px!important}
   .modal-card{width:100%!important;max-width:100%!important;max-height:calc(100dvh - 24px)!important;overflow:auto!important}
 }
+
+
+/* FINAL AURORA SCROLL FIX
+   Older phone and desktop layout rules fixed the shell to the viewport and
+   hid overflow. Restore the document as the single vertical scroll owner,
+   while keeping the requested centred phone-width desktop workspace. */
+html:has(body.workspace-active),
+html body.workspace-active {
+  height:auto!important;
+  min-height:100%!important;
+  max-height:none!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  overscroll-behavior-y:auto!important;
+}
+html body.workspace-active .shell {
+  position:relative!important;
+  inset:auto!important;
+  top:auto!important;
+  right:auto!important;
+  bottom:auto!important;
+  left:auto!important;
+  transform:none!important;
+  height:auto!important;
+  min-height:calc(100dvh - 32px)!important;
+  max-height:none!important;
+  overflow:visible!important;
+}
+html body.workspace-active #workspace-nav,
+html body.workspace-active #workspace-nav.bottom-nav {
+  position:sticky!important;
+  top:0!important;
+  bottom:auto!important;
+  flex:0 0 auto!important;
+  max-height:none!important;
+}
+html body.workspace-active #owner-home:not(.hidden),
+html body.workspace-active #receipts-home:not(.hidden),
+html body.workspace-active #pos-view:not(.hidden),
+html body.workspace-active #shop-home:not(.hidden),
+html body.workspace-active #subscription-home:not(.hidden),
+html body.workspace-active #owner-dashboard-view.profile-workspace-mode:not(.hidden),
+html body.workspace-active #platform-referral-admin:not(.hidden),
+html body.workspace-active #staff-profile-panel:not(.hidden),
+html body.workspace-active #staff-sales-summary:not(.hidden) {
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow:visible!important;
+  overscroll-behavior:auto!important;
+  contain:none!important;
+}
+@media (min-width:761px) {
+  html body.workspace-active .shell {
+    width:min(calc(100% - 40px),430px)!important;
+    max-width:430px!important;
+    min-height:calc(100dvh - 32px)!important;
+    margin:16px auto!important;
+    padding:10px 9px 28px!important;
+    border-radius:24px!important;
+  }
+}
+@media (max-width:760px) {
+  html:has(body.workspace-active),
+  html body.workspace-active {
+    height:auto!important;
+    min-height:100%!important;
+    max-height:none!important;
+  }
+  html body.workspace-active .shell {
+    position:relative!important;
+    inset:auto!important;
+    transform:none!important;
+    width:100%!important;
+    max-width:100%!important;
+    height:auto!important;
+    min-height:100dvh!important;
+    max-height:none!important;
+    margin:0!important;
+    padding:8px 10px calc(24px + env(safe-area-inset-bottom))!important;
+    overflow:visible!important;
+  }
+}
