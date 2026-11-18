@@ -2,41 +2,516 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#10251d"><title>SWASS | Point of Sale</title>
-  <link rel="stylesheet" href="./styles.css">
+  <meta name="theme-color" content="#087fb5"><meta name="description" content="AURORA E-RECEIPT by E-Tech: professional digital receipts, sales records and customer management.">
+  <link rel="canonical" href="https://swass-web.onrender.com/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="AURORA E-RECEIPT">
+  <meta property="og:title" content="AURORA E-RECEIPT Kenya | Digital Receipts &amp; Sales Records">
+  <meta property="og:description" content="AURORA E-RECEIPT by E-Tech: professional digital receipts, sales records and customer management.">
+  <meta property="og:url" content="https://swass-web.onrender.com/">
+  <meta name="twitter:card" content="summary">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "AURORA E-RECEIPT",
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "Web browser",
+    "url": "https://swass-web.onrender.com/",
+    "description": "AURORA E-RECEIPT by E-Tech helps businesses in Kenya create and manage digital receipts, keep sales records, and manage customer information.",
+    "inLanguage": "en-KE",
+    "publisher": {
+      "@type": "Organization",
+      "name": "E-Tech"
+    }
+  }
+  </script>
+  <link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./swass-icon.svg" type="image/svg+xml"><title>AURORA E-RECEIPT Kenya | Digital Receipts & Sales Records</title>
+  <link rel="stylesheet" href="./styles.css?v=gold-repair-card-20261115">
+  <link rel="stylesheet" href="./dashboard.css?v=desktop-phone-frame-20261117">
+  <link rel="stylesheet" href="./registration-layout.css?v=aurora-purple-auth-20261117">
+  <link rel="stylesheet" href="./responsive-auth.css?v=navigation-fixed-viewport-20261118">
 </head>
 <body>
-  <header class="topbar"><a class="brand" href="#"><span class="brand-mark">S</span><span>SWASS<small>BUSINESS & RECEIPT MANAGEMENT</small></span></a><div class="top-actions"><span id="user-label" class="user-label"></span><button id="logout-btn" class="btn btn-quiet hidden">Log out</button></div></header>
+  <header class="topbar"><a class="brand" href="#" aria-label="AURORA E-RECEIPT PLATFORM"><span>AURORA E-RECEIPT PLATFORM</span></a><div class="topbar-actions"></div></header>
+  <div class="global-back-row"><button id="global-back-btn" class="global-back-btn global-back-dock hidden" type="button" aria-label="Go back">← Back</button></div>
+  <div class="hidden" aria-hidden="true"><span id="user-label"></span><span id="dashboard-link"></span><button id="profile-menu-btn" type="button"></button><button id="logout-btn" type="button"></button><button id="install-app-btn" type="button"></button></div>
+  <section id="account-profile-menu" class="account-profile-menu hidden" aria-label="Account profile">
+    <div class="account-profile-head"><div><p class="eyebrow">ACCOUNT PROFILE</p><h2 id="account-profile-name">My profile</h2><p id="account-profile-role" class="muted small"></p></div><button id="close-account-profile" class="btn btn-light" type="button">Close</button></div>
+    <div class="account-profile-details"><div><span>Full name</span><strong id="account-profile-fullname">—</strong></div><div><span>Account type</span><strong id="account-profile-accounttype">—</strong></div><div><span>Phone number</span><strong id="account-profile-phone">—</strong></div><div><span>Email</span><strong id="account-profile-email">—</strong></div><div id="account-profile-business-row" class="hidden"><span>Business / shop</span><strong id="account-profile-business">—</strong></div></div>
+    <section id="account-profile-photo-area" class="account-profile-photo-area hidden"><h3>Profile photo</h3><div class="staff-profile-edit"><img id="staff-profile-preview" class="staff-profile-preview" alt="Your profile photo"><label>Choose profile photo<input id="staff-profile-photo" type="file" accept="image/png,image/jpeg,image/webp"></label><button id="save-staff-profile-photo" class="btn btn-primary" type="button">Save photo</button></div><p id="staff-profile-message" class="muted small" role="status"></p></section>
+    <div class="account-profile-actions"><button id="account-profile-business-edit" class="btn btn-light hidden" type="button">Edit business details</button></div>
+  </section>
   <main class="shell">
     <section id="login-view" class="login-wrap">
-      <div class="login-card"><p class="eyebrow">WELCOME BACK</p><h1>Sign in to your till</h1><p class="muted">Use your SWASS staff phone number and password.</p>
-        <form id="login-form"><label>Phone number<input id="login-phone" name="phone" autocomplete="username" inputmode="tel" placeholder="07XX XXX XXX" required></label><label>Password<input id="login-password" name="password" type="password" autocomplete="current-password" required></label><button class="btn btn-primary full" type="submit">Sign in</button><p id="login-error" class="error" role="alert"></p></form>
+      <div class="login-card">
+        
+        <div class="aurora-brand-lockup" aria-label="AURORA E-RECEIPT">
+          <svg class="aurora-login-logo" viewBox="0 0 360 142" role="img" aria-labelledby="aurora-logo-title">
+            <title id="aurora-logo-title">AURORA E-RECEIPT</title>
+            <defs><linearGradient id="auroraPurple" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6500d8"/><stop offset="1" stop-color="#320078"/></linearGradient></defs>
+            <g transform="translate(8 5)" fill="none" stroke="url(#auroraPurple)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 16 Q20 8 31 8 H105 Q116 8 116 20 V91 L103 101 L91 93 L78 103 L65 94 L52 104 L39 95 L26 103 L13 94 Z" fill="#fff" />
+              <path d="M40 29 H89 M40 40 H78" stroke-width="5"/>
+              <path d="M37 78 L63 48 L91 78 H75 L63 61 L51 78 Z" fill="url(#auroraPurple)" stroke="none"/>
+              <path d="M32 86 H92" stroke-width="4"/>
+            </g>
+            <text x="145" y="70" fill="url(#auroraPurple)" font-size="49" font-weight="850" font-style="italic" letter-spacing="-2">Aurora</text>
+            <path d="M148 91 H337" stroke="#8b55cf" stroke-width="2.5" stroke-linecap="round"/>
+            <text x="150" y="119" fill="#4a168e" font-size="17" font-weight="800" letter-spacing="7">E-RECEIPT</text>
+          </svg>
+          <p class="aurora-tagline"><span>Timeless receipts, never lose a receipt.</span></p>
+        </div>
+        <form id="login-form"><div class="login-role-tabs" role="group" aria-label="Choose account type"><button class="login-role-tab active" type="button" data-login-role="owner" aria-pressed="true">Shop Owner</button><button class="login-role-tab" type="button" data-login-role="staff" aria-pressed="false">Shop Staff</button><button class="login-role-tab" type="button" data-login-role="freelancer" aria-pressed="false">Freelancer</button><button class="login-role-tab" type="button" data-login-role="customer" aria-pressed="false">Customer</button></div><select id="login-account-type" class="hidden" aria-hidden="true" tabindex="-1"><option value="owner">Shop Owner</option><option value="staff">Shop Staff</option><option value="freelancer">Freelancer</option><option value="customer">Customer</option></select><label>Phone number<input id="login-phone" name="phone" autocomplete="username" inputmode="tel" placeholder="07XX XXX XXX" required></label><label>Password<input id="login-password" name="password" type="password" autocomplete="current-password" required></label><button class="btn btn-primary full login-submit-compact" type="submit">LOG IN</button><p id="login-error" class="error" role="alert"></p></form><p class="login-forgot-wrap"><button id="show-password-reset" class="text-btn login-forgot-btn" type="button">FORGOT PASSWORD</button></p>
+        <form id="first-password-form" class="hidden">
+          <p class="eyebrow">SECURE YOUR SHOP ACCOUNT</p><h3>Create your own password</h3>
+          <p class="muted small">Your owner-provided access code is temporary. Choose a private password of at least 10 characters.</p>
+          <label>New password<input id="first-new-password" type="password" minlength="10" maxlength="128" autocomplete="new-password" required></label>
+          <label>Confirm new password<input id="first-confirm-password" type="password" minlength="10" maxlength="128" autocomplete="new-password" required></label>
+          <button id="save-first-password" class="btn btn-primary full" type="submit">Save my password</button>
+          <p id="first-password-message" class="muted small" role="status"></p>
+        </form>
+        <form id="password-reset-form" class="hidden">
+          <p class="muted small">Enter the phone number registered with E-RECEIPT. We will send a six-digit password reset code by SMS.</p>
+          <label>Registered phone number<input id="reset-phone" type="tel" inputmode="tel" placeholder="07XX XXX XXX" required></label>
+          <button id="request-password-reset" class="btn btn-primary full" type="submit">Send reset code</button>
+          <div id="password-reset-confirm-fields" class="hidden">
+            <label>Six-digit reset code<input id="reset-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}"></label>
+            <label>New password<input id="reset-new-password" type="password" minlength="10" maxlength="128" autocomplete="new-password" placeholder="At least 10 characters"></label>
+            <button id="confirm-password-reset" class="btn btn-primary full" type="button">Reset password</button>
+          </div>
+          <p id="password-reset-message" class="muted small" role="status"></p>
+          <button id="cancel-password-reset" class="text-btn" type="button">Back to sign in</button>
+        </form>
+        <p id="owner-register-entry" class="muted small" style="text-align:center"><button id="show-register" type="button" class="text-btn">Create account</button></p>
+        <p id="signup-success-message" class="muted small" role="status" aria-live="polite"></p>
+        <p id="freelancer-register-entry" class="muted small hidden" style="text-align:center"><button id="show-freelancer-register" type="button" class="text-btn">CREATE FREELANCER ACCOUNT</button></p>
+        <p id="freelancer-register-success" class="muted small" role="status" aria-live="polite"></p>
+        <form id="freelancer-register-form" class="hidden">
+          <p class="eyebrow">CREATE FREELANCER ACCOUNT</p>
+          <p class="muted small">Enter your details and the phone number the shop owner used when registering the shop. Your freelancer account will connect automatically to that shop.</p>
+          <label>Your full name<input id="freelancer-full-name" maxlength="120" required autocomplete="name"></label>
+          <label>Your phone number<input id="freelancer-phone" type="tel" inputmode="tel" required placeholder="07XX XXX XXX"></label>
+          <label>Your email address<input id="freelancer-email" type="email" required autocomplete="email"></label>
+          <label>Your National ID number<input id="freelancer-national-id" type="text" inputmode="numeric" maxlength="12" pattern="[0-9]{6,12}" required placeholder="Enter National ID number"></label>
+          <label>Take or choose National ID photo (camera or Gallery; max 2 MB)<input id="freelancer-id-photo" type="file" accept="image/jpeg,image/png,image/webp" required></label>
+          <label>Take or choose your profile photo (camera or Gallery; max 1 MB)<input id="freelancer-profile-photo" type="file" accept="image/jpeg,image/png,image/webp" required></label>
+          <label>Shop owner’s registered phone number<input id="freelancer-owner-phone" type="tel" inputmode="tel" autocomplete="tel" required placeholder="07XX XXX XXX"><span class="muted small">Enter the phone number registered to the shop. AURORA will identify the shop automatically; you do not need to enter shop details.</span></label>
+          <div id="freelancer-shop-detected" class="hidden" aria-live="polite">
+            <label>Detected shop name<input id="freelancer-detected-shop-name" type="text" readonly aria-readonly="true" tabindex="-1"></label>
+            <label>Shop owner’s full name<input id="freelancer-detected-owner-name" type="text" readonly aria-readonly="true" tabindex="-1"></label>
+            <p class="muted small">These details were matched to the registered shop-owner phone number and cannot be edited here.</p>
+          </div>
+          <label>Create your password<input id="freelancer-new-password" type="password" minlength="10" maxlength="128" required autocomplete="new-password" placeholder="At least 10 characters"></label>
+          <label>Confirm password<input id="freelancer-confirm-password" type="password" minlength="10" maxlength="128" required autocomplete="new-password"></label>
+          <label class="aurora-policy-consent"><input type="checkbox" required> I have read and agree to the <a href="#aurora-policy-center">AURORA Terms, Privacy and Security Policies</a>.</label>
+          <button id="request-freelancer-approval" class="btn btn-primary full" type="submit">CREATE FREELANCER ACCOUNT</button>
+          <p id="freelancer-register-message" class="muted small" role="status"></p>
+          <div class="registration-sticky-footer"><span>Already registered?</span><button id="freelancer-back-login" type="button" class="registration-back-button">← Back to sign in</button></div>
+        </form>
+        <form id="register-form" class="hidden">
+          <button id="signup-back-btn" class="btn btn-light btn-small hidden" type="button" style="align-self:flex-start;margin-bottom:2px">← Back</button>
+          <p class="eyebrow">CREATE YOUR AURORA E-RECEIPT ACCOUNT</p>
+          <p class="muted small">If your previous shop account was deactivated, register again using the same registered phone number and National ID. After SMS verification, your existing shop records will be restored.</p>
+          <div id="owner-signup-fields">
+            <label>Shop / business name<input id="reg-business" required maxlength="120" placeholder="Business name"></label>
+            <label>Business location<input id="reg-location" required maxlength="200" placeholder="Town, street or area"></label>
+          </div>
+          <div id="register-fields">
+            <label>Full name<input id="reg-name" required maxlength="120" autocomplete="name"></label>
+            <label>Phone number<input id="reg-phone" type="tel" required inputmode="tel" autocomplete="tel" placeholder="07XX XXX XXX"></label>
+            <label>Email address<input id="reg-email" type="email" required autocomplete="email" placeholder="you@example.com"></label>
+            <label>National ID number<input id="reg-national-id" type="text" inputmode="numeric" maxlength="9" pattern="[0-9]{7,9}" required placeholder="Enter National ID number"></label>
+            <p class="muted small">No photos are needed to create your account. After signing in, you can add your business logo and optional shop photos under Shop → Profile.</p>
+            <label id="reg-kra-wrap">KRA PIN <span class="muted small">(optional)</span><input id="reg-kra-pin" maxlength="40" placeholder="Only if available"></label>
+            <label id="reg-password-field">Create password<input id="reg-password" type="password" required minlength="10" autocomplete="new-password" placeholder="At least 10 characters"></label>
+            <label id="reg-confirm-password-field">Confirm password<input id="reg-confirm-password" type="password" required minlength="10" autocomplete="new-password" placeholder="Enter password again"></label>
+          </div>
+          <div id="signup-otp-panel" class="hidden">
+            <p class="muted small">We sent a 6-digit verification code by SMS to your phone. Enter it below to activate your business account.</p>
+            <label>SMS verification code<input id="signup-otp-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="Enter 6-digit code"></label>
+            <button id="verify-signup-otp" class="btn btn-primary full" type="button">Verify phone and create account</button>
+            <button id="resend-signup-otp" class="btn btn-light full" type="button" disabled>Resend code in 30 seconds</button>
+            <p id="signup-otp-message" class="muted small" role="status"></p>
+          </div>
+          <label class="aurora-policy-consent"><input type="checkbox" required> I have read and agree to the <a href="#aurora-policy-center">AURORA Terms, Privacy and Security Policies</a>.</label>
+          <button id="register-submit" class="btn btn-primary full" type="submit">Send verification code</button>
+          <p id="register-error" class="error" role="alert"></p>
+          <div class="registration-sticky-footer"><span>Already registered?</span><button id="show-login" type="button" class="registration-back-button">← Back to sign in</button></div>
+        </form>
       </div>
+      <aside class="aurora-auth-welcome" aria-label="Welcome to AURORA E-RECEIPT">
+        <div class="aurora-auth-brand" role="img" aria-label="Aurora E-Receipt logo">
+          <svg class="aurora-auth-logo" viewBox="0 0 620 430" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <defs><linearGradient id="aurora-auth-purple" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6f00d9"/><stop offset="1" stop-color="#31006f"/></linearGradient></defs>
+            <g transform="translate(128 12)" stroke="url(#aurora-auth-purple)" stroke-width="17" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M60 34 Q70 10 105 10 H360 Q389 10 389 44 V266 Q389 291 369 306 L337 329 L305 307 L273 331 L241 308 L209 332 L177 309 L145 331 L113 307 L82 327 L45 300 Q28 286 35 260 Z" fill="#fff"/>
+              <path d="M391 45 Q416 9 447 31 Q468 45 468 76 V139 Q468 177 435 185 L390 197" fill="#fff"/>
+              <path d="M126 86 H320 M126 125 H276" fill="none" stroke-width="14"/>
+              <path d="M117 245 L218 145 L321 245 H263 L218 189 L175 245 Z" fill="url(#aurora-auth-purple)" stroke="none"/>
+              <path d="M109 274 H330 M109 306 H254" fill="none" stroke-width="13"/>
+            </g>
+            <text x="310" y="374" text-anchor="middle" fill="url(#aurora-auth-purple)" font-family="Arial,sans-serif" font-size="86" font-weight="900" font-style="italic" letter-spacing="-5">Aurora</text>
+            <path d="M54 397 H172 M448 397 H566" stroke="#4d168e" stroke-width="5" stroke-linecap="round"/>
+            <text x="310" y="409" text-anchor="middle" fill="#4d168e" font-family="Arial,sans-serif" font-size="22" font-weight="800" letter-spacing="10">E-RECEIPT</text>
+          </svg>
+        </div>
+        <h1>Welcome to Auroraskyholdings.co.ke</h1>
+        <p class="aurora-auth-subtitle">Digital E-RECEIPT</p>
+        <p class="aurora-auth-description">Create, keep and recover digital receipts. Manage sales and customer records in one place.</p>
+      </aside>
+      <section id="aurora-policy-center" class="aurora-policy-center" aria-label="AURORA policies">
+        <details>
+          <summary><strong>Terms, Privacy &amp; Security Policies</strong></summary>
+          <div class="aurora-policy-content">
+            <h3>AURORA E-RECEIPT PLATFORM — User Policies</h3>
+            <p><strong>1. Acceptable use.</strong> Use AURORA only for lawful activities. Fraudulent receipts, false documents, impersonation, unauthorized access, manipulation of records and interference with platform security are prohibited.</p>
+            <p><strong>2. Shop owners.</strong> Shop owners must provide accurate business details, protect their credentials, keep transaction records accurate and authorize only people who should access their shop.</p>
+            <p><strong>3. Freelancers.</strong> Freelancers must provide genuine registration information, use only their linked shop's permitted records, protect customer information and never claim shop ownership solely because they have access.</p>
+            <p><strong>4. Customers.</strong> Customers must provide accurate details, keep account credentials private, use receipt recovery lawfully and report suspicious receipts or account activity.</p>
+            <p><strong>5. Receipts and sales records.</strong> Receipts must reflect genuine transactions. The issuing business is responsible for accuracy. A receipt by itself is not a guarantee of product authenticity, ownership or payment where further verification is needed.</p>
+            <p><strong>6. Privacy and personal data.</strong> AURORA may process names, phone numbers, email addresses, business details, identification documents where required, profile photos, receipts, purchase records and security logs to provide services, support users, protect accounts and meet legal obligations. Information is not sold. It may be shared with service providers working for the platform or lawful authorities where permitted or required by law.</p>
+            <p><strong>7. Data rights and retention.</strong> Users may request access to or correction of their personal information and exercise other rights under Kenya's Data Protection Act, 2019. Records are retained only as reasonably necessary for service, security and legal purposes. Account closure does not automatically erase records that must lawfully be retained.</p>
+            <p><strong>8. Payments.</strong> Prices and charges will be shown before payment. A payment is complete only after confirmation by the payment provider. Refunds and cancellations are handled under the displayed terms and applicable law.</p>
+            <p><strong>9. Security.</strong> Keep passwords and verification codes private. Report suspected compromise promptly. Do not bypass authentication, probe systems or access another person's account. AURORA may use authentication checks, access logs and restrictions to protect the service.</p>
+            <p><strong>10. Prohibited conduct and investigations.</strong> Fraud, forged records, misuse of identification data, malicious uploads and unauthorized access may result in access restrictions. Relevant records may be preserved and disclosed to competent authorities when legally required or permitted.</p>
+            <p><strong>11. Service availability.</strong> The platform may be unavailable due to maintenance, connectivity, hosting or third-party SMS, email and payment services. Keep independent copies of important financial records.</p>
+            <p><strong>12. Suspension and complaints.</strong> Accounts may be restricted for credible security concerns, unlawful use or policy violations. Where appropriate and lawful, users will be informed and may appeal. Complaints should be sent through the official support channel published by AURORA.</p>
+            <p><strong>13. Liability.</strong> Users are responsible for the accuracy of information they submit and their own business transactions. Nothing in these terms excludes rights or liabilities that cannot legally be excluded.</p>
+            <p><strong>14. Changes and governing law.</strong> Policies may be updated with notice of material changes. These policies are governed by Kenyan law, including the Data Protection Act, 2019, Consumer Protection Act, 2012 and Computer Misuse and Cybercrimes Act, 2018, as applicable.</p>
+            <p><strong>15. Contact.</strong> AURORA's official support email and business address should be published here by the platform operator before launch.</p>
+            <p class="muted small">This policy summary is a platform notice and should be reviewed by a qualified Kenyan lawyer before being treated as the final legal agreement.</p>
+          </div>
+        </details>
+      </section>
+      <p class="muted small" style="text-align:center;margin:14px 0 0"><a href="./about.html" style="color:#dceaff;font-weight:700">About AURORA E-RECEIPT · Digital receipts in Kenya</a></p>
     </section>
-    <section id="pos-view" class="hidden">
-      <div class="page-heading"><div><p class="eyebrow">POINT OF SALE</p><h1>New sale</h1><p class="muted">Find products, add them to the cart and issue a receipt.</p></div><button id="refresh-btn" class="btn btn-light">↻ Refresh products</button></div>
+    <nav id="workspace-nav" class="bottom-nav hidden" aria-label="Main navigation"><button type="button" data-workspace="dashboard" class="nav-dashboard"><span class="nav-icon" aria-hidden="true">⌂</span><span>Home</span></button><button type="button" data-workspace="receipts" class="receipt-nav"><span class="nav-icon" aria-hidden="true">▤</span><span>Receipt</span></button><button type="button" data-workspace="shop" class="nav-shop"><span class="nav-icon" aria-hidden="true">◇</span><span>Shop</span></button><button type="button" data-workspace="lost-goods" class="nav-lost-goods"><span class="nav-icon flagged-alarm-icon" aria-hidden="true">🚨</span><span>Flagged Items</span></button></nav>
+    <section id="shop-home" class="shop-home hidden" aria-label="Shop">
+      <nav class="shop-section-tabs" aria-label="Shop sections"><button type="button" class="active" data-shop-tab="products">Products</button><button type="button" data-shop-tab="repairs">Goods on Repair</button><button type="button" data-shop-tab="profile">Profile</button></nav>
+      <details id="shop-register-product-card" class="shop-register-product-card">
+        <summary><strong>Add Product</strong><small>Register goods in your shop so customers can find them.</small></summary>
+        <div class="shop-register-product-body">
+          <form id="shop-add-products" class="shop-add-products-form">
+            <label>Product name<input id="shop-product-name" required maxlength="160" placeholder="Enter product name"></label>
+            <div class="form-two">
+              <label>Price (KSh)<input id="shop-product-price" type="number" min="1" step="1" required inputmode="numeric" placeholder="Enter price"></label>
+              <label>Available quantity<input id="shop-product-quantity" type="number" min="1" step="1" required value="1" inputmode="numeric"></label>
+            </div>
+            <button id="shop-product-submit" class="btn btn-primary full" type="submit">＋ Add Product</button>
+            <p id="shop-product-message" class="muted small" role="status"></p>
+          </form>
+        </div>
+      </details>
+      <details id="shop-find-products-card" class="shop-search-directory-card shop-search-disclosure shop-add-product-entry">
+        <summary class="shop-directory-heading"><div><strong id="shop-directory-title">Find Products</strong><small>Search for an item and find shops that have it.</small></div></summary>
+        <form id="shop-product-search-form" class="shop-product-search-form">
+          <label>Search by product name<input id="shop-product-search" type="search" maxlength="100" placeholder="Type a product name…" autocomplete="off"></label>
+          <button class="btn btn-primary full" type="submit">Find Shops</button>
+        </form>
+        <section id="shop-product-results" class="shop-product-results hidden" aria-live="polite"></section>
+      </details>
+      <details class="loan-items-card">
+        <summary><strong>Loan an Item</strong><small>Record goods issued temporarily and track returns</small></summary>
+        <div class="loan-card-body">
+          <form id="loan-item-form" class="loan-item-form">
+            <div class="form-two"><label>Item name<input id="loan-item-name" required maxlength="160"></label><label>Borrower / customer name<input id="loan-borrower-name" required maxlength="160"></label></div>
+            <div class="form-two"><label>Phone number<input id="loan-phone" required inputmode="tel"></label><label>ID / Passport number<input id="loan-id" required maxlength="50"></label></div>
+            <label>Borrower email<input id="loan-email" type="email" required></label>
+            <div class="form-two"><label>IMEI number (optional)<input id="loan-imei" maxlength="50"></label><label>Serial number (optional)<input id="loan-serial" maxlength="100"></label></div>
+            <label>Date out / loan date<input id="loan-date" type="date" required></label>
+            <label>Condition out<textarea id="loan-condition-out" rows="2" required maxlength="1000"></textarea></label>
+            <div class="form-two"><label>Deposit / value amount (KSh)<input id="loan-amount" type="number" min="0" step="1" required value="0"></label><label>Processed by<input id="loan-processed-by" maxlength="160" placeholder="Staff name"></label></div>
+            <button class="btn btn-primary" id="loan-issue-button" type="submit">LOAN</button><p id="loan-message" role="status" class="muted small"></p>
+          </form>
+        </div>
+      </details>
+      <details id="shop-goods-on-repair-card" class="shop-goods-on-repair-card hidden" aria-label="Goods on Repair">
+        <summary class="repair-card-summary"><span><strong>Goods on Repair</strong><small>Record items received for repair and track collection dates.</small></span><span class="repair-gold-mark" aria-hidden="true">⚒</span></summary>
+        <div class="repair-card-content">
+        <header class="repair-card-heading"><div><span class="repair-card-kicker">SHOP SERVICE DESK</span><h2>Repair Register</h2><p>Record items received for repair and track their expected collection dates.</p></div></header>
+        <form id="shop-repair-form" class="shop-repair-form">
+          <div class="form-two"><label>Goods / item name<input id="repair-item-name" maxlength="160" required placeholder="e.g. Samsung Galaxy A15"></label><label>Item ID / serial number<input id="repair-item-identifier" maxlength="100" required placeholder="Serial number or IMEI"></label></div>
+          <div class="form-two"><label>Customer name<input id="repair-customer-name" maxlength="160" required></label><label>Customer ID number<input id="repair-customer-id" maxlength="50" required></label></div>
+          <label>Condition when received<textarea id="repair-condition" rows="2" maxlength="1000" required placeholder="Describe visible condition, scratches, cracks or missing parts"></textarea></label>
+          <label>Problem reported<textarea id="repair-problem" rows="2" maxlength="2000" required placeholder="What problem did the customer report?"></textarea></label>
+          <label>Problem detected / diagnosis<textarea id="repair-detected" rows="2" maxlength="2000" placeholder="Technician's findings (can be updated after diagnosis)"></textarea></label>
+          <div class="form-two"><label>Date received<input id="repair-received-date" type="date" required></label><label>Expected pick-up date<input id="repair-pick-date" type="date" required></label></div>
+          <button id="repair-submit" class="btn full" type="submit">＋ Record Goods on Repair</button>
+          <p id="repair-message" class="muted small" role="status"></p>
+        </form>
+        <div class="repair-records-heading"><h3>Repair Register</h3><button id="repair-refresh" class="btn btn-light btn-small" type="button">Refresh</button></div>
+        <div id="repair-records-list" class="repair-records-list" aria-live="polite"><p class="muted small">Open Goods on Repair to load the repair register.</p></div>
+        </div>
+      </details>
+      <details class="profile-shop-card profile-card panel shop-business-details-card hidden"><summary class="profile-card-summary"><span><strong>Shop Details</strong><small>Business information, branding and shop photos</small></span><span class="profile-card-chevron" aria-hidden="true">⌄</span></summary><div class="profile-card-body"><p id="profile-readonly-note" class="profile-readonly-note hidden">Viewing mode · Shop owners can edit these details. Vendors and freelancers can view them only.</p><form id="profile-form">
+<div class="profile-logo-row"><img id="logo-preview" alt="Business logo preview" class="logo-preview hidden"><label>Business logo (optional)<input id="business-logo" type="file" accept="image/png,image/jpeg,image/webp"></label></div>
+<div class="form-two"><label>Company / trading name<input id="profile-business-name" maxlength="120" required></label><label>Support telephone number<input id="profile-business-phone" maxlength="30" required></label></div>
+<div class="form-two"><label>Physical location / address<input id="profile-store-location" maxlength="200" required></label><label>Branch / outlet name<input id="profile-store-name" maxlength="120" required></label></div>
+<div class="form-two"><label>Legal registered entity name<input id="profile-legal-name" maxlength="160"></label><label>Business email address<input id="profile-business-email" type="email" maxlength="254"></label></div>
+<div class="form-two"><label>House / building name<input id="profile-house-name" maxlength="120"></label><label>Floor<input id="profile-floor" maxlength="40"></label></div>
+<div class="form-two"><label>House / unit number<input id="profile-house-number" maxlength="40"></label><label>Website URL<input id="profile-website" type="url" maxlength="255"></label></div>
+<div class="form-two"><label>KRA PIN<input id="profile-kra-pin" maxlength="40"></label><label>Business registration code<input id="profile-registration-code" maxlength="80"></label></div>
+<div class="form-two"><label>Branch / outlet ID<input id="profile-outlet-id" maxlength="80"></label><label>POS terminal number<input id="profile-terminal-number" maxlength="80"></label></div>
+<label>Receipt heading<input id="profile-receipt-header" maxlength="300" placeholder="Welcome / Thank you"></label>
+<label>Receipt footer<input id="profile-receipt-footer" maxlength="300" placeholder="Returns policy or contact details"></label>
+<div class="form-two shop-photo-fields"><label>Inside-shop photo (optional)<input id="profile-shop-inside" type="file" accept="image/png,image/jpeg,image/webp"><img id="profile-shop-inside-preview" class="logo-preview hidden" alt="Inside of shop preview"></label><label>Outside-shop photo (optional)<input id="profile-shop-outside" type="file" accept="image/png,image/jpeg,image/webp"><img id="profile-shop-outside-preview" class="logo-preview hidden" alt="Outside of shop preview"></label></div>
+
+<p id="profile-error" class="error" role="alert"></p><button class="btn btn-primary full" type="submit">Save business profile</button></form>
+</div></details>
+<section id="owner-staff-area" class="staff-team-card panel hidden" data-shop-tab-panel="profile" aria-labelledby="staff-team-title">
+  <div class="staff-team-card-head"><div><span class="staff-team-kicker">SHOP TEAM</span><h2 id="staff-team-title">Invite Your Shop Staff</h2><p>Give your team members their own secure login to work in this shop. You remain in control of invitations.</p></div><span class="staff-team-icon" aria-hidden="true">＋</span></div>
+  <button id="show-staff-invite-form" class="btn staff-invite-cta" type="button" aria-expanded="false">＋ Invite a team member</button>
+  <form id="staff-invite-form" class="staff-invite-form hidden">
+    <div class="form-two"><label>Staff full name<input id="staff-invite-name" maxlength="120" autocomplete="name" required placeholder="Enter full name"></label><label>Staff email address<input id="staff-invite-email" type="email" maxlength="254" autocomplete="email" required placeholder="name@example.com"></label></div>
+    <div class="form-two"><label>Staff phone number<input id="staff-invite-phone" type="tel" inputmode="tel" autocomplete="tel" required placeholder="07XX XXX XXX"></label><label>Access type<select id="staff-invite-role"><option value="Vendor">Shop Staff · Full shop workspace</option><option value="Freelancer">Freelancer · Linked shop workspace</option></select></label></div>
+    <p class="staff-invite-help">Shop Staff receive a free individual login to this shop workspace. No staff activation or personal subscription fee is charged. Access follows the shop owner's active subscription. Freelancers require shop-owner approval and use the linked shop workspace. No separate freelancer payment is requested.</p>
+    <div class="staff-invite-actions"><button id="create-staff-invite" class="btn staff-invite-cta" type="submit">Send email invitation</button><button id="cancel-staff-invite" class="btn btn-light" type="button">Cancel</button></div>
+    <p id="staff-invite-message" class="muted small" role="status" aria-live="polite"></p>
+  </form>
+  <div class="staff-invitations-heading"><h3>Your team invitations</h3><span class="muted small">Manage pending access</span></div>
+  <div id="staff-invitations-list" class="staff-invitations-list" aria-live="polite"><p class="muted small">Loading team invitations…</p></div>
+</section>
+<article id="shop-receipt-history-card" class="profile-card panel shop-receipt-history-card hidden"><div class="profile-card-body"><section id="history-panel" class="receipt-history-panel shop-receipt-history" aria-label="Receipt History"><h3>Receipt History</h3><p class="muted small">View and search receipts issued through your account.</p><button id="history-toggle" class="receipt-history-toggle" type="button" aria-expanded="false" aria-controls="history-content">My Issued Receipt History</button><div id="history-content" class="panel history-panel hidden"><div class="history-filters"><label>Search by IMEI, National ID, phone or name<input id="history-search" type="search" placeholder="Enter IMEI, National ID, phone or customer name"></label><label>From date<input id="history-from" type="date"></label><label>To date<input id="history-to" type="date"></label><button id="history-search-btn" class="btn btn-primary" type="button">Search</button></div><p id="history-error" class="error" role="alert"></p><div id="history-list" class="history-list"><div class="empty">Open your issued receipt history or choose a date range to load receipts issued through your account.</div></div></div></section></div></article>
+ <details class="profile-account-summary profile-card panel hidden"><summary class="profile-card-summary"><span><span class="eyebrow">02 · ACCOUNT</span><strong id="profile-user-name">My profile</strong><small id="profile-user-role">Your account details</small></span><span class="profile-card-chevron" aria-hidden="true">⌄</span></summary><div class="profile-card-body"><div class="account-profile-details"><div><span>Full name</span><strong id="profile-user-fullname">—</strong></div><div><span>Account type / role</span><strong id="profile-user-accounttype">—</strong></div><div><span>Phone number</span><strong id="profile-user-phone">—</strong></div><div><span>Email</span><strong id="profile-user-email">—</strong></div></div></div></details>
+
+
+
+      
+    </section>
+    <section id="public-lost-item-view" class="public-lost-item-view hidden" aria-label="AURORA lost item public page"><article class="panel"><p class="eyebrow">AURORA LOST &amp; FOUND NETWORK</p><h1>Item identification</h1><div id="public-lost-item-details"><p class="muted">Checking this item QR code…</p></div><div class="public-lost-item-controls"><button id="public-lost-back" class="btn btn-light" type="button">← Back</button><button id="public-lost-clear" class="btn btn-light" type="button">Clear / Check another</button></div><form id="public-lost-found-form" class="hidden"><h2>Report this item found</h2><label>Your name (optional)<input id="public-finder-name" maxlength="120"></label><label>Your phone number<input id="public-finder-phone" type="tel" inputmode="tel" required placeholder="07XX XXX XXX"></label><label>Where did you find it? (optional)<input id="public-finder-location" maxlength="200" placeholder="Area, town or landmark"></label><label>Additional details<textarea id="public-finder-details" rows="3" maxlength="1000" placeholder="Tell the registered shop where the item is and how it can be collected"></textarea></label><button class="btn btn-primary" type="submit">Send found-item report</button><p id="public-lost-item-message" class="muted small" role="status"></p><p class="muted small">You may optionally share your location when asked by your browser. Your location is not collected without permission.</p></form></article></section>
+    <section id="subscription-home" class="subscription-home hidden" aria-label="Subscription and payments"><div id="subscription-overview-view"><div class="subscription-heading"><p class="eyebrow">AURORA ACCOUNT</p><h1>Subscription &amp; Receipts</h1><p class="muted small">Choose a monthly or yearly plan. Every active paid plan includes unlimited receipts.</p></div><div class="subscription-choice-grid"><article class="subscription-choice-card subscription-plan-card"><p class="eyebrow">01 · SUBSCRIPTION</p><h2>Choose your plan</h2><p>Unlock AURORA services with a monthly or yearly plan.</p><button type="button" class="subscription-choice-action" data-payment-purpose="subscription" data-subscription-plan="monthly"><span><strong>Monthly</strong><small>KSh 100 · 30 days</small></span><b>Continue →</b></button><button type="button" class="subscription-choice-action" data-payment-purpose="subscription" data-subscription-plan="yearly"><span><strong>Yearly</strong><small>KSh 900 · Save KSh 300</small></span><b>Continue →</b></button></article><article class="subscription-choice-card subscription-balance-card" aria-live="polite"><p class="eyebrow">03 · YOUR ACCOUNT</p><h2>Receipt balance</h2><div class="subscription-count-number" id="subscription-receipts-remaining">—</div><strong>Receipts included in your plan</strong><div class="subscription-count-meta"><span>Wallet balance</span><strong id="subscription-wallet-balance">KSh 0</strong></div><div class="subscription-count-meta"><span>Plan status</span><strong id="subscription-status">Checking…</strong></div><div class="subscription-expiry-countdown"><span>Subscription expires in</span><strong id="subscription-expiry-countdown">Checking time…</strong><small id="subscription-expiry">Checking plan dates…</small></div><small id="subscription-wallet-remainder">Loading wallet balance…</small><p id="subscription-balance-message" class="muted small">Your receipt count updates automatically after each successful receipt.</p></article></div></div><section id="subscription-payment-view" class="subscription-payment-view hidden" aria-label="Complete payment"><button id="subscription-payment-back" type="button" class="subscription-back-button">← Back to Subscription</button><p class="eyebrow">SECURE PAYMENT</p><h1 id="subscription-payment-title">Complete your payment</h1><p id="subscription-payment-intro" class="muted small">Enter your M-Pesa number below.</p><div id="dashboard-payment-form-slot"></div><div id="subscription-payment-success" class="subscription-payment-success hidden" role="status" aria-live="polite"><div class="subscription-success-mark">✓</div><h2>Congratulations!</h2><p id="subscription-payment-success-message"></p><button id="subscription-success-back" type="button" class="btn btn-primary full">Back to Subscription</button></div></section></section><section id="customer-home" class="customer-home hidden" aria-label="Customer account home">
+  <article class="customer-welcome-card"><button id="customer-back-to-login" class="customer-back-to-login" type="button">← Back to Login</button><p class="eyebrow">CUSTOMER ACCOUNT</p><h1 id="customer-home-name">Welcome</h1><p>Manage your customer account and referral rewards here.</p></article>
+  <article class="customer-referral-card"><div class="customer-referral-copy"><p>Let your friends scan your personal QR code to join AURORA. Your referrals will be counted here.</p><strong id="customer-referral-count">0 friends referred</strong></div><div class="customer-referral-qr-wrap"><div id="customer-referral-qr" role="img" aria-label="Your personal customer referral QR code"></div><small>Scan to join</small></div></article>
+  <p id="customer-home-message" class="muted small" role="status"></p>
+</section><section id="owner-home" class="owner-home hidden" aria-label="Dashboard"><div class="dashboard-login-return-row"><button id="dashboard-back-to-login" class="dashboard-back-to-login" type="button">← Back to Login</button></div><article class="panel owner-home-card"><h1 id="owner-home-title">Business overview</h1><p id="owner-home-subtitle" class="muted">Your business workspace at a glance.</p></article><section id="referral-card" class="referral-area" aria-label="Refer and earn"><article class="panel referral-earn-card"><div class="referral-simple-icon" aria-hidden="true">✦</div><h2>Invite a Friend</h2><p>Share your personal invitation link or QR code so friends can register and join AURORA.</p><div class="referral-conversion-note">50% reward · Convertible to receipts</div></article><article class="panel referral-invite-card"><div class="referral-invite-head"><div><h2>Scan to Invite</h2></div><div id="referral-qr" class="referral-qr" role="img" aria-label="Your referral QR code"></div></div><div class="referral-share-row"><input id="referral-link" type="text" readonly aria-label="Your personal referral link" placeholder="Preparing your referral link…"><button id="referral-share" class="btn" type="button">Share link</button></div></article><article class="panel referral-balance-card"><button id="owner-home-subscription" class="owner-subscription-tab" type="button"><span aria-hidden="true">✦</span> Subscription <span class="owner-subscription-arrow" aria-hidden="true">↗</span></button><div class="referral-balance-number"><strong id="referral-receipts-available">0</strong><span>receipts available</span></div><p class="referral-balance-caption">Receipt rewards ready to redeem</p><button id="referral-redeem" type="button" class="btn referral-redeem-btn">Redeem</button><p id="referral-message" class="muted small" role="status">Loading your reward balance…</p></article><div class="referral-hidden-data" aria-hidden="true"><strong id="referral-total">0</strong><strong id="referral-active">0</strong><strong id="referral-earned">0</strong><strong id="referral-available">KSh 0</strong><strong id="referral-remainder">KSh 0</strong><div id="referral-earning-history"></div><div id="referral-redemption-history"></div></div></section></section><section id="platform-referral-admin" class="panel platform-referral-admin hidden" aria-label="Referral withdrawal administration">
+    <div class="section-head"><div><p class="eyebrow">COMPANY FINANCE</p><h1>Referral withdrawals</h1><p class="muted small">Review referral commission requests. Approving does not send money; make the M-Pesa or bank transfer separately, then record its reference.</p></div><button id="platform-referral-refresh" class="btn btn-light" type="button">Refresh</button></div>
+    <div id="platform-referral-admin-message" class="muted small" role="status">Loading withdrawal requests…</div>
+    <div id="platform-referral-admin-list" class="platform-referral-admin-list"></div>
+  </section>
+<section id="receipts-home" class="panel receipts-home hidden" aria-label="Receipts">
+  <div class="section-head"><div><h1>Receipts</h1></div></div>
+  <div class="receipt-actions-grid">
+    <button id="open-issue-receipt" class="receipt-choice" type="button"><span aria-hidden="true">＋</span><strong>Issue Receipt</strong><small>Record a sale and create a customer receipt</small></button>
+    <button id="open-recover-receipt" class="receipt-choice" type="button"><span aria-hidden="true">↗</span><strong>Verify Receipt</strong><small>Verify an ordinary sales receipt using customer details</small></button>
+    <button id="secondhand-open-card" class="receipt-choice declaration-choice" type="button">
+      <span aria-hidden="true">🛡️</span>
+      <strong>Sales Declaration Form</strong>
+      <small>Record seller, buyer and product details and issue a signed declaration.</small>
+    </button>
+  </div>
+
+      <section id="secondhand-panel" class="secondhand-panel hidden" aria-label="Sales declaration form">
+        <div class="secondhand-panel-heading">
+          <div id="secondhand-panel-heading-copy"><p class="eyebrow">AURORA · SPECIAL RECEIPT</p><h2>Sales Declaration Form</h2><p class="muted small">Complete the seller, buyer and product details before issuing the signed sales declaration.</p></div>
+          <button id="secondhand-back" class="btn btn-light" type="button">← Back to Receipts</button>
+        </div>
+        <div class="secondhand-warning"><strong>Important:</strong> Record any second-hand product only after checking the seller's identity, product details, ownership and signed record.</div>
+        <div class="secondhand-receipt-options" role="group" aria-label="Choose receipt status">
+          <button type="button" class="secondhand-receipt-option" data-secondhand-mode="with_receipt">WITH RECEIPT</button>
+          <button type="button" class="secondhand-receipt-option" data-secondhand-mode="without_receipt">WITHOUT RECEIPT</button>
+        </div>
+        <form id="secondhand-form" class="secondhand-form" hidden style="display:none!important">
+          <input type="hidden" id="sh-sale-type" value="">
+          <fieldset><legend>1 · Seller identification</legend>
+            <label>Full legal name<input id="sh-seller-name" maxlength="160" autocomplete="name" required placeholder="Name as shown on ID"></label>
+            <div class="secondhand-fields"><label>National ID / Passport number<input id="sh-national-id" maxlength="40" required></label><label>Seller phone number<input id="sh-seller-phone" type="tel" maxlength="30" autocomplete="tel" required placeholder="07XX XXX XXX"></label></div><div class="secondhand-fields"><label>Seller email address<input id="sh-seller-email" type="email" maxlength="254" autocomplete="email" required placeholder="seller@example.com"></label><label>Alternative phone (optional)<input id="sh-alt-phone" type="tel" maxlength="30"></label></div>
+            <label>Residential address / area<input id="sh-address" maxlength="300" required placeholder="Estate, town, county"></label>
+            <label>Seller ID photo (front) <input id="sh-id-photo" type="file" accept="image/*" required></label><img id="sh-id-preview" class="secondhand-photo-preview hidden" alt="Seller ID preview">
+            <div id="sh-seller-photo-wrap"><label>Seller / client photo (required only when there is no original receipt)<input id="sh-seller-photo" type="file" accept="image/*"></label><img id="sh-seller-preview" class="secondhand-photo-preview hidden" alt="Seller photo preview"></div>
+          </fieldset>
+          <fieldset><legend>2 · Buyer details</legend><div class="secondhand-fields"><label>Buyer full name<input id="sh-buyer-name" maxlength="160" autocomplete="name" required placeholder="Buyer full legal name"></label><label>Buyer National ID number<input id="sh-buyer-id" maxlength="40" required placeholder="Buyer ID / passport number"></label></div><div class="secondhand-fields"><label>Buyer phone number<input id="sh-buyer-phone" type="tel" maxlength="30" autocomplete="tel" required placeholder="07XX XXX XXX"></label><label>Buyer email address<input id="sh-buyer-email" type="email" maxlength="254" autocomplete="email" required placeholder="buyer@example.com"></label></div></fieldset>
+          <fieldset><legend>3 · Product being sold</legend>
+            <label>Product name / make and model<input id="sh-model" maxlength="160" required placeholder="e.g. Samsung phone, laptop, television, bicycle"></label>
+            <div class="secondhand-fields"><label>Product identifier / barcode / serial number (IMEI for phones, if applicable)<input id="sh-imei1" inputmode="text" maxlength="40" placeholder="Serial, IMEI, barcode or other identifier"></label><label>Second identifier (if applicable)<input id="sh-imei2" inputmode="text" maxlength="40" placeholder="Optional"></label></div>
+            <label>Additional serial number / identifying details (if available)<input id="sh-serial" maxlength="100"></label>
+            <div class="secondhand-fields"><label>Product condition<select id="sh-condition" required><option value="">Choose condition</option><option>New</option><option>Excellent</option><option>Good</option><option>Fair</option><option>Faulty</option></select></label><label>Agreed purchase price (KSh)<input id="sh-price" type="number" min="1" step="1" inputmode="numeric" required></label></div>
+            <label>Photo of the product and its identifying details<input id="sh-phone-photo" type="file" accept="image/*" required></label><img id="sh-phone-preview" class="secondhand-photo-preview hidden" alt="Product photo preview">
+            <div id="sh-no-receipt-wrap"><label>Why is the original product purchase receipt unavailable?<textarea id="sh-no-receipt" rows="3" maxlength="1000" required placeholder="Seller must explain clearly…"></textarea></label></div><div id="sh-receipt-photo-wrap" class="hidden"><label>Photograph of original purchase receipt<input id="sh-receipt-photo" type="file" accept="image/*"></label><img id="sh-receipt-preview" class="secondhand-photo-preview hidden" alt="Original receipt photo preview"></div>
+          </fieldset>
+          <fieldset><legend>4 · Seller's ownership and responsibility declaration</legend>
+            <div id="sh-declaration-with-receipt" class="secondhand-legal-copy secondhand-declaration-copy secondhand-declaration-pink hidden"><strong>DECLARATION — PRODUCT WITH ORIGINAL RECEIPT</strong><br>I declare that I am the lawful owner of the product recorded above or have full legal authority to sell it. I confirm that the original purchase receipt shown and attached to this record relates to this product and, to the best of my knowledge, is genuine and has not been altered. I confirm that the product is not stolen, unlawfully obtained, fraudulently acquired or subject to an ownership dispute, and that all product identifiers and details I have supplied are true. I accept responsibility for false statements, a false or altered receipt, fraudulent representation or an unlawful ownership claim connected with this sale. I agree to cooperate with lawful investigations and provide further information when lawfully required. I understand that this declaration may be retained and disclosed to lawful authorities when required.</div><div id="sh-declaration-without-receipt" class="secondhand-legal-copy secondhand-declaration-copy secondhand-declaration-blue"><strong>DECLARATION — PRODUCT WITHOUT ORIGINAL RECEIPT</strong><br>I declare that I am the lawful owner of the product recorded above or have full legal authority to sell it, even though I cannot provide its original purchase receipt. I have truthfully explained why the receipt is unavailable and confirm that, to the best of my knowledge, the product is not stolen, unlawfully obtained, fraudulently acquired or subject to an ownership dispute. I confirm that all product identifiers and details I have supplied are true and have not knowingly been altered. I accept responsibility for false statements, fraudulent representation or an unlawful ownership claim connected with this sale. I agree to cooperate with lawful investigations and provide further information when lawfully required. I understand that this declaration may be retained and disclosed to lawful authorities when required.</div>
+            <label class="secondhand-consent"><input id="sh-declaration-accepted" type="checkbox" required><span>I have read or had this declaration read to me, understood it, and confirm that the information I have supplied is true.</span></label>
+          </fieldset>
+          <fieldset><legend>5 · Electronic signatures and thumbprint</legend>
+            <p class="muted small">Ask the seller to sign electronically. A thumbprint mark is additionally requested when the product is sold without its original receipt.</p>
+            <div class="secondhand-pad-wrap"><div class="secondhand-pad-title"><strong>Seller's electronic signature</strong><button type="button" class="text-btn" data-clear-pad="sh-signature">Clear</button></div><canvas id="sh-signature" class="secondhand-pad" width="720" height="180" aria-label="Draw seller signature"></canvas></div>
+            <div id="sh-thumbprint-wrap"><div class="secondhand-pad-wrap"><div class="secondhand-pad-title"><strong>Seller's electronic thumbprint mark</strong><button type="button" class="text-btn" data-clear-pad="sh-thumbprint">Clear</button></div><canvas id="sh-thumbprint" class="secondhand-pad" width="720" height="180" aria-label="Draw seller thumbprint mark"></canvas><p class="tiny muted">This is a finger-drawn mark, not a biometric fingerprint scan or identity match.</p></div></div>
+            <div id="sh-biometric-status" class="secondhand-biometric-status" role="status">Checking whether this device has a built-in biometric authenticator…</div>
+            <p class="tiny muted">A device may use fingerprint, face recognition or its screen lock. A normal browser cannot read or store fingerprint ridge data. A compatible external fingerprint reader and verified integration would be needed for actual fingerprint capture.</p>
+          </fieldset>
+          <fieldset id="secondhand-shop-ack-fieldset"><legend>6 · Shop and witness record</legend>
+            <div class="secondhand-fields"><label>Witness full name (optional)<input id="sh-witness-name" maxlength="160"></label><label>Witness phone (optional)<input id="sh-witness-phone" type="tel" maxlength="30"></label></div>
+            <label class="secondhand-consent"><input id="sh-shop-acknowledged" type="checkbox" required><span>I, as the shop representative, confirm that I checked the seller's identification and compared the product identifiers with the item before accepting it.</span></label>
+            <p class="tiny muted">AURORA records the logged-in shop account and the server's date and time when this declaration is submitted.</p>
+          </fieldset>
+          <p id="secondhand-message" class="shop-directory-message" role="status"></p>
+          <button id="secondhand-submit" class="btn btn-primary full" type="submit">Issue Sales Declaration PDF &amp; Send to Both Parties</button>
+          <button id="secondhand-clear" class="btn btn-light full" type="button">Clear Details &amp; Start Again</button>
+        </form>
+        <div id="secondhand-saved-record" class="secondhand-saved-record hidden"></div>
+        <div class="secondhand-history-tools"><button id="secondhand-history-toggle" class="btn btn-light" type="button">View Sales Declaration History</button></div>
+        <div id="secondhand-history" class="secondhand-history hidden" aria-live="polite"></div>
+      </section>
+
+</section>
+<section id="pos-view" class="hidden">
+      
+      <div class="page-heading"><div><button id="back-to-receipts" class="btn btn-light" type="button">← Back to Receipts</button><p class="eyebrow">ISSUE RECEIPT</p><h1>New sale</h1><p class="muted small">Step 1: Add products. Step 2: Issue the receipt and enter customer details.</p></div></div>
       <div id="notice" class="notice hidden" role="status"></div>
       <div class="pos-grid">
-        <section class="panel products-panel"><div class="section-head"><div><h2>Products</h2><p class="muted small">Tap a product to add it</p></div><span id="product-count" class="count-pill">0 items</span></div>
-          <div class="search-row"><input id="product-search" type="search" placeholder="Search name, SKU or barcode…" aria-label="Search products"><label class="check-label"><input id="low-stock" type="checkbox"> Low stock</label></div>
-          <div id="product-list" class="product-list"><div class="empty">Sign in to load your products.</div></div>
-        </section>
-        <section class="panel cart-panel"><div class="section-head"><div><h2>Current sale</h2><p class="muted small">Receipt is created at checkout</p></div><button id="clear-cart" class="text-btn">Clear</button></div>
-          <div id="cart-list" class="cart-list"><div class="empty">Your cart is empty.</div></div>
+        <section id="products-panel" class="hidden" aria-hidden="true"><span id="product-count">0 items</span><input id="product-search" type="search"><input id="low-stock" type="checkbox"><div id="product-list"></div><button id="refresh-btn" type="button"></button><button id="clear-catalogue-btn" type="button"></button></section>
+        <section class="panel cart-panel">
+          <div class="section-head"><div><p class="eyebrow">STEP 1 OF 2</p><h2>Add products</h2><p class="muted small">Add one or more goods to this receipt.</p></div><button id="clear-cart" class="text-btn" type="button">Clear</button></div>
+          <button id="receipt-add-product-toggle" class="btn btn-light receipt-add-product-tab" type="button" aria-expanded="false">＋ Add Product</button>
+          <form id="product-form" class="simple-sale-item-form hidden"><label>Product name<input id="product-name" required maxlength="160" placeholder="Enter product name"></label><label>Product price (KSh)<input id="product-price" type="number" min="1" step="1" required inputmode="numeric" placeholder="Enter selling price"></label><input id="product-date" type="hidden"><label>IMEI / serial number <span class="muted small">(required for phones and electronics)</span><div class="simple-serial-row"><input id="product-serial-1" maxlength="80" placeholder="Enter IMEI or serial number"><button type="button" class="btn btn-light btn-small" data-scan-field="product-serial-1">Scan</button></div></label><input id="product-cost" type="hidden" value="0"><input id="product-stock" type="hidden" value="1"><input id="product-reorder" type="hidden" value="1"><input id="product-buyer-id" type="checkbox" class="hidden"><p id="product-error" class="error" role="alert"></p><button class="btn btn-primary btn-small add-sale-product-btn" type="submit">＋ Add product</button></form>
+          <div id="cart-list" class="cart-list"><div class="empty">No products added yet. Tap Add Product to begin.</div></div>
+          <div class="receipt-product-actions"><button id="checkout-open" class="btn btn-primary compact-next-btn" type="button" disabled>2 · Issue Receipt →</button></div>
           <div class="totals"><div><span>Subtotal</span><strong id="subtotal">KSh 0</strong></div><label class="discount-line"><span>Discount (KSh)</span><input id="discount" type="number" min="0" step="1" value="0" inputmode="numeric"></label><div class="grand-total"><span>Total due</span><strong id="total">KSh 0</strong></div></div>
-          <button id="checkout-open" class="btn btn-primary full" disabled>Continue to payment</button><p class="tiny muted">A KSh 2 receipt processing fee is charged to the shop wallet by the API.</p>
+          <p class="tiny muted">A KSh 4 receipt processing fee is charged to the shop wallet by the API.</p>
         </section>
       </div>
+
+<section id="owner-customers-section" class="panel crm-panel"><div class="panel-heading"><div><h2>Customer CRM</h2><p class="muted">Search customers, understand repeat visits and track loyalty.</p></div><button id="owner-crm-refresh" class="btn btn-secondary" type="button">Refresh customers</button></div><div class="crm-search"><label>Find a customer<input id="owner-crm-search" type="search" placeholder="Name, phone or email"></label><button id="owner-crm-search-btn" class="btn btn-primary" type="button">Search</button></div><p id="owner-crm-message" class="muted" aria-live="polite"></p><div class="table-scroll"><table><thead><tr><th>Customer</th><th>Contact</th><th>Purchases</th><th>Lifetime spend</th><th>Loyalty points</th><th>Last visit</th></tr></thead><tbody id="owner-crm-rows"><tr><td colspan="6">Sign in to view customers.</td></tr></tbody></table></div></section>
+<section class="panel customer-lookup-panel"><div class="section-head"><div><h2>Find existing customer</h2><p class="muted small">Verify a customer using their National ID and phone number before adding another purchase.</p></div></div><form id="customer-lookup-form" class="customer-lookup-form"><label>Customer phone<input id="lookup-phone" type="tel" inputmode="tel" placeholder="07XX XXX XXX" required></label><label>National ID<input id="lookup-national-id" inputmode="numeric" autocomplete="off" placeholder="Enter National ID" required></label><button class="btn btn-primary" type="submit">Find customer</button></form><p id="customer-lookup-message" class="error" role="status"></p><div id="customer-lookup-result"></div></section>
     </section>
-  </main>
-  <div id="checkout-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="checkout-title"><div class="modal-card"><div class="modal-head"><div><p class="eyebrow">COMPLETE SALE</p><h2 id="checkout-title">Payment details</h2></div><button class="icon-btn" id="checkout-close" aria-label="Close">×</button></div>
-    <form id="checkout-form"><label>Payment method<select id="payment-method"><option value="cash">Cash</option><option value="mpesa">M-Pesa</option><option value="card">Card</option></select></label>
-      <div id="buyer-fields" class="buyer-fields hidden"><p class="buyer-note">This sale includes an item requiring buyer identification. All three details are required.</p><label>Buyer full name<input id="buyer-name" autocomplete="name"></label><label>Buyer phone<input id="buyer-phone" inputmode="tel" placeholder="07XX XXX XXX"></label><label>National ID<input id="buyer-id" inputmode="numeric" autocomplete="off"></label></div>
-      <div class="checkout-total"><span>Amount to collect</span><strong id="checkout-total">KSh 0</strong></div><p id="checkout-error" class="error" role="alert"></p><button id="complete-sale" class="btn btn-primary full" type="submit">Issue receipt</button>
-    </form>
+<section id="shop-lost-items-panel" class="shop-lost-items-panel hidden">
+        <div id="lost-goods-cards" class="lost-goods-cards" aria-label="Flagged Items actions">
+          <button type="button" class="lost-goods-card lost-card-register" data-lost-owner-only data-lost-section="register"><strong>Log Lost Item</strong><small>Report a lost phone, electronic or valuable item</small></button>
+          <button type="button" class="lost-goods-card lost-card-active" data-lost-owner-only data-lost-section="active"><strong>Active Lost Items</strong><small>View all currently registered lost items</small></button>
+          <button type="button" class="lost-goods-card lost-card-found" data-lost-owner-only data-lost-section="found"><strong>Mark as Found</strong><small>Find a registered item and remove it from the active lost register</small></button>
+          <button type="button" class="lost-goods-card lost-card-check" data-lost-section="check"><strong>Check Before Purchase</strong><small>Check an IMEI or serial number before buying or selling</small></button>
+        </div>
+        <section class="panel lost-item-checker hidden" id="lost-item-checker" data-lost-panel="check"><h2>Check an IMEI before buying or selling</h2><p class="muted small">Check AURORA's lost-item register before accepting a second-hand phone.</p><form id="lost-item-check-form" class="lost-item-check-form"><label>IMEI / serial number<input id="lost-item-check-value" maxlength="40" autocomplete="off" required placeholder="Enter or scan IMEI / serial"></label><div class="form-two"><label>Person presenting item<input id="lost-item-presenter-name" maxlength="120" required placeholder="Full name"></label><label>Presenter phone number<input id="lost-item-presenter-phone" type="tel" inputmode="tel" maxlength="40" required placeholder="07XX XXX XXX"></label></div><button class="btn btn-primary" type="submit">Check identifier</button></form><div id="lost-item-check-result" role="status" aria-live="assertive" class="lost-item-check-result hidden"></div><button id="lost-item-alarm-ack" type="button" class="btn btn-light btn-small hidden">Acknowledge alarm</button></section>
+        <article class="panel lost-items-intro"><h2>Lost Items</h2><p class="muted small">Register phones, electronics and other valuables. A matching IMEI or serial number is flagged across AURORA shops.</p></article>
+        <details class="panel lost-item-register hidden" id="lost-item-register" data-lost-panel="register" data-lost-owner-only><summary><strong>＋ Register an item</strong><small>Create its permanent AURORA ID and QR code</small></summary><form id="lost-item-form" class="lost-item-form">
+          <div class="form-two"><label>Item name / category<input id="lost-item-name" maxlength="160" required placeholder="Mobile phone"></label><label>Brand<input id="lost-item-brand" maxlength="100" placeholder="Samsung"></label></div>
+          <div class="form-two"><label>Model<input id="lost-item-model" maxlength="120" placeholder="Galaxy A15"></label><label>Colour<input id="lost-item-colour" maxlength="60"></label></div>
+          <div class="form-two"><label>IMEI 1<input id="lost-item-imei1" maxlength="30" inputmode="numeric"></label><label>IMEI 2 (optional)<input id="lost-item-imei2" maxlength="30" inputmode="numeric"></label></div>
+          <label>Serial number<input id="lost-item-serial" maxlength="100"></label>
+          <div class="form-two"><label>Date lost<input id="lost-item-date-lost" type="date" required></label><label>Police OB number<input id="lost-item-ob-number" maxlength="100" required placeholder="Enter police OB number"></label></div><div class="form-two"><label>Purchase date (optional)<input id="lost-item-purchase-date" type="date"></label><label>Receipt number (optional)<input id="lost-item-receipt" maxlength="100"></label></div>
+          <label>Distinctive marks / description<textarea id="lost-item-description" rows="2" maxlength="1000" placeholder="Case, scratches, stickers or other identifying marks"></textarea></label>
+          <button id="lost-item-save" class="btn btn-primary" type="submit">Register and generate QR</button><p id="lost-item-message" class="muted small" role="status"></p>
+        </form><div id="lost-item-qr" class="lost-item-qr hidden"></div></details>
+        <div class="lost-items-list-head hidden" id="lost-active-items-section" data-lost-panel="found" data-lost-owner-only><strong>Active lost items · Mark as found here</strong><button id="lost-items-refresh" class="btn btn-light btn-small" type="button">Refresh</button></div><div id="lost-items-list" data-lost-panel="found" data-lost-owner-only><p class="muted small">Loading registered items…</p></div>
+      </section>
+<section id="owner-dashboard-view" class="hidden">
+<section id="freelancer-home" class="hidden" aria-label="Freelancer home">
+  <article class="freelancer-home-card">
+    <p class="eyebrow">AURORA FREELANCER WORKSPACE</p>
+    <h1>Welcome, <span id="freelancer-home-name">Freelancer</span></h1>
+    <p id="freelancer-home-message" class="muted" role="status" aria-live="polite">Preparing your shop workspace…</p>
+    <section class="freelancer-linked-shop" aria-label="Linked shop">
+      <p class="eyebrow">YOUR LINKED SHOP</p>
+      <h2 id="freelancer-shop-name">Loading shop name…</h2>
+      <p id="freelancer-shop-details" class="muted small"></p>
+    </section>
+    <div class="freelancer-home-actions" aria-label="Freelancer shortcuts">
+      <button type="button" class="btn btn-primary" data-freelancer-screen="receipts">Open Receipts</button>
+      <button type="button" class="btn btn-light" data-freelancer-screen="shop">Open Shop</button>
+      <button type="button" class="btn btn-light" data-freelancer-screen="subscription">Subscription &amp; Payments</button>
+      <button type="button" class="btn btn-light" data-freelancer-screen="profile">My Profile</button>
+    </div>
+  </article>
+</section>
+
+<section id="profile-panel" class="profile-panel hidden">
+</section>
+      <section id="dashboard-business-card" class="panel dashboard-business-card hidden" aria-label="Business profile"><div class="dashboard-business-identity"><img id="dashboard-profile-image" alt="Business profile photo" class="dashboard-profile-image hidden"><div><p class="eyebrow">BUSINESS PROFILE</p><h2 id="dashboard-profile-name">Complete your business profile</h2><p id="dashboard-profile-meta" class="muted small">Add your business details and logo to personalise AURORA E-RECEIPT receipts.</p></div></div><div id="dashboard-shop-photos" class="dashboard-shop-photos hidden"><figure><img id="dashboard-shop-inside-photo" class="dashboard-shop-photo hidden" alt="Inside of registered shop"><figcaption>Inside shop</figcaption></figure><figure><img id="dashboard-shop-outside-photo" class="dashboard-shop-photo hidden" alt="Outside of registered shop"><figcaption>Outside shop</figcaption></figure></div><button id="dashboard-edit-profile" class="btn btn-primary" type="button">Complete business profile</button></section><div class="page-heading"><div><h1>Sales performance</h1><p class="muted">View sales results, daily trends and comparisons with previous periods.</p></div><div class="date-filter"><label>From<input id="owner-date-from" type="date"></label><label>To<input id="owner-date-to" type="date"></label><button id="owner-refresh-btn" class="btn btn-primary">Refresh</button></div></div><p id="owner-notice" class="notice hidden"></p>
+<div class="dashboard-layout">
+
+<div class="dashboard-main">
+<div class="command-bar">
+ <div class="global-search"><span aria-hidden="true">⌕</span><input id="owner-workspace-search" type="search" placeholder="Search the menu…" aria-label="Search dashboard menu"><kbd>Search</kbd></div>
+ <div class="command-actions"><span id="owner-network-status" class="network-status"><i></i> Online</span><button id="owner-theme-toggle" class="btn btn-secondary" type="button" aria-pressed="false">☾ Dark mode</button></div>
+</div>
+<section class="owner-stats" aria-label="Business performance">
+ <article class="owner-stat"><span>Sales · selected period</span><strong id="owner-today-sales">KSh 0</strong><small>Recorded sales</small></article>
+ <article class="owner-stat"><span>Estimated net profit</span><strong id="owner-net-profit">KSh 0</strong><small>After recorded expenses</small></article>
+ <article class="owner-stat"><span>Pending customer debt</span><strong id="owner-owner-pending-debt">Not tracked yet</strong><small>Credit ledger not yet enabled</small></article>
+ <article class="owner-stat"><span>Low-stock alerts</span><strong id="owner-low-stock">0</strong><small>Products needing restock</small></article>
+</section>
+<section id="owner-period-comparison" class="panel period-comparison" aria-label="Period comparison">
+ <div class="panel-heading"><div><h2>Performance comparison</h2><p class="muted">Selected dates compared with the immediately preceding period of equal length.</p></div><span class="channel-period">Previous period</span></div>
+ <div class="comparison-grid">
+  <article><span>Sales change</span><strong id="owner-compare-sales">Loading…</strong><small id="owner-compare-sales-detail">Compared with previous period</small></article>
+  <article><span>Transaction change</span><strong id="owner-compare-transactions">Loading…</strong><small id="owner-compare-transactions-detail">Compared with previous period</small></article>
+  <article><span>MTD sales</span><strong id="owner-mtd-sales">Loading…</strong><small id="owner-mtd-transactions">Month-to-date transactions</small></article>
+ </div>
+</section>
+
+
+<section class="analytics-intro">
+  <div><span class="eyebrow">BUSINESS ANALYTICS</span><h2>Your business at a glance</h2><p>Monitor your products, locations and completed transactions.</p></div>
+  <span class="account-state"><i></i> Workspace overview</span>
+</section>
+<div class="metric-grid headline-metrics" aria-label="Key business metrics">
+  <article class="metric highlight-metric"><span>Total products</span><strong id="owner-m-products-top">0</strong><small>Products registered in inventory</small></article>
+  <article class="metric highlight-metric"><span>Active locations</span><strong id="owner-m-locations">0</strong><small>Business locations configured</small></article>
+  <article class="metric highlight-metric"><span>Completed transactions · selected period</span><strong id="owner-m-month-transactions">0</strong><small>Based on selected reporting dates</small></article>
+</div>
+<section id="owner-reports-section" class="panel channel-panel">
+ <div class="panel-heading"><div><h2>Transaction channels</h2><p class="muted">See where your business payments are coming from.</p></div><span class="channel-period">Selected period</span></div>
+ <div class="channel-grid">
+  <article class="channel-card"><span class="channel-icon">▣</span><div><small>POS sales</small><strong id="owner-channel-pos">KSh 0</strong><em>Sales recorded at the point of sale</em></div></article>
+  <article class="channel-card"><span class="channel-icon">⇄</span><div><small>API payments</small><strong id="owner-channel-api">KSh 0</strong><em>Awaiting channel tracking setup</em></div></article>
+  <article class="channel-card"><span class="channel-icon">▤</span><div><small>Invoices</small><strong id="owner-channel-invoices">KSh 0</strong><em>Awaiting invoice payment tracking</em></div></article>
+  <article class="channel-card"><span class="channel-icon">◷</span><div><small>Offline payments</small><strong id="owner-channel-offline">KSh 0</strong><em>Awaiting offline payment tracking</em></div></article>
+ </div>
+</section>
+<div id="owner-overview-section" class="metric-grid"><article class="metric"><span>Sales collected</span><strong id="owner-m-sales">KSh 0</strong><small id="owner-m-transactions">0 transactions</small></article><article class="metric"><span>Estimated gross profit</span><strong id="owner-m-profit">KSh 0</strong><small>Sales less recorded product cost</small></article><article class="metric"><span>Business expenses</span><strong id="owner-m-expenses">KSh 0</strong><small id="owner-m-expense-count">0 entries</small></article><article class="metric"><span>Estimated net operating</span><strong id="owner-m-net">KSh 0</strong><small>Gross profit less expenses</small></article></div>
+<div class="metric-grid secondary-metrics"><article class="metric"><span>Products in inventory</span><strong id="owner-m-products">0</strong><small id="owner-m-low">0 need restocking</small></article><article class="metric"><span>Stock value at cost</span><strong id="owner-m-stock-cost">KSh 0</strong><small id="owner-m-stock-retail">Retail value: KSh 0</small></article><article class="metric"><span>Receipt discounts</span><strong id="owner-m-discounts">KSh 0</strong><small>For selected period</small></article><article class="metric"><span>Receipt access</span><strong id="owner-m-wallet">KSh 0</strong><small id="owner-m-subscription">Unlimited receipts while subscription is active</small></article></div>
+<div id="owner-payments-section" class="content-grid"><section class="panel"><div class="panel-heading"><div><h2>AURORA E-RECEIPT membership</h2><p class="muted">Pay KSh 100 monthly or KSh 900 yearly. Your active plan includes unlimited receipts with no per-receipt fee.</p></div></div><form id="owner-mpesa-form" class="stack"><input id="owner-mpesa-purpose" type="hidden" value="subscription"><label id="owner-plan-wrap">Subscription plan<select id="owner-subscription-plan"><option value="monthly">Monthly · KSh 100</option><option value="yearly">Yearly · KSh 900 (save KSh 300)</option></select></label><label id="owner-payment-amount-wrap">Amount to pay (KSh)<input id="owner-payment-amount-display" type="text" value="100" readonly aria-label="Payment amount"></label><label id="owner-topup-amount-wrap" class="hidden">Enter top-up amount (KSh)<input id="owner-topup-amount" type="number" min="4" max="150000" step="1" value="40" inputmode="numeric"></label><label>M-Pesa phone number<input id="owner-mpesa-phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="07XXXXXXXX" required></label><button class="btn btn-primary full" type="submit">Send STK Push</button><p id="owner-mpesa-message" class="muted" aria-live="polite"></p></form></section><section class="panel"><div class="panel-heading"><div><h2>Daily sales</h2><p class="muted">Sales totals for the selected dates</p></div></div><div id="owner-daily-chart" class="daily-chart"><p class="muted">Loading daily sales…</p></div><div class="product-mix-heading"><h3>Product sales comparison</h3><p class="muted">Share of sales value for the selected dates</p></div><div class="product-mix-layout"><div id="owner-product-pie" class="product-pie" role="img" aria-label="Product sales share pie chart"><span>No sales data</span></div><div id="owner-product-legend" class="product-legend"><p class="muted">Loading product sales…</p></div></div></section><section class="panel"><div class="panel-heading"><div><h2>Record an expense</h2><p class="muted">Add rent, transport, utilities and other costs.</p></div></div><form id="owner-expense-form" class="stack"><label>Amount (KSh)<input id="owner-expense-amount" type="number" min="1" step="1" required></label><label>Category<input id="owner-expense-category" maxlength="80" placeholder="e.g. Rent, Transport" required></label><label>Note (optional)<input id="owner-expense-note" maxlength="240" placeholder="Short description"></label><button class="btn btn-primary" type="submit">Save expense</button><p id="owner-expense-message" class="muted"></p></form></div></div>
+  <div id="checkout-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="checkout-title"><div class="modal-card"><div class="modal-head"><div><p class="eyebrow">COMPLETE SALE</p><h2 id="checkout-title">Customer details & payment</h2></div><button class="icon-btn" id="checkout-close" aria-label="Close">×</button></div>
+    <form id="checkout-form"><section id="checkout-customer-step" class="checkout-step"><div class="buyer-fields"><p class="buyer-note">Enter the customer details so the receipt can be recovered later.</p><label>Customer full name<input id="buyer-name" autocomplete="name" placeholder="Customer full name" required></label><label>Customer National ID number<input id="buyer-id" type="text" inputmode="numeric" autocomplete="off" placeholder="Enter customer National ID number" required aria-describedby="buyer-id-note"></label><p id="buyer-id-note" class="buyer-note">Required for every receipt.</p><label>Customer phone number<input id="buyer-phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="07XX XXX XXX" required></label><label>Customer email<input id="buyer-email" type="email" autocomplete="email" placeholder="customer@example.com" required></label><p class="buyer-note">IMEI / serial number is captured against each item in the sale where applicable.</p><label>Payment method<select id="payment-method"><option value="cash">Cash</option><option value="mpesa">M-Pesa · STK Push</option><option value="card">Card</option></select></label><div id="receipt-mpesa-fields" class="buyer-fields hidden"><label>M-Pesa phone number<input id="receipt-mpesa-phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="07XXXXXXXX"></label><label>Amount to pay (KSh)<input id="receipt-mpesa-amount" type="number" min="1" step="1" inputmode="numeric" readonly></label><p class="buyer-note">An STK prompt will be sent to this number. The receipt is issued after payment is confirmed.</p></div></div><div class="checkout-total"><span>Amount to collect</span><strong id="checkout-total">KSh 0</strong></div><p id="checkout-error" class="error" role="alert"></p><button id="complete-sale" class="btn btn-primary full" type="submit">Issue receipt</button></section></form>
   </div></div>
-  <div id="receipt-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="receipt-title"><div class="modal-card receipt-card"><div class="modal-head no-print"><div><p class="eyebrow">SALE COMPLETE</p><h2 id="receipt-title">Receipt issued</h2></div><button class="icon-btn" id="receipt-close" aria-label="Close">×</button></div><div id="receipt-paper" class="receipt-paper"></div><div class="receipt-actions no-print"><button id="share-receipt" type="button">Share receipt</button><button id="print-receipt" class="btn btn-light">Print receipt</button><button id="new-sale" class="btn btn-primary">New sale</button></div></div></div>
-  <footer class="footer">SWASS · Simple tools for better business · <a href="recover.html">Recover a lost receipt</a></footer>
+  <div id="imei-scanner-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="imei-scanner-title"><div class="modal-card"><div class="modal-head"><div><p class="eyebrow">ITEM IDENTIFICATION</p><h2 id="imei-scanner-title">Scan QR / barcode</h2></div><button class="icon-btn" id="imei-scanner-close" type="button" aria-label="Close scanner">×</button></div><video id="imei-scanner-video" playsinline muted style="width:100%;max-height:260px;background:#101827;border-radius:12px;object-fit:cover"></video><p id="imei-scanner-message" class="muted small" role="status">Allow camera access to scan the item code.</p><label>Or enter scanned QR / IMEI manually<input id="imei-scanner-manual" type="text" maxlength="32" autocomplete="off" placeholder="Enter QR or barcode value"></label><button id="imei-scanner-use" class="btn btn-primary full" type="button">Use this code</button></div></div>
+  <div id="receipt-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="receipt-title"><div class="modal-card receipt-card"><div class="modal-head no-print"><div><p class="eyebrow">SALE COMPLETE</p><h2 id="receipt-title">Receipt issued</h2></div><button class="icon-btn" id="receipt-close" aria-label="Close">×</button></div><div id="receipt-paper" class="receipt-paper"></div><p id="receipt-email-status" class="muted small" role="status"></p><div class="receipt-actions no-print"><button id="receipt-back-to-receipts" class="btn btn-light" type="button">← Back to Receipts</button><button id="share-receipt" type="button">Share receipt</button><button id="print-receipt" class="btn btn-light">Print receipt</button><button id="new-sale" class="btn btn-primary">New sale</button></div></div></div>
+  
+  <footer class="aurora-copyright" aria-label="Copyright">copyright@auroraskyholdings2026</footer>
   <script src="./config.js"></script>
-  <script src="./app.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="./app.js?v=long-pages-document-scroll-20261118"></script>
+  <script src="./dashboard.js?v=all-accounts-login-landing-20261117"></script>
+
+<script>
+(() => {
+  const statusUrl = 'https://swass-api.onrender.com/health/maintenance';
+  let notice = null;
+  async function checkAURORAMaintenance() {
+    try {
+      const response = await fetch(statusUrl, { cache: 'no-store', headers: { Accept: 'application/json' } });
+      if (!response.ok) return;
+      const state = await response.json();
+      if (state.enabled) {
+        if (!notice) {
+          notice = document.createElement('section');
+          notice.id = 'aurora-maintenance-notice';
+          notice.setAttribute('role', 'alert');
+          notice.setAttribute('aria-live', 'assertive');
+          notice.style.cssText = 'position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;padding:24px;background:linear-gradient(145deg,#071a39,#123d70);color:#fff;font-family:system-ui,-apple-system,Segoe UI,sans-serif;text-align:center;overflow:auto';
+          const card = document.createElement('div');
+          card.style.cssText = 'width:min(100%,560px);padding:clamp(24px,5vw,44px);border:1px solid #ffffff35;border-radius:22px;background:#ffffff12;box-shadow:0 24px 70px #0005';
+          const brand = document.createElement('div'); brand.textContent = 'AURORA E-RECEIPT'; brand.style.cssText = 'font-size:12px;font-weight:800;letter-spacing:2px;color:#9bd8ff';
+          const heading = document.createElement('h1'); heading.id = 'aurora-maintenance-title'; heading.style.cssText = 'font-size:clamp(25px,5vw,36px);line-height:1.2;margin:22px 0 12px';
+          const message = document.createElement('p'); message.id = 'aurora-maintenance-message'; message.style.cssText = 'font-size:16px;line-height:1.7;color:#e1edff;margin:0 0 24px;white-space:pre-wrap';
+          const retry = document.createElement('button'); retry.type = 'button'; retry.textContent = 'CHECK AGAIN'; retry.style.cssText = 'border:0;border-radius:999px;padding:13px 24px;background:#fff;color:#123d70;font-weight:800;font-size:13px;cursor:pointer';
+          retry.addEventListener('click', checkAURORAMaintenance);
+          const note = document.createElement('small'); note.textContent = 'Your account and business records remain stored securely. Please try again later.'; note.style.cssText = 'display:block;margin-top:20px;color:#b9cde8;line-height:1.5';
+          card.append(brand, heading, message, retry, note); notice.append(card); document.body.append(notice);
+        }
+        notice.querySelector('#aurora-maintenance-title').textContent = state.title || 'Scheduled maintenance';
+        notice.querySelector('#aurora-maintenance-message').textContent = state.message || 'AURORA is temporarily unavailable while we improve our services. Please try again shortly.';
+      } else if (notice) {
+        notice.remove(); notice = null;
+      }
+    } catch (_) {
+      // A temporary health-check failure must not fabricate a maintenance notice.
+    }
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', checkAURORAMaintenance, { once: true });
+  else checkAURORAMaintenance();
+  window.setInterval(checkAURORAMaintenance, 60000);
+})();
+</script>
 </body></html>
