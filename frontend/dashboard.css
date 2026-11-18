@@ -2920,3 +2920,70 @@ html body.workspace-active #staff-sales-summary:not(.hidden) {
     overflow:visible!important;
   }
 }
+
+
+/* AURORA FINAL PAGE-SCROLL CORRECTION — overrides the older fixed-screen
+   receipt layout and any nested Shop/Receipt viewport-height constraints.
+   The document is the vertical scroll owner on phones and desktop. */
+html:has(body.workspace-active),
+html body.workspace-active{
+  height:auto!important;min-height:100%!important;max-height:none!important;
+  overflow-x:hidden!important;overflow-y:auto!important;
+  overscroll-behavior-y:auto!important;
+  touch-action:pan-y!important;
+}
+html body.workspace-active .shell{
+  position:relative!important;inset:auto!important;transform:none!important;
+  display:flex!important;flex-direction:column!important;
+  height:auto!important;min-height:100dvh!important;max-height:none!important;
+  overflow:visible!important;overflow-y:visible!important;
+}
+html body.workspace-active #receipts-home:not(.hidden),
+html body.workspace-active #receipts-home:not(.hidden):not(.secondhand-active),
+html body.workspace-active #receipts-home.secondhand-active,
+html body.workspace-active #shop-home:not(.hidden),
+html body.workspace-active #pos-view:not(.hidden){
+  display:block!important;position:relative!important;flex:0 0 auto!important;
+  width:100%!important;height:auto!important;min-height:0!important;
+  max-height:none!important;overflow:visible!important;
+  overflow-x:clip!important;overflow-y:visible!important;
+  contain:none!important;overscroll-behavior:auto!important;
+}
+html body.workspace-active #receipts-home:not(.hidden) .receipt-actions-grid{
+  height:auto!important;min-height:0!important;max-height:none!important;
+  grid-template-rows:none!important;grid-auto-rows:minmax(84px,auto)!important;
+  overflow:visible!important;
+}
+html body.workspace-active #receipts-home:not(.hidden) .receipt-actions-grid .receipt-choice{
+  height:auto!important;min-height:84px!important;max-height:none!important;
+  overflow:visible!important;
+}
+html body.workspace-active #receipts-home:not(.hidden) .receipt-history-panel,
+html body.workspace-active #receipts-home:not(.hidden) .receipt-history-panel>*{
+  height:auto!important;max-height:none!important;overflow:visible!important;
+}
+html body.workspace-active #shop-home:not(.hidden) [data-shop-tab-panel]:not([hidden]){
+  height:auto!important;min-height:0!important;max-height:none!important;
+  overflow:visible!important;overflow-y:visible!important;
+  contain:none!important;
+}
+html body.workspace-active #shop-home:not(.hidden) .shop-section-tabs{
+  max-width:100%!important;overflow-x:auto!important;overflow-y:hidden!important;
+  -webkit-overflow-scrolling:touch;
+}
+html body.workspace-active #shop-home:not(.hidden) .shop-product-list,
+html body.workspace-active #shop-home:not(.hidden) .shop-products-grid,
+html body.workspace-active #shop-home:not(.hidden) .shop-content,
+html body.workspace-active #shop-home:not(.hidden) .shop-panel,
+html body.workspace-active #shop-home:not(.hidden) .panel{
+  height:auto!important;min-height:0!important;max-height:none!important;
+  overflow:visible!important;overflow-y:visible!important;
+}
+@media(max-width:760px){
+  html:has(body.workspace-active),
+  html body.workspace-active{height:auto!important;min-height:100%!important;max-height:none!important;overflow-y:auto!important}
+  html body.workspace-active .shell{height:auto!important;min-height:100dvh!important;max-height:none!important;overflow:visible!important;padding-bottom:calc(32px + env(safe-area-inset-bottom))!important}
+  html body.workspace-active #receipts-home:not(.hidden),
+  html body.workspace-active #shop-home:not(.hidden),
+  html body.workspace-active #pos-view:not(.hidden){height:auto!important;max-height:none!important;overflow:visible!important}
+}
