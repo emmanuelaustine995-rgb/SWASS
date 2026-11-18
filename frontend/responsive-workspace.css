@@ -546,3 +546,13 @@ html body.workspace-active #workspace-nav:not(.hidden) > button {
     padding-right: 2px !important;
   }
 }
+
+
+/* Keep touch gestures available to the page's own scroll container. */
+body.workspace-active { touch-action: pan-y !important; }
+html body.workspace-active #shop-home > :not(.shop-section-tabs) {
+  flex-shrink: 0 !important;
+}
+html body.workspace-active #shop-home > .shop-section-tabs {
+  flex-shrink: 0 !important;
+}
