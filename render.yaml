@@ -1,0 +1,115 @@
+services:
+  - type: web
+    name: swass-api
+    runtime: node
+    plan: free
+    region: singapore
+    buildCommand: npm install --include=dev && npm run build
+    startCommand: npm run migrate:node && npm start
+    healthCheckPath: /health
+    # Deploy the current API route definitions and frontend bundle together when this Render manifest changes.
+    buildFilter:
+      paths:
+        - src/**
+        - migrations/**
+        - scripts/**
+        - package.json
+        - package-lock.json
+        - tsconfig.json
+        - nest-cli.json
+        - render.yaml
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: SWASS_ID_SECRET
+        generateValue: true
+      - key: CORS_ORIGINS
+        value: https://swass-web.onrender.com,https://auroraskyholdings.co.ke,https://www.auroraskyholdings.co.ke
+      - key: AURORA_ADMIN_IDENTITIES
+        sync: false
+      - key: CASHIER_MAX_DISCOUNT_PCT
+        value: "5"
+      - key: MPESA_ENV
+        value: sandbox
+      - key: MPESA_CONSUMER_KEY
+        sync: false
+      - key: MPESA_CONSUMER_SECRET
+        sync: false
+      - key: MPESA_SHORTCODE
+        sync: false
+      - key: MPESA_PASSKEY
+        sync: false
+      - key: MPESA_CALLBACK_URL
+        sync: false
+      - key: MPESA_CALLBACK_TOKEN
+        generateValue: true
+      # Tuma collects AURORA subscription and receipt-wallet payments for the existing application.
+      - key: TUMA_BUSINESS_EMAIL
+        value: Kenyavat93@gmail.com
+      - key: TUMA_API_KEY
+        sync: false
+      # Set PAYMENT_PROVIDER to intasend after adding sandbox or live credentials.
+      - key: PAYMENT_PROVIDER
+        value: tuma
+      - key: INTASEND_SECRET_KEY
+        sync: false
+      - key: INTASEND_WEBHOOK_CHALLENGE
+        sync: false
+      - key: PUBLIC_APP_URL
+        value: https://swass-web.onrender.com
+      # TalkSasa is the active provider for signup and receipt-recovery OTPs.
+      - key: TALKSASA_API_TOKEN
+        sync: false
+      - key: TALKSASA_SENDER_ID
+        value: TALK-SASA
+      - key: TALKSASA_API_URL
+        value: https://bulksms.talksasa.com/api/v3/sms/send
+      - key: AT_USERNAME
+        sync: false
+      - key: AT_API_KEY
+        sync: false
+      - key: AT_SENDER_ID
+        sync: false
+      - key: BREVO_API_KEY
+        sync: false
+      - key: BREVO_FROM_EMAIL
+        sync: false
+      # FlareSend is the active WhatsApp receipt provider.
+      - key: WHATSAPP_PROVIDER
+        value: flaresend
+      - key: FLARESEND_API_KEY
+        sync: false
+      - key: WHATSAPP_ACCESS_TOKEN
+        sync: false
+      - key: WHATSAPP_PHONE_NUMBER_ID
+        sync: false
+      - key: WHATSAPP_GRAPH_VERSION
+        value: v22.0
+      # Optional approved Meta template for sending receipts outside the 24-hour window.
+      # Create a Utility template with a DOCUMENT header and a static BODY, then set its exact name.
+      - key: WHATSAPP_RECEIPT_TEMPLATE_NAME
+        sync: false
+      - key: WHATSAPP_RECEIPT_TEMPLATE_LANGUAGE
+        value: en
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_FROM
+        sync: false
+
+  - type: web
+    name: swass-web
+    runtime: static
+    rootDir: frontend
+    buildCommand: echo "Publishing AURORA E-RECEIPT on the existing web service"
+    staticPublishPath: .
+    # Publish the website only when its own frontend files change.
+    buildFilter:
+      paths:
+        - frontend/**
+        - render.yaml

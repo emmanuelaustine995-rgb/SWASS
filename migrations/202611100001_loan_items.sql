@@ -1,0 +1,27 @@
+CREATE TABLE IF NOT EXISTS loan_items (
+ id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+ tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+ store_id UUID NOT NULL REFERENCES stores(id) ON DELETE CASCADE,
+ reference TEXT NOT NULL,
+ item_name TEXT NOT NULL,
+ borrower_name TEXT NOT NULL,
+ phone TEXT NOT NULL,
+ id_number TEXT NOT NULL,
+ borrower_email TEXT NOT NULL,
+ imei TEXT,
+ serial_number TEXT,
+ loan_date DATE NOT NULL,
+ expected_return_date DATE NOT NULL,
+ condition_out TEXT NOT NULL,
+ condition_in TEXT,
+ amount_kes BIGINT NOT NULL DEFAULT 0 CHECK(amount_kes>=0),
+ processed_by TEXT NOT NULL,
+ recorded_by UUID NOT NULL REFERENCES users(id),
+ returned BOOLEAN NOT NULL DEFAULT false,
+ sold BOOLEAN NOT NULL DEFAULT false,
+ created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+ updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+ UNIQUE(tenant_id,reference),
+ CHECK(NOT(returned AND sold))
+);
+CREATE INDEX IF NOT EXISTS loan_items_store_created_idx ON loan_items(tenant_id,store_id,created_at DESC);

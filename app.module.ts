@@ -1,0 +1,18 @@
+import { Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
+import { AuthController, AuthGuard, RolesGuard } from './auth/auth';
+import { DbService } from './db/db.service';
+import { ReceiptsController } from './receipts/receipts.controller';
+import { ReceiptsService } from './receipts/receipts.service';
+import { HealthController } from './health.controller';
+import { InventoryController } from './inventory/inventory.controller';
+import { DashboardController } from './dashboard/dashboard.controller';
+import { MpesaController, MpesaService } from './mpesa/mpesa.controller';
+import { ReceiptRecoveryController } from './receipts/recovery.controller';
+
+@Module({
+  imports: [JwtModule.register({ global: true, secret: process.env.JWT_SECRET })],
+  controllers: [HealthController, AuthController, ReceiptsController, InventoryController, DashboardController, MpesaController, ReceiptRecoveryController],
+  providers: [DbService, ReceiptsService, AuthGuard, RolesGuard, { provide: MpesaService, useClass: MpesaService }],
+})
+export class AppModule {}

@@ -2886,7 +2886,7 @@ html body.workspace-active #staff-sales-summary:not(.hidden) {
   min-height:0!important;
   max-height:none!important;
   overflow:visible!important;
-  overscroll-behavior: auto!important;
+  overscroll-behavior:auto!important;
   contain:none!important;
 }
 @media (min-width:761px) {

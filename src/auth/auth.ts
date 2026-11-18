@@ -1,0 +1,1074 @@
+import {
+  BadRequestException, CanActivate, Controller, ExecutionContext, ForbiddenException, HttpException, HttpStatus, Injectable,
+  Post, Body, Req, SetMetadata, UnauthorizedException, UseGuards, ServiceUnavailableException,
+} from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
+import { JwtService } from '@nestjs/jwt';
+import * as argon2 from 'argon2';
+import { createCipheriv, createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
+import { DbService } from '../db/db.service';
+import { EmailVerificationService } from '../notifications/email-verification.service';
+
+export type Role = 'super_admin' | 'owner' | 'manager' | 'cashier' | 'vendor' | 'freelancer' | 'customer';
+
+export interface AuthUser {
+  sub: string;
+  tenantId: string | null;
+  storeId: string | null;
+  role: Role;
+  mustChangePassword?: boolean;
+  fullName?: string;
+}
+
+export const Roles = (...roles: Role[]) => SetMetadata('roles', roles);
+
+// Admin email aliases are grouped under no more than three people. Keep each
+// person's email addresses and phone together so credentials cannot be mixed
+// across different administrators.
+type AdminIdentityConfig = { personId: string; phone: string; emails: string[] };
+function configuredAdminIdentities(): AdminIdentityConfig[] {
+  const raw = process.env.AURORA_ADMIN_IDENTITIES || '';
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || parsed.length < 1 || parsed.length > 3) return [];
+    const seenEmails = new Set<string>();
+    const seenPhones = new Set<string>();
+    const identities: AdminIdentityConfig[] = [];
+    for (const item of parsed) {
+      const personId = String(item?.personId || '').trim();
+      const digits = String(item?.phone || '').replace(/\D/g, '');
+      const phone = digits.startsWith('254') && digits.length === 12 ? digits :
+        digits.startsWith('0') && digits.length === 10 ? '254' + digits.slice(1) :
+        digits.length === 9 ? '254' + digits : '';
+      const emails = Array.isArray(item?.emails) ? item.emails.map((v: unknown) => String(v).trim().toLowerCase()) : [];
+      if (!personId || !phone || !emails.length || emails.some((e: string) => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e))) return [];
+      if (seenPhones.has(phone) || emails.some((e: string) => seenEmails.has(e))) return [];
+      seenPhones.add(phone);
+      emails.forEach((e: string) => seenEmails.add(e));
+      identities.push({ personId, phone, emails });
+    }
+    if (new Set(identities.map(x => x.personId)).size !== identities.length) return [];
+    return identities;
+  } catch { return []; }
+}
+function configuredAdminEmails(): string[] {
+  return configuredAdminIdentities().flatMap(x => x.emails);
+}
+
+/** Reads the Bearer token and attaches the user to the request. */
+@Injectable()
+export class AuthGuard implements CanActivate {
+  constructor(private jwt: JwtService, private db: DbService) {}
+
+  async canActivate(ctx: ExecutionContext): Promise<boolean> {
+    const req = ctx.switchToHttp().getRequest();
+    const header: string = req.headers['authorization'] ?? '';
+    const token = header.startsWith('Bearer ') ? header.slice(7) : null;
+    if (!token) throw new UnauthorizedException();
+    try {
+      req.user = (await this.jwt.verifyAsync(token)) as AuthUser;
+    } catch {
+      throw new UnauthorizedException();
+    }
+
+    const user = req.user as AuthUser;
+    if (user.role === 'super_admin') {
+      const identities = configuredAdminIdentities();
+      const adminEmail = String((req.user as any).adminEmail || '').trim().toLowerCase();
+      const adminPersonId = String((req.user as any).adminPersonId || '').trim();
+      const identity = identities.find(x => x.personId === adminPersonId && x.emails.includes(adminEmail));
+      if (!identity) throw new ForbiddenException('This administrator account is not authorised.');
+      const verified = await this.db.pool.query(
+        `SELECT 1 FROM users u JOIN aurora_admin_identity_records r ON r.user_id=u.id
+          WHERE u.id=$1 AND r.person_id=$2 AND r.admin_email_verified_at IS NOT NULL LIMIT 1`,
+        [user.sub, adminPersonId],
+      );
+      if (!verified.rowCount) throw new ForbiddenException('Administrator access is no longer active or the email is not verified.');
+    }
+    if (user.role === 'customer') {
+      const activeCustomer = await this.db.pool.query(
+        'SELECT 1 FROM customer_accounts WHERE id=$1 AND is_active=true LIMIT 1', [user.sub],
+      );
+      if (!activeCustomer.rowCount) throw new UnauthorizedException('This account is no longer active. Please register again.');
+    } else if (user.role !== 'super_admin') {
+      const activeUser = await this.db.pool.query(
+        'SELECT 1 FROM users WHERE id=$1 AND is_active=true LIMIT 1', [user.sub],
+      );
+      if (!activeUser.rowCount) throw new UnauthorizedException('This account is no longer active. Please register again.');
+    }
+    const path = String(req.originalUrl ?? req.url ?? '').split('?')[0];
+    if (user.mustChangePassword && path !== '/api/v1/auth/change-password') throw new ForbiddenException('Please create your own password before using the shop workspace.');
+    // Keep the payment portal usable when a subscription has expired or has
+    // not yet been purchased. All business-operation APIs remain locked.
+    const paymentRoute = path === '/api/v1/mpesa/stk-push' || path === '/api/v1/mpesa/account-summary' || path === '/api/v1/auth/change-password' ||
+      /^\/api\/v1\/mpesa\/payments\/[0-9a-f-]+$/i.test(path);
+    if (user.role === 'freelancer' && user.tenantId) {
+      // A freelancer linked to a shop works inside that shop's tenant.
+      // Their access follows the shop owner's subscription; do not block the
+      // linked freelancer behind a separate personal freelancer subscription.
+      if (!paymentRoute) {
+        const active = await this.db.pool.query(
+          `SELECT 1 FROM subscriptions
+            WHERE tenant_id=$1 AND status='active' AND ends_at>now()
+            LIMIT 1`,
+          [user.tenantId],
+        );
+        if (!active.rowCount) {
+          throw new HttpException(
+            'The linked shop subscription is inactive. Ask the shop owner to renew the AURORA shop plan.',
+            HttpStatus.PAYMENT_REQUIRED,
+          );
+        }
+      }
+    } else if (user.role === 'freelancer') {
+      // Legacy freelancer accounts without a shop link retain the individual plan
+      // requirement until they are safely matched to exactly one shop.
+      await this.db.ensureFreelancerSubscriptionSchema();
+      if (!paymentRoute) {
+        const active = await this.db.pool.query(
+          `SELECT 1 FROM freelancer_subscriptions
+            WHERE user_id=$1 AND status='active' AND ends_at>now()
+            LIMIT 1`,
+          [user.sub],
+        );
+        if (!active.rowCount) {
+          throw new HttpException(
+            'This freelancer account is not linked to a shop yet. Complete shop matching or contact the shop owner before opening the workspace.',
+            HttpStatus.PAYMENT_REQUIRED,
+          );
+        }
+      }
+    } else if (user.tenantId && user.role !== 'super_admin' && !paymentRoute) {
+      const active = await this.db.pool.query(
+        `SELECT 1 FROM subscriptions
+          WHERE tenant_id=$1 AND status='active' AND ends_at>now()
+          LIMIT 1`,
+        [user.tenantId],
+      );
+      if (!active.rowCount) {
+        throw new HttpException(
+          'An active SWASS subscription is required. Pay KSh 100 for a monthly subscription or KSh 900 for a yearly subscription to unlock your business workspace.',
+          HttpStatus.PAYMENT_REQUIRED,
+        );
+      }
+    }
+    return true;
+  }
+}
+
+/** Allows the route only for the roles named with @Roles(). */
+@Injectable()
+export class RolesGuard implements CanActivate {
+  constructor(private reflector: Reflector) {}
+
+  canActivate(ctx: ExecutionContext): boolean {
+    const allowed = this.reflector.get<Role[]>('roles', ctx.getHandler());
+    if (!allowed) return true;
+    const req = ctx.switchToHttp().getRequest();
+    const user: AuthUser = req.user;
+    if (!user) throw new ForbiddenException();
+    // Vendors and freelancers share owner workspace permissions, except invitations.
+    const path = String(req.originalUrl ?? req.url ?? '').split('?')[0];
+    if (user.role === 'vendor' && path.startsWith('/api/v1/staff/invitations')) throw new ForbiddenException();
+    const isVendorWorkspace = user.role === 'vendor' || user.role === 'freelancer';
+    const effectiveRole: Role = isVendorWorkspace ? 'owner' : user.role;
+    if (!allowed.includes(effectiveRole) && !(isVendorWorkspace && allowed.some(role => role === 'vendor' || role === 'freelancer'))) throw new ForbiddenException();
+    return true;
+  }
+}
+
+@Controller('api/v1/auth')
+export class AuthController {
+  constructor(private db: DbService, private jwt: JwtService, private emailVerification: EmailVerificationService) {}
+
+  private async recordLoginSecurity(req: any, eventType: string, outcome: string, actorUserId?: string | null): Promise<void> {
+    try {
+      await this.db.recordSecurityEvent({
+        eventType, severity: outcome === 'failed' ? 'medium' : 'info', outcome,
+        actorUserId: actorUserId || null, sourceIp: req?.ip || null,
+        userAgent: req?.headers?.['user-agent'] || null,
+      });
+      if ((eventType === 'login_failed' || eventType === 'admin_login_failed') && req?.ip) {
+        const recent = await this.db.pool.query("SELECT COUNT(*)::int AS count FROM aurora_security_events WHERE source_ip=$1 AND event_type IN ('login_failed','admin_login_failed') AND created_at >= now()-interval '15 minutes'", [String(req.ip).slice(0,80)]);
+        if (Number(recent.rows[0]?.count) === 5) {
+          await this.db.recordSecurityEvent({ eventType: 'repeated_login_failures', severity: 'high', outcome: 'detected', sourceIp: req.ip, userAgent: req?.headers?.['user-agent'] || null, metadata: { failedAttemptsIn15Minutes: 5 } });
+        }
+      }
+    } catch (error) {
+      console.warn('[AURORA_SECURITY] Could not persist login event:', error instanceof Error ? error.message : 'database error');
+    }
+  }
+
+  private normalizePhone(value: string): string {
+    let digits = value.replace(/\D/g, '');
+    // Accept local numbers and international numbers, including +254 07... formatting.
+    if (digits.startsWith('254')) digits = digits.slice(3);
+    if (digits.startsWith('0')) digits = digits.slice(1);
+    if (/^[17]\d{8}$/.test(digits)) return '254' + digits;
+    throw new UnauthorizedException('Enter a valid Kenyan phone number');
+  }
+
+  private signupCodeHash(code: string): string {
+    const secret = process.env.SWASS_ID_SECRET;
+    if (!secret) throw new Error('SWASS_ID_SECRET is required');
+    return createHmac('sha256', secret).update(`signup-otp:${code}`).digest('hex');
+  }
+
+  private async sendSignupSms(to: string, message: string): Promise<void> {
+    const token = process.env.TALKSASA_API_TOKEN || process.env.TALKSASA_API_KEY;
+    if (token) {
+      const startedAt = Date.now();
+      const configuredUrl = (process.env.TALKSASA_API_URL || 'https://bulksms.talksasa.com/api/v3/sms/send').trim();
+      const endpoint = /\/sms\/send\/?$/i.test(configuredUrl)
+        ? configuredUrl
+        : `${configuredUrl.replace(/\/+$/, '')}/sms/send`;
+      try {
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          signal: AbortSignal.timeout(8000),
+          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            recipient: `+${to}`,
+            sender_id: process.env.TALKSASA_SENDER_ID || 'TALK-SASA',
+            type: 'plain',
+            message,
+          }),
+        });
+        const raw = await response.text();
+        let result: any = {};
+        try { result = raw ? JSON.parse(raw) : {}; } catch { result = {}; }
+        const status = String(result?.status ?? result?.data?.status ?? '').trim().toLowerCase();
+        const accepted = response.ok && (
+          status === 'success' || status === 'accepted' || status === 'queued' ||
+          result?.success === true || result?.status === true
+        );
+        console.info(`[AURORA][SMS] TalkSasa HTTP ${response.status}, status=${status || 'missing'}, accepted=${accepted}, durationMs=${Date.now() - startedAt}`);
+        if (accepted) return;
+        const reason = String(result?.message ?? result?.error ?? result?.data?.message ?? raw ?? response.statusText ?? '')
+          .replace(/[\\r\\n]+/g, ' ').slice(0, 180);
+        throw new Error(`TalkSasa HTTP ${response.status}${reason ? `: ${reason}` : ''}`);
+      } catch (error) {
+        console.error(`[AURORA][SMS] TalkSasa delivery failed after ${Date.now() - startedAt}ms: ${error instanceof Error ? error.message : 'request failed'}`);
+        // Do not silently route OTPs through a different provider when TalkSasa is configured.
+        throw new Error('TalkSasa could not accept the OTP request. Please try again shortly.');
+      }
+    }
+
+    // Use legacy providers only when TalkSasa has not been configured.
+    const failures: string[] = [];
+    const atUsername = process.env.AT_USERNAME;
+    const atApiKey = process.env.AT_API_KEY;
+    if (atUsername && atApiKey) {
+      try {
+        const form = new URLSearchParams({ username: atUsername, to: `+${to}`, message });
+        if (process.env.AT_SENDER_ID) form.set('from', process.env.AT_SENDER_ID);
+        const endpoint = atUsername === 'sandbox'
+          ? 'https://api.sandbox.africastalking.com/version1/messaging'
+          : 'https://api.africastalking.com/version1/messaging';
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          signal: AbortSignal.timeout(8000),
+          headers: { apiKey: atApiKey, Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: form,
+        });
+        const raw = await response.text();
+        let result: any = {};
+        try { result = raw ? JSON.parse(raw) : {}; } catch { result = {}; }
+        const recipients = result?.SMSMessageData?.Recipients;
+        if (response.ok && Array.isArray(recipients) && recipients.length &&
+            recipients.every((r: any) => Number(r.statusCode) === 101)) return;
+        const detail = String(result?.SMSMessageData?.Message ?? result?.message ?? raw ?? '').slice(0, 140);
+        failures.push(`Africa's Talking HTTP ${response.status}${detail ? `: ${detail}` : ''}`);
+      } catch (error) {
+        failures.push(`Africa's Talking: ${error instanceof Error ? error.message : 'request failed'}`);
+      }
+    }
+    const sid = process.env.TWILIO_ACCOUNT_SID;
+    const auth = process.env.TWILIO_AUTH_TOKEN;
+    const from = process.env.TWILIO_FROM || process.env.TWILIO_FROM_NUMBER;
+    if (sid && auth && from) {
+      try {
+        const form = new URLSearchParams({ To: `+${to}`, From: from, Body: message });
+        const response = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`, {
+          method: 'POST',
+          signal: AbortSignal.timeout(8000),
+          headers: {
+            Authorization: `Basic ${Buffer.from(`${sid}:${auth}`).toString('base64')}`,
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: form,
+        });
+        if (response.ok) return;
+        failures.push(`Twilio HTTP ${response.status}`);
+      } catch (error) {
+        failures.push(`Twilio: ${error instanceof Error ? error.message : 'request failed'}`);
+      }
+    }
+    if (!atUsername && !sid) {
+      if (process.env.NODE_ENV !== 'production') return;
+      throw new Error('No SMS provider credentials are configured');
+    }
+    throw new Error(failures.join(' | ') || 'All configured SMS providers failed');
+  }
+
+  @Post('register')
+  async register(@Body() body: { accountType?: string; businessName?: string; storeName?: string; storeLocation?: string; houseName?: string; floor?: string; houseNumber?: string; websiteUrl?: string; kraPin?: string; legalName?: string; businessEmail?: string; fullName?: string; phone?: string; email?: string; password?: string; nationalId?: string; idPhotoData?: string; passportPhotoData?: string; referralCode?: string }, @Req() req: any) {
+    const registrationStartedAt = Date.now();
+    console.info('[SWASS][OTP_DIAG] Signup registration request received');
+    if (body?.accountType === 'cashier') throw new BadRequestException('Staff accounts can only be created by accepting an email invitation from the shop owner.');
+    const role = 'owner';
+    const invitationId: string | null = null;
+    let businessName = body?.businessName?.trim() || '';
+    let storeName = (body?.storeName || body?.businessName)?.trim() || '';
+    let storeLocation = body?.storeLocation?.trim() || null;
+    const houseName=body?.houseName?.trim()||null; const floor=body?.floor?.trim()||null; const houseNumber=body?.houseNumber?.trim()||null; const websiteUrl=body?.websiteUrl?.trim()||null; const kraPin=body?.kraPin?.trim()||null; const legalName=body?.legalName?.trim()||null; const businessEmail=body?.businessEmail?.trim().toLowerCase()||null;
+    if(legalName && legalName.length>160) throw new BadRequestException('Legal entity name is too long');
+    if(businessEmail && (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(businessEmail)||businessEmail.length>254)) throw new BadRequestException('Enter a valid business email address');
+    if(websiteUrl && (websiteUrl.length>255 || !/^https?:\/\//i.test(websiteUrl))) throw new BadRequestException('Enter a valid website URL beginning with http:// or https://');
+    if(kraPin && kraPin.length>40) throw new BadRequestException('KRA PIN is too long');
+    const fullName = body?.fullName?.trim();
+    const email = body?.email?.trim().toLowerCase() || null;
+    const password = body?.password || '';
+    const nationalId = String(body?.nationalId || '').replace(/\s+/g, '');
+    const idPhotoData = String(body?.idPhotoData || '');
+    const passportPhotoData = String(body?.passportPhotoData || '');
+    if (!businessName || businessName.length > 120 || !storeName || storeName.length > 120 || !fullName || fullName.length > 120) {
+      throw new BadRequestException('Enter your shop name and full name (maximum 120 characters each).');
+    }
+    if (!storeLocation || storeLocation.length > 200) throw new BadRequestException('Enter your business location (maximum 200 characters).');
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) throw new BadRequestException('Enter a valid email address.');
+    if (!/^[0-9]{7,9}$/.test(nationalId)) throw new BadRequestException('Enter a valid Kenyan National ID number.');
+    // Owner photos are optional at signup. Older clients may still submit them,
+    // so validate them when present; new accounts can add business imagery later
+    // from Shop > Profile without blocking account creation.
+    const validPhoto = (value: string) => /^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(value) && value.length <= 3500000;
+    if ((idPhotoData && !validPhoto(idPhotoData)) || (passportPhotoData && !validPhoto(passportPhotoData))) {
+      throw new BadRequestException('Choose valid JPG, PNG or WebP photos when uploading optional identity photos.');
+    }
+    if (password.length < 10 || password.length > 128) throw new BadRequestException('Password must be at least 10 characters.');
+    const idSecret = process.env.SWASS_ID_SECRET;
+    if (!idSecret) throw new ServiceUnavailableException('Secure identity verification is not configured.');
+    const nationalIdHash = createHmac('sha256', idSecret).update('aurora-owner-national-id:' + nationalId).digest('hex');
+    const photoKey = createHash('sha256').update('aurora-owner-identity-photo:' + idSecret).digest();
+    const encryptIdentityPhoto = (value: string) => {
+      const iv = randomBytes(12);
+      const cipher = createCipheriv('aes-256-gcm', photoKey, iv);
+      const encrypted = Buffer.concat([cipher.update(value, 'utf8'), cipher.final()]);
+      return [iv.toString('base64'), cipher.getAuthTag().toString('base64'), encrypted.toString('base64')].join('.');
+    };
+    const encryptedIdPhotoData = encryptIdentityPhoto(idPhotoData);
+    const encryptedPassportPhotoData = encryptIdentityPhoto(passportPhotoData);
+    const phone = this.normalizePhone(body.phone || '');
+    const phoneVariants = [phone, '0' + phone.slice(3)];
+    const usedOwnerId = await this.db.pool.query(
+      `SELECT u.phone FROM aurora_owner_identity_records r JOIN users u ON u.id=r.user_id
+        WHERE r.national_id_hash=$1 LIMIT 1`, [nationalIdHash],
+    );
+    if (usedOwnerId.rowCount && !phoneVariants.includes(this.normalizePhone(usedOwnerId.rows[0].phone))) {
+      throw new BadRequestException('This National ID is already linked to another shop-owner account.');
+    }
+    const referralCode = String(body.referralCode || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 20) || null;
+    const ip = String(req.ip ?? '').replace(/^::ffff:/, '') || null;
+
+    // Run independent database checks and password hashing together to shorten signup time.
+    const checksStartedAt = Date.now();
+    const [existing, limits, passwordHash] = await Promise.all([
+      this.db.pool.query(`SELECT 1 FROM users u LEFT JOIN tenants t ON t.id=u.tenant_id
+        WHERE u.is_active=true
+          AND (u.phone = ANY($1::text[]) OR regexp_replace(u.phone, '[^0-9]', '', 'g') = ANY($1::text[]))
+          AND (u.role <> 'owner' OR COALESCE(t.status,'active')='active') LIMIT 1`, [phoneVariants]),
+      this.db.pool.query(
+        `SELECT
+          (SELECT count(*)::int FROM signup_otp_requests WHERE phone=$1 AND created_at>now()-interval '15 minutes') AS phone_count,
+          (SELECT count(*)::int FROM signup_otp_requests WHERE ip_address=$2::inet AND created_at>now()-interval '15 minutes') AS ip_count`,
+        [phone, ip],
+      ),
+      argon2.hash(password),
+    ]);
+    console.info(`[SWASS][OTP_DIAG] Signup validation, database checks and password hash completed in ${Date.now() - checksStartedAt}ms`);
+    if (existing.rowCount) throw new UnauthorizedException('This phone number is already registered. Sign in or use another number.');
+    if (limits.rows[0].phone_count >= 3 || limits.rows[0].ip_count >= 10) {
+      throw new BadRequestException('Too many OTP requests. Please wait 15 minutes before trying again.');
+    }
+    const code = String(randomBytes(4).readUInt32BE(0) % 1000000).padStart(6, '0');
+    const saveOtpStartedAt = Date.now();
+    await this.db.pool.query(
+      `UPDATE signup_otp_requests SET expires_at=now()
+       WHERE phone=$1 AND verified_at IS NULL AND consumed_at IS NULL AND expires_at>now()`,
+      [phone],
+    );
+    const saved = await this.db.pool.query(
+      `INSERT INTO signup_otp_requests
+       (phone,business_name,store_name,store_location,full_name,email,password_hash,code_hash,ip_address,expires_at,role,invitation_id,house_name,floor,house_number,website_url,kra_pin,legal_name,business_email,referral_code,national_id_hash,id_photo_data,passport_photo_data)
+       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9::inet,now()+interval '5 minutes',$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22) RETURNING id`,
+      [phone,businessName,storeName,storeLocation,fullName,email,passwordHash,this.signupCodeHash(code),ip,role,invitationId,houseName,floor,houseNumber,websiteUrl,kraPin,legalName,businessEmail,referralCode,nationalIdHash,encryptedIdPhotoData,encryptedPassportPhotoData],
+    );
+    console.info(`[SWASS][OTP_DIAG] OTP record saved in ${Date.now() - saveOtpStartedAt}ms; starting SMS provider request`);
+    try {
+      await this.sendSignupSms(phone, `Your SWASS signup verification code is ${code}. It expires in 5 minutes. Do not share this code.`);
+      console.info(`[SWASS][OTP_DIAG] SMS provider accepted signup OTP; total registration duration ${Date.now() - registrationStartedAt}ms`);
+    } catch (error) {
+      await this.db.pool.query('UPDATE signup_otp_requests SET expires_at=now() WHERE id=$1', [saved.rows[0].id]);
+      const reason = (error instanceof Error ? error.message : 'SMS provider error').replace(/[\\r\\n]+/g, ' ').slice(0, 220);
+      console.error(`[SWASS][OTP_DIAG] Signup OTP delivery failed after ${Date.now() - registrationStartedAt}ms:`, reason);
+      throw new ServiceUnavailableException(`We could not send your verification code. SMS gateway response: ${reason}`);
+    }
+    return process.env.NODE_ENV === 'production'
+      ? { otpRequired: true, expiresInSeconds: 300, message: 'A 6-digit verification code has been sent to your phone.' }
+      : { otpRequired: true, expiresInSeconds: 300, message: 'A 6-digit verification code has been sent to your phone.', developmentCode: code };
+  }
+
+  @Post('register/verify-otp')
+  async verifySignupOtp(@Body() body: { phone?: string; code?: string }, @Req() req: any) {
+    if (!body?.phone || !/^\d{6}$/.test(String(body?.code ?? '').trim())) {
+      throw new BadRequestException('Enter your phone number and the 6-digit code sent by SMS.');
+    }
+    const phone = this.normalizePhone(body.phone);
+    const phoneVariants = [phone, '0' + phone.slice(3)];
+    const code = String(body.code).trim();
+    const pending = await this.db.pool.query(
+      `SELECT * FROM signup_otp_requests
+       WHERE phone=$1 AND verified_at IS NULL AND consumed_at IS NULL AND expires_at>now()
+       ORDER BY created_at DESC LIMIT 1`,
+      [phone],
+    );
+    const row = pending.rows[0];
+    if (!row || Number(row.attempts) >= 5) throw new BadRequestException('Code is invalid or expired. Request a new code.');
+    const supplied = Buffer.from(this.signupCodeHash(code), 'hex');
+    const expected = Buffer.from(row.code_hash, 'hex');
+    if (supplied.length !== expected.length || !timingSafeEqual(supplied, expected)) {
+      await this.db.pool.query('UPDATE signup_otp_requests SET attempts=attempts+1 WHERE id=$1 AND attempts<5', [row.id]);
+      throw new BadRequestException('That code is incorrect. Check the SMS and try again.');
+    }
+
+    let shopWasReactivated = false;
+    try {
+      const user = await this.db.tx(async c => {
+        const locked = await c.query(
+          `SELECT * FROM signup_otp_requests
+           WHERE id=$1 AND verified_at IS NULL AND consumed_at IS NULL AND expires_at>now()
+           FOR UPDATE`, [row.id],
+        );
+        if (!locked.rowCount || Number(locked.rows[0].attempts) >= 5) throw new BadRequestException('Code is invalid or expired. Request a new code.');
+        let tenantId: string;
+        let storeId: string;
+        let inserted: any;
+        if (row.role === 'cashier') {
+          const invite = await c.query(
+            `SELECT id,tenant_id,store_id FROM staff_invitations
+              WHERE id=$1 AND accepted_by IS NULL AND revoked_at IS NULL AND expires_at>now()
+              FOR UPDATE`, [row.invitation_id],
+          );
+          if (!invite.rowCount) throw new BadRequestException('This invitation has already been used or has expired. Ask the owner for a new code.');
+          tenantId = invite.rows[0].tenant_id;
+          storeId = invite.rows[0].store_id;
+          inserted = await c.query(
+            `INSERT INTO users (tenant_id,store_id,full_name,phone,email,password_hash,role,must_change_password)
+             VALUES ($1,$2,$3,$4,$5,$6,'cashier',true) RETURNING id,tenant_id,store_id,role`,
+            [tenantId,storeId,row.full_name,phone,row.email,row.password_hash],
+          );
+          await c.query('UPDATE staff_invitations SET accepted_by=$1 WHERE id=$2', [inserted.rows[0].id,row.invitation_id]);
+        } else {
+          const previousOwner = await c.query(
+            `SELECT u.id,u.tenant_id,u.store_id,u.is_active,t.status AS tenant_status,
+                    r.national_id_hash AS stored_national_id_hash
+               FROM users u JOIN tenants t ON t.id=u.tenant_id
+               LEFT JOIN aurora_owner_identity_records r ON r.user_id=u.id
+              WHERE u.role='owner'
+                AND (u.phone = ANY($1::text[]) OR regexp_replace(u.phone, '[^0-9]', '', 'g') = ANY($1::text[]))
+              ORDER BY CASE WHEN r.national_id_hash=$2 THEN 0 ELSE 1 END,u.created_at DESC LIMIT 1 FOR UPDATE OF u,t`,
+            [phoneVariants,row.national_id_hash],
+          );
+          if (previousOwner.rowCount) {
+            const previous = previousOwner.rows[0];
+            shopWasReactivated = true;
+            if (previous.is_active && previous.tenant_status === 'active') throw new BadRequestException('This shop is already active. Please sign in instead.');
+            if (previous.stored_national_id_hash && previous.stored_national_id_hash !== row.national_id_hash) {
+              throw new BadRequestException('The National ID does not match the previous shop-owner registration.');
+            }
+            tenantId = previous.tenant_id;
+            storeId = previous.store_id;
+            await c.query(
+              `UPDATE tenants SET status='active',name=$1,phone=$2,email=$3,website_url=$4,kra_pin=$5,legal_name=$6 WHERE id=$7`,
+              [row.business_name,phone,row.business_email || row.email,row.website_url,row.kra_pin,row.legal_name,tenantId],
+            );
+            await c.query(
+              `UPDATE stores SET name=$1,location=$2,house_name=$3,floor=$4,house_number=$5 WHERE tenant_id=$6 AND id=$7`,
+              [row.store_name,row.store_location,row.house_name,row.floor,row.house_number,tenantId,storeId],
+            );
+            inserted = await c.query(
+              `UPDATE users SET full_name=$1,phone=$2,email=$3,password_hash=$4,is_active=true,national_id_number=NULL WHERE id=$5
+               RETURNING id,tenant_id,store_id,role`,
+              [row.full_name,phone,row.email,row.password_hash,previous.id],
+            );
+            await c.query(
+              `INSERT INTO aurora_owner_identity_records(user_id,national_id_hash,id_photo_data,passport_photo_data)
+               VALUES($1,$2,$3,$4)
+               ON CONFLICT (user_id) DO UPDATE SET national_id_hash=EXCLUDED.national_id_hash,
+                 id_photo_data=EXCLUDED.id_photo_data,passport_photo_data=EXCLUDED.passport_photo_data`,
+              [previous.id,row.national_id_hash,row.id_photo_data,row.passport_photo_data],
+            );
+            await c.query('INSERT INTO wallets (tenant_id) VALUES ($1) ON CONFLICT (tenant_id) DO NOTHING', [tenantId]);
+          } else {
+            const tenant = await c.query(
+              'INSERT INTO tenants (name, phone, email, website_url, kra_pin, legal_name) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id',
+              [row.business_name, phone, row.business_email || row.email, row.website_url, row.kra_pin, row.legal_name],
+            );
+            tenantId = tenant.rows[0].id;
+            const store = await c.query(
+              'INSERT INTO stores (tenant_id,name,location,house_name,floor,house_number) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id',
+              [tenantId, row.store_name, row.store_location, row.house_name, row.floor, row.house_number],
+            );
+            storeId = store.rows[0].id;
+            inserted = await c.query(
+              `INSERT INTO users (tenant_id,store_id,full_name,phone,email,password_hash,role)
+               VALUES ($1,$2,$3,$4,$5,$6,'owner') RETURNING id,tenant_id,store_id,role`,
+              [tenantId,storeId,row.full_name,phone,row.email,row.password_hash],
+            );
+            await c.query(
+              `INSERT INTO aurora_owner_identity_records(user_id,national_id_hash,id_photo_data,passport_photo_data)
+               VALUES($1,$2,$3,$4)`,
+              [inserted.rows[0].id,row.national_id_hash,row.id_photo_data,row.passport_photo_data],
+            );
+            await c.query('INSERT INTO wallets (tenant_id) VALUES ($1)', [tenantId]);
+            if (row.referral_code) {
+              const referrer = await c.query('SELECT id FROM tenants WHERE referral_code=$1 FOR UPDATE', [row.referral_code]);
+              if (referrer.rowCount && referrer.rows[0].id !== tenantId) {
+                await c.query(
+                  'INSERT INTO tenant_referrals(referrer_tenant_id,referred_tenant_id,referral_code) VALUES($1,$2,$3) ON CONFLICT (referred_tenant_id) DO NOTHING',
+                  [referrer.rows[0].id, tenantId, row.referral_code],
+                );
+              }
+            }
+          }
+        }
+        // New accounts remain locked until the owner completes a paid subscription.
+        await c.query('UPDATE signup_otp_requests SET verified_at=now(),consumed_at=now() WHERE id=$1', [row.id]);
+        return inserted.rows[0];
+      });
+      if (shopWasReactivated) {
+        try { await this.db.recordSecurityEvent({ eventType: 'shop_reactivated_by_owner', severity: 'medium', outcome: 'completed', actorUserId: user.id, sourceIp: req.ip, userAgent: req.headers?.['user-agent'], metadata: { tenantId: user.tenant_id } }); }
+        catch (error) { console.warn('[AURORA_SECURITY] Shop reactivation audit failed:', error instanceof Error ? error.message : 'database error'); }
+      }
+      const payload: AuthUser = { sub: user.id, tenantId: user.tenant_id, storeId: user.store_id, role: user.role, mustChangePassword: row.role === 'cashier' };
+      // Complete account creation without waiting for the external email provider.
+      // Email verification continues independently after the account is ready.
+      if (row.email) {
+        void this.emailVerification.send(user.id, row.email, row.full_name)
+          .catch(error => console.error('[SWASS] Welcome email delivery failed:', error instanceof Error ? error.message : error));
+      }
+      return {
+        accessToken: await this.jwt.signAsync(payload, { expiresIn: '30d' }),
+        trialDays: 0, phoneVerified: true,
+        emailVerificationSent: false, emailVerificationRequired: !!row.email,
+        mustChangePassword: row.role === 'cashier',
+      };
+    } catch (err: any) {
+      if (err?.code === '23505') throw new UnauthorizedException('This phone number is already registered. Sign in or use another number.');
+      throw err;
+    }
+  }
+
+  @Post('email-verification/verify')
+  async verifyEmail(@Body() body: { token?: string }) {
+    return this.emailVerification.verify(String(body?.token ?? ''));
+  }
+
+  @Post('admin/email-verification/verify')
+  async verifyAdminEmail(@Body() body: { token?: string }) {
+    return this.emailVerification.verifyAdmin(String(body?.token ?? ''));
+  }
+
+  @Post('admin/register')
+  async adminRegister(@Body() body: { fullName?: string; nationalId?: string; email?: string; phone?: string; password?: string }) {
+    const identities = configuredAdminIdentities();
+    if (!identities.length) throw new ServiceUnavailableException('Administrator identity configuration is incomplete. Contact the platform owner.');
+    const email = String(body?.email || '').trim().toLowerCase();
+    const phone = this.normalizePhone(String(body?.phone || ''));
+    const fullName = String(body?.fullName || '').trim();
+    const nationalId = String(body?.nationalId || '').replace(/\s+/g, '');
+    const password = String(body?.password || '');
+    const identity = identities.find(x => x.phone === phone && x.emails.includes(email));
+    if (!identity) throw new UnauthorizedException('The email and phone number do not match an authorised administrator.');
+    if (!fullName || fullName.length > 120) throw new BadRequestException('Enter your full name (maximum 120 characters).');
+    if (!/^[0-9]{7,9}$/.test(nationalId)) throw new BadRequestException('Enter a valid Kenyan National ID number.');
+    if (password.length < 12 || password.length > 128) throw new BadRequestException('Admin password must be at least 12 characters.');
+    const secret = process.env.SWASS_ID_SECRET;
+    if (!secret) throw new ServiceUnavailableException('Secure identity verification is not configured.');
+    const nationalIdHash = createHmac('sha256', secret).update('aurora-admin-national-id:' + nationalId).digest('hex');
+    // An authorised administrator may already have a shop-owner account.
+    // Link that exact account; never create a duplicate user or overwrite its
+    // shop password. The admin password is stored separately on the identity record.
+    const existingUser = await this.db.pool.query(
+      `SELECT id, full_name, email, role, is_active FROM users
+       WHERE regexp_replace(phone, '[^0-9]', '', 'g') IN ($1,$2)
+       LIMIT 1`,
+      [phone, '0' + phone.slice(3)],
+    );
+    if (existingUser.rowCount) {
+      const account = existingUser.rows[0];
+      if (!['owner','manager'].includes(account.role) || !account.is_active) {
+        throw new UnauthorizedException('This authorised phone is linked to an inactive account or an unsupported account type. Contact platform support.');
+      }
+      // Admin email is an independently approved identity alias. Do not require
+      // it to match, or overwrite, the existing shop owner's login email.
+    }
+    const duplicate = await this.db.pool.query(
+      `SELECT 1 FROM users WHERE lower(email)=$1 AND ($3::text IS NULL OR id::text<>$3)
+       UNION ALL SELECT 1 FROM aurora_admin_identity_records WHERE national_id_hash=$2 OR person_id=$4 LIMIT 1`,
+      [email, nationalIdHash, existingUser.rows[0]?.id || null, identity.personId],
+    );
+    if (duplicate.rowCount) throw new UnauthorizedException('This administrator identity or National ID is already registered.');
+    const recent = await this.db.pool.query(
+      `SELECT count(*)::int AS n FROM aurora_admin_registration_otps
+       WHERE phone=$1 AND created_at>now()-interval '15 minutes'`,
+      [phone],
+    );
+    if (Number(recent.rows[0]?.n || 0) >= 3) throw new BadRequestException('Too many registration attempts. Try again in 15 minutes.');
+    const code = String(randomBytes(4).readUInt32BE(0) % 1000000).padStart(6, '0');
+    const passwordHash = await argon2.hash(password);
+    const codeHash = createHmac('sha256', secret).update('aurora-admin-otp:' + code).digest('hex');
+    await this.db.pool.query(
+      `INSERT INTO aurora_admin_registration_otps
+       (person_id,full_name,email,phone,national_id_hash,password_hash,code_hash,expires_at)
+       VALUES($1,$2,$3,$4,$5,$6,$7,now()+interval '5 minutes')`,
+      [identity.personId, fullName, email, phone, nationalIdHash, passwordHash, codeHash],
+    );
+    await this.sendSignupSms(phone, `Your AURORA administrator verification code is ${code}. It expires in 5 minutes. Do not share it.`);
+    return { otpRequired: true, expiresInSeconds: 300, message: 'A verification code has been sent to the authorised phone number.' };
+  }
+
+  @Post('admin/register/verify-otp')
+  async verifyAdminRegistration(@Body() body: { email?: string; phone?: string; code?: string }) {
+    const email = String(body?.email || '').trim().toLowerCase();
+    const phone = this.normalizePhone(String(body?.phone || ''));
+    const code = String(body?.code || '').trim();
+    if (!/^\d{6}$/.test(code)) throw new BadRequestException('Enter the six-digit verification code.');
+    const secret = process.env.SWASS_ID_SECRET;
+    if (!secret) throw new ServiceUnavailableException('Secure identity verification is not configured.');
+    const pending = await this.db.pool.query(
+      `SELECT * FROM aurora_admin_registration_otps
+       WHERE lower(email)=$1 AND phone=$2 AND consumed_at IS NULL AND expires_at>now()
+       ORDER BY created_at DESC LIMIT 1`, [email, phone],
+    );
+    const row = pending.rows[0];
+    if (!row || Number(row.attempts) >= 5) throw new BadRequestException('The code is invalid or expired. Register again.');
+    const supplied = createHmac('sha256', secret).update('aurora-admin-otp:' + code).digest('hex');
+    const a = Buffer.from(supplied, 'hex'), b = Buffer.from(row.code_hash, 'hex');
+    if (a.length !== b.length || !timingSafeEqual(a, b)) {
+      await this.db.pool.query('UPDATE aurora_admin_registration_otps SET attempts=attempts+1 WHERE id=$1 AND attempts<5', [row.id]);
+      throw new BadRequestException('That verification code is incorrect.');
+    }
+    const identities = configuredAdminIdentities();
+    const identity = identities.find(x => x.personId === row.person_id && x.phone === phone && x.emails.includes(email));
+    if (!identity) throw new UnauthorizedException('This administrator is no longer authorised.');
+    const user = await this.db.tx(async client => {
+      await client.query('SELECT pg_advisory_xact_lock(731904222)');
+      const locked = await client.query(
+        'SELECT * FROM aurora_admin_registration_otps WHERE id=$1 AND consumed_at IS NULL AND expires_at>now() FOR UPDATE', [row.id],
+      );
+      if (!locked.rowCount || Number(locked.rows[0].attempts) >= 5) throw new BadRequestException('The code is invalid or expired.');
+      const existing = await client.query(
+        `SELECT id,full_name,email,role,is_active FROM users
+         WHERE regexp_replace(phone, '[^0-9]', '', 'g') IN ($1,$2) LIMIT 1 FOR UPDATE`,
+        [phone, '0' + phone.slice(3)],
+      );
+      let adminUser;
+      if (existing.rowCount) {
+        const account = existing.rows[0];
+        if (!['owner','manager'].includes(account.role) || !account.is_active) {
+          throw new UnauthorizedException('The authorised phone is linked to an inactive account or an unsupported account type.');
+        }
+        adminUser = account;
+      } else {
+        const created = await client.query(
+          `INSERT INTO users (tenant_id,store_id,full_name,phone,email,password_hash,role)
+           VALUES(NULL,NULL,$1,$2,$3,$4,'super_admin') RETURNING id,full_name,email`,
+          [row.full_name, phone, email, row.password_hash],
+        );
+        adminUser = created.rows[0];
+      }
+      // Keep the admin contact email separate from the shop owner's account email.
+      // It must not already belong to a different platform user.
+      const emailUsed = await client.query(
+        'SELECT 1 FROM users WHERE lower(email)=$1 AND id::text<>$2 LIMIT 1',
+        [email, String(adminUser.id)],
+      );
+      if (emailUsed.rowCount) throw new UnauthorizedException('This administrator email is already attached to another account.');
+      const idExists = await client.query(
+        'SELECT 1 FROM aurora_admin_identity_records WHERE national_id_hash=$1 OR person_id=$2 OR user_id=$3 LIMIT 1',
+        [row.national_id_hash, row.person_id, adminUser.id],
+      );
+      if (idExists.rowCount) throw new UnauthorizedException('This administrator identity has already been registered.');
+      await client.query(
+        `INSERT INTO aurora_admin_identity_records
+         (person_id,user_id,national_id_hash,admin_password_hash,admin_email,admin_email_verified_at)
+         VALUES($1,$2,$3,$4,$5,NULL)`,
+        [row.person_id, adminUser.id, row.national_id_hash, row.password_hash, email],
+      );
+      await client.query('UPDATE aurora_admin_registration_otps SET consumed_at=now() WHERE id=$1', [row.id]);
+      return adminUser;
+    });
+    let emailVerificationSent = false;
+    try {
+      const emailResult = await this.emailVerification.sendAdmin(identity.personId, email, user.full_name);
+      emailVerificationSent = Boolean(emailResult?.sent);
+    } catch (error) {
+      console.error('[AURORA] Admin verification email delivery failed:', error instanceof Error ? error.message : error);
+    }
+    return {
+      registered: true,
+      emailVerificationRequired: true,
+      emailVerificationSent,
+      message: emailVerificationSent
+        ? 'Phone verified. Check your email and verify it before signing in to the Admin Control Centre.'
+        : 'Phone verified and account created, but email verification could not be sent. The platform owner must configure or restore the email service before this account can sign in.',
+    };
+  }
+
+  @Post('admin/login')
+  async adminLogin(@Body() body: { email?: string; password?: string }, @Req() req: any) {
+    const email = String(body?.email || '').trim().toLowerCase();
+    const password = String(body?.password || '');
+    const identity = configuredAdminIdentities().find(x => x.emails.includes(email));
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !password || password.length > 128 || !identity) {
+      throw new UnauthorizedException('Invalid administrator email or password.');
+    }
+    const found = await this.db.pool.query(
+      `SELECT u.id,u.full_name,r.admin_email,r.admin_password_hash AS password_hash,
+              u.is_active,r.admin_email_verified_at
+         FROM users u JOIN aurora_admin_identity_records r ON r.user_id=u.id
+        WHERE r.person_id=$1 AND lower(r.admin_email)=$2 LIMIT 1`, [identity.personId, email],
+    );
+    const account = found.rows[0];
+    let passwordOk = false;
+    if (account?.password_hash) {
+      try { passwordOk = await argon2.verify(account.password_hash, password); } catch { passwordOk = false; }
+    }
+    if (!account || !account.admin_email_verified_at || !passwordOk) {
+      await this.recordLoginSecurity(req, 'admin_login_failed', 'failed', account?.id || null);
+      throw new UnauthorizedException('Invalid administrator email or password, or administrator email verification is still pending.');
+    }
+    await this.recordLoginSecurity(req, 'admin_login_success', 'success', account.id);
+    const payload: AuthUser & { adminEmail: string; adminPersonId: string } = {
+      sub: account.id, tenantId: null, storeId: null, role: 'super_admin',
+      fullName: account.full_name, adminEmail: email, adminPersonId: identity.personId,
+    };
+    return {
+      accessToken: await this.jwt.signAsync(payload, { expiresIn: '8h' }),
+      user: { fullName: account.full_name, role: 'super_admin', email },
+    };
+  }
+
+  @Post('bootstrap-admin')
+  async bootstrapAdmin(@Req() req: any, @Body() body: { fullName?: string; phone?: string; email?: string; password?: string }) {
+    const configured = process.env.SWASS_ADMIN_BOOTSTRAP_TOKEN ?? '';
+    const supplied = String(req.headers['x-swass-bootstrap-token'] ?? '');
+    if (!configured || !supplied || supplied.length > 256 ||
+        !timingSafeEqual(createHash('sha256').update(configured).digest(), createHash('sha256').update(supplied).digest())) {
+      throw new UnauthorizedException('Admin bootstrap is not authorized');
+    }
+    const fullName = body?.fullName?.trim();
+    const phone = this.normalizePhone(body?.phone || '');
+    const email = body?.email?.trim().toLowerCase() || null;
+    const password = body?.password || '';
+    if (!fullName || fullName.length > 120) throw new UnauthorizedException('Enter a valid administrator name');
+    if (email && (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254)) throw new UnauthorizedException('Enter a valid email address');
+    if (password.length < 12 || password.length > 128) throw new UnauthorizedException('Administrator password must be at least 12 characters');
+    const passwordHash = await argon2.hash(password);
+    const admin = await this.db.tx(async client => {
+      await client.query('SELECT pg_advisory_xact_lock(731904221)');
+      const existing = await client.query("SELECT id FROM users WHERE role='super_admin' LIMIT 1");
+      if (existing.rowCount) throw new UnauthorizedException('A company administrator is already configured');
+      const inserted = await client.query(
+        "INSERT INTO users (tenant_id,store_id,full_name,phone,email,password_hash,role) VALUES (NULL,NULL,$1,$2,$3,$4,'super_admin') RETURNING id,role",
+        [fullName, phone, email, passwordHash],
+      );
+      return inserted.rows[0];
+    });
+    return { created: true, role: admin.role, message: 'Company administrator created. Sign in using the normal login endpoint.' };
+  }
+
+
+  private passwordResetCodeHash(code: string): string {
+    const secret = process.env.SWASS_ID_SECRET;
+    if (!secret) throw new Error('SWASS_ID_SECRET is required');
+    return createHmac('sha256', secret).update(`password-reset:${code}`).digest('hex');
+  }
+
+  @Post('password-reset/request')
+  async requestPasswordReset(@Body() body: { phone?: string; accountType?: string }) {
+    const phone = this.normalizePhone(String(body?.phone ?? ''));
+    const generic = { message: 'If an account matches that phone number, a password reset code has been sent.' };
+    const found = await this.db.pool.query(
+      `SELECT id FROM users
+         WHERE regexp_replace(phone, '[^0-9]', '', 'g') IN ($1,$2)
+           AND is_active=true
+           AND (
+             $3::text IS NULL
+             OR ($3='freelancer' AND (
+               role='freelancer'
+               OR (role='cashier' AND lower(coalesce(staff_title,''))='freelancer')
+             ))
+           )
+         LIMIT 1`,
+      [phone, '0' + phone.slice(3), body?.accountType === 'freelancer' ? 'freelancer' : null],
+    );
+    console.info(`[AURORA] Password-reset lookup: matched=${Boolean(found.rowCount)}, accountType=${body?.accountType === 'freelancer' ? 'freelancer' : 'general'}`);
+    if (!found.rowCount) return generic;
+    const userId = found.rows[0].id;
+    const recent = await this.db.pool.query(
+      `SELECT count(*)::int AS n FROM password_reset_requests
+       WHERE user_id=$1 AND created_at>now()-interval '15 minutes'`, [userId],
+    );
+    if (Number(recent.rows[0].n) >= 4) {
+      throw new BadRequestException('Too many reset requests. Please wait 15 minutes and try again.');
+    }
+    const code = String(randomBytes(4).readUInt32BE(0) % 1000000).padStart(6, '0');
+    await this.db.pool.query(
+      `UPDATE password_reset_requests SET used_at=now()
+       WHERE user_id=$1 AND used_at IS NULL AND expires_at>now()`, [userId],
+    );
+    const saved = await this.db.pool.query(
+      `INSERT INTO password_reset_requests(user_id,phone,code_hash,expires_at)
+       VALUES($1,$2,$3,now()+interval '5 minutes') RETURNING id`,
+      [userId, phone, this.passwordResetCodeHash(code)],
+    );
+    try {
+      await this.sendSignupSms(phone, `Your SWASS password reset code is ${code}. It expires in 5 minutes. Do not share this code.`);
+    } catch (error) {
+      await this.db.pool.query('UPDATE password_reset_requests SET expires_at=now() WHERE id=$1', [saved.rows[0].id]);
+      const reason = (error instanceof Error ? error.message : 'SMS provider error').replace(/[\\r\\n]+/g, ' ').slice(0, 180);
+      console.error('[AURORA] Freelancer password-reset SMS delivery failed:', reason);
+      throw new ServiceUnavailableException('The SMS gateway could not send your reset code. Please check the phone number and try again, or contact support.');
+    }
+    return generic;
+  }
+
+  @Post('password-reset/confirm')
+  async confirmPasswordReset(@Body() body: { phone?: string; code?: string; newPassword?: string; accountType?: string }) {
+    const phone = this.normalizePhone(String(body?.phone ?? ''));
+    const code = String(body?.code ?? '').trim();
+    const newPassword = String(body?.newPassword ?? '');
+    if (!/^\d{6}$/.test(code)) throw new BadRequestException('Enter the six-digit reset code.');
+    if (newPassword.length < 10 || newPassword.length > 128) {
+      throw new BadRequestException('New password must be at least 10 characters.');
+    }
+    const pending = await this.db.pool.query(
+      `SELECT pr.id,pr.user_id,pr.code_hash,pr.attempts
+       FROM password_reset_requests pr JOIN users u ON u.id=pr.user_id
+       WHERE pr.phone=$1 AND pr.used_at IS NULL AND pr.expires_at>now() AND u.is_active=true
+         AND (
+           $2::text IS NULL
+           OR ($2='freelancer' AND (
+             u.role='freelancer'
+             OR (u.role='cashier' AND lower(coalesce(u.staff_title,''))='freelancer')
+           ))
+         )
+       ORDER BY pr.created_at DESC LIMIT 1`,
+      [phone, body?.accountType === 'freelancer' ? 'freelancer' : null],
+    );
+    const row = pending.rows[0];
+    if (!row || Number(row.attempts) >= 5) throw new BadRequestException('Reset code is invalid or expired. Request a new code.');
+    const supplied = Buffer.from(this.passwordResetCodeHash(code), 'hex');
+    const expected = Buffer.from(row.code_hash, 'hex');
+    if (supplied.length !== expected.length || !timingSafeEqual(supplied, expected)) {
+      await this.db.pool.query('UPDATE password_reset_requests SET attempts=attempts+1 WHERE id=$1 AND attempts<5', [row.id]);
+      throw new BadRequestException('That reset code is incorrect. Try again.');
+    }
+    const passwordHash = await argon2.hash(newPassword);
+    await this.db.tx(async c => {
+      const locked = await c.query(
+        `SELECT id FROM password_reset_requests
+         WHERE id=$1 AND used_at IS NULL AND expires_at>now() AND attempts<5 FOR UPDATE`, [row.id],
+      );
+      if (!locked.rowCount) throw new BadRequestException('Reset code has expired. Request a new one.');
+      await c.query('UPDATE users SET password_hash=$1 WHERE id=$2', [passwordHash, row.user_id]);
+      await c.query('UPDATE password_reset_requests SET used_at=now() WHERE id=$1', [row.id]);
+      await c.query(
+        'UPDATE password_reset_requests SET used_at=now() WHERE user_id=$1 AND id<>$2 AND used_at IS NULL',
+        [row.user_id, row.id],
+      );
+    });
+    return { reset: true, message: 'Password updated. You can now sign in with your new password.' };
+  }
+
+  @Post('change-password')
+  @UseGuards(AuthGuard)
+  async changePassword(@Req() req: any, @Body() body: { newPassword?: string }) {
+    const password = String(body?.newPassword ?? '');
+    if (password.length < 10 || password.length > 128) throw new BadRequestException('New password must be at least 10 characters.');
+    const hash = await argon2.hash(password);
+    await this.db.pool.query('UPDATE users SET password_hash=$1,must_change_password=false WHERE id=$2', [hash, req.user.sub]);
+    return { changed: true, message: 'Your password has been created. Please sign in again using it.' };
+  }
+
+  @Post('customer/register')
+  async registerCustomer(@Body() body: { fullName?: string; phone?: string; email?: string; password?: string; nationalId?: string; referralCode?: string }, @Req() req: any) {
+    const fullName = String(body?.fullName ?? '').trim();
+    const phone = this.normalizePhone(String(body?.phone ?? ''));
+    const email = String(body?.email ?? '').trim().toLowerCase() || null;
+    const password = String(body?.password ?? '');
+    const nationalId = String(body?.nationalId || '').replace(/\s+/g, '');
+    const referralCode = String(body?.referralCode ?? '').trim().toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,20) || null;
+    if (!fullName || fullName.length > 120) throw new BadRequestException('Enter your full name (maximum 120 characters).');
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) throw new BadRequestException('Enter a valid email address.');
+    if (!/^[0-9]{7,9}$/.test(nationalId)) throw new BadRequestException('Enter a valid Kenyan National ID number.');
+    if (password.length < 10 || password.length > 128) throw new BadRequestException('Password must be at least 10 characters.');
+    const idSecret = process.env.SWASS_ID_SECRET;
+    if (!idSecret) throw new ServiceUnavailableException('Secure identity verification is not configured.');
+    const nationalIdHash = createHmac('sha256', idSecret).update('aurora-customer-national-id:' + nationalId).digest('hex');
+    const usedCustomerId = await this.db.pool.query('SELECT 1 FROM customer_accounts WHERE national_id_hash=$1 AND is_active=true LIMIT 1', [nationalIdHash]);
+    if (usedCustomerId.rowCount) throw new BadRequestException('This National ID is already linked to a customer account.');
+    const existing = await this.db.pool.query('SELECT 1 FROM customer_accounts WHERE phone=$1 AND is_active=true LIMIT 1', [phone]);
+    if (existing.rowCount) throw new BadRequestException('A customer account already exists for this phone. Please sign in.');
+    const limits = await this.db.pool.query(
+      `SELECT count(*)::int AS n FROM customer_signup_otp_requests WHERE phone=$1 AND created_at>now()-interval '15 minutes'`,
+      [phone],
+    );
+    if (Number(limits.rows[0]?.n ?? 0) >= 3) throw new BadRequestException('Too many verification requests. Please wait 15 minutes.');
+    const passwordHash = await argon2.hash(password);
+    const code = String(randomBytes(4).readUInt32BE(0) % 1000000).padStart(6, '0');
+    await this.db.pool.query(
+      `UPDATE customer_signup_otp_requests SET expires_at=now() WHERE phone=$1 AND consumed_at IS NULL AND expires_at>now()`, [phone],
+    );
+    const saved = await this.db.pool.query(
+      `INSERT INTO customer_signup_otp_requests(phone,full_name,email,password_hash,code_hash,expires_at,referral_code,national_id_hash)
+       VALUES($1,$2,$3,$4,$5,now()+interval '5 minutes',$6,$7) RETURNING id`,
+      [phone,fullName,email,passwordHash,this.signupCodeHash(code),referralCode,nationalIdHash],
+    );
+    try {
+      await this.sendSignupSms(phone, `Your AURORA customer verification code is ${code}. It expires in 5 minutes. Do not share this code.`);
+    } catch (error) {
+      await this.db.pool.query('UPDATE customer_signup_otp_requests SET expires_at=now() WHERE id=$1', [saved.rows[0].id]);
+      const reason = (error instanceof Error ? error.message : 'Unknown SMS provider error').replace(/[\\r\\n]+/g, ' ').slice(0, 220);
+      console.error('[AURORA] Customer signup SMS delivery failed:', reason);
+      throw new ServiceUnavailableException(`We could not send your verification code. SMS gateway response: ${reason}`);
+    }
+    return process.env.NODE_ENV === 'production'
+      ? { otpRequired: true, expiresInSeconds: 300, message: 'A verification code has been sent to your phone.' }
+      : { otpRequired: true, expiresInSeconds: 300, developmentCode: code };
+  }
+
+  @Post('customer/register/verify-otp')
+  async verifyCustomerSignupOtp(@Body() body: { phone?: string; code?: string }) {
+    if (!body?.phone || !/^\d{6}$/.test(String(body?.code ?? '').trim())) throw new BadRequestException('Enter your phone number and the six-digit code.');
+    const phone = this.normalizePhone(body.phone);
+    const pending = await this.db.pool.query(
+      `SELECT * FROM customer_signup_otp_requests WHERE phone=$1 AND consumed_at IS NULL AND expires_at>now()
+       ORDER BY created_at DESC LIMIT 1`, [phone],
+    );
+    const row = pending.rows[0];
+    if (!row || Number(row.attempts) >= 5) throw new BadRequestException('Code is invalid or expired. Request a new code.');
+    const supplied = Buffer.from(this.signupCodeHash(String(body.code).trim()), 'hex');
+    const expected = Buffer.from(row.code_hash, 'hex');
+    if (supplied.length !== expected.length || !timingSafeEqual(supplied, expected)) {
+      await this.db.pool.query('UPDATE customer_signup_otp_requests SET attempts=attempts+1 WHERE id=$1 AND attempts<5', [row.id]);
+      throw new BadRequestException('That code is incorrect. Check the SMS and try again.');
+    }
+    const account = await this.db.tx(async c => {
+      const locked = await c.query(
+        `SELECT * FROM customer_signup_otp_requests WHERE id=$1 AND consumed_at IS NULL AND expires_at>now() AND attempts<5 FOR UPDATE`, [row.id],
+      );
+      if (!locked.rowCount) throw new BadRequestException('Code has expired. Request a new one.');
+      const created = await c.query(
+        `INSERT INTO customer_accounts(full_name,phone,email,password_hash,referral_code,national_id_hash)
+         VALUES($1,$2,$3,$4,$5,$6) RETURNING id,full_name,phone,email`,
+        [row.full_name,row.phone,row.email,row.password_hash,randomBytes(6).toString('hex').toUpperCase(),row.national_id_hash],
+      );
+      if(row.referral_code){
+        const referrer=await c.query('SELECT id FROM customer_accounts WHERE referral_code=$1 FOR UPDATE',[row.referral_code]);
+        if(referrer.rowCount && referrer.rows[0].id!==created.rows[0].id){
+          await c.query('INSERT INTO customer_referrals(referrer_customer_id,referred_customer_id,referral_code) VALUES($1,$2,$3) ON CONFLICT(referred_customer_id) DO NOTHING',[referrer.rows[0].id,created.rows[0].id,row.referral_code]);
+        }
+      }
+      await c.query('UPDATE customer_signup_otp_requests SET consumed_at=now() WHERE id=$1', [row.id]);
+      return created.rows[0];
+    });
+    const payload: AuthUser = { sub: account.id, tenantId: null, storeId: null, role: 'customer', fullName: account.full_name };
+    return { accessToken: await this.jwt.signAsync(payload, { expiresIn: '30d' }), phoneVerified: true, user: { fullName: account.full_name, phone: account.phone, email: account.email, role: 'customer' } };
+  }
+
+  @Post('login')
+  async login(@Body() body: { phone?: string; password?: string; accountType?: string }, @Req() req: any) {
+    const { password } = body ?? {};
+    if (!body?.phone || !password) throw new UnauthorizedException();
+    const phone = this.normalizePhone(body.phone);
+
+    if (body.accountType === 'customer') {
+      const customer = await this.db.pool.query(
+        `SELECT id,full_name,phone,email,password_hash,is_active FROM customer_accounts WHERE phone=$1 LIMIT 1`, [phone],
+      );
+      const account = customer.rows[0];
+      let passwordOk = false;
+      if (account?.password_hash) {
+        try { passwordOk = await argon2.verify(account.password_hash, password); } catch { passwordOk = false; }
+      }
+      if (!account || !account.is_active || !passwordOk) { await this.recordLoginSecurity(req, 'login_failed', 'failed'); throw new UnauthorizedException('Invalid customer phone number or password.'); }
+      await this.recordLoginSecurity(req, 'login_success', 'success', account.id);
+      const payload: AuthUser = { sub: account.id, tenantId: null, storeId: null, role: 'customer', fullName: account.full_name };
+      return { accessToken: await this.jwt.signAsync(payload, { expiresIn: '30d' }), user: { fullName: account.full_name, phone: account.phone, email: account.email, role: 'customer' } };
+    }
+
+    const localPhone = '0' + phone.slice(3);
+    const phoneVariants = [phone, localPhone];
+    const requestedType = body.accountType === 'freelancer' ? 'freelancer' : body.accountType === 'staff' ? 'staff' : 'owner';
+    const { rows } = await this.db.pool.query(
+      `SELECT u.id, u.tenant_id, u.store_id, u.role, u.full_name, u.staff_title, u.profile_photo_data, u.password_hash, u.is_active, u.must_change_password, t.status AS tenant_status
+         FROM users u LEFT JOIN tenants t ON t.id = u.tenant_id
+        WHERE u.is_active=true
+          AND (u.phone = ANY($1::text[])
+           OR regexp_replace(u.phone, '[^0-9]', '', 'g') = ANY($1::text[]))
+          AND CASE
+            WHEN $3='freelancer' THEN u.role='freelancer'
+            WHEN $3='staff' THEN u.role IN ('cashier','vendor','freelancer')
+            ELSE u.role IN ('owner','manager')
+          END
+        ORDER BY CASE WHEN u.phone = $2 THEN 0 ELSE 1 END
+        LIMIT 1`,
+      [phoneVariants, phone, requestedType],
+    );
+    let u = rows[0];
+    // Same error for unknown phone, wrong password or disabled account.
+    let passwordOk = false;
+    if (u?.password_hash) {
+      try { passwordOk = await argon2.verify(u.password_hash, password); } catch { passwordOk = false; }
+    }
+    // Repair older freelancer records that were created with the shop owner's
+    // same phone but were not assigned a tenant/store. Never guess if the
+    // number is linked to more than one active shop.
+    if (u && passwordOk && u.role === 'freelancer' && (!u.tenant_id || !u.store_id)) {
+      const linkedShop = await this.db.pool.query(
+        `SELECT DISTINCT owner.tenant_id,owner.store_id,t.status AS tenant_status
+           FROM users owner JOIN tenants t ON t.id=owner.tenant_id
+          WHERE owner.role='owner' AND owner.is_active=true AND owner.store_id IS NOT NULL
+            AND COALESCE(t.status,'active')='active'
+            AND (owner.phone = ANY($1::text[]) OR regexp_replace(coalesce(owner.phone,''),'[^0-9]','','g') = ANY($1::text[])
+              OR regexp_replace(coalesce(t.phone,''),'[^0-9]','','g') = ANY($1::text[]))
+          ORDER BY owner.tenant_id,owner.store_id LIMIT 2`, [phoneVariants],
+      );
+      if (linkedShop.rowCount === 1) {
+        const repaired = await this.db.pool.query(
+          `UPDATE users SET tenant_id=$1,store_id=$2
+            WHERE id=$3 AND role='freelancer' AND (tenant_id IS NULL OR store_id IS NULL)
+            RETURNING tenant_id,store_id`,
+          [linkedShop.rows[0].tenant_id,linkedShop.rows[0].store_id,u.id],
+        );
+        if (repaired.rowCount) {
+          u.tenant_id = repaired.rows[0].tenant_id;
+          u.store_id = repaired.rows[0].store_id;
+          u.tenant_status = linkedShop.rows[0].tenant_status;
+        }
+      }
+    }
+    const tenantIsUsable = !u?.tenant_id || u.tenant_status === 'active';
+    const ok = u && u.is_active && tenantIsUsable && passwordOk;
+    const roleMatches = requestedType === 'freelancer' ? u?.role === 'freelancer' : requestedType === 'staff' ? ['cashier','vendor','freelancer'].includes(u?.role) : ['owner','manager'].includes(u?.role);
+    if (!ok || !roleMatches) { await this.recordLoginSecurity(req, 'login_failed', 'failed', u?.id || null); throw new UnauthorizedException('Invalid phone or password for this sign-in type'); }
+    await this.recordLoginSecurity(req, 'login_success', 'success', u.id);
+
+    const payload: AuthUser = { sub: u.id, tenantId: u.tenant_id, storeId: u.store_id, role: u.role, mustChangePassword: !!u.must_change_password, fullName: u.full_name };
+    return { accessToken: await this.jwt.signAsync(payload, { expiresIn: '30d' }), mustChangePassword: !!u.must_change_password, user: { fullName: u.full_name, role: u.role, staffTitle: u.staff_title, profilePhotoData: u.profile_photo_data } };
+  }
+}
