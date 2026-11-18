@@ -277,3 +277,50 @@ body.workspace-active #workspace-nav:not(.hidden) > button {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Final cascade reconciliation.
+   responsive-auth.css contains older, more-specific 430px navigation rules.
+   Override those rules here so the workspace dock matches the full responsive
+   workspace width on laptops while remaining edge-safe on phones. */
+body.workspace-active main.shell > #workspace-nav:not(.hidden),
+body.workspace-active main.shell > #workspace-nav.bottom-nav:not(.hidden) {
+  position: fixed !important;
+  left: 50% !important;
+  right: auto !important;
+  top: auto !important;
+  bottom: max(8px, env(safe-area-inset-bottom, 0px)) !important;
+  transform: translateX(-50%) !important;
+  box-sizing: border-box !important;
+  width: min(calc(100vw - 32px), 860px) !important;
+  max-width: 860px !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  z-index: 2147482000 !important;
+}
+
+body.workspace-active main.shell > #workspace-nav:not(.hidden) > button,
+body.workspace-active main.shell > #workspace-nav.bottom-nav:not(.hidden) > button {
+  position: static !important;
+  inset: auto !important;
+  display: flex !important;
+  flex: 1 1 0 !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  white-space: normal !important;
+  writing-mode: horizontal-tb !important;
+  transform: none !important;
+}
+
+@media (max-width: 520px) {
+  body.workspace-active main.shell > #workspace-nav:not(.hidden),
+  body.workspace-active main.shell > #workspace-nav.bottom-nav:not(.hidden) {
+    left: 50% !important;
+    right: auto !important;
+    width: calc(100vw - 16px) !important;
+    max-width: calc(100vw - 16px) !important;
+    transform: translateX(-50%) !important;
+  }
+}
