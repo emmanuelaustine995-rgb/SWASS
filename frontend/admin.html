@@ -160,7 +160,7 @@ body{background:#eef3fb}
 </head>
 <body>
 <section id="login-screen" class="login-screen">
-<form id="admin-login-form" class="login-card">
+<form id="admin-login-form" class="login-card" method="post" onsubmit="return false;">
 <div class="brand">AURORA E-RECEIPT</div>
 <p class="eyebrow">RESTRICTED PLATFORM ACCESS</p>
 <h1>Admin Login</h1>
@@ -841,7 +841,7 @@ body{background:#eef3fb}
   $('admin-login-form').addEventListener('submit',async e=>{
     e.preventDefault();const btn=$('admin-submit'),error=$('admin-error');btn.disabled=true;btn.textContent='VERIFYING ACCESS…';error.textContent='';
     try{
-      const res=await fetch(API+'/auth/admin/login',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({email:$('admin-email').value.trim(),password:$('admin-password').value})});
+      const res=await fetch(API+'/auth/admin/login',{method:'POST',signal:AbortSignal.timeout(150000),headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({email:$('admin-email').value.trim(),password:$('admin-password').value})});
       const data=await res.json().catch(()=>({}));if(!res.ok)throw new Error(data.message||'Administrator sign-in failed.');
       token=data.accessToken;sessionStorage.setItem('aurora-admin-token',token);$('admin-welcome').textContent='Welcome, '+(data.user?.fullName||'Administrator');showApp();
     }catch(err){error.textContent=err.message||'Unable to sign in.';}
