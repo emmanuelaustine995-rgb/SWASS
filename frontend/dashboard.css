@@ -3972,3 +3972,36 @@ body.dashboard-dark .maintenance-request-form textarea{background:#102131;border
 @keyframes maintenance-red-alert{50%{opacity:.35}}
 @media(prefers-reduced-motion:reduce){.maintenance-wave,.maintenance-alert-light{animation:none}}
 @media(max-width:520px){.maintenance-control-room{padding:14px}.maintenance-monitor-head{align-items:flex-start}.maintenance-monitor-actions{gap:8px}.maintenance-monitor-readings{gap:16px}.maintenance-monitor-readings strong{font-size:17px}}
+
+
+/* Platform Admin control centre stays phone-width on desktop and fluid on mobile. */
+html body.workspace-active #platform-referral-admin:not(.hidden){
+  width:min(100%,430px)!important;
+  max-width:430px!important;
+  margin:0 auto!important;
+  box-sizing:border-box!important;
+}
+html body.workspace-active #platform-security-panel:not(.hidden){
+  display:block!important;
+  width:100%!important;
+  max-width:430px!important;
+  margin:0 auto!important;
+  box-sizing:border-box!important;
+}
+#platform-referral-admin,
+#platform-referral-admin *,
+#platform-security-panel,
+#platform-security-panel *{min-width:0;box-sizing:border-box}
+#platform-security-panel .section-head{align-items:flex-start;flex-direction:column;gap:8px}
+#platform-security-panel .maintenance-control-room,
+#platform-security-panel .maintenance-request-form,
+#platform-security-panel .maintenance-result{width:100%;max-width:100%}
+#platform-security-panel .maintenance-monitor-head{align-items:flex-start;flex-wrap:wrap}
+#platform-security-panel .maintenance-monitor-status{overflow-wrap:anywhere}
+#platform-security-panel .maintenance-submit-row{align-items:flex-start}
+#platform-security-panel .maintenance-submit-row #maintenance-request-status{min-width:0;overflow-wrap:anywhere}
+@media(max-width:520px){
+  html body.workspace-active #platform-referral-admin:not(.hidden){width:100%!important;max-width:430px!important;padding:12px!important}
+  #platform-security-panel .maintenance-submit-row{flex-direction:column}
+  #platform-security-panel .maintenance-submit-row .btn{width:100%}
+}
