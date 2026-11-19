@@ -86,14 +86,25 @@ export class AiRepairController {
       throw new ServiceUnavailableException('The GitHub repair repository or base branch setting is invalid.');
     }
 
+    // Pin source reads and the eventual repair commit to the same immutable base commit.
+    const baseRef = await this.github('/repos/' + repository + '/git/ref/heads/' + baseBranch.split('/').map(encodeURIComponent).join('/'), githubToken);
+    const baseCommitSha = String(baseRef?.object?.sha || '');
+    if (!baseCommitSha) throw new ServiceUnavailableException('Could not identify the current base commit.');
+    const baseCommit = await this.github('/repos/' + repository + '/git/commits/' + baseCommitSha, githubToken);
+    const baseTreeSha = String(baseCommit?.tree?.sha || '');
+    if (!baseTreeSha) throw new ServiceUnavailableException('Could not identify the base source tree.');
+
     const allowed = repairFiles[category];
     const files: RepairFile[] = [];
     for (const path of allowed) {
-      const data = await this.github('/repos/' + repository + '/contents/' + path.split('/').map(encodeURIComponent).join('/') + '?ref=' + encodeURIComponent(baseBranch), githubToken);
+      const data = await this.github('/repos/' + repository + '/contents/' + path.split('/').map(encodeURIComponent).join('/') + '?ref=' + encodeURIComponent(baseCommitSha), githubToken);
       if (data.type !== 'file' || typeof data.content !== 'string' || data.encoding !== 'base64') continue;
       const decoded = Buffer.from(data.content.replace(/\n/g, ''), 'base64').toString('utf8');
       if (decoded.length > 45000) continue;
-      files.push({ path, content: this.redactSource(decoded), sha: data.sha });
+      const safeContent = this.redactSource(decoded);
+      // Do not ask the model to rewrite a file if source redaction would alter it.
+      if (safeContent !== decoded) continue;
+      files.push({ path, content: safeContent, sha: data.sha });
     }
     if (!files.length) throw new ServiceUnavailableException('No approved source files could be read for this repair category.');
     const sourceSize = files.reduce((sum, file) => sum + file.content.length, 0);
@@ -158,6 +169,9 @@ export class AiRepairController {
       if (!originals.has(path) || seen.has(path) || typeof content !== 'string' || content.length > 90000) {
         throw new BadRequestException('The proposed repair failed the file-scope safety check. No repository changes were made.');
       }
+      if (content === originals.get(path)?.content) {
+        throw new BadRequestException('The AI returned an unchanged file. No repository changes were made.');
+      }
       if (/-----BEGIN [A-Z ]*PRIVATE KEY-----|\bgh[pousr]_[A-Za-z0-9]{20,}|sk-[A-Za-z0-9_-]{20,}/.test(content)) {
         throw new BadRequestException('The proposed repair contained a credential-like value and was rejected.');
       }
@@ -165,13 +179,6 @@ export class AiRepairController {
       changes.push({ path, content });
     }
     if (changes.length > 4) throw new BadRequestException('The repair exceeds the maximum number of files.');
-
-    const baseRef = await this.github('/repos/' + repository + '/git/ref/heads/' + baseBranch.split('/').map(encodeURIComponent).join('/'), githubToken);
-    const baseCommitSha = String(baseRef?.object?.sha || '');
-    if (!baseCommitSha) throw new ServiceUnavailableException('Could not identify the current base commit.');
-    const baseCommit = await this.github('/repos/' + repository + '/git/commits/' + baseCommitSha, githubToken);
-    const baseTreeSha = String(baseCommit?.tree?.sha || '');
-    if (!baseTreeSha) throw new ServiceUnavailableException('Could not identify the base source tree.');
 
     const branch = 'ai-repair/' + new Date().toISOString().slice(0, 10) + '-' + randomUUID().slice(0, 8);
     const blobs: Array<{ path: string; mode: string; type: string; sha: string }> = [];
