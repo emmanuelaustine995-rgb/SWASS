@@ -1974,6 +1974,15 @@
   checkSecondhandBiometricSupport();
   $('secondhand-open-card')?.addEventListener('click',()=>{
     if(!['owner','freelancer','customer'].includes(state.role)){showNotice('This form is available to customer, shop-owner and linked freelancer accounts.',true);return;}
+    const panel=$('secondhand-panel');
+    const card=$('secondhand-open-card');
+    if(panel&&!panel.classList.contains('hidden')){
+      panel.classList.add('hidden');
+      $('receipts-home')?.classList.remove('secondhand-active');
+      card?.setAttribute('aria-expanded','false');
+      syncGlobalBackButton();
+      return;
+    }
     const isCustomer=state.role==='customer';
     $('secondhand-shop-ack-fieldset')?.classList.toggle('hidden',isCustomer);
     $('sh-shop-acknowledged').required=!isCustomer;
@@ -1983,7 +1992,8 @@
     if(copy)copy.textContent=isCustomer?'Complete your details and submit your declaration securely. It will be marked pending review.':'Complete the seller, buyer and product details before issuing the signed sales declaration.';
     $('receipts-home')?.classList.remove('hidden');
     $('receipts-home')?.classList.add('secondhand-active');
-    $('secondhand-open-card')?.classList.add('hidden');
+    $('secondhand-open-card')?.classList.remove('hidden');
+    $('secondhand-open-card')?.setAttribute('aria-expanded','true');
     $('secondhand-panel')?.classList.remove('hidden');
     if($('secondhand-form')){$('secondhand-form').hidden=true;$('secondhand-form').classList.add('hidden');$('secondhand-form').style.setProperty('display','none','important');}
     $('sh-sale-type').value='';
@@ -1997,6 +2007,7 @@
     $('receipts-home')?.classList.remove('secondhand-active');
     $('receipts-home')?.classList.remove('hidden');
     $('secondhand-open-card')?.classList.remove('hidden');
+    $('secondhand-open-card')?.setAttribute('aria-expanded','false');
     $('secondhand-history')?.classList.add('hidden');
     $('secondhand-saved-record')?.classList.add('hidden');
     syncGlobalBackButton();
