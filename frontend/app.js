@@ -471,6 +471,10 @@
         void loadSubscriptionBalance();
       }
     }else if(screen==='receipts'){
+      // Always return to the compact declaration card; open the form only after a tap.
+      receiptHome?.classList.remove('secondhand-active');
+      $('secondhand-panel')?.classList.add('hidden');
+      $('secondhand-open-card')?.setAttribute('aria-expanded','false');
       receiptHome?.classList.remove('hidden');
       const ownerHistory=$('shop-receipt-history-card');
       ownerHistory?.classList.toggle('hidden',state.role!=='owner');
