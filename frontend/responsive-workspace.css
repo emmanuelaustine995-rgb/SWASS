@@ -556,3 +556,31 @@ html body.workspace-active #shop-home > :not(.shop-section-tabs) {
 html body.workspace-active #shop-home > .shop-section-tabs {
   flex-shrink: 0 !important;
 }
+
+
+/* Native finger-swipe scrolling: no arrow controls or scrollbar interaction
+   is required. The Shop section itself is the single scroll container. */
+html body.workspace-active main.shell > #shop-home:not(.hidden) {
+  flex: 1 1 0 !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow-y: scroll !important;
+  overflow-x: hidden !important;
+  -webkit-overflow-scrolling: touch !important;
+  overscroll-behavior-y: contain !important;
+  touch-action: pan-y !important;
+  scrollbar-width: none !important;
+}
+html body.workspace-active main.shell > #shop-home:not(.hidden)::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+html body.workspace-active main.shell > #shop-home:not(.hidden) > * {
+  touch-action: pan-y !important;
+}
+html body.workspace-active main.shell > #shop-home:not(.hidden) > .shop-section-tabs {
+  position: sticky !important;
+  top: 0 !important;
+}
