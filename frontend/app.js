@@ -595,6 +595,11 @@
       else dashboardBusinessCard?.classList.add('hidden');
       if(state.role==='super_admin'){
         dashboardBusinessCard?.classList.add('hidden');
+        // Platform administration is mounted inside #pos-view. Reveal that
+        // shell for super-admins only, while keeping the ordinary POS grid
+        // hidden so no shop checkout controls are exposed on this screen.
+        pos?.classList.remove('hidden');
+        posGrid?.classList.add('hidden');
         $('platform-referral-admin')?.classList.remove('hidden');
         setPlatformAdminTab('security');
         void loadPlatformReferralAdmin();
