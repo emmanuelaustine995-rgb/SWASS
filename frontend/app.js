@@ -499,7 +499,7 @@
       inventoryPanel?.setAttribute('aria-hidden','true');
       void loadBusinessProfile().catch(err=>showNotice('Shop profile could not be loaded. '+(err.message||''),true));
       
-      const isShopOwner = ['owner','freelancer'].includes(state.role);
+      const isShopOwner = state.role === 'owner';
       $('secondhand-panel')?.classList.add('hidden');
       document.querySelector('#shop-home > .shop-directory-card')?.classList.remove('hidden');
       $('shop-register-product-card')?.classList.toggle('hidden', !isShopOwner);
@@ -1778,7 +1778,7 @@
   });
   $('shop-add-products')?.addEventListener('submit',async e=>{
     e.preventDefault();
-    if(!['owner','freelancer'].includes(state.role)){ $('shop-product-message').textContent='This account cannot add shop products.';return; }
+    if(state.role!=='owner'){ $('shop-product-message').textContent='Only the registered shop owner can add products to the public directory.';return; }
     const btn=$('shop-product-submit'),message=$('shop-product-message');
     const payload={
       name:$('shop-product-name').value.trim(),
