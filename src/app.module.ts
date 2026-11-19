@@ -24,7 +24,8 @@ import { WhatsAppReceiptService } from './notifications/whatsapp-receipt.service
 import { ReferralsController } from './referrals/referrals.controller';
 import { SecondHandPhoneDeclarationsController } from './second-hand/second-hand-declarations.controller';
 import { SecondHandSpecialRecoveryController } from './second-hand/second-hand-special-recovery.controller';
-import { LoanItemsController, LostItemsController, PublicLostItemsController } from './loans/loan-items.controller';
+import { LoanItemsController } from './loans/loan-items.controller';
+import { LostItemsController, PublicLostItemsController } from './lost-items/lost-items.controller';
 import { RepairsController } from './repairs/repairs.controller';
 
 @Module({
