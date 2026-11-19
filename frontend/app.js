@@ -274,6 +274,54 @@
     }catch(error){message.textContent=error.message||'Could not update withdrawal.';}
   }
   $('platform-referral-refresh')?.addEventListener('click',()=>void loadPlatformReferralAdmin());
+  // Platform administrator tabs: finance and the private cybersecurity workspace.
+  function setPlatformAdminTab(tab){
+    const security=tab==='security';
+    $('platform-finance-panel')?.classList.toggle('hidden',security);
+    $('platform-security-panel')?.classList.toggle('hidden',!security);
+    $('platform-finance-tab')?.classList.toggle('active',!security);
+    $('platform-security-tab')?.classList.toggle('active',security);
+    $('platform-finance-tab')?.setAttribute('aria-selected',String(!security));
+    $('platform-security-tab')?.setAttribute('aria-selected',String(security));
+  }
+  $('platform-finance-tab')?.addEventListener('click',()=>setPlatformAdminTab('finance'));
+  $('platform-security-tab')?.addEventListener('click',()=>setPlatformAdminTab('security'));
+
+  let maintenanceCategory='mpesa';
+  document.querySelectorAll('[data-maintenance-category]').forEach(button=>button.addEventListener('click',()=>{
+    maintenanceCategory=button.dataset.maintenanceCategory||'general';
+    document.querySelectorAll('[data-maintenance-category]').forEach(item=>{
+      const active=item===button;
+      item.classList.toggle('active',active);
+      item.setAttribute('aria-pressed',String(active));
+    });
+  }));
+  $('maintenance-request-form')?.addEventListener('submit',async event=>{
+    event.preventDefault();
+    if(state.role!=='super_admin')return;
+    const input=$('maintenance-instruction'),status=$('maintenance-request-status');
+    const send=$('maintenance-send'),result=$('maintenance-result');
+    const instruction=String(input?.value||'').trim();
+    if(!instruction){status.textContent='Describe the issue before sending.';input?.focus();return;}
+    if(instruction.length>2000){status.textContent='Keep the instruction under 2,000 characters.';return;}
+    send.disabled=true;send.textContent='Reviewing…';status.textContent='Preparing a secure maintenance assessment…';
+    result?.classList.add('hidden');
+    try{
+      const data=await request('/api/v1/platform-admin/ai-maintenance/diagnose',{
+        method:'POST',body:JSON.stringify({category:maintenanceCategory,instruction})
+      });
+      $('maintenance-result-answer').textContent=data.answer||'No assessment was returned.';
+      $('maintenance-result-mode').textContent='Diagnosis only';
+      $('maintenance-result-note').textContent=data.message||'No code was changed and nothing was deployed.';
+      result?.classList.remove('hidden');
+      status.textContent='Assessment ready.';
+    }catch(error){
+      status.textContent=error.message||'Could not prepare the maintenance assessment.';
+    }finally{
+      send.disabled=false;send.textContent='Send request';
+    }
+  });
+
   async function loadCustomerReferralSummary(){
     const message=$('customer-home-message'),qr=$('customer-referral-qr');
     if(!message||state.role!=='customer')return;
