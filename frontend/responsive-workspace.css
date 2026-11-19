@@ -705,18 +705,19 @@ html body.workspace-active main.shell > section:not(.hidden) summary {
   touch-action: manipulation !important;
 }
 
-/* Sales Declaration is a long form nested inside the Receipts page.
-   Give this panel its own native touch-scroll viewport so the form remains
-   reachable even while the surrounding receipt landing page is fixed. */
-html body.workspace-active #receipts-home #secondhand-panel:not(.hidden) {
+/* FINAL MOBILE SCROLL MODEL
+   Use one normal finger-swipe scroll surface for each active workspace page.
+   Long forms and cards expand naturally inside that page; no nested scroll
+   boxes, fixed-height panels, scrollbar dragging or arrow controls. */
+html body.workspace-active .shell > #receipts-home:not(.hidden),
+html body.workspace-active .shell > #shop-lost-items-panel:not(.hidden) {
   display: block !important;
   box-sizing: border-box !important;
-  position: relative !important;
-  flex: 0 0 auto !important;
+  flex: 1 1 0 !important;
   width: 100% !important;
-  height: auto !important;
+  height: 0 !important;
   min-height: 0 !important;
-  max-height: calc(100dvh - 168px) !important;
+  max-height: none !important;
   overflow-x: hidden !important;
   overflow-y: auto !important;
   -webkit-overflow-scrolling: touch !important;
@@ -725,20 +726,64 @@ html body.workspace-active #receipts-home #secondhand-panel:not(.hidden) {
   scrollbar-width: none !important;
   padding-bottom: calc(28px + env(safe-area-inset-bottom)) !important;
 }
-html body.workspace-active #receipts-home #secondhand-panel:not(.hidden)::-webkit-scrollbar {
+html body.workspace-active .shell > #receipts-home:not(.hidden)::-webkit-scrollbar,
+html body.workspace-active .shell > #shop-lost-items-panel:not(.hidden)::-webkit-scrollbar {
   display: none !important;
   width: 0 !important;
   height: 0 !important;
 }
-html body.workspace-active #receipts-home #secondhand-panel:not(.hidden) > *,
-html body.workspace-active #receipts-home #secondhand-panel:not(.hidden) .secondhand-form,
-html body.workspace-active #receipts-home #secondhand-panel:not(.hidden) .secondhand-form fieldset,
-html body.workspace-active #receipts-home #secondhand-panel:not(.hidden) .secondhand-form label {
+
+/* Declaration form and Flagged Items cards must never create their own
+   scroll containers. Their full content belongs to the page above. */
+html body.workspace-active #receipts-home #secondhand-panel,
+html body.workspace-active #receipts-home #secondhand-form,
+html body.workspace-active #receipts-home #secondhand-form fieldset,
+html body.workspace-active #shop-lost-items-panel *,
+html body.workspace-active #receipts-home #secondhand-panel > * {
+  box-sizing: border-box !important;
+  max-height: none !important;
+  -webkit-overflow-scrolling: auto !important;
+  overscroll-behavior: auto !important;
+}
+html body.workspace-active #receipts-home #secondhand-panel,
+html body.workspace-active #receipts-home #secondhand-form,
+html body.workspace-active #receipts-home #secondhand-form fieldset,
+html body.workspace-active #shop-lost-items-panel .lost-item-checker,
+html body.workspace-active #shop-lost-items-panel .lost-item-register,
+html body.workspace-active #shop-lost-items-panel .lost-items-intro,
+html body.workspace-active #shop-lost-items-panel .lost-items-list-head,
+html body.workspace-active #shop-lost-items-panel #lost-items-list,
+html body.workspace-active #shop-lost-items-panel .lost-item-row,
+html body.workspace-active #shop-lost-items-panel .lost-item-report-details {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+html body.workspace-active #receipts-home #secondhand-panel {
+  display: block !important;
+  position: static !important;
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  padding-bottom: 24px !important;
   touch-action: pan-y !important;
 }
-html body.workspace-active #receipts-home #secondhand-panel:not(.hidden) input,
-html body.workspace-active #receipts-home #secondhand-panel:not(.hidden) select,
-html body.workspace-active #receipts-home #secondhand-panel:not(.hidden) textarea,
-html body.workspace-active #receipts-home #secondhand-panel:not(.hidden) button {
+html body.workspace-active #receipts-home #secondhand-form {
+  overflow: visible !important;
+  touch-action: pan-y !important;
+}
+html body.workspace-active #receipts-home #secondhand-panel *,
+html body.workspace-active #shop-lost-items-panel * {
+  touch-action: pan-y !important;
+}
+html body.workspace-active #receipts-home #secondhand-panel input,
+html body.workspace-active #receipts-home #secondhand-panel select,
+html body.workspace-active #receipts-home #secondhand-panel textarea,
+html body.workspace-active #receipts-home #secondhand-panel button,
+html body.workspace-active #shop-lost-items-panel input,
+html body.workspace-active #shop-lost-items-panel select,
+html body.workspace-active #shop-lost-items-panel textarea,
+html body.workspace-active #shop-lost-items-panel button,
+html body.workspace-active #shop-lost-items-panel summary {
   touch-action: manipulation !important;
 }
