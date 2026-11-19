@@ -14,6 +14,7 @@ import { ReceiptRecoveryController } from './receipts/recovery.controller';
 import { PlatformFinanceController } from './platform-finance/platform-finance.controller';
 import { PlatformAdminController } from './platform-admin/platform-admin.controller';
 import { AiMaintenanceController } from './platform-admin/ai-maintenance.controller';
+import { AiRepairController } from './platform-admin/ai-repair.controller';
 import { PlatformOperationsController } from './platform-admin/platform-operations.controller';
 import { BusinessProfileController } from './business/business-profile.controller';
 import { CustomersController } from './customers/customers.controller';
@@ -23,13 +24,12 @@ import { WhatsAppReceiptService } from './notifications/whatsapp-receipt.service
 import { ReferralsController } from './referrals/referrals.controller';
 import { SecondHandPhoneDeclarationsController } from './second-hand/second-hand-declarations.controller';
 import { SecondHandSpecialRecoveryController } from './second-hand/second-hand-special-recovery.controller';
-import { LoanItemsController } from './loans/loan-items.controller';
-import { LostItemsController, PublicLostItemsController } from './lost-items/lost-items.controller';
+import { LoanItemsController, LostItemsController, PublicLostItemsController } from './loans/loan-items.controller';
 import { RepairsController } from './repairs/repairs.controller';
 
 @Module({
   imports: [JwtModule.register({ global: true, secret: process.env.JWT_SECRET })],
-  controllers: [HealthController, AuthController, ReceiptsController, InventoryController, DashboardController, MpesaController, ReceiptRecoveryController, PlatformFinanceController, PlatformAdminController, AiMaintenanceController, PlatformOperationsController, BusinessProfileController, CustomersController, StaffController, ReferralsController, SecondHandPhoneDeclarationsController, SecondHandSpecialRecoveryController, LoanItemsController, LostItemsController, PublicLostItemsController, RepairsController, IntaSendController],
+  controllers: [HealthController, AuthController, ReceiptsController, InventoryController, DashboardController, MpesaController, ReceiptRecoveryController, PlatformFinanceController, PlatformAdminController, AiMaintenanceController, AiRepairController, PlatformOperationsController, BusinessProfileController, CustomersController, StaffController, ReferralsController, SecondHandPhoneDeclarationsController, SecondHandSpecialRecoveryController, LoanItemsController, LostItemsController, PublicLostItemsController, RepairsController, IntaSendController],
   providers: [DbService, ReceiptsService, EmailVerificationService, WhatsAppReceiptService, AuthGuard, RolesGuard, { provide: MpesaService, useClass: MpesaService }, IntaSendService],
 })
 export class AppModule {}
