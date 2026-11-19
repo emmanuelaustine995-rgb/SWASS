@@ -584,3 +584,54 @@ html body.workspace-active main.shell > #shop-home:not(.hidden) > .shop-section-
   position: sticky !important;
   top: 0 !important;
 }
+
+
+/* Phone-native scrolling for every Shop card.
+   The Shop workspace is the single vertical scroll surface: users swipe
+   anywhere on a card to move the page naturally. No nested scrollbars,
+   arrow buttons, fixed-height form panels or scrollbar dragging. */
+html body.workspace-active main.shell > #shop-home:not(.hidden),
+html body.workspace-active main.shell > #shop-home:not(.hidden) * {
+  touch-action: pan-y !important;
+}
+html body.workspace-active #shop-home > details,
+html body.workspace-active #shop-home > .staff-team-card,
+html body.workspace-active #shop-home > section,
+html body.workspace-active #shop-home > .profile-card {
+  flex: 0 0 auto !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+}
+html body.workspace-active #shop-home details > :not(summary),
+html body.workspace-active #shop-home .staff-team-card,
+html body.workspace-active #shop-home .staff-invite-form,
+html body.workspace-active #shop-home .staff-invitations-list,
+html body.workspace-active #shop-home .profile-card-body,
+html body.workspace-active #shop-home .repair-card-content,
+html body.workspace-active #shop-home .loan-card-body,
+html body.workspace-active #shop-home .shop-register-product-body,
+html body.workspace-active #shop-home .shop-product-search-form,
+html body.workspace-active #shop-home .shop-product-results {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+  -webkit-overflow-scrolling: auto !important;
+  overscroll-behavior: auto !important;
+}
+html body.workspace-active #shop-home input,
+html body.workspace-active #shop-home select,
+html body.workspace-active #shop-home textarea,
+html body.workspace-active #shop-home button,
+html body.workspace-active #shop-home summary {
+  touch-action: manipulation !important;
+}
+html body.workspace-active #shop-home:not(.hidden) {
+  scrollbar-width: none !important;
+}
+html body.workspace-active #shop-home:not(.hidden)::-webkit-scrollbar {
+  display: none !important;
+}
