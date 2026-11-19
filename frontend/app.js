@@ -596,6 +596,7 @@
       if(state.role==='super_admin'){
         dashboardBusinessCard?.classList.add('hidden');
         $('platform-referral-admin')?.classList.remove('hidden');
+        setPlatformAdminTab('security');
         void loadPlatformReferralAdmin();
       }else if(!['owner','manager','vendor','freelancer'].includes(state.role)&&state.role!=='customer'){
         staffSummary?.classList.remove('hidden');
@@ -1197,16 +1198,35 @@
   function updateLoginAccountType(){
     const selected = $('login-account-type').value;
     const staffSelected = selected === 'freelancer' || selected === 'staff';
-    $('owner-register-entry').classList.toggle('hidden', staffSelected);
+    const adminSelected = selected === 'platform_admin';
+    const identityInput = $('login-phone');
+    const identityLabel = $('login-identity-label-text');
+    if(identityInput){
+      identityInput.type = adminSelected ? 'email' : 'tel';
+      identityInput.name = adminSelected ? 'email' : 'phone';
+      identityInput.autocomplete = adminSelected ? 'username' : 'tel';
+      identityInput.inputMode = adminSelected ? 'email' : 'tel';
+      identityInput.placeholder = adminSelected ? 'admin@example.com' : '07XX XXX XXX';
+      identityInput.value = '';
+    }
+    if(identityLabel)identityLabel.textContent = adminSelected ? 'Administrator email address' : 'Phone number';
+    $('owner-register-entry')?.classList.toggle('hidden', staffSelected || adminSelected);
     $('freelancer-register-entry')?.classList.toggle('hidden', selected !== 'freelancer');
-    $('owner-register-entry')?.classList.toggle('hidden', staffSelected);
+    $('show-password-reset')?.closest('.login-forgot-wrap')?.classList.toggle('hidden',adminSelected);
     document.querySelectorAll('[data-login-role]').forEach(tab=>{
       const active=tab.dataset.loginRole===selected;
       tab.classList.toggle('active',active);
       tab.setAttribute('aria-pressed',String(active));
     });
+    if(adminSelected){
+      $('aurora-tab-signup')?.classList.add('hidden');
+      $('aurora-tab-recovery')?.classList.add('hidden');
+    }else{
+      $('aurora-tab-signup')?.classList.remove('hidden');
+      $('aurora-tab-recovery')?.classList.remove('hidden');
+    }
     if($('login-error').textContent.startsWith('Customer sign-in'))$('login-error').textContent='';
-    if(staffSelected && !$('register-form').classList.contains('hidden')){
+    if((staffSelected || adminSelected) && !$('register-form').classList.contains('hidden')){
       $('register-form').classList.add('hidden');
       $('login-form').classList.remove('hidden');
     }
@@ -1651,23 +1671,35 @@
       // Send authentication immediately. The health warm-up runs in the
       // background; waiting for it first doubled the cold-start delay.
       if(button)button.textContent='Signing in…';
-      const loginPhone=$('login-phone').value.trim();
-      const loginDigits=loginPhone.replace(/\D/g,'');
-      if(!/^(?:254\d{9}|0\d{9}|\d{9})$/.test(loginDigits))throw new Error('Enter a valid Kenyan phone number, for example 0712345678.');
-      if(!$('login-password').value)throw new Error('Enter your password to sign in.');
-      const data=await request('/api/v1/auth/login',{
-        method:'POST',
-        // Render free instances can take over 50 seconds to wake. Allow enough
-        // time for the API to start and complete the database-backed login.
-        signal:AbortSignal.timeout(150000),
-        body:JSON.stringify({phone:loginPhone,password:$('login-password').value,accountType:$('login-account-type').value})
-      });
+      const loginIdentity=$('login-phone').value.trim();
+      const accountType=$('login-account-type').value;
+      const password=$('login-password').value;
+      if(!password)throw new Error('Enter your password to sign in.');
+      let data;
+      if(accountType==='platform_admin'){
+        if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(loginIdentity))throw new Error('Enter the administrator email address registered with AURORA.');
+        data=await request('/api/v1/auth/admin/login',{
+          method:'POST',
+          signal:AbortSignal.timeout(150000),
+          body:JSON.stringify({email:loginIdentity,password})
+        });
+      }else{
+        const loginDigits=loginIdentity.replace(/\D/g,'');
+        if(!/^(?:254\d{9}|0\d{9}|\d{9})$/.test(loginDigits))throw new Error('Enter a valid Kenyan phone number, for example 0712345678.');
+        data=await request('/api/v1/auth/login',{
+          method:'POST',
+          // Render free instances can take over 50 seconds to wake. Allow enough
+          // time for the API to start and complete the database-backed login.
+          signal:AbortSignal.timeout(150000),
+          body:JSON.stringify({phone:loginIdentity,password,accountType})
+        });
+      }
       if(!data.accessToken)throw new Error('The server did not return a sign-in token. Please try again.');
       const parts=data.accessToken.split('.')[1];
       const claims=JSON.parse(atob(parts.replace(/-/g,'+').replace(/_/g,'/')));
       state.token=data.accessToken;
       state.role=claims.role;
-      state.userName=data.user?.fullName||data.user?.name||data.user?.displayName||claims.fullName||claims.name||claims.displayName||claims.firstName||'';state.staffTitle=data.user?.staffTitle||'';state.userPhotoData=data.user?.profilePhotoData||'';state.userPhone=data.user?.phone||$('login-phone').value.trim();state.userEmail=data.user?.email||'';
+      state.userName=data.user?.fullName||data.user?.name||data.user?.displayName||claims.fullName||claims.name||claims.displayName||claims.firstName||'';state.staffTitle=data.user?.staffTitle||'';state.userPhotoData=data.user?.profilePhotoData||'';state.userPhone=data.user?.phone||(accountType==='platform_admin'?'':loginIdentity);state.userEmail=data.user?.email||(accountType==='platform_admin'?loginIdentity:'');
       if(data.mustChangePassword || claims.mustChangePassword){
         $('login-form').classList.add('hidden');
         $('show-password-reset').parentElement.classList.add('hidden');
