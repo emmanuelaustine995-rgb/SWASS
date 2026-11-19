@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Post, Req, ServiceUnavailableException, TooManyRequestsException, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Post, Req, ServiceUnavailableException, HttpException, HttpStatus, UseGuards } from '@nestjs/common';
 import { AuthGuard, Roles, RolesGuard } from '../auth/auth';
 import { DbService } from '../db/db.service';
 
@@ -33,7 +33,7 @@ export class AiMaintenanceController {
     const actor = String(req.user?.sub || 'unknown');
     const now = Date.now();
     const last = this.recentRequests.get(actor) || 0;
-    if (now - last < 15000) throw new TooManyRequestsException('Please wait 15 seconds before sending another maintenance request.');
+    if (now - last < 15000) throw new HttpException('Please wait 15 seconds before sending another maintenance request.', HttpStatus.TOO_MANY_REQUESTS);
     this.recentRequests.set(actor, now);
     if (this.recentRequests.size > 500) {
       for (const [key, value] of this.recentRequests) if (now - value > 60000) this.recentRequests.delete(key);
@@ -77,7 +77,7 @@ export class AiMaintenanceController {
       if (response.status === 401 || response.status === 403) {
         throw new ServiceUnavailableException('The AI API key was rejected. Check the OPENAI_API_KEY value and API project billing/access.');
       }
-      if (response.status === 429) throw new TooManyRequestsException('The AI service is rate-limited or its API usage quota is exhausted. Check the API project usage and billing.');
+      if (response.status === 429) throw new TooManyRequestsException('The AI service is rate-limited or its API usage quota is exhausted. Check the API project usage and billing.', HttpStatus.TOO_MANY_REQUESTS);
       throw new ServiceUnavailableException('The AI diagnosis request failed. Check the API service configuration and try again.');
     }
 
