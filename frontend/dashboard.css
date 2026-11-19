@@ -3903,3 +3903,23 @@ html, body, body.workspace-active, body.workspace-active .shell {
   #owner-home .referral-invite-card .referral-qr img,
   #owner-home .referral-invite-card .referral-qr canvas{width:220px!important;height:220px!important}
 }
+
+
+/* Dashboard subscription countdown: show the golden expiry card on the main dashboard. */
+#owner-home .subscription-expiry-countdown{
+  display:grid!important;gap:5px!important;margin:12px 0 16px!important;padding:16px!important;
+  border:0!important;border-radius:17px!important;
+  background:linear-gradient(125deg,#fff0c2 0%,#f4c96b 48%,#fff5d9 100%)!important;
+  box-shadow:0 9px 22px rgba(140,95,24,.16)!important;color:#68430b!important;
+}
+#owner-home .subscription-expiry-countdown strong{font-size:25px!important;color:#68430b!important}
+#receipts-home .receipt-actions-grid>.receipt-choice,
+#receipts-home .receipt-actions-grid>.declaration-card>.receipt-choice{
+  min-height:160px!important;padding:21px!important;
+}
+@media(max-width:600px){
+  #receipts-home .receipt-actions-grid>.receipt-choice,
+  #receipts-home .receipt-actions-grid>.declaration-card>.receipt-choice{
+    min-height:132px!important;padding:18px!important;
+  }
+}
