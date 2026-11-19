@@ -345,6 +345,7 @@
   async function loadOwnerHomeSummary(){
     if(!['owner','manager','vendor','freelancer'].includes(state.role))return;
     void loadOwnerReferralSummary();
+    void loadSubscriptionBalance();
     $('owner-home-title').textContent=state.businessProfile?.businessName||'Business overview';
     $('owner-home-subtitle').textContent=state.businessProfile?.storeName||'Your business workspace at a glance.';
 
@@ -1679,9 +1680,9 @@
   $('open-special-amendment')?.addEventListener('click',()=>{
     if(!['owner','freelancer'].includes(state.role)){showNotice('This account cannot amend a saved Second-Hand Special Receipt.',true);return;}
     showWorkspaceScreen('receipts');
-    $('secondhand-open-card')?.click();
-    $('secondhand-history-toggle')?.click();
-    $('secondhand-history')?.scrollIntoView({behavior:'smooth',block:'start'});
+    const historyBox=$('history-content');
+    if(historyBox?.classList.contains('hidden'))$('history-toggle')?.click();
+    $('history-panel')?.scrollIntoView({behavior:'smooth',block:'start'});
   });
   document.querySelector('.dashboard-sidebar')?.addEventListener('click',e=>{const link=e.target.closest('.sidebar-link');if(!link)return;const screen=link.dataset.screen||(link.getAttribute('href')==='#owner-customers-section'?'customers':link.getAttribute('href')==='#owner-reports-section'?'reports':link.getAttribute('href')==='#owner-payments-section'?'payments':'overview');e.preventDefault();showWorkspaceScreen(screen);});
   $('history-toggle').addEventListener('click',async()=>{const box=$('history-content');const opening=box.classList.contains('hidden');box.classList.toggle('hidden');$('history-toggle').textContent=opening?'Close receipt history':'My receipt history';$('history-toggle').setAttribute('aria-expanded',String(opening));if(opening)await loadReceiptHistory();});
@@ -1987,7 +1988,6 @@
     $('secondhand-shop-ack-fieldset')?.classList.toggle('hidden',isCustomer);
     $('sh-shop-acknowledged').required=!isCustomer;
     $('secondhand-submit').textContent=isCustomer?'Submit Sales Declaration for Review':'Issue Sales Declaration PDF & Send to Both Parties';
-    $('secondhand-history-toggle').textContent=isCustomer?'My Declaration Submissions':'View Sales Declaration History';
     const copy=$('secondhand-panel-heading-copy')?.querySelector('.muted');
     if(copy)copy.textContent=isCustomer?'Complete your details and submit your declaration securely. It will be marked pending review.':'Complete the seller, buyer and product details before issuing the signed sales declaration.';
     $('receipts-home')?.classList.remove('hidden');
@@ -2120,28 +2120,9 @@
     $('secondhand-message').style.color='';
     $('secondhand-saved-record').innerHTML='';
     $('secondhand-saved-record').classList.add('hidden');
-    $('secondhand-history').classList.add('hidden');
-    $('secondhand-history').innerHTML='';
     $('secondhand-form').scrollIntoView({behavior:'smooth',block:'start'});
   });
-  $('secondhand-history-toggle')?.addEventListener('click',async()=>{
-    const panel=$('secondhand-history');if(!panel)return;
-    if(!panel.classList.contains('hidden')){panel.classList.add('hidden');return;}
-    panel.classList.remove('hidden');panel.innerHTML='<p class="muted">Loading saved declarations…</p>';
-    try{
-      const isCustomer=state.role==='customer';
-      const data=await request(isCustomer?'/api/v1/customers/sales-declarations':'/api/v1/second-hand-phone-declarations');
-      const rows=data.declarations||[];
-      if(!rows.length){panel.innerHTML=isCustomer?'<p class="muted">You have not submitted any declarations yet.</p>':'<p class="muted">No second-hand product declarations have been saved for this shop yet.</p>';return;}
-      panel.innerHTML='<h3>'+(isCustomer?'My Declaration Submissions':'Saved Sales Declarations')+'</h3>'+rows.map(d=>`<div class="secondhand-history-row"><strong>${escapeHtml(d.sellerName||'Seller')} · ${escapeHtml(d.productName||d.phoneMakeModel||'Product')}</strong><span>Status: ${escapeHtml(String(d.status||'recorded').replace('_',' '))}</span><small>${escapeHtml(d.declarationRef)} · ${escapeHtml(d.createdAt?new Date(d.createdAt).toLocaleString():'')}</small></div>`).join('');
-    }catch(err){panel.innerHTML='<p class="error">'+escapeHtml(err.message||'Could not load declarations.')+'</p>';}
-  });
-  $('secondhand-history')?.addEventListener('click',async ev=>{
-    const btn=ev.target.closest('[data-declaration-id]');if(!btn)return;
-    btn.disabled=true;btn.textContent='Loading signed record…';
-    try{const result=await request('/api/v1/second-hand-phone-declarations/'+encodeURIComponent(btn.dataset.declarationId));renderSecondhandRecord(result.declaration);}
-    catch(err){btn.disabled=false;btn.textContent=err.message||'Could not open this record.';}
-  });
+
 
 
   $('loan-item-form')?.addEventListener('submit',async e=>{e.preventDefault();const btn=$('loan-issue-button'),msg=$('loan-message');btn.disabled=true;btn.textContent='Saving loan note…';msg.textContent='Saving the loan record and sending the customer loan receipt and shop copy…';try{const payload={itemName:$('loan-item-name').value.trim(),borrowerName:$('loan-borrower-name').value.trim(),phone:$('loan-phone').value.trim(),idNumber:$('loan-id').value.trim(),borrowerEmail:$('loan-email').value.trim(),imei:$('loan-imei').value.trim(),serialNumber:$('loan-serial').value.trim(),loanDate:$('loan-date').value,conditionOut:$('loan-condition-out').value.trim(),amountKes:Number($('loan-amount').value),processedBy:$('loan-processed-by').value.trim()};const result=await request('/api/v1/loan-items',{method:'POST',body:JSON.stringify(payload)});const link=document.createElement('a');link.href='data:application/pdf;base64,'+result.pdfBase64;link.download='AURORA-'+result.item.reference+'.pdf';link.click();msg.textContent='Professional loan receipt created. Customer email: '+(result.customerDelivery.email.sent?'sent':result.customerDelivery.email.reason||'not sent')+'; customer WhatsApp: '+(result.customerDelivery.whatsapp.sent?'sent':result.customerDelivery.whatsapp.reason||'not sent')+'. Shop email: '+(result.ownerDelivery.email.sent?'sent':result.ownerDelivery.email.reason||'not sent')+'; shop WhatsApp: '+(result.ownerDelivery.whatsapp.sent?'sent':result.ownerDelivery.whatsapp.reason||'not sent')+'.';$('loan-item-form').reset();}catch(err){msg.textContent=err.message||'Could not issue loan note.';}finally{btn.disabled=false;btn.textContent='LOAN';}});
