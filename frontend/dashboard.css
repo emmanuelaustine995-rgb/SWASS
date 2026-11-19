@@ -3951,3 +3951,24 @@ body.dashboard-dark .platform-admin-tab.active,body.dashboard-dark .maintenance-
 body.dashboard-dark .maintenance-category small,body.dashboard-dark .maintenance-request-form>label,body.dashboard-dark .maintenance-result-answer{color:#c1d0db}
 body.dashboard-dark .maintenance-request-form textarea{background:#102131;border-color:#3b586d;color:#f1f6fa}
 @media(max-width:520px){.maintenance-category-grid{grid-template-columns:1fr}.maintenance-category{min-height:82px}.maintenance-submit-row{align-items:stretch;flex-direction:column}.maintenance-submit-row .btn{width:100%}.platform-admin-tabs{gap:5px}.platform-admin-tab{min-width:0;padding:10px 8px;font-size:12px}}
+
+/* Private cybersecurity maintenance control-room display */
+.maintenance-control-room{margin:0 0 20px;padding:18px;border:1px solid #243c56;border-radius:16px;background:linear-gradient(145deg,#071626,#102b43);color:#e8f4ff;box-shadow:0 12px 28px rgba(5,20,36,.16)}
+.maintenance-monitor-head,.maintenance-monitor-actions,.maintenance-monitor-readings,.maintenance-monitor-topline{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.maintenance-monitor-head h2{margin:0 0 5px;color:#f4f9ff;font-size:19px}.maintenance-monitor-head .eyebrow{color:#73bce8;margin:0 0 5px}.maintenance-monitor-head .muted{color:#a8bfd2}
+.maintenance-monitor-actions{flex-shrink:0}.maintenance-alert-light{width:12px;height:12px;border-radius:50%;background:#8495a5;box-shadow:0 0 0 4px rgba(132,149,165,.14)}
+.maintenance-monitor-screen{margin-top:14px;padding:14px;border:1px solid rgba(120,170,205,.22);border-radius:12px;background:rgba(1,10,20,.72);font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+.maintenance-monitor-topline{color:#8caec6;font-size:10px;letter-spacing:.16em}.maintenance-wave-wrap{height:104px;position:relative;overflow:hidden;margin:10px 0;border-radius:8px;background:linear-gradient(rgba(43,113,150,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(43,113,150,.08) 1px,transparent 1px);background-size:18px 18px}
+.maintenance-wave{position:absolute;inset:0;width:200%;height:100%;overflow:visible;animation:maintenance-wave-flow 4s linear infinite}
+.maintenance-wave path{fill:none;stroke:#44d8c3;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke;filter:drop-shadow(0 0 5px rgba(68,216,195,.65))}
+.maintenance-monitor-readings{justify-content:flex-start;gap:clamp(14px,5vw,48px);flex-wrap:wrap}.maintenance-monitor-readings div{display:grid;gap:3px}.maintenance-monitor-readings strong{font-size:20px;color:#70e4d0}.maintenance-monitor-readings span{font-family:inherit;font-size:10px;color:#91a9bc;letter-spacing:.04em}
+.maintenance-monitor-disclaimer{margin:9px 2px 0;color:#8ca4b8;font-size:10px}
+.maintenance-control-room[data-state="running"] .maintenance-alert-light{background:#ff334f;box-shadow:0 0 0 4px rgba(255,51,79,.18),0 0 18px #ff334f;animation:maintenance-red-alert .8s infinite}
+.maintenance-control-room[data-state="running"] .maintenance-monitor-phase{color:#ff6478}
+.maintenance-control-room[data-state="complete"] .maintenance-alert-light{background:#f5c84b;box-shadow:0 0 0 4px rgba(245,200,75,.18),0 0 14px rgba(245,200,75,.7)}
+.maintenance-control-room[data-state="complete"] .maintenance-wave path{stroke:#f5c84b;filter:drop-shadow(0 0 5px rgba(245,200,75,.6))}
+.maintenance-control-room[data-state="failed"] .maintenance-alert-light{background:#ff334f;box-shadow:0 0 0 4px rgba(255,51,79,.18),0 0 16px #ff334f}
+@keyframes maintenance-wave-flow{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes maintenance-red-alert{50%{opacity:.35}}
+@media(prefers-reduced-motion:reduce){.maintenance-wave,.maintenance-alert-light{animation:none}}
+@media(max-width:520px){.maintenance-control-room{padding:14px}.maintenance-monitor-head{align-items:flex-start}.maintenance-monitor-actions{gap:8px}.maintenance-monitor-readings{gap:16px}.maintenance-monitor-readings strong{font-size:17px}}
