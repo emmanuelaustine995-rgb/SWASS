@@ -5,7 +5,7 @@ import { DbService } from '../db/db.service';
 
 @Controller('api/v1/repairs')
 @UseGuards(AuthGuard, RolesGuard)
-@Roles('owner', 'manager', 'freelancer')
+@Roles('owner', 'manager', 'freelancer', 'vendor')
 export class RepairsController {
   constructor(private db: DbService) {}
 
