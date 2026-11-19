@@ -3917,3 +3917,15 @@ html, body, body.workspace-active, body.workspace-active .shell {
     overflow: visible !important;
   }
 }
+
+
+/* Dashboard referral layout: prioritize a large, clean, easy-to-scan invitation QR. */
+#owner-home .referral-area{grid-template-columns:minmax(0,1fr)!important;}
+#owner-home .referral-area>.referral-invite-card{grid-column:1/-1!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;}
+#owner-home .referral-invite-head{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:12px!important;text-align:center!important;}
+#owner-home .referral-invite-head h2{font-size:20px!important;margin:0!important;}
+#owner-home .referral-invite-card .referral-qr{flex:0 0 auto!important;width:248px!important;height:248px!important;min-height:248px!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;}
+#owner-home .referral-invite-card .referral-qr img,#owner-home .referral-invite-card .referral-qr canvas{display:block!important;width:240px!important;height:240px!important;max-width:none!important;max-height:none!important;image-rendering:pixelated;}
+#subscription-home .subscription-expiry-countdown{margin:12px 0 16px!important;padding:18px!important;border:0!important;border-radius:17px!important;background:linear-gradient(125deg,#fff0c2 0%,#f4c96b 48%,#fff5d9 100%)!important;box-shadow:0 9px 22px rgba(140,95,24,.16)!important;color:#68430b!important;}
+#subscription-home .subscription-expiry-countdown strong{font-size:25px!important;color:#68430b!important;}
+@media(max-width:520px){#owner-home .referral-invite-card .referral-qr{width:228px!important;height:228px!important;min-height:228px!important}#owner-home .referral-invite-card .referral-qr img,#owner-home .referral-invite-card .referral-qr canvas{width:220px!important;height:220px!important}}
