@@ -296,6 +296,97 @@
       item.setAttribute('aria-pressed',String(active));
     });
   }));
+  // A discreet, user-controlled soundscape and visual state for the private maintenance workspace.
+  let maintenanceSoundEnabled=true,maintenanceAudioContext=null,maintenanceAmbient=null,maintenanceSessionTimer=null,maintenanceStartedAt=0;
+  function maintenanceTone(frequency=520,duration=0.16,volume=0.035){
+    if(!maintenanceSoundEnabled)return;
+    try{
+      const AudioContextClass=window.AudioContext||window.webkitAudioContext;
+      if(!AudioContextClass)return;
+      maintenanceAudioContext=maintenanceAudioContext||new AudioContextClass();
+      if(maintenanceAudioContext.state==='suspended')void maintenanceAudioContext.resume();
+      const oscillator=maintenanceAudioContext.createOscillator(),gain=maintenanceAudioContext.createGain();
+      oscillator.type='sine';oscillator.frequency.value=frequency;gain.gain.setValueAtTime(volume,maintenanceAudioContext.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001,maintenanceAudioContext.currentTime+duration);
+      oscillator.connect(gain);gain.connect(maintenanceAudioContext.destination);oscillator.start();oscillator.stop(maintenanceAudioContext.currentTime+duration);
+    }catch(_error){}
+  }
+  function stopMaintenanceAmbient(){
+    if(maintenanceAmbient){try{maintenanceAmbient.stop();}catch(_error){}maintenanceAmbient=null;}
+  }
+  function startMaintenanceDisplay(){
+    const room=$('maintenance-control-room');if(!room)return;
+    maintenanceStartedAt=Date.now();room.dataset.state='running';
+    $('maintenance-monitor-status').textContent='Security assessment in progress · monitoring visual active';
+    $('maintenance-monitor-phase').textContent='ALERT / RUNNING';
+    $('maintenance-monitor-checks').textContent='RUNNING';
+    $('maintenance-monitor-value').textContent='72';
+    maintenanceTone(880,0.22,0.045);setTimeout(()=>maintenanceTone(660,0.18,0.035),180);
+    if(maintenanceSoundEnabled){
+      try{const C=window.AudioContext||window.webkitAudioContext;if(C){maintenanceAudioContext=maintenanceAudioContext||new C();if(maintenanceAudioContext.state==='suspended')void maintenanceAudioContext.resume();maintenanceAmbient=maintenanceAudioContext.createOscillator();const gain=maintenanceAudioContext.createGain();maintenanceAmbient.type='sine';maintenanceAmbient.frequency.value=58;gain.gain.value=0.006;maintenanceAmbient.connect(gain);gain.connect(maintenanceAudioContext.destination);maintenanceAmbient.start();}}
+      catch(_error){}
+    }
+    clearInterval(maintenanceSessionTimer);
+    maintenanceSessionTimer=setInterval(()=>{
+      const elapsed=Math.max(0,Math.floor((Date.now()-maintenanceStartedAt)/1000));
+      $('maintenance-monitor-elapsed').textContent=String(Math.floor(elapsed/60)).padStart(2,'0')+':'+String(elapsed%60).padStart(2,'0');
+      $('maintenance-monitor-value').textContent=String(68+(elapsed%9));
+    },1000);
+  }
+  function finishMaintenanceDisplay(success,completionMessage=''){
+    const room=$('maintenance-control-room');if(!room)return;
+    clearInterval(maintenanceSessionTimer);maintenanceSessionTimer=null;stopMaintenanceAmbient();
+    // A diagnosis or draft PR is not a verified production repair; keep the monitor neutral.
+    room.dataset.state=success?'assessment':'failed';
+    $('maintenance-monitor-status').textContent=success?(completionMessage||'Assessment ready · no code changes or deployment were performed'):'Maintenance action failed · review the error before retrying';
+    $('maintenance-monitor-phase').textContent=success?'ASSESSMENT READY':'ATTENTION REQUIRED';
+    $('maintenance-monitor-checks').textContent=success?'REVIEW':'CHECK';
+    maintenanceTone(success?520:240,0.34,0.04);
+  }
+  function addMaintenanceRepairAction(instruction){
+    const result=$('maintenance-result');if(!result)return;
+    $('maintenance-repair-button')?.remove();
+    $('maintenance-repair-link')?.remove();
+    const button=document.createElement('button');
+    button.id='maintenance-repair-button';button.type='button';button.className='btn btn-primary';
+    button.textContent='Prepare code repair pull request';
+    button.addEventListener('click',async()=>{
+      if(state.role!=='super_admin')return;
+      const status=$('maintenance-request-status');
+      button.disabled=true;button.textContent='Preparing secure repair…';
+      status.textContent='Reading approved source files and preparing an isolated repair proposal…';
+      startMaintenanceDisplay();
+      try{
+        const proposal=await request('/api/v1/platform-admin/ai-maintenance/repair-proposal',{
+          method:'POST',body:JSON.stringify({category:maintenanceCategory,instruction})
+        });
+        const link=document.createElement('a');
+        link.id='maintenance-repair-link';link.href=proposal.pullRequestUrl;link.target='_blank';link.rel='noopener noreferrer';
+        link.textContent='Open draft repair PR #'+proposal.pullRequestNumber;
+        link.className='maintenance-repair-link';
+        result.append(link);
+        status.textContent=proposal.message||'Draft repair pull request created. Await CI and review.';
+        finishMaintenanceDisplay(true,'Draft PR created · CI pending · human review required');
+      }catch(error){
+        status.textContent=error.message||'Could not prepare the code repair.';
+        finishMaintenanceDisplay(false);
+      }finally{
+        button.disabled=false;button.textContent='Prepare code repair pull request';
+      }
+    });
+    result.append(button);
+  }
+  $('maintenance-sound-toggle')?.addEventListener('click',()=>{
+    maintenanceSoundEnabled=!maintenanceSoundEnabled;
+    $('maintenance-sound-toggle').textContent=maintenanceSoundEnabled?'Sound on':'Sound off';
+    $('maintenance-sound-toggle').setAttribute('aria-pressed',String(maintenanceSoundEnabled));
+    if(!maintenanceSoundEnabled)stopMaintenanceAmbient();
+    else if($('maintenance-control-room')?.dataset.state==='running')startMaintenanceAmbientIfNeeded();
+  });
+  function startMaintenanceAmbientIfNeeded(){
+    if(!maintenanceSoundEnabled||maintenanceAmbient)return;
+    try{const C=window.AudioContext||window.webkitAudioContext;if(!C)return;maintenanceAudioContext=maintenanceAudioContext||new C();if(maintenanceAudioContext.state==='suspended')void maintenanceAudioContext.resume();maintenanceAmbient=maintenanceAudioContext.createOscillator();const gain=maintenanceAudioContext.createGain();maintenanceAmbient.type='sine';maintenanceAmbient.frequency.value=58;gain.gain.value=0.006;maintenanceAmbient.connect(gain);gain.connect(maintenanceAudioContext.destination);maintenanceAmbient.start();}catch(_error){}
+  }
   $('maintenance-request-form')?.addEventListener('submit',async event=>{
     event.preventDefault();
     if(state.role!=='super_admin')return;
@@ -304,8 +395,10 @@
     const instruction=String(input?.value||'').trim();
     if(!instruction){status.textContent='Describe the issue before sending.';input?.focus();return;}
     if(instruction.length>2000){status.textContent='Keep the instruction under 2,000 characters.';return;}
-    send.disabled=true;send.textContent='Reviewing…';status.textContent='Preparing a secure maintenance assessment…';
+    send.disabled=true;send.textContent='Reviewing…';status.textContent='Preparing a secure maintenance assessment…';startMaintenanceDisplay();
     result?.classList.add('hidden');
+    $('maintenance-repair-button')?.remove();
+    $('maintenance-repair-link')?.remove();
     try{
       const data=await request('/api/v1/platform-admin/ai-maintenance/diagnose',{
         method:'POST',body:JSON.stringify({category:maintenanceCategory,instruction})
@@ -314,9 +407,10 @@
       $('maintenance-result-mode').textContent='Diagnosis only';
       $('maintenance-result-note').textContent=data.message||'No code was changed and nothing was deployed.';
       result?.classList.remove('hidden');
-      status.textContent='Assessment ready.';
+      addMaintenanceRepairAction(instruction);
+      status.textContent='Assessment ready. You can request a draft code repair for review.';finishMaintenanceDisplay(true);
     }catch(error){
-      status.textContent=error.message||'Could not prepare the maintenance assessment.';
+      status.textContent=error.message||'Could not prepare the maintenance assessment.';finishMaintenanceDisplay(false);
     }finally{
       send.disabled=false;send.textContent='Send request';
     }
@@ -502,6 +596,7 @@
       if(state.role==='super_admin'){
         dashboardBusinessCard?.classList.add('hidden');
         $('platform-referral-admin')?.classList.remove('hidden');
+        setPlatformAdminTab('security');
         void loadPlatformReferralAdmin();
       }else if(!['owner','manager','vendor','freelancer'].includes(state.role)&&state.role!=='customer'){
         staffSummary?.classList.remove('hidden');
@@ -1103,16 +1198,35 @@
   function updateLoginAccountType(){
     const selected = $('login-account-type').value;
     const staffSelected = selected === 'freelancer' || selected === 'staff';
-    $('owner-register-entry').classList.toggle('hidden', staffSelected);
+    const adminSelected = selected === 'platform_admin';
+    const identityInput = $('login-phone');
+    const identityLabel = $('login-identity-label-text');
+    if(identityInput){
+      identityInput.type = adminSelected ? 'email' : 'tel';
+      identityInput.name = adminSelected ? 'email' : 'phone';
+      identityInput.autocomplete = adminSelected ? 'username' : 'tel';
+      identityInput.inputMode = adminSelected ? 'email' : 'tel';
+      identityInput.placeholder = adminSelected ? 'admin@example.com' : '07XX XXX XXX';
+      identityInput.value = '';
+    }
+    if(identityLabel)identityLabel.textContent = adminSelected ? 'Administrator email address' : 'Phone number';
+    $('owner-register-entry')?.classList.toggle('hidden', staffSelected || adminSelected);
     $('freelancer-register-entry')?.classList.toggle('hidden', selected !== 'freelancer');
-    $('owner-register-entry')?.classList.toggle('hidden', staffSelected);
+    $('show-password-reset')?.closest('.login-forgot-wrap')?.classList.toggle('hidden',adminSelected);
     document.querySelectorAll('[data-login-role]').forEach(tab=>{
       const active=tab.dataset.loginRole===selected;
       tab.classList.toggle('active',active);
       tab.setAttribute('aria-pressed',String(active));
     });
+    if(adminSelected){
+      $('aurora-tab-signup')?.classList.add('hidden');
+      $('aurora-tab-recovery')?.classList.add('hidden');
+    }else{
+      $('aurora-tab-signup')?.classList.remove('hidden');
+      $('aurora-tab-recovery')?.classList.remove('hidden');
+    }
     if($('login-error').textContent.startsWith('Customer sign-in'))$('login-error').textContent='';
-    if(staffSelected && !$('register-form').classList.contains('hidden')){
+    if((staffSelected || adminSelected) && !$('register-form').classList.contains('hidden')){
       $('register-form').classList.add('hidden');
       $('login-form').classList.remove('hidden');
     }
@@ -1557,23 +1671,35 @@
       // Send authentication immediately. The health warm-up runs in the
       // background; waiting for it first doubled the cold-start delay.
       if(button)button.textContent='Signing in…';
-      const loginPhone=$('login-phone').value.trim();
-      const loginDigits=loginPhone.replace(/\D/g,'');
-      if(!/^(?:254\d{9}|0\d{9}|\d{9})$/.test(loginDigits))throw new Error('Enter a valid Kenyan phone number, for example 0712345678.');
-      if(!$('login-password').value)throw new Error('Enter your password to sign in.');
-      const data=await request('/api/v1/auth/login',{
-        method:'POST',
-        // Render free instances can take over 50 seconds to wake. Allow enough
-        // time for the API to start and complete the database-backed login.
-        signal:AbortSignal.timeout(150000),
-        body:JSON.stringify({phone:loginPhone,password:$('login-password').value,accountType:$('login-account-type').value})
-      });
+      const loginIdentity=$('login-phone').value.trim();
+      const accountType=$('login-account-type').value;
+      const password=$('login-password').value;
+      if(!password)throw new Error('Enter your password to sign in.');
+      let data;
+      if(accountType==='platform_admin'){
+        if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(loginIdentity))throw new Error('Enter the administrator email address registered with AURORA.');
+        data=await request('/api/v1/auth/admin/login',{
+          method:'POST',
+          signal:AbortSignal.timeout(150000),
+          body:JSON.stringify({email:loginIdentity,password})
+        });
+      }else{
+        const loginDigits=loginIdentity.replace(/\D/g,'');
+        if(!/^(?:254\d{9}|0\d{9}|\d{9})$/.test(loginDigits))throw new Error('Enter a valid Kenyan phone number, for example 0712345678.');
+        data=await request('/api/v1/auth/login',{
+          method:'POST',
+          // Render free instances can take over 50 seconds to wake. Allow enough
+          // time for the API to start and complete the database-backed login.
+          signal:AbortSignal.timeout(150000),
+          body:JSON.stringify({phone:loginIdentity,password,accountType})
+        });
+      }
       if(!data.accessToken)throw new Error('The server did not return a sign-in token. Please try again.');
       const parts=data.accessToken.split('.')[1];
       const claims=JSON.parse(atob(parts.replace(/-/g,'+').replace(/_/g,'/')));
       state.token=data.accessToken;
       state.role=claims.role;
-      state.userName=data.user?.fullName||data.user?.name||data.user?.displayName||claims.fullName||claims.name||claims.displayName||claims.firstName||'';state.staffTitle=data.user?.staffTitle||'';state.userPhotoData=data.user?.profilePhotoData||'';state.userPhone=data.user?.phone||$('login-phone').value.trim();state.userEmail=data.user?.email||'';
+      state.userName=data.user?.fullName||data.user?.name||data.user?.displayName||claims.fullName||claims.name||claims.displayName||claims.firstName||'';state.staffTitle=data.user?.staffTitle||'';state.userPhotoData=data.user?.profilePhotoData||'';state.userPhone=data.user?.phone||(accountType==='platform_admin'?'':loginIdentity);state.userEmail=data.user?.email||(accountType==='platform_admin'?loginIdentity:'');
       if(data.mustChangePassword || claims.mustChangePassword){
         $('login-form').classList.add('hidden');
         $('show-password-reset').parentElement.classList.add('hidden');

@@ -27,8 +27,8 @@
   }
   </script>
   <link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./swass-icon.svg" type="image/svg+xml"><title>AURORA E-RECEIPT Kenya | Digital Receipts & Sales Records</title>
-  <link rel="stylesheet" href="./styles.css?v=gold-repair-card-20261115">
-  <link rel="stylesheet" href="./dashboard.css?v=dashboard-receipt-history-countdown-20261119">
+  <link rel="stylesheet" href="./styles.css?v=platform-admin-login-20261119">
+  <link rel="stylesheet" href="./dashboard.css?v=admin-phone-layout-20261119">
   <link rel="stylesheet" href="./registration-layout.css?v=aurora-purple-auth-20261117">
   <link rel="stylesheet" href="./responsive-auth.css?v=shop-card-disclosure-fix-20261119">
   <link rel="stylesheet" href="./responsive-workspace.css?v=single-page-swipe-scroll-20261119">
@@ -63,7 +63,7 @@
           </svg>
           <p class="aurora-tagline"><span>Timeless receipts, never lose a receipt.</span></p>
         </div>
-        <form id="login-form"><div class="login-role-tabs" role="group" aria-label="Choose account type"><button class="login-role-tab active" type="button" data-login-role="owner" aria-pressed="true">Shop Owner</button><button class="login-role-tab" type="button" data-login-role="staff" aria-pressed="false">Shop Staff</button><button class="login-role-tab" type="button" data-login-role="freelancer" aria-pressed="false">Freelancer</button><button class="login-role-tab" type="button" data-login-role="customer" aria-pressed="false">Customer</button></div><select id="login-account-type" class="hidden" aria-hidden="true" tabindex="-1"><option value="owner">Shop Owner</option><option value="staff">Shop Staff</option><option value="freelancer">Freelancer</option><option value="customer">Customer</option></select><label>Phone number<input id="login-phone" name="phone" autocomplete="username" inputmode="tel" placeholder="07XX XXX XXX" required></label><label>Password<input id="login-password" name="password" type="password" autocomplete="current-password" required></label><button class="btn btn-primary full login-submit-compact" type="submit">LOG IN</button><p id="login-error" class="error" role="alert"></p></form><p class="login-forgot-wrap"><button id="show-password-reset" class="text-btn login-forgot-btn" type="button">FORGOT PASSWORD</button></p>
+        <form id="login-form"><div class="login-role-tabs" role="group" aria-label="Choose account type"><button class="login-role-tab active" type="button" data-login-role="owner" aria-pressed="true">Shop Owner</button><button class="login-role-tab" type="button" data-login-role="staff" aria-pressed="false">Shop Staff</button><button class="login-role-tab" type="button" data-login-role="freelancer" aria-pressed="false">Freelancer</button><button class="login-role-tab" type="button" data-login-role="customer" aria-pressed="false">Customer</button><button class="login-role-tab platform-admin-login-tab" type="button" data-login-role="platform_admin" aria-pressed="false">Platform Admin</button></div><select id="login-account-type" class="hidden" aria-hidden="true" tabindex="-1"><option value="owner">Shop Owner</option><option value="staff">Shop Staff</option><option value="freelancer">Freelancer</option><option value="customer">Customer</option><option value="platform_admin">Platform Admin</option></select><label id="login-identity-label"><span id="login-identity-label-text">Phone number</span><input id="login-phone" name="phone" type="tel" autocomplete="username" inputmode="tel" placeholder="07XX XXX XXX" required></label><label>Password<input id="login-password" name="password" type="password" autocomplete="current-password" required></label><button class="btn btn-primary full login-submit-compact" type="submit">LOG IN</button><p id="login-error" class="error" role="alert"></p></form><p class="login-forgot-wrap"><button id="show-password-reset" class="text-btn login-forgot-btn" type="button">FORGOT PASSWORD</button></p>
         <form id="first-password-form" class="hidden">
           <p class="eyebrow">SECURE YOUR SHOP ACCOUNT</p><h3>Create your own password</h3>
           <p class="muted small">Your owner-provided access code is temporary. Choose a private password of at least 10 characters.</p>
@@ -298,6 +298,11 @@
     </div>
     <div id="platform-security-panel" class="hidden" role="tabpanel" aria-labelledby="platform-security-tab">
       <div class="section-head"><div><p class="eyebrow">PLATFORM PROTECTION</p><h1>Cybersecurity &amp; system maintenance</h1><p class="muted small">Private maintenance tools for authorised platform administrators.</p></div></div>
+      <section id="maintenance-control-room" class="maintenance-control-room" aria-label="Cybersecurity activity monitor" data-state="idle">
+        <div class="maintenance-monitor-head"><div><p class="eyebrow">SECURITY OPERATIONS</p><h2>Maintenance control room</h2><p id="maintenance-monitor-status" class="muted small" role="status" aria-live="polite">Systems standing by · no maintenance action running</p></div><div class="maintenance-monitor-actions"><span id="maintenance-alert-light" class="maintenance-alert-light" aria-hidden="true"></span><button id="maintenance-sound-toggle" class="btn btn-light" type="button" aria-pressed="true">Sound on</button></div></div>
+        <div class="maintenance-monitor-screen"><div class="maintenance-monitor-topline"><span>CYBERSECURITY PULSE</span><span id="maintenance-monitor-phase">STANDBY</span></div><div class="maintenance-wave-wrap"><div class="maintenance-wave-grid" aria-hidden="true"></div><svg class="maintenance-wave" viewBox="0 0 720 120" preserveAspectRatio="none" role="img" aria-label="Decorative animated system activity waveform"><path d="M0 62 H90 L108 62 L122 48 L136 79 L151 14 L168 100 L184 62 H285 L304 62 L318 51 L331 72 L346 32 L361 88 L377 62 H475 L494 62 L508 48 L521 78 L537 20 L553 96 L569 62 H720"/></svg></div><div class="maintenance-monitor-readings"><div><strong id="maintenance-monitor-value">--</strong><span>Activity index</span></div><div><strong id="maintenance-monitor-elapsed">00:00</strong><span>Session time</span></div><div><strong id="maintenance-monitor-checks">READY</strong><span>Assessment state</span></div></div></div>
+        <p class="maintenance-monitor-disclaimer">Animated visual indicator only — it does not represent measured server health or live infrastructure telemetry.</p>
+      </section>
       <div class="maintenance-category-grid" role="group" aria-label="Choose a maintenance area">
         <button type="button" class="maintenance-category active" data-maintenance-category="mpesa" aria-pressed="true"><span aria-hidden="true">▣</span><strong>Fix M-Pesa STK Push</strong><small>Payments, callbacks and wallet top-ups</small></button>
         <button type="button" class="maintenance-category" data-maintenance-category="otp" aria-pressed="false"><span aria-hidden="true">✉</span><strong>Fix OTP</strong><small>SMS delivery, verification and resend delays</small></button>
@@ -502,7 +507,7 @@
   <footer class="aurora-copyright" aria-label="Copyright">copyright@auroraskyholdings2026</footer>
   <script src="./config.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script src="./app.js?v=long-pages-document-scroll-20261118"></script>
+  <script src="./app.js?v=platform-admin-cybersecurity-entry-20261119"></script>
   <script src="./dashboard.js?v=all-accounts-login-landing-20261117"></script>
 
 <script>
