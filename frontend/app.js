@@ -2213,19 +2213,18 @@
     // legacy display rules that can override .hidden and leave Profile cards
     // visible below Products or Goods on Repair.
     const visibility=[
-      ['#shop-register-product-card','products'],
-      ['#shop-find-products-card','products'],
-      ['#shop-home > .loan-items-card','products'],
-      ['#shop-goods-on-repair-card','repairs'],
-      ['#shop-home > .shop-business-details-card','profile'],
-      ['#shop-home > #owner-staff-area','profile'],
-      ['#shop-home > .profile-account-summary','profile']
+      ['#shop-register-product-card','products','owner'],
+      ['#shop-find-products-card','products',null],
+      ['#shop-home > .loan-items-card','products','owner'],
+      ['#shop-goods-on-repair-card','repairs',null],
+      ['#shop-home > .shop-business-details-card','profile',null],
+      ['#shop-home > #owner-staff-area','profile','owner'],
+      ['#shop-home > .profile-account-summary','profile',null]
     ];
-    visibility.forEach(([selector,ownerTab])=>{
+    visibility.forEach(([selector,ownerTab,requiredRole])=>{
       const el=shop?.querySelector(selector);
       if(!el)return;
-      const ownerOnlyLoanCard=selector==='#shop-home > .loan-items-card';
-      const visible=tab===ownerTab&&(!ownerOnlyLoanCard||state.role==='owner');
+      const visible=tab===ownerTab&&(!requiredRole||state.role===requiredRole);
       el.classList.toggle('hidden',!visible);
       el.toggleAttribute('hidden',!visible);
       el.style.setProperty('display',visible?'':'none','important');
