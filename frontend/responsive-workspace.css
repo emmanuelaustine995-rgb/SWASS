@@ -787,3 +787,43 @@ html body.workspace-active #shop-lost-items-panel button,
 html body.workspace-active #shop-lost-items-panel summary {
   touch-action: manipulation !important;
 }
+
+
+/* Desktop phone-frame presentation for ordinary AURORA shop/customer accounts.
+   Platform Admin keeps its full-width control-room layout. */
+body.workspace-active:not(.platform-admin-active) {
+  background: #e9eef4 !important;
+}
+html body.workspace-active:not(.platform-admin-active) main.shell,
+html body.workspace-active:not(.platform-admin-active) .shell {
+  width: min(100vw, 430px) !important;
+  max-width: 430px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  padding-left: 12px !important;
+  padding-right: 12px !important;
+  border-left: 1px solid #dce3eb;
+  border-right: 1px solid #dce3eb;
+  background: #f9fafb;
+  box-shadow: 0 0 34px rgba(15, 23, 42, .10);
+}
+html body.workspace-active:not(.platform-admin-active) main.shell > #workspace-nav:not(.hidden),
+html body.workspace-active:not(.platform-admin-active) main.shell > #workspace-nav.bottom-nav:not(.hidden) {
+  width: min(calc(100vw - 24px), 406px) !important;
+  max-width: 406px !important;
+}
+@media (max-width: 430px) {
+  html body.workspace-active:not(.platform-admin-active) main.shell,
+  html body.workspace-active:not(.platform-admin-active) .shell {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-left: 0;
+    border-right: 0;
+    box-shadow: none;
+  }
+  html body.workspace-active:not(.platform-admin-active) main.shell > #workspace-nav:not(.hidden),
+  html body.workspace-active:not(.platform-admin-active) main.shell > #workspace-nav.bottom-nav:not(.hidden) {
+    width: calc(100vw - 16px) !important;
+    max-width: calc(100vw - 16px) !important;
+  }
+}
