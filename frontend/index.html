@@ -295,13 +295,12 @@
   <div class="receipt-actions-grid">
     <button id="open-issue-receipt" class="receipt-choice" type="button"><span aria-hidden="true">＋</span><strong>Issue Receipt</strong><small>Record a sale and create a customer receipt</small></button>
     <button id="open-recover-receipt" class="receipt-choice" type="button"><span aria-hidden="true">↗</span><strong>Verify Receipt</strong><small>Verify an ordinary sales receipt using customer details</small></button>
+    <div class="declaration-card">
     <button id="secondhand-open-card" class="receipt-choice declaration-choice" type="button" aria-expanded="false" aria-controls="secondhand-panel">
       <span aria-hidden="true">🛡️</span>
       <strong>Sales Declaration Form</strong>
       <small>Record seller, buyer and product details and issue a signed declaration.</small>
     </button>
-  </div>
-
       <section id="secondhand-panel" class="secondhand-panel hidden" aria-label="Sales declaration form">
         <div class="secondhand-panel-heading">
           <div id="secondhand-panel-heading-copy"><p class="eyebrow">AURORA · SPECIAL RECEIPT</p><h2>Sales Declaration Form</h2><p class="muted small">Complete the seller, buyer and product details before issuing the signed sales declaration.</p></div>
@@ -354,6 +353,7 @@
         <div class="secondhand-history-tools"><button id="secondhand-history-toggle" class="btn btn-light" type="button">View Sales Declaration History</button></div>
         <div id="secondhand-history" class="secondhand-history hidden" aria-live="polite"></div>
       </section>
+    </div>
 
   <article id="shop-receipt-history-card" class="profile-card panel shop-receipt-history-card"><div class="profile-card-body"><section id="history-panel" class="receipt-history-panel shop-receipt-history" aria-label="Receipt History"><h3>Receipt History</h3><p class="muted small">View and search receipts issued through your account.</p><button id="history-toggle" class="receipt-history-toggle" type="button" aria-expanded="false" aria-controls="history-content">My Issued Receipt History</button><div id="history-content" class="panel history-panel hidden"><div class="history-filters"><label>Search by IMEI, National ID, phone or name<input id="history-search" type="search" placeholder="Enter IMEI, National ID, phone or customer name"></label><label>From date<input id="history-from" type="date"></label><label>To date<input id="history-to" type="date"></label><button id="history-search-btn" class="btn btn-primary" type="button">Search</button></div><p id="history-error" class="error" role="alert"></p><div id="history-list" class="history-list"><div class="empty">Open your issued receipt history or choose a date range to load receipts issued through your account.</div></div></div></section></div></article>
 
