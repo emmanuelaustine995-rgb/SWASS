@@ -734,28 +734,36 @@ body.registration-open:not(.workspace-active) #freelancer-register-form .btn { m
 }
 
 
-/* Final workspace frame override: laptop and desktop browsers use the same
-   narrow, centred phone workspace; real phone-sized viewports stay full width.
-   Kept in the last-loaded stylesheet so earlier responsive rules cannot undo it. */
-@media (min-width:521px) {
-
-/* Remove the extra top account-access strip; the login card is the page focus. */
+/* Shop disclosure cards must have the same behaviour on phones and desktops.
+   Keep these rules outside desktop-only media queries. */
 .aurora-auth-tabs {display:none!important}
-@media (max-width:520px) {
-  .aurora-auth-tabs {display:none!important}
-}
-/* Shop cards stay closed until the user taps their summary. */
+
+/* Keep Shop Details and Goods on Repair collapsed until their summary is tapped. */
 .shop-business-details-card:not([open])>.profile-card-body,
 #shop-goods-on-repair-card:not([open])>.repair-card-content {display:none!important}
+
 #shop-goods-on-repair-card {
-  display:block!important;box-sizing:border-box!important;width:100%!important;max-width:100%!important;
-  margin:10px 0!important;padding:0!important;border:1px solid #dce6ee!important;
-  border-radius:15px!important;background:#fff!important;overflow:hidden!important;
+  display:block!important;
+  box-sizing:border-box!important;
+  width:100%!important;
+  max-width:100%!important;
+  margin:10px 0!important;
+  padding:0!important;
+  border:1px solid #dce6ee!important;
+  border-radius:15px!important;
+  background:#fff!important;
+  overflow:hidden!important;
 }
 #shop-goods-on-repair-card>summary {
-  display:flex!important;align-items:center!important;justify-content:space-between!important;
-  gap:12px!important;min-height:76px!important;padding:15px!important;
-  list-style:none!important;cursor:pointer!important;background:#f8fbff!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:12px!important;
+  min-height:76px!important;
+  padding:15px!important;
+  list-style:none!important;
+  cursor:pointer!important;
+  background:#f8fbff!important;
 }
 #shop-goods-on-repair-card>summary::-webkit-details-marker {display:none!important}
 #shop-goods-on-repair-card>summary strong {display:block!important;color:#17345c!important;font-size:15px!important}
@@ -763,4 +771,7 @@ body.registration-open:not(.workspace-active) #freelancer-register-form .btn { m
 #shop-goods-on-repair-card .repair-card-content {padding:14px!important;border-top:1px solid #e5edf5!important}
 #shop-goods-on-repair-card .repair-card-heading {margin:0 0 12px!important}
 
-
+@media(max-width:520px) {
+  #shop-goods-on-repair-card>summary {min-height:68px!important;padding:12px!important}
+  #shop-goods-on-repair-card .repair-card-content {padding:10px!important}
+}
