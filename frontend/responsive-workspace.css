@@ -651,7 +651,6 @@ html body.workspace-active main.shell > section:not(.hidden),
 html body.workspace-active main.shell > main:not(.hidden),
 html body.workspace-active main.shell > article:not(.hidden),
 html body.workspace-active main.shell > .panel:not(.hidden) {
-  display: block !important;
   flex: 1 1 0 !important;
   width: 100% !important;
   min-width: 0 !important;
