@@ -286,9 +286,37 @@
   <article class="customer-referral-card"><div class="customer-referral-copy"><p>Let your friends scan your personal QR code to join AURORA. Your referrals will be counted here.</p><strong id="customer-referral-count">0 friends referred</strong></div><div class="customer-referral-qr-wrap"><div id="customer-referral-qr" role="img" aria-label="Your personal customer referral QR code"></div><small>Scan to join</small></div></article>
   <p id="customer-home-message" class="muted small" role="status"></p>
 </section><section id="owner-home" class="owner-home hidden" aria-label="Dashboard"><div class="dashboard-login-return-row"><button id="dashboard-back-to-login" class="dashboard-back-to-login" type="button">← Back to Login</button></div><article class="panel owner-home-card"><h1 id="owner-home-title">Business overview</h1><p id="owner-home-subtitle" class="muted">Your business workspace at a glance.</p></article><div class="subscription-expiry-countdown"><span>Subscription expires in</span><strong id="subscription-expiry-countdown">Checking time…</strong><small id="subscription-expiry">Checking plan dates…</small></div><section id="referral-card" class="referral-area" aria-label="Refer and earn"><article class="panel referral-invite-card"><div class="referral-invite-head"><div><h2>Scan to Invite</h2></div><div id="referral-qr" class="referral-qr" role="img" aria-label="Your referral QR code"></div></div><div class="referral-share-row"><input id="referral-link" type="text" readonly aria-label="Your personal referral link" placeholder="Preparing your referral link…"><button id="referral-share" class="btn" type="button">Share link</button></div></article><article class="panel referral-balance-card"><button id="owner-home-subscription" class="owner-subscription-tab" type="button"><span aria-hidden="true">✦</span> Subscription <span class="owner-subscription-arrow" aria-hidden="true">↗</span></button><div class="referral-balance-number"><strong id="referral-receipts-available">0</strong><span>receipts available</span></div><p class="referral-balance-caption">Receipt rewards ready to redeem</p><button id="referral-redeem" type="button" class="btn referral-redeem-btn">Redeem</button><p id="referral-message" class="muted small" role="status">Loading your reward balance…</p></article><div class="referral-hidden-data" aria-hidden="true"><strong id="referral-total">0</strong><strong id="referral-active">0</strong><strong id="referral-earned">0</strong><strong id="referral-available">KSh 0</strong><strong id="referral-remainder">KSh 0</strong><div id="referral-earning-history"></div><div id="referral-redemption-history"></div></div></section></section><section id="platform-referral-admin" class="panel platform-referral-admin hidden" aria-label="Referral withdrawal administration">
+    <div class="platform-admin-tabs" role="tablist" aria-label="Platform administration">
+      <button type="button" class="platform-admin-tab active" id="platform-finance-tab" role="tab" aria-selected="true" aria-controls="platform-finance-panel">Company finance</button>
+      <button type="button" class="platform-admin-tab" id="platform-security-tab" role="tab" aria-selected="false" aria-controls="platform-security-panel">Cybersecurity</button>
+    </div>
+    <div id="platform-finance-panel" role="tabpanel" aria-labelledby="platform-finance-tab">
+
     <div class="section-head"><div><p class="eyebrow">COMPANY FINANCE</p><h1>Referral withdrawals</h1><p class="muted small">Review referral commission requests. Approving does not send money; make the M-Pesa or bank transfer separately, then record its reference.</p></div><button id="platform-referral-refresh" class="btn btn-light" type="button">Refresh</button></div>
     <div id="platform-referral-admin-message" class="muted small" role="status">Loading withdrawal requests…</div>
     <div id="platform-referral-admin-list" class="platform-referral-admin-list"></div>
+    </div>
+    <div id="platform-security-panel" class="hidden" role="tabpanel" aria-labelledby="platform-security-tab">
+      <div class="section-head"><div><p class="eyebrow">PLATFORM PROTECTION</p><h1>Cybersecurity &amp; system maintenance</h1><p class="muted small">Private maintenance tools for authorised platform administrators.</p></div></div>
+      <div class="maintenance-category-grid" role="group" aria-label="Choose a maintenance area">
+        <button type="button" class="maintenance-category active" data-maintenance-category="mpesa" aria-pressed="true"><span aria-hidden="true">▣</span><strong>Fix M-Pesa STK Push</strong><small>Payments, callbacks and wallet top-ups</small></button>
+        <button type="button" class="maintenance-category" data-maintenance-category="otp" aria-pressed="false"><span aria-hidden="true">✉</span><strong>Fix OTP</strong><small>SMS delivery, verification and resend delays</small></button>
+        <button type="button" class="maintenance-category" data-maintenance-category="login" aria-pressed="false"><span aria-hidden="true">⌁</span><strong>Fix Login &amp; Registration</strong><small>Access, sessions and account setup</small></button>
+        <button type="button" class="maintenance-category" data-maintenance-category="scrolling" aria-pressed="false"><span aria-hidden="true">▤</span><strong>Fix Page Scrolling</strong><small>Mobile layout, touch and page movement</small></button>
+        <button type="button" class="maintenance-category" data-maintenance-category="general" aria-pressed="false"><span aria-hidden="true">⚙</span><strong>Improve System</strong><small>General maintenance and reliability</small></button>
+      </div>
+      <form id="maintenance-request-form" class="maintenance-request-form">
+        <label for="maintenance-instruction">Describe the issue or improvement</label>
+        <textarea id="maintenance-instruction" rows="4" maxlength="2000" placeholder="Describe what is happening, which page is affected, and what should happen instead…" required></textarea>
+        <p class="muted small">Do not enter passwords, API keys, OTP codes, payment credentials or customer identity information.</p>
+        <div class="maintenance-submit-row"><span id="maintenance-request-status" class="muted small" role="status" aria-live="polite">Choose a category and describe the issue.</span><button id="maintenance-send" class="btn btn-primary" type="submit">Send request</button></div>
+      </form>
+      <article id="maintenance-result" class="maintenance-result hidden" aria-live="polite">
+        <div class="maintenance-result-head"><strong>Maintenance assessment</strong><span id="maintenance-result-mode">Diagnosis</span></div>
+        <div id="maintenance-result-answer" class="maintenance-result-answer"></div>
+        <p id="maintenance-result-note" class="muted small"></p>
+      </article>
+    </div>
   </section>
 <section id="receipts-home" class="panel receipts-home hidden" aria-label="Receipts">
   <div class="section-head"><div><h1>Receipts</h1></div></div>
