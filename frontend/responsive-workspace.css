@@ -704,3 +704,41 @@ html body.workspace-active main.shell > section:not(.hidden) button,
 html body.workspace-active main.shell > section:not(.hidden) summary {
   touch-action: manipulation !important;
 }
+
+/* Sales Declaration is a long form nested inside the Receipts page.
+   Give this panel its own native touch-scroll viewport so the form remains
+   reachable even while the surrounding receipt landing page is fixed. */
+html body.workspace-active #receipts-home #secondhand-panel:not(.hidden) {
+  display: block !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: calc(100dvh - 168px) !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  overscroll-behavior-y: contain !important;
+  touch-action: pan-y !important;
+  scrollbar-width: none !important;
+  padding-bottom: calc(28px + env(safe-area-inset-bottom)) !important;
+}
+html body.workspace-active #receipts-home #secondhand-panel:not(.hidden)::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+html body.workspace-active #receipts-home #secondhand-panel:not(.hidden) > *,
+html body.workspace-active #receipts-home #secondhand-panel:not(.hidden) .secondhand-form,
+html body.workspace-active #receipts-home #secondhand-panel:not(.hidden) .secondhand-form fieldset,
+html body.workspace-active #receipts-home #secondhand-panel:not(.hidden) .secondhand-form label {
+  touch-action: pan-y !important;
+}
+html body.workspace-active #receipts-home #secondhand-panel:not(.hidden) input,
+html body.workspace-active #receipts-home #secondhand-panel:not(.hidden) select,
+html body.workspace-active #receipts-home #secondhand-panel:not(.hidden) textarea,
+html body.workspace-active #receipts-home #secondhand-panel:not(.hidden) button {
+  touch-action: manipulation !important;
+}
