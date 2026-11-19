@@ -13,6 +13,7 @@ import { IntaSendController } from './intasend/intasend.controller';
 import { ReceiptRecoveryController } from './receipts/recovery.controller';
 import { PlatformFinanceController } from './platform-finance/platform-finance.controller';
 import { PlatformAdminController } from './platform-admin/platform-admin.controller';
+import { AiMaintenanceController } from './platform-admin/ai-maintenance.controller';
 import { PlatformOperationsController } from './platform-admin/platform-operations.controller';
 import { BusinessProfileController } from './business/business-profile.controller';
 import { CustomersController } from './customers/customers.controller';
@@ -28,7 +29,7 @@ import { RepairsController } from './repairs/repairs.controller';
 
 @Module({
   imports: [JwtModule.register({ global: true, secret: process.env.JWT_SECRET })],
-  controllers: [HealthController, AuthController, ReceiptsController, InventoryController, DashboardController, MpesaController, ReceiptRecoveryController, PlatformFinanceController, PlatformAdminController, PlatformOperationsController, BusinessProfileController, CustomersController, StaffController, ReferralsController, SecondHandPhoneDeclarationsController, SecondHandSpecialRecoveryController, LoanItemsController, LostItemsController, PublicLostItemsController, RepairsController, IntaSendController],
+  controllers: [HealthController, AuthController, ReceiptsController, InventoryController, DashboardController, MpesaController, ReceiptRecoveryController, PlatformFinanceController, PlatformAdminController, AiMaintenanceController, PlatformOperationsController, BusinessProfileController, CustomersController, StaffController, ReferralsController, SecondHandPhoneDeclarationsController, SecondHandSpecialRecoveryController, LoanItemsController, LostItemsController, PublicLostItemsController, RepairsController, IntaSendController],
   providers: [DbService, ReceiptsService, EmailVerificationService, WhatsAppReceiptService, AuthGuard, RolesGuard, { provide: MpesaService, useClass: MpesaService }, IntaSendService],
 })
 export class AppModule {}
