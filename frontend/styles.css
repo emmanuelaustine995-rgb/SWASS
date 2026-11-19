@@ -2628,3 +2628,8 @@ body.workspace-active #shop-home details.shop-goods-on-repair-card > .repair-car
   padding:12px!important;
   border-top:1px solid #e2edf5!important;
 }
+
+
+/* Keep the five sign-in choices readable, including the dedicated platform-admin entry. */
+.login-role-tabs{grid-template-columns:repeat(3,minmax(0,1fr))}
+.login-role-tab.platform-admin-login-tab{grid-column:span 2;font-size:11px;letter-spacing:.01em}
