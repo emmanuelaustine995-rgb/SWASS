@@ -635,3 +635,73 @@ html body.workspace-active #shop-home:not(.hidden) {
 html body.workspace-active #shop-home:not(.hidden)::-webkit-scrollbar {
   display: none !important;
 }
+
+
+/* Workspace-wide native mobile scrolling.
+   Every active top-level workspace sector (Home, Receipts, Shop, POS,
+   subscriptions, customer, flagged items, staff and admin views) scrolls
+   by ordinary finger swipes. The app frame and bottom navigation stay put.
+   Nested content expands naturally so users do not need to find tiny
+   inner scrollbars or arrow controls. */
+html body.workspace-active main.shell {
+  overscroll-behavior: none !important;
+  touch-action: pan-y !important;
+}
+html body.workspace-active main.shell > section:not(.hidden),
+html body.workspace-active main.shell > main:not(.hidden),
+html body.workspace-active main.shell > article:not(.hidden),
+html body.workspace-active main.shell > .panel:not(.hidden) {
+  display: block !important;
+  flex: 1 1 0 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  height: 0 !important;
+  max-height: none !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  overscroll-behavior-y: contain !important;
+  touch-action: pan-y !important;
+  scrollbar-width: none !important;
+}
+html body.workspace-active main.shell > section:not(.hidden)::-webkit-scrollbar,
+html body.workspace-active main.shell > main:not(.hidden)::-webkit-scrollbar,
+html body.workspace-active main.shell > article:not(.hidden)::-webkit-scrollbar,
+html body.workspace-active main.shell > .panel:not(.hidden)::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+html body.workspace-active main.shell > section:not(.hidden) *,
+html body.workspace-active main.shell > main:not(.hidden) *,
+html body.workspace-active main.shell > article:not(.hidden) *,
+html body.workspace-active main.shell > .panel:not(.hidden) * {
+  touch-action: pan-y !important;
+}
+html body.workspace-active main.shell > #workspace-nav:not(.hidden),
+html body.workspace-active main.shell > #workspace-nav:not(.hidden) * {
+  touch-action: pan-x !important;
+}
+html body.workspace-active main.shell > section:not(.hidden) details,
+html body.workspace-active main.shell > section:not(.hidden) form,
+html body.workspace-active main.shell > section:not(.hidden) article,
+html body.workspace-active main.shell > section:not(.hidden) .panel,
+html body.workspace-active main.shell > section:not(.hidden) [role="list"],
+html body.workspace-active main.shell > section:not(.hidden) [role="region"] {
+  max-height: none !important;
+}
+html body.workspace-active main.shell > section:not(.hidden) form,
+html body.workspace-active main.shell > section:not(.hidden) article,
+html body.workspace-active main.shell > section:not(.hidden) .panel {
+  overflow-y: visible !important;
+  -webkit-overflow-scrolling: auto !important;
+  overscroll-behavior: auto !important;
+}
+html body.workspace-active main.shell > section:not(.hidden) input,
+html body.workspace-active main.shell > section:not(.hidden) select,
+html body.workspace-active main.shell > section:not(.hidden) textarea,
+html body.workspace-active main.shell > section:not(.hidden) button,
+html body.workspace-active main.shell > section:not(.hidden) summary {
+  touch-action: manipulation !important;
+}
