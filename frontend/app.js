@@ -333,14 +333,48 @@
       $('maintenance-monitor-value').textContent=String(68+(elapsed%9));
     },1000);
   }
-  function finishMaintenanceDisplay(success){
+  function finishMaintenanceDisplay(success,completionMessage=''){
     const room=$('maintenance-control-room');if(!room)return;
     clearInterval(maintenanceSessionTimer);maintenanceSessionTimer=null;stopMaintenanceAmbient();
-    room.dataset.state=success?'complete':'failed';
-    $('maintenance-monitor-status').textContent=success?'Assessment completed · no code changes or deployment were performed':'Assessment did not complete · review the error before retrying';
-    $('maintenance-monitor-phase').textContent=success?'COMPLETE':'ATTENTION REQUIRED';
-    $('maintenance-monitor-checks').textContent=success?'DONE':'CHECK';
-    maintenanceTone(success?740:240,0.34,0.04);
+    // A diagnosis or draft PR is not a verified production repair; keep the monitor neutral.
+    room.dataset.state=success?'assessment':'failed';
+    $('maintenance-monitor-status').textContent=success?(completionMessage||'Assessment ready · no code changes or deployment were performed'):'Maintenance action failed · review the error before retrying';
+    $('maintenance-monitor-phase').textContent=success?'ASSESSMENT READY':'ATTENTION REQUIRED';
+    $('maintenance-monitor-checks').textContent=success?'REVIEW':'CHECK';
+    maintenanceTone(success?520:240,0.34,0.04);
+  }
+  function addMaintenanceRepairAction(instruction){
+    const result=$('maintenance-result');if(!result)return;
+    $('maintenance-repair-button')?.remove();
+    $('maintenance-repair-link')?.remove();
+    const button=document.createElement('button');
+    button.id='maintenance-repair-button';button.type='button';button.className='btn btn-primary';
+    button.textContent='Prepare code repair pull request';
+    button.addEventListener('click',async()=>{
+      if(state.role!=='super_admin')return;
+      const status=$('maintenance-request-status');
+      button.disabled=true;button.textContent='Preparing secure repair…';
+      status.textContent='Reading approved source files and preparing an isolated repair proposal…';
+      startMaintenanceDisplay();
+      try{
+        const proposal=await request('/api/v1/platform-admin/ai-maintenance/repair-proposal',{
+          method:'POST',body:JSON.stringify({category:maintenanceCategory,instruction})
+        });
+        const link=document.createElement('a');
+        link.id='maintenance-repair-link';link.href=proposal.pullRequestUrl;link.target='_blank';link.rel='noopener noreferrer';
+        link.textContent='Open draft repair PR #'+proposal.pullRequestNumber;
+        link.className='maintenance-repair-link';
+        result.append(link);
+        status.textContent=proposal.message||'Draft repair pull request created. Await CI and review.';
+        finishMaintenanceDisplay(true,'Draft PR created · CI pending · human review required');
+      }catch(error){
+        status.textContent=error.message||'Could not prepare the code repair.';
+        finishMaintenanceDisplay(false);
+      }finally{
+        button.disabled=false;button.textContent='Prepare code repair pull request';
+      }
+    });
+    result.append(button);
   }
   $('maintenance-sound-toggle')?.addEventListener('click',()=>{
     maintenanceSoundEnabled=!maintenanceSoundEnabled;
@@ -363,6 +397,8 @@
     if(instruction.length>2000){status.textContent='Keep the instruction under 2,000 characters.';return;}
     send.disabled=true;send.textContent='Reviewing…';status.textContent='Preparing a secure maintenance assessment…';startMaintenanceDisplay();
     result?.classList.add('hidden');
+    $('maintenance-repair-button')?.remove();
+    $('maintenance-repair-link')?.remove();
     try{
       const data=await request('/api/v1/platform-admin/ai-maintenance/diagnose',{
         method:'POST',body:JSON.stringify({category:maintenanceCategory,instruction})
@@ -371,7 +407,8 @@
       $('maintenance-result-mode').textContent='Diagnosis only';
       $('maintenance-result-note').textContent=data.message||'No code was changed and nothing was deployed.';
       result?.classList.remove('hidden');
-      status.textContent='Assessment ready.';finishMaintenanceDisplay(true);
+      addMaintenanceRepairAction(instruction);
+      status.textContent='Assessment ready. You can request a draft code repair for review.';finishMaintenanceDisplay(true);
     }catch(error){
       status.textContent=error.message||'Could not prepare the maintenance assessment.';finishMaintenanceDisplay(false);
     }finally{
