@@ -100,7 +100,7 @@ export class AiRepairController {
       const data = await this.github('/repos/' + repository + '/contents/' + path.split('/').map(encodeURIComponent).join('/') + '?ref=' + encodeURIComponent(baseCommitSha), githubToken);
       if (data.type !== 'file' || typeof data.content !== 'string' || data.encoding !== 'base64') continue;
       const decoded = Buffer.from(data.content.replace(/\n/g, ''), 'base64').toString('utf8');
-      if (decoded.length > 45000) continue;
+      if (decoded.length > 75000) continue;
       const safeContent = this.redactSource(decoded);
       // Do not ask the model to rewrite a file if source redaction would alter it.
       if (safeContent !== decoded) continue;
@@ -108,7 +108,7 @@ export class AiRepairController {
     }
     if (!files.length) throw new ServiceUnavailableException('No approved source files could be read for this repair category.');
     const sourceSize = files.reduce((sum, file) => sum + file.content.length, 0);
-    if (sourceSize > 110000) throw new ServiceUnavailableException('The selected source set is too large for a safe repair request. Narrow the issue and retry.');
+    if (sourceSize > 125000) throw new ServiceUnavailableException('The selected source set is too large for a safe repair request. Narrow the issue and retry.');
 
     const prompt = [
       'You are preparing a proposed code repair for AURORA E-RECEIPT / SWASS, a production business and receipts platform.',
