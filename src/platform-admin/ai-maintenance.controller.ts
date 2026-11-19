@@ -77,7 +77,7 @@ export class AiMaintenanceController {
       if (response.status === 401 || response.status === 403) {
         throw new ServiceUnavailableException('The AI API key was rejected. Check the OPENAI_API_KEY value and API project billing/access.');
       }
-      if (response.status === 429) throw new TooManyRequestsException('The AI service is rate-limited or its API usage quota is exhausted. Check the API project usage and billing.', HttpStatus.TOO_MANY_REQUESTS);
+      if (response.status === 429) throw new HttpException('The AI service is rate-limited or its API usage quota is exhausted. Check the API project usage and billing.', HttpStatus.TOO_MANY_REQUESTS);
       throw new ServiceUnavailableException('The AI diagnosis request failed. Check the API service configuration and try again.');
     }
 
