@@ -78,6 +78,7 @@
   function showLogin(){
     clearSession();
     document.body.classList.remove('workspace-active');
+    document.body.classList.remove('platform-admin-active');
     // A signed-out visitor must see only the login/registration area.
     document.body.classList.remove('customer-account-active');
     const protectedScreens=[
@@ -549,6 +550,7 @@
   function showWorkspaceScreen(screen,options={}){
     if(!state.token){showLogin();return;}
     document.body.classList.add('workspace-active');
+    document.body.classList.toggle('platform-admin-active', state.role==='super_admin');
     $('login-view')?.classList.add('hidden');
     $('back-to-login-btn')?.classList.remove('hidden');
     if(!['dashboard','receipts','profile','shop','subscription','lost-goods'].includes(screen))screen='dashboard';
