@@ -775,3 +775,15 @@ body.registration-open:not(.workspace-active) #freelancer-register-form .btn { m
   #shop-goods-on-repair-card>summary {min-height:68px!important;padding:12px!important}
   #shop-goods-on-repair-card .repair-card-content {padding:10px!important}
 }
+
+/* Native <details> cards: never let older !important display rules expose
+   their form contents while the card is collapsed. The summary stays visible
+   and tapping it opens the content normally. */
+#shop-home details.shop-register-product-card:not([open]) > .shop-register-product-body,
+#shop-home details.shop-search-directory-card:not([open]) > .shop-product-search-form,
+#shop-home details.loan-items-card:not([open]) > .loan-card-body,
+#shop-home details.shop-goods-on-repair-card:not([open]) > .repair-card-content,
+#shop-home details.shop-business-details-card:not([open]) > .profile-card-body,
+#shop-home details.profile-account-summary:not([open]) > .profile-card-body {
+  display:none!important;
+}
