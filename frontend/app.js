@@ -296,6 +296,63 @@
       item.setAttribute('aria-pressed',String(active));
     });
   }));
+  // A discreet, user-controlled soundscape and visual state for the private maintenance workspace.
+  let maintenanceSoundEnabled=true,maintenanceAudioContext=null,maintenanceAmbient=null,maintenanceSessionTimer=null,maintenanceStartedAt=0;
+  function maintenanceTone(frequency=520,duration=0.16,volume=0.035){
+    if(!maintenanceSoundEnabled)return;
+    try{
+      const AudioContextClass=window.AudioContext||window.webkitAudioContext;
+      if(!AudioContextClass)return;
+      maintenanceAudioContext=maintenanceAudioContext||new AudioContextClass();
+      if(maintenanceAudioContext.state==='suspended')void maintenanceAudioContext.resume();
+      const oscillator=maintenanceAudioContext.createOscillator(),gain=maintenanceAudioContext.createGain();
+      oscillator.type='sine';oscillator.frequency.value=frequency;gain.gain.setValueAtTime(volume,maintenanceAudioContext.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001,maintenanceAudioContext.currentTime+duration);
+      oscillator.connect(gain);gain.connect(maintenanceAudioContext.destination);oscillator.start();oscillator.stop(maintenanceAudioContext.currentTime+duration);
+    }catch(_error){}
+  }
+  function stopMaintenanceAmbient(){
+    if(maintenanceAmbient){try{maintenanceAmbient.stop();}catch(_error){}maintenanceAmbient=null;}
+  }
+  function startMaintenanceDisplay(){
+    const room=$('maintenance-control-room');if(!room)return;
+    maintenanceStartedAt=Date.now();room.dataset.state='running';
+    $('maintenance-monitor-status').textContent='Security assessment in progress · monitoring visual active';
+    $('maintenance-monitor-phase').textContent='ALERT / RUNNING';
+    $('maintenance-monitor-checks').textContent='RUNNING';
+    $('maintenance-monitor-value').textContent='72';
+    maintenanceTone(880,0.22,0.045);setTimeout(()=>maintenanceTone(660,0.18,0.035),180);
+    if(maintenanceSoundEnabled){
+      try{const C=window.AudioContext||window.webkitAudioContext;if(C){maintenanceAudioContext=maintenanceAudioContext||new C();if(maintenanceAudioContext.state==='suspended')void maintenanceAudioContext.resume();maintenanceAmbient=maintenanceAudioContext.createOscillator();const gain=maintenanceAudioContext.createGain();maintenanceAmbient.type='sine';maintenanceAmbient.frequency.value=58;gain.gain.value=0.006;maintenanceAmbient.connect(gain);gain.connect(maintenanceAudioContext.destination);maintenanceAmbient.start();}}
+      catch(_error){}
+    }
+    clearInterval(maintenanceSessionTimer);
+    maintenanceSessionTimer=setInterval(()=>{
+      const elapsed=Math.max(0,Math.floor((Date.now()-maintenanceStartedAt)/1000));
+      $('maintenance-monitor-elapsed').textContent=String(Math.floor(elapsed/60)).padStart(2,'0')+':'+String(elapsed%60).padStart(2,'0');
+      $('maintenance-monitor-value').textContent=String(68+(elapsed%9));
+    },1000);
+  }
+  function finishMaintenanceDisplay(success){
+    const room=$('maintenance-control-room');if(!room)return;
+    clearInterval(maintenanceSessionTimer);maintenanceSessionTimer=null;stopMaintenanceAmbient();
+    room.dataset.state=success?'complete':'failed';
+    $('maintenance-monitor-status').textContent=success?'Assessment completed · no code changes or deployment were performed':'Assessment did not complete · review the error before retrying';
+    $('maintenance-monitor-phase').textContent=success?'COMPLETE':'ATTENTION REQUIRED';
+    $('maintenance-monitor-checks').textContent=success?'DONE':'CHECK';
+    maintenanceTone(success?740:240,0.34,0.04);
+  }
+  $('maintenance-sound-toggle')?.addEventListener('click',()=>{
+    maintenanceSoundEnabled=!maintenanceSoundEnabled;
+    $('maintenance-sound-toggle').textContent=maintenanceSoundEnabled?'Sound on':'Sound off';
+    $('maintenance-sound-toggle').setAttribute('aria-pressed',String(maintenanceSoundEnabled));
+    if(!maintenanceSoundEnabled)stopMaintenanceAmbient();
+    else if($('maintenance-control-room')?.dataset.state==='running')startMaintenanceAmbientIfNeeded();
+  });
+  function startMaintenanceAmbientIfNeeded(){
+    if(!maintenanceSoundEnabled||maintenanceAmbient)return;
+    try{const C=window.AudioContext||window.webkitAudioContext;if(!C)return;maintenanceAudioContext=maintenanceAudioContext||new C();if(maintenanceAudioContext.state==='suspended')void maintenanceAudioContext.resume();maintenanceAmbient=maintenanceAudioContext.createOscillator();const gain=maintenanceAudioContext.createGain();maintenanceAmbient.type='sine';maintenanceAmbient.frequency.value=58;gain.gain.value=0.006;maintenanceAmbient.connect(gain);gain.connect(maintenanceAudioContext.destination);maintenanceAmbient.start();}catch(_error){}
+  }
   $('maintenance-request-form')?.addEventListener('submit',async event=>{
     event.preventDefault();
     if(state.role!=='super_admin')return;
@@ -304,7 +361,7 @@
     const instruction=String(input?.value||'').trim();
     if(!instruction){status.textContent='Describe the issue before sending.';input?.focus();return;}
     if(instruction.length>2000){status.textContent='Keep the instruction under 2,000 characters.';return;}
-    send.disabled=true;send.textContent='Reviewing…';status.textContent='Preparing a secure maintenance assessment…';
+    send.disabled=true;send.textContent='Reviewing…';status.textContent='Preparing a secure maintenance assessment…';startMaintenanceDisplay();
     result?.classList.add('hidden');
     try{
       const data=await request('/api/v1/platform-admin/ai-maintenance/diagnose',{
@@ -314,9 +371,9 @@
       $('maintenance-result-mode').textContent='Diagnosis only';
       $('maintenance-result-note').textContent=data.message||'No code was changed and nothing was deployed.';
       result?.classList.remove('hidden');
-      status.textContent='Assessment ready.';
+      status.textContent='Assessment ready.';finishMaintenanceDisplay(true);
     }catch(error){
-      status.textContent=error.message||'Could not prepare the maintenance assessment.';
+      status.textContent=error.message||'Could not prepare the maintenance assessment.';finishMaintenanceDisplay(false);
     }finally{
       send.disabled=false;send.textContent='Send request';
     }
