@@ -178,3 +178,18 @@ test('platform finance and cybersecurity controls never render in the ordinary A
   assert.match(adminPage, /api\('\/platform-admin\/overview'\)\.then\([\s\S]*?showApp\(\)/);
   assert.match(adminPage, /localStorage\.removeItem\('swass-auth-session-v1'\)/);
 });
+
+
+test('AURORA redesign changes real page markup and provides working dashboard shortcuts', () => {
+  assert.match(html, /class="login-wrap aurora-login-layout"/);
+  assert.match(html, /class="aurora-login-story"/);
+  assert.match(html, /class="aurora-dashboard-hero"/);
+  assert.match(html, /class="panel receipts-home hidden aurora-receipts-view"/);
+  assert.match(html, /class="shop-home hidden aurora-shop-view"/);
+  assert.match(html, /class="hidden aurora-pos-view"/);
+  const modernCss = read('../frontend/aurora-modern.css');
+  assert.match(modernCss, /\.aurora-login-story/);
+  assert.match(modernCss, /\.aurora-dashboard-hero/);
+  assert.match(modernCss, /\.aurora-art-sheet/);
+  assert.match(app, /aurora-hero-actions[\s\S]*?showWorkspaceScreen\(button\.dataset\.workspace\)/);
+});
