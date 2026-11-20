@@ -719,3 +719,78 @@ body:not(.platform-admin-workspace) .aurora-dashboard-view .aurora-channel-offli
  body:not(.platform-admin-workspace) .aurora-dashboard-view .comparison-grid{grid-template-columns:1fr}
  body:not(.platform-admin-workspace) .aurora-dashboard-view .channel-grid{grid-template-columns:1fr}
 }
+
+/* AURORA home flow — inspired by premium mobile finance layouts, with original business content. */
+body:not(.platform-admin-workspace) .aurora-dashboard-view{padding-bottom:34px}
+body:not(.platform-admin-workspace) .aurora-bank-home{margin:0 0 24px;padding:4px 0 0;overflow:hidden}
+.aurora-bank-header{display:flex;align-items:center;gap:13px;padding:9px 2px 22px}
+.aurora-bank-avatar{width:48px;height:48px;flex:0 0 48px;display:grid;place-items:center;border-radius:50%;background:linear-gradient(145deg,#8d48dc,#35136f);color:#fff;font:800 31px Georgia;box-shadow:0 0 0 2px #fff,0 0 0 3px #b48add}
+.aurora-bank-greeting{display:grid;gap:4px;min-width:0}
+.aurora-bank-greeting>span,.aurora-account-top span,.aurora-account-balance small,.aurora-feature-carousel article>span,.aurora-business-tools>div>span{font-size:9px;letter-spacing:.16em;font-weight:850;color:#8c789e}
+.aurora-bank-greeting strong{font-size:clamp(19px,3vw,26px);font-weight:650;letter-spacing:-.035em;color:#201a2b}
+.aurora-bank-tools{display:flex;gap:8px;margin-left:auto}
+.aurora-bank-tools button{width:39px;height:39px;border:1px solid #e7e0ec;border-radius:50%;background:#fff;color:#55228c;font-size:23px}
+.aurora-account-carousel{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding:2px 2px 12px}
+.aurora-account-carousel::-webkit-scrollbar,.aurora-feature-carousel::-webkit-scrollbar,.aurora-shortcuts::-webkit-scrollbar{display:none}
+.aurora-account-slide{scroll-snap-align:center;flex:0 0 min(82%,650px);min-height:250px;padding:22px 24px;border:1px solid #d8cde3;border-radius:24px 7px 24px 7px;position:relative;overflow:hidden;background:#17121e;color:#fff;box-shadow:0 15px 35px #21132a1a}
+.aurora-account-slide:after{content:"";position:absolute;width:260px;height:260px;border:1px solid #ffffff1b;border-radius:50%;right:-130px;bottom:-150px;box-shadow:0 0 0 28px #ffffff08,0 0 0 62px #ffffff05;pointer-events:none}
+.aurora-account-primary{background:radial-gradient(circle at 90% 5%,#9a42c52c,transparent 34%),linear-gradient(125deg,#17131e,#241533 65%,#3a1b4e)}
+.aurora-account-secondary{background:linear-gradient(125deg,#172f35,#155d60 70%,#183a45);border-color:#317d7a}
+.aurora-account-tertiary{background:linear-gradient(125deg,#29203b,#50316d 68%,#2d1a47);border-color:#76569a}
+.aurora-account-top{display:flex;justify-content:space-between;gap:16px;position:relative;z-index:1}
+.aurora-account-top>div{display:grid;gap:7px}
+.aurora-account-top span{color:#c7b4d6}
+.aurora-account-top strong{font-size:20px;font-weight:650;letter-spacing:-.025em}
+.aurora-account-top>b{font-size:30px;color:#d9a2ef}
+.aurora-account-balance{display:grid;gap:6px;margin:24px 0 17px;position:relative;z-index:1}
+.aurora-account-balance small{color:#cbb7d7}
+.aurora-account-balance strong{font-size:clamp(27px,5vw,38px);letter-spacing:-.045em;font-weight:650}
+.aurora-account-balance>span{font-size:11px;color:#cbbfd1}
+.aurora-account-actions{display:flex;gap:10px;position:relative;z-index:1}
+.aurora-account-actions button,.aurora-account-slide>button{border:1px solid #ffffff70;border-radius:14px 5px 14px 5px;padding:11px 17px;background:#ffffff12;color:#fff;font-weight:700}
+.aurora-account-actions button:first-child,.aurora-account-slide>button{background:#fff;color:#39204b;border-color:#fff}
+.aurora-health-list{display:grid;gap:10px;margin:22px 0 15px;position:relative;z-index:1}
+.aurora-health-list span{display:flex;align-items:center;gap:10px;padding-bottom:8px;border-bottom:1px solid #ffffff26;font-size:13px}
+.aurora-health-list i{font-style:normal;color:#a3e0d7;font-size:10px}
+.aurora-health-list b{margin-left:auto;color:#b8e6dc}
+.aurora-account-slide>p{max-width:300px;line-height:1.65;color:#e1d6ec;font-size:13px;margin:22px 0}
+.aurora-carousel-dots{display:flex;justify-content:center;gap:7px;padding:1px 0 19px}
+.aurora-carousel-dots i{width:8px;height:8px;border-radius:50%;background:#c9c1ce}
+.aurora-carousel-dots i.active{width:27px;border-radius:20px;background:#9a27c8}
+.aurora-shortcuts{display:flex;justify-content:space-between;gap:14px;overflow-x:auto;scrollbar-width:none;padding:5px 2px 18px}
+.aurora-shortcuts button{flex:1 0 62px;display:grid;justify-items:center;gap:8px;border:0;background:transparent;color:#282132;padding:0}
+.aurora-shortcuts button span{width:60px;height:60px;display:grid;place-items:center;border:3px solid #e7d8eb;border-radius:50%;background:#fbf7fc;color:#9227bd;font-size:27px;box-shadow:inset 0 0 0 5px #fff}
+.aurora-shortcuts button b{font-size:12px;font-weight:650;white-space:nowrap}
+.aurora-home-tabs{display:flex;gap:0;border-bottom:1px solid #d7d0dc;margin:4px 0 17px}
+.aurora-home-tabs button{flex:1;border:0;border-bottom:3px solid transparent;background:transparent;padding:13px 8px 11px;color:#6e6476;font-size:13px;font-weight:700}
+.aurora-home-tabs button.active{border-bottom-color:#a42bc9;color:#9224b8}
+.aurora-feature-carousel{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding:0 2px 19px}
+.aurora-feature-carousel article{scroll-snap-align:start;flex:0 0 min(76%,330px);min-height:168px;padding:18px 19px;background:linear-gradient(145deg,#f3eafa,#fff 70%);border:1px solid #e7d9ee;border-radius:5px 19px 5px 19px;display:flex;flex-direction:column;align-items:flex-start;gap:8px}
+.aurora-feature-carousel article:nth-child(2){background:linear-gradient(145deg,#e7f4f1,#fff 70%);border-color:#d7e9e3}
+.aurora-feature-carousel article:nth-child(3){background:linear-gradient(145deg,#f5eee4,#fff 70%);border-color:#eee2d2}
+.aurora-feature-carousel article>span{color:#8d40a7}
+.aurora-feature-carousel article strong{font-size:18px;line-height:1.2;color:#282034;max-width:260px}
+.aurora-feature-carousel article small{font-size:11px;line-height:1.5;color:#6f6877}
+.aurora-feature-carousel article button{margin-top:auto;border:0;padding:0;background:transparent;color:#8d26ad;font-size:12px;font-weight:800}
+.aurora-business-tools{margin:6px 0 24px;padding:19px 0;border-top:1px solid #e5dce9;border-bottom:1px solid #e5dce9;display:grid;grid-template-columns:1fr;gap:0}
+.aurora-business-tools>div{display:grid;gap:7px;padding:0 0 10px}
+.aurora-business-tools>div>span{color:#8d40a7}
+.aurora-business-tools>div>strong{font-size:21px;color:#292033;letter-spacing:-.03em}
+.aurora-business-tools>button{display:flex;justify-content:space-between;align-items:center;padding:14px 2px;border:0;border-top:1px solid #eee7f0;background:transparent;color:#3c3046;text-align:left;font-size:13px;font-weight:650}
+.aurora-business-tools>button b{color:#9826bb}
+body:not(.platform-admin-workspace) .aurora-dashboard-hero{display:none!important}
+body:not(.platform-admin-workspace) .aurora-dashboard-view .owner-stats{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding:0 2px 12px}
+body:not(.platform-admin-workspace) .aurora-dashboard-view .owner-stat{flex:0 0 min(72%,260px);scroll-snap-align:start;min-height:126px;border-radius:6px 20px 6px 20px;background:#fff}
+body:not(.platform-admin-workspace) .aurora-dashboard-view .page-heading{margin-top:24px}
+body:not(.platform-admin-workspace) .aurora-dashboard-view .command-bar{border-radius:22px 6px 22px 6px}
+@media(max-width:640px){
+ body:not(.platform-admin-workspace) .aurora-bank-header{padding:8px 0 17px}
+ .aurora-account-slide{flex-basis:88%;min-height:238px;padding:19px}
+ .aurora-account-actions button{flex:1;padding:10px 8px;font-size:12px}
+ .aurora-shortcuts{justify-content:flex-start;gap:17px}
+ .aurora-shortcuts button{flex:0 0 62px}
+ .aurora-shortcuts button span{width:56px;height:56px}
+ .aurora-home-tabs{position:sticky;top:0;z-index:5;background:#fff}
+ .aurora-feature-carousel article{flex-basis:82%}
+}
+@media(prefers-reduced-motion:reduce){.aurora-account-carousel,.aurora-feature-carousel{scroll-behavior:auto}}
