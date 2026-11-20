@@ -5,6 +5,7 @@ import { readFileSync } from 'node:fs';
 const read = (path) => readFileSync(new URL(path, import.meta.url), 'utf8');
 const html = read('../frontend/index.html');
 const app = read('../frontend/app.js');
+const dashboardJs = read('../frontend/dashboard.js');
 const css = read('../frontend/responsive-workspace.css');
 
 test('ordinary login exposes only shop, staff, freelancer and customer choices', () => {
@@ -280,6 +281,16 @@ test('AURORA Home is exactly four fixed-height swipe cards with live shop, invit
   assert.match(modernCss,/@keyframes aurora-cloud-flow/);
 });
 
+
+test('legacy dashboard initialization never reveals analytics or POS over independent workspace pages', () => {
+  const start=dashboardJs.indexOf('function activateOwnerWorkspace(session)');
+  const end=dashboardJs.indexOf("window.addEventListener('swass:login'",start);
+  assert.ok(start>=0&&end>start,'legacy dashboard initializer exists');
+  const initializer=dashboardJs.slice(start,end);
+  assert.match(initializer,/initializePeriod\(\);loadDashboard\(\);loadCustomers\(\)/);
+  assert.doesNotMatch(initializer,/classList\.remove\('hidden'\)/);
+  assert.doesNotMatch(initializer,/workspace-nav/);
+});
 
 test('AURORA workspace navigation opens one independent destination at a time', () => {
   assert.doesNotMatch(html,/class="aurora-bank-home"/);

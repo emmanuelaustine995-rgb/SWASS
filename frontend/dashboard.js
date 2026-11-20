@@ -134,15 +134,9 @@
   function activateOwnerWorkspace(session){
     state.token=session?.token||null;state.role=session?.role||null;
     if(!state.token||!['owner','manager','freelancer'].includes(state.role))return;
-    $('owner-dashboard-view').classList.remove('hidden');
-    $('owner-dashboard-view').classList.remove('workspace-accounting','workspace-console');
-    $('owner-dashboard-view').classList.add('workspace-dashboard');
-    document.getElementById('pos-view').classList.remove('hidden');
-    document.querySelector('.pos-grid')?.classList.add('hidden');
-    ['history-panel','owner-customers-section','profile-panel'].forEach(id=>document.getElementById(id)?.classList.add('hidden'));
-    document.querySelector('.customer-lookup-panel')?.classList.add('hidden');
-    document.getElementById('workspace-nav').classList.remove('hidden');
-    document.querySelectorAll('#workspace-nav button').forEach(b=>b.classList.toggle('active',b.dataset.workspace==='dashboard'));
+    // app.js exclusively owns page visibility and navigation. This legacy
+    // dashboard module may load its data, but must never reveal its old
+    // analytics/POS containers over the independent Home, Receipts or Shop pages.
     initializePeriod();loadDashboard();loadCustomers();
   }
   window.addEventListener('swass:login',ev=>activateOwnerWorkspace(ev.detail||{}));
