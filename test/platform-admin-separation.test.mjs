@@ -204,3 +204,81 @@ test('AURORA redesign changes real page markup and provides working dashboard sh
   assert.match(modernCss, /\.aurora-art-sheet/);
   assert.match(app, /aurora-hero-actions[\s\S]*?showWorkspaceScreen\(button\.dataset\.workspace\)/);
 });
+
+
+test('AURORA home uses a swipeable business overview and working workspace shortcuts', () => {
+  assert.match(html, /class="aurora-bank-home"/);
+  assert.match(html, /class="aurora-account-carousel"/);
+  assert.match(html, /class="aurora-shortcuts"/);
+  assert.match(html, /class="aurora-home-tabs"/);
+  assert.match(html, /class="aurora-feature-carousel"/);
+  assert.match(html, /data-workspace="receipts"/);
+  assert.match(html, /data-workspace="shop"/);
+  assert.match(html, /id="owner-stats" class="owner-stats"/);
+  assert.match(app, /aurora-bank-home[\s\S]*?showWorkspaceScreen\(workspace\.dataset\.workspace\)/);
+  assert.match(app, /aurora-home-search[\s\S]*?owner-workspace-search/);
+});
+
+
+test('AURORA sign-in uses the premium dark mobile-first entrance without changing account roles', () => {
+  assert.match(html, /id="login-view" class="login-wrap aurora-login-layout"/);
+  assert.match(html, /data-login-role="owner"/);
+  assert.match(html, /data-login-role="staff"/);
+  assert.match(html, /data-login-role="freelancer"/);
+  assert.match(html, /data-login-role="customer"/);
+  assert.match(html, /id="login-phone"/);
+  assert.match(html, /id="login-password"/);
+  assert.match(html, /id="show-password-reset"/);
+  const modernCss = read('../frontend/aurora-modern.css');
+  assert.match(modernCss, /:has\(#login-view:not\(\.hidden\)\)/);
+  assert.match(modernCss, /\.aurora-login-card[\s\S]*?background:linear-gradient\(145deg,#17141b,#100e13\)/);
+  assert.match(modernCss, /\.login-role-tab\.active[\s\S]*?linear-gradient\(135deg,#8c24b6,#55217b\)/);
+});
+
+
+test('AURORA sign-in is a standalone portal with no ordinary workspace navigation', () => {
+  assert.match(html, /<body class="aurora-login-active">/);
+  assert.match(app, /function showLogin\(\)[\s\S]*?classList\.add\('aurora-login-active'\)/);
+  assert.match(app, /function showWorkspaceScreen\([\s\S]*?classList\.remove\('aurora-login-active'\)/);
+  assert.match(app, /function showPOS\(\)[\s\S]*?classList\.remove\('aurora-login-active'\)/);
+  const modernCss = read('../frontend/aurora-modern.css');
+  assert.match(modernCss, /body\.aurora-login-active>header[\s\S]*?display:none!important/);
+  assert.match(modernCss, /body\.aurora-login-active>\.global-back-row/);
+  assert.ok(modernCss.includes('body.aurora-login-active>.shell>*:not(#login-view)'));
+  assert.match(modernCss, /linear-gradient\(180deg,#b8d8f0 0%,#e7eff8 48%,#f2e9f5 100%\)/);
+  assert.match(modernCss, /viewBox='0 0 1600 760'/);
+  assert.match(modernCss, /\.aurora-login-active #login-view \.aurora-login-card/);
+});
+
+
+test('AURORA Home is exactly four fixed-height swipe cards with live shop, invite and subscription content', () => {
+  const start=html.indexOf('<section id="owner-home"');
+  const end=html.indexOf('<section id="receipts-home"',start);
+  assert.ok(start>=0&&end>start,'owner home section exists');
+  const home=html.slice(start,end);
+  assert.match(home,/class="aurora-home-card aurora-home-card-pink"/);
+  assert.match(home,/id="referral-card" class="aurora-home-card aurora-home-card-blue"/);
+  assert.match(home,/class="aurora-home-card aurora-home-card-sky"/);
+  assert.match(home,/class="aurora-home-card aurora-home-card-gold"/);
+  assert.equal((home.match(/class="aurora-home-card /g)||[]).length,4);
+  assert.match(home,/id="aurora-home-shop-name"/);
+  assert.match(home,/id="aurora-home-shop-logo"/);
+  assert.match(home,/id="aurora-home-deck"/);
+  assert.match(home,/id="referral-link"/);
+  assert.match(home,/id="referral-qr"/);
+  assert.match(home,/id="referral-share"/);
+  assert.match(home,/id="subscription-expiry-countdown"/);
+  assert.match(home,/id="owner-home-subscription"/);
+  assert.match(app,/function renderAuroraHomeIdentity\([\s\S]*?logoData/);
+  assert.match(app,/function updateSubscriptionCountdown\([\s\S]*?setInterval\(tick,1000\)/);
+  assert.match(app,/data-home-slide/);
+  assert.match(app,/aurora-home-active',screen==='dashboard'/);
+  const modernCss=read('../frontend/aurora-modern.css');
+  assert.match(modernCss,/body\.aurora-home-active[\s\S]*?overflow:hidden!important/);
+  assert.match(modernCss,/\.aurora-home-deck[\s\S]*?overflow-x:auto;overflow-y:hidden/);
+  assert.match(modernCss,/\.aurora-home-card-pink/);
+  assert.match(modernCss,/\.aurora-home-card-blue/);
+  assert.match(modernCss,/\.aurora-home-card-sky/);
+  assert.match(modernCss,/\.aurora-home-card-gold/);
+  assert.match(modernCss,/@keyframes aurora-cloud-flow/);
+});
