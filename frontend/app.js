@@ -1884,6 +1884,19 @@
   });
   $('workspace-nav').addEventListener('click',e=>{const b=e.target.closest('[data-workspace]');if(b)showWorkspaceScreen(b.dataset.workspace);});
   document.querySelector('.aurora-hero-actions')?.addEventListener('click',e=>{const button=e.target.closest('[data-workspace]');if(button)showWorkspaceScreen(button.dataset.workspace);});
+  // AURORA home shortcuts share the existing workspace router.
+  document.querySelector('.aurora-bank-home')?.addEventListener('click',e=>{
+    const workspace=e.target.closest('[data-workspace]');
+    if(workspace){showWorkspaceScreen(workspace.dataset.workspace);return;}
+    const scroll=e.target.closest('[data-home-scroll]');
+    if(scroll){const target=$(scroll.dataset.homeScroll);if(target){target.scrollIntoView({behavior:'smooth',block:'start'});}document.querySelectorAll('.aurora-home-tabs button').forEach(tab=>tab.classList.toggle('active',tab===scroll));}
+  });
+  $('aurora-home-search')?.addEventListener('click',()=>{const search=$('owner-workspace-search');if(search){search.focus();search.scrollIntoView({behavior:'smooth',block:'center'});}});
+  $('aurora-home-profile')?.addEventListener('click',()=> $('profile-menu-btn')?.click());
+  const auroraHomeUser=$('aurora-home-user');if(auroraHomeUser)auroraHomeUser.textContent=state.userName?' '+state.userName:'';
+  const auroraHomeSales=$('aurora-home-sales');if(auroraHomeSales&&$('owner-today-sales'))auroraHomeSales.textContent=$('owner-today-sales').textContent;
+  const auroraHomeBusiness=$('aurora-home-business-name');if(auroraHomeBusiness)auroraHomeBusiness.textContent=state.businessProfile?.businessName||state.businessProfile?.name||'Your business';
+
   $('owner-home-subscription')?.addEventListener('click',()=>showWorkspaceScreen('subscription'));
   $('back-to-receipts').addEventListener('click',()=>{
     $('pos-view').classList.add('hidden');
