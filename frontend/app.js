@@ -741,6 +741,7 @@
         document.getElementById('staff-profile-panel')?.classList.remove('hidden');
       }
     }
+    document.body.classList.toggle('aurora-home-active',screen==='dashboard'&&['owner','manager','vendor','freelancer'].includes(state.role));
     document.querySelectorAll('#workspace-nav button').forEach(b=>b.classList.toggle('active',b.dataset.workspace===screen));
     // Re-apply the customer dock after workspace visibility and active-tab updates.
     if(state.role==='customer')enforceCustomerReceiptActions();
