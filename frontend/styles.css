@@ -2653,21 +2653,3 @@ body.platform-admin-login:not(.workspace-active) #login-view .login-card{max-wid
 
 body.platform-admin-login:not(.workspace-active) .aurora-auth-welcome{display:none!important}
 
-
-/* ORDINARY WORKSPACE CLEAN-SLATE RESET (2026-11-20)
-   Keep login/registration intact. Once an ordinary account is signed in,
-   show only the existing main navigation bar while the shop pages are rebuilt.
-   The separate Platform Admin workspace is explicitly excluded and remains untouched. */
-body.workspace-active:not(.platform-admin-workspace) main.shell > :not(#workspace-nav) {
-  display: none !important;
-}
-body.workspace-active:not(.platform-admin-workspace) main.shell > #workspace-nav {
-  display: flex !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-}
-body.workspace-active:not(.platform-admin-workspace) #account-profile-menu,
-body.workspace-active:not(.platform-admin-workspace) .modal,
-body.workspace-active:not(.platform-admin-workspace) .modal-backdrop {
-  display: none !important;
-}
