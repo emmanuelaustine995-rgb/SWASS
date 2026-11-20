@@ -594,6 +594,12 @@
     document.body.classList.remove('aurora-login-active');
     document.body.classList.add('workspace-active');
     $('login-view')?.classList.add('hidden');
+    const mainNavigation=$('workspace-nav');
+    if(mainNavigation&&state.role!=='super_admin'){
+      mainNavigation.classList.remove('hidden');
+      mainNavigation.style.setProperty('display','grid','important');
+      mainNavigation.setAttribute('aria-hidden','false');
+    }
     $('back-to-login-btn')?.classList.remove('hidden');
     if(!['dashboard','receipts','profile','shop','subscription','lost-goods'].includes(screen))screen='dashboard';
     document.body.classList.toggle('aurora-home-active',screen==='dashboard'&&['owner','manager','vendor','freelancer'].includes(state.role));
@@ -636,8 +642,7 @@
         dashboardBusinessCard?.classList.add('hidden');customerHome?.classList.remove('hidden');
         if($('customer-home-name'))$('customer-home-name').textContent=state.userName||'Welcome';
         void loadCustomerReferralSummary();
-      }else if(state.role==='owner')dashboardBusinessCard?.classList.remove('hidden');
-      else dashboardBusinessCard?.classList.add('hidden');
+      }else dashboardBusinessCard?.classList.add('hidden');
       if(state.role==='super_admin'){
         // The platform control room is a separate top-level page, not a POS/profile tab.
         // Keep every ordinary shop root and its bottom navigation hidden.
@@ -743,6 +748,11 @@
     }
     document.body.classList.toggle('aurora-home-active',screen==='dashboard'&&['owner','manager','vendor','freelancer'].includes(state.role));
     document.querySelectorAll('#workspace-nav button').forEach(b=>b.classList.toggle('active',b.dataset.workspace===screen));
+    if(mainNavigation&&state.role!=='super_admin'){
+      mainNavigation.classList.remove('hidden');
+      mainNavigation.style.setProperty('display','grid','important');
+      mainNavigation.setAttribute('aria-hidden','false');
+    }
     // Re-apply the customer dock after workspace visibility and active-tab updates.
     if(state.role==='customer')enforceCustomerReceiptActions();
     syncGlobalBackButton();
