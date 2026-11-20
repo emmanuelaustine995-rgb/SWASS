@@ -204,3 +204,17 @@ test('AURORA redesign changes real page markup and provides working dashboard sh
   assert.match(modernCss, /\.aurora-art-sheet/);
   assert.match(app, /aurora-hero-actions[\s\S]*?showWorkspaceScreen\(button\.dataset\.workspace\)/);
 });
+
+
+test('AURORA home uses a swipeable business overview and working workspace shortcuts', () => {
+  assert.match(html, /class="aurora-bank-home"/);
+  assert.match(html, /class="aurora-account-carousel"/);
+  assert.match(html, /class="aurora-shortcuts"/);
+  assert.match(html, /class="aurora-home-tabs"/);
+  assert.match(html, /class="aurora-feature-carousel"/);
+  assert.match(html, /data-workspace="receipts"/);
+  assert.match(html, /data-workspace="shop"/);
+  assert.match(html, /id="owner-stats" class="owner-stats"/);
+  assert.match(app, /aurora-bank-home[\s\S]*?showWorkspaceScreen\(workspace\.dataset\.workspace\)/);
+  assert.match(app, /aurora-home-search[\s\S]*?owner-workspace-search/);
+});
