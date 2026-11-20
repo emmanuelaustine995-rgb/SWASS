@@ -550,6 +550,13 @@
   document.querySelectorAll('[data-freelancer-screen]').forEach(button=>button.addEventListener('click',()=>showWorkspaceScreen(button.dataset.freelancerScreen)));
   function showWorkspaceScreen(screen,options={}){
     if(!state.token){showLogin();return;}
+    // Platform administrators must leave the ordinary shop application entirely.
+    // Pass the already authenticated token to the dedicated admin portal, where it is revalidated.
+    if(state.role==='super_admin'){
+      try{sessionStorage.setItem('aurora-admin-token',state.token);}catch{}
+      window.location.replace('./admin.html');
+      return;
+    }
     // Platform Admin has a dedicated control-room destination, never the shop workspace.
     if(state.role==='super_admin'&&screen!=='dashboard')screen='dashboard';
     document.body.classList.toggle('platform-admin-workspace',state.role==='super_admin');
