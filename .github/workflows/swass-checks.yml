@@ -31,6 +31,8 @@ jobs:
       - run: npm install --include=dev
       - name: Check every JavaScript file
         run: git ls-files -z '*.js' '*.mjs' | xargs -0 -r -n1 node --check
+      - name: Prevent ordinary and Platform Admin login from being mixed
+        run: node --test test/platform-admin-separation.test.mjs
       - name: Reject unresolved Git conflict markers
         run: if grep -RInE '^(<<<<<<< |=======|>>>>>>> )' --exclude-dir=.git --exclude-dir=node_modules .; then echo 'Unresolved conflict markers found'; exit 1; else echo 'No unresolved conflict markers'; fi
       - run: npm run migrate:node
