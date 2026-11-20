@@ -78,6 +78,7 @@
   function hideNotice(){ $('notice').classList.add('hidden'); }
   function showLogin(){
     clearSession();
+    document.body.classList.remove('platform-admin-workspace');
     document.body.classList.remove('workspace-active');
     // A signed-out visitor must see only the login/registration area.
     document.body.classList.remove('customer-account-active');
@@ -549,6 +550,9 @@
   document.querySelectorAll('[data-freelancer-screen]').forEach(button=>button.addEventListener('click',()=>showWorkspaceScreen(button.dataset.freelancerScreen)));
   function showWorkspaceScreen(screen,options={}){
     if(!state.token){showLogin();return;}
+    // Platform Admin has a dedicated control-room destination, never the shop workspace.
+    if(state.role==='super_admin'&&screen!=='dashboard')screen='dashboard';
+    document.body.classList.toggle('platform-admin-workspace',state.role==='super_admin');
     document.body.classList.add('workspace-active');
     $('login-view')?.classList.add('hidden');
     $('back-to-login-btn')?.classList.remove('hidden');
@@ -595,13 +599,15 @@
       }else if(state.role==='owner')dashboardBusinessCard?.classList.remove('hidden');
       else dashboardBusinessCard?.classList.add('hidden');
       if(state.role==='super_admin'){
+        // The platform control room is a separate top-level page, not a POS/profile tab.
+        // Keep every ordinary shop root and its bottom navigation hidden.
         dashboardBusinessCard?.classList.add('hidden');
-        // Platform administration is mounted inside #pos-view. Reveal that
-        // shell for super-admins only, while keeping the ordinary POS grid
-        // hidden so no shop checkout controls are exposed on this screen.
-        pos?.classList.remove('hidden');
+        pos?.classList.add('hidden');
         posGrid?.classList.add('hidden');
+        $('workspace-nav')?.classList.add('hidden');
+        $('account-profile-menu')?.classList.add('hidden');
         $('platform-referral-admin')?.classList.remove('hidden');
+        $('global-back-btn')?.classList.add('hidden');
         setPlatformAdminTab('security');
         void loadPlatformReferralAdmin();
       }else if(!['owner','manager','vendor','freelancer'].includes(state.role)&&state.role!=='customer'){
@@ -701,7 +707,7 @@
     syncGlobalBackButton();
   }
 
-  function showPOS(){ if(!state.token){showLogin();return;} document.body.classList.add('workspace-active'); $('login-view').classList.add('hidden'); $('back-to-login-btn')?.classList.remove('hidden'); $('pos-view').classList.remove('hidden'); $('welcome-back-banner')?.classList.add('hidden'); $('profile-menu-btn')?.classList.remove('hidden'); $('logout-btn')?.classList.remove('hidden'); const label=$('user-label');label.textContent=state.userName||state.staffTitle||(state.role==='cashier'?'Shop Attendant':state.role?state.role.replace('_',' '):'Staff');if(state.userPhotoData){const avatar=document.createElement('img');avatar.src=state.userPhotoData;avatar.alt='Profile photo';avatar.style.cssText='width:30px;height:30px;object-fit:cover;border-radius:50%;vertical-align:middle;margin-right:8px';label.prepend(avatar);} $('dashboard-link').classList.toggle('hidden', !['owner','manager','vendor','freelancer'].includes(state.role));$('workspace-nav').classList.remove('hidden');const isCustomerAccount=state.role==='customer';document.body.classList.toggle('customer-account-active',isCustomerAccount);document.body.classList.toggle('freelancer-account-active',state.role==='freelancer');const canAccessShopTab=!isCustomerAccount&&['owner','vendor','freelancer'].includes(state.role);document.querySelectorAll('#workspace-nav [data-workspace="shop"]').forEach(el=>{el.hidden=!canAccessShopTab;el.classList.toggle('hidden',!canAccessShopTab);el.style.setProperty('display',canAccessShopTab?'':'none','important');el.setAttribute('aria-hidden',canAccessShopTab?'false':'true');});document.querySelectorAll('#workspace-nav [data-workspace="customers"]').forEach(el=>{el.hidden=true;el.classList.add('hidden');el.style.setProperty('display','none','important');el.setAttribute('aria-hidden','true');});if(state.role==='customer')enforceCustomerReceiptActions();syncGlobalBackButton();  }
+  function showPOS(){ if(!state.token){showLogin();return;} document.body.classList.add('workspace-active'); $('login-view').classList.add('hidden'); $('back-to-login-btn')?.classList.remove('hidden'); $('pos-view').classList.remove('hidden'); $('welcome-back-banner')?.classList.add('hidden'); $('profile-menu-btn')?.classList.remove('hidden'); $('logout-btn')?.classList.remove('hidden'); const label=$('user-label');label.textContent=state.userName||state.staffTitle||(state.role==='cashier'?'Shop Attendant':state.role?state.role.replace('_',' '):'Staff');if(state.userPhotoData){const avatar=document.createElement('img');avatar.src=state.userPhotoData;avatar.alt='Profile photo';avatar.style.cssText='width:30px;height:30px;object-fit:cover;border-radius:50%;vertical-align:middle;margin-right:8px';label.prepend(avatar);} $('dashboard-link').classList.toggle('hidden', !['owner','manager','vendor','freelancer'].includes(state.role));$('workspace-nav').classList.toggle('hidden',state.role==='super_admin');const isCustomerAccount=state.role==='customer';document.body.classList.toggle('customer-account-active',isCustomerAccount);document.body.classList.toggle('freelancer-account-active',state.role==='freelancer');const canAccessShopTab=!isCustomerAccount&&['owner','vendor','freelancer'].includes(state.role);document.querySelectorAll('#workspace-nav [data-workspace="shop"]').forEach(el=>{el.hidden=!canAccessShopTab;el.classList.toggle('hidden',!canAccessShopTab);el.style.setProperty('display',canAccessShopTab?'':'none','important');el.setAttribute('aria-hidden',canAccessShopTab?'false':'true');});document.querySelectorAll('#workspace-nav [data-workspace="customers"]').forEach(el=>{el.hidden=true;el.classList.add('hidden');el.style.setProperty('display','none','important');el.setAttribute('aria-hidden','true');});if(state.role==='customer')enforceCustomerReceiptActions();syncGlobalBackButton();  }
   async function lookupCustomer(ev){
     ev.preventDefault();
     const phone=$('lookup-phone').value.trim();
