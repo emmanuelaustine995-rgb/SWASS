@@ -1719,6 +1719,8 @@
       if(!data.accessToken)throw new Error('The server did not return a sign-in token. Please try again.');
       const parts=data.accessToken.split('.')[1];
       const claims=JSON.parse(atob(parts.replace(/-/g,'+').replace(/_/g,'/')));
+      if(accountType==='platform_admin' && claims.role!=='super_admin')throw new Error('This account is not authorised for Platform Admin access. Use your ordinary shop login instead.');
+      if(accountType!=='platform_admin' && claims.role==='super_admin')throw new Error('Platform Admin accounts must use the separate Platform Admin sign-in page.');
       state.token=data.accessToken;
       state.role=claims.role;
       state.userName=data.user?.fullName||data.user?.name||data.user?.displayName||claims.fullName||claims.name||claims.displayName||claims.firstName||'';state.staffTitle=data.user?.staffTitle||'';state.userPhotoData=data.user?.profilePhotoData||'';state.userPhone=data.user?.phone||(accountType==='platform_admin'?'':loginIdentity);state.userEmail=data.user?.email||(accountType==='platform_admin'?loginIdentity:'');
@@ -2495,5 +2497,5 @@
   });
   void openPublicLostItem();
 
-  renderCart();if(new URLSearchParams(location.search).has('lostItem')){clearSession();}else void restoreSession();
+  renderCart();if(platformAdminLoginMode){clearSession();showLogin();}else if(new URLSearchParams(location.search).has('lostItem')){clearSession();}else void restoreSession();
 })();
