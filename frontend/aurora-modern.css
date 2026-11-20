@@ -1060,3 +1060,110 @@ body.aurora-login-active .registration-sticky-footer{background:#fbf9fd!importan
  body.aurora-login-active #login-view:before{animation:aurora-sky-drift 22s ease-in-out infinite alternate}
  @keyframes aurora-sky-drift{from{background-position:0 0,100% 0,0 0,0 0}to{background-position:8% 2%,93% 3%,0 0,0 0}}
 }
+
+/* AURORA Home: four immersive, fixed-height cards with swipe navigation. */
+body.aurora-home-active{height:100dvh!important;min-height:100dvh!important;overflow:hidden!important;overscroll-behavior:none}
+body.aurora-home-active>main.shell{width:100%!important;max-width:100%!important;height:calc(100dvh - 68px)!important;min-height:0!important;margin:0!important;padding:9px 10px 82px!important;overflow:hidden!important}
+body.aurora-home-active #owner-home.aurora-fixed-home{
+ display:flex!important;flex-direction:column;gap:9px;width:min(100%,620px);height:100%;min-height:0;
+ max-height:100%;margin:0 auto!important;padding:0!important;overflow:hidden!important;
+}
+body.aurora-home-active .aurora-home-heading{flex:0 0 42px;display:flex;align-items:center;justify-content:space-between;padding:0 5px;color:#1e2940}
+.aurora-home-heading>div:first-child{display:grid;gap:1px}
+.aurora-home-heading>div:first-child>span{font-size:8px;letter-spacing:.19em;font-weight:900;color:#7a6889}
+.aurora-home-heading>div:first-child>strong{font-size:16px;line-height:1.2;max-width:75vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.aurora-home-page-count{display:flex;align-items:center;gap:5px;font-size:11px;color:#82758e;font-weight:800}
+.aurora-home-page-count span{color:#7e259f;font-size:18px}
+.aurora-home-deck{display:flex;flex:1 1 auto;min-height:0;width:100%;gap:0;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scroll-behavior:smooth;overscroll-behavior-x:contain;scrollbar-width:none;border-radius:25px}
+.aurora-home-deck::-webkit-scrollbar{display:none}
+.aurora-home-card{position:relative;isolation:isolate;flex:0 0 100%;width:100%;height:100%;min-height:0;overflow:hidden;scroll-snap-align:start;scroll-snap-stop:always;border:1px solid #ffffff8c;border-radius:25px 7px 25px 7px;box-shadow:0 18px 45px #25334a24;color:#fff}
+.aurora-home-card-pink{background:linear-gradient(145deg,#ed9fbd 0%,#d65e91 52%,#a93475 100%)}
+.aurora-home-card-blue{background:linear-gradient(145deg,#74b9ed 0%,#327bc2 56%,#164d91 100%)}
+.aurora-home-card-sky{background:linear-gradient(145deg,#b6e9f7 0%,#69c6e5 53%,#318dbd 100%);color:#143653}
+.aurora-home-card-gold{background:linear-gradient(145deg,#f5d889 0%,#d7a43e 55%,#9c6c20 100%);color:#3e2b12}
+.aurora-card-sky{position:absolute;z-index:-1;inset:0;overflow:hidden;pointer-events:none;opacity:.92;
+ background:
+ radial-gradient(ellipse 26% 9% at 18% 16%,#ffffffa8 0 54%,transparent 57%),
+ radial-gradient(ellipse 24% 8% at 36% 14%,#ffffff88 0 54%,transparent 57%),
+ radial-gradient(ellipse 31% 10% at 80% 28%,#ffffff85 0 54%,transparent 57%),
+ linear-gradient(180deg,#ffffff28 0%,transparent 46%,#ffffff0c 100%);
+}
+.aurora-card-sky:before{content:"";position:absolute;inset:-15% -35%;background:
+ radial-gradient(ellipse 20% 5% at 20% 25%,#fff9 0 50%,transparent 56%),
+ radial-gradient(ellipse 24% 6% at 66% 18%,#fff8 0 50%,transparent 56%),
+ radial-gradient(ellipse 18% 5% at 88% 42%,#fff8 0 50%,transparent 56%);
+ filter:blur(5px);animation:aurora-cloud-flow 19s ease-in-out infinite alternate}
+.aurora-card-sky:after{content:"";position:absolute;left:-5%;right:-5%;bottom:-2px;height:35%;opacity:.24;
+ background:linear-gradient(90deg,transparent 0 4%,#fff 4% 4.6%,transparent 4.6% 10%,#fff 10% 17%,transparent 17% 20%,#fff 20% 21%,transparent 21% 28%,#fff 28% 37%,transparent 37% 41%,#fff 41% 42%,transparent 42% 50%,#fff 50% 58%,transparent 58% 62%,#fff 62% 63%,transparent 63% 70%,#fff 70% 78%,transparent 78% 82%,#fff 82% 90%,transparent 90%);
+ clip-path:polygon(0 42%,8% 42%,8% 12%,16% 12%,16% 54%,23% 54%,23% 22%,34% 22%,34% 44%,41% 44%,41% 0,52% 0,52% 42%,60% 42%,60% 17%,70% 17%,70% 50%,77% 50%,77% 9%,88% 9%,88% 38%,100% 38%,100% 100%,0 100%);
+ animation:aurora-city-glow 7s ease-in-out infinite alternate}
+@keyframes aurora-cloud-flow{from{transform:translate3d(-4%,0,0) scale(1)}to{transform:translate3d(5%,2%,0) scale(1.08)}}
+@keyframes aurora-city-glow{from{opacity:.12;transform:translateY(2%)}to{opacity:.32;transform:translateY(-1%)}}
+.aurora-card-content{position:relative;z-index:1;display:flex;flex-direction:column;width:100%;height:100%;min-height:0;padding:clamp(18px,4.5vw,30px);gap:10px}
+.aurora-card-kicker{font-size:9px;font-weight:900;letter-spacing:.2em;text-shadow:0 1px 8px #23334a22}
+.aurora-identity-content{align-items:center;text-align:center;justify-content:space-between}
+.aurora-shop-logo-frame{position:relative;display:grid;place-items:center;width:min(58vw,245px);height:min(43vh,245px);min-height:145px;max-height:245px;margin:2px auto 0;border:1px solid #ffffffa8;border-radius:28px 7px 28px 7px;background:#ffffff20;box-shadow:0 15px 45px #6d22522b;overflow:hidden;backdrop-filter:blur(9px)}
+.aurora-logo-sky-placeholder{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:linear-gradient(160deg,#ffffff55,#f8c9dd22 45%,#b7e8fa66)}
+.aurora-logo-sky-placeholder:before{content:"";position:absolute;inset:-35%;background:radial-gradient(ellipse at 30% 30%,#fff 0 8%,transparent 30%),radial-gradient(ellipse at 68% 45%,#ffffffbb 0 7%,transparent 28%),linear-gradient(130deg,transparent 20%,#ffffff55 48%,transparent 65%);animation:aurora-cloud-flow 14s ease-in-out infinite alternate}
+.aurora-logo-sky-placeholder span{position:relative;font-size:clamp(64px,15vw,100px);font-weight:950;line-height:1;color:#fff;text-shadow:0 6px 25px #8c2f6970}
+.aurora-logo-sky-placeholder small{position:relative;font-size:8px;letter-spacing:.22em;color:#fff;font-weight:900}
+.aurora-shop-logo-frame img{position:relative;z-index:2;max-width:100%;max-height:100%;width:100%;height:100%;object-fit:contain;padding:15px;background:#ffffff12}
+.aurora-shop-logo-frame.has-logo .aurora-logo-sky-placeholder{display:none}
+.aurora-shop-identity-name{width:100%;display:grid;gap:4px}
+.aurora-shop-identity-name small{font-size:8px;letter-spacing:.2em;font-weight:900;color:#fffC}
+.aurora-shop-identity-name h1{margin:0!important;color:#fff!important;font-size:clamp(22px,6vw,34px)!important;line-height:1.08;overflow-wrap:anywhere}
+.aurora-shop-identity-name p{margin:0;color:#fffD;font-size:11px}
+.aurora-card-action{display:flex;justify-content:space-between;align-items:center;gap:14px;min-height:45px;padding:0 17px;border:1px solid #ffffffad;border-radius:14px 5px 14px 5px;background:#ffffff25;color:#fff;font-weight:850}
+.aurora-invite-content h2,.aurora-overview-content h2,.aurora-subscription-content h2{margin:0;color:inherit!important;font-size:clamp(24px,6vw,34px)!important;line-height:1.05}
+.aurora-invite-content>p,.aurora-subscription-content>p{margin:0;max-width:420px;font-size:12px;line-height:1.5;color:#ffffffed}
+.aurora-invite-qr-wrap{display:grid;place-items:center;flex:1;min-height:0}
+.aurora-invite-qr-wrap .referral-qr{display:grid;place-items:center;width:min(34vw,158px);height:min(34vw,158px);padding:9px;border:1px solid #ffffffbd;border-radius:17px;background:#fff;overflow:hidden}
+.aurora-invite-qr-wrap .referral-qr img,.aurora-invite-qr-wrap .referral-qr canvas{max-width:100%;max-height:100%;width:auto!important;height:auto!important}
+.aurora-invite-share{display:flex;gap:7px;align-items:center}
+.aurora-invite-share input{flex:1;min-width:0;min-height:42px!important;padding:8px 10px!important;border:1px solid #ffffff78!important;border-radius:10px!important;background:#ffffffeb!important;color:#1b3655!important;font-size:10px!important}
+.aurora-invite-share button,.aurora-invite-reward button{flex:0 0 auto;min-height:42px;padding:0 12px;border:1px solid #fff;border-radius:10px;background:#fff;color:#21558d;font-size:11px;font-weight:850}
+.aurora-invite-reward{display:flex;align-items:center;gap:9px;padding:8px 10px;border:1px solid #ffffff70;border-radius:12px;background:#ffffff1c}
+.aurora-invite-reward strong{font-size:21px}.aurora-invite-reward span{flex:1;font-size:10px}.aurora-invite-reward button{min-height:34px}
+.aurora-card-status{margin:0!important;min-height:13px;font-size:9px;color:#ffffffd9}
+.aurora-live-sales{display:grid;gap:7px;margin:auto 0;padding:20px;border:1px solid #ffffffa8;border-radius:20px 5px 20px 5px;background:#ffffff35;backdrop-filter:blur(8px)}
+.aurora-live-sales small,.aurora-overview-mini-grid small,.aurora-subscription-count small{font-size:9px;font-weight:900;letter-spacing:.17em;color:#225579}
+.aurora-live-sales strong{font-size:clamp(34px,9vw,52px);line-height:1;color:#143c5c;letter-spacing:-.05em}
+.aurora-live-sales span{font-size:11px;color:#285a78}
+.aurora-overview-mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.aurora-overview-mini-grid>div{display:grid;gap:5px;padding:12px;border:1px solid #ffffff91;border-radius:13px;background:#ffffff30}
+.aurora-overview-mini-grid strong{font-size:16px;color:#143c5c}
+.aurora-overview-actions{display:flex;gap:8px;margin-top:auto}
+.aurora-overview-actions button{flex:1;min-width:0;min-height:43px;border:1px solid #ffffffbd;border-radius:12px 4px 12px 4px;background:#ffffffc9;color:#17466b;font-size:11px;font-weight:850}
+.aurora-subscription-content{justify-content:space-between}
+.aurora-subscription-content .aurora-card-kicker,.aurora-subscription-content h2{color:#51370e!important}
+.aurora-subscription-count{display:grid;gap:9px;margin:auto 0;padding:19px 16px;border:1px solid #fff9d8;border-radius:18px 5px 18px 5px;background:#fff9e6a8;backdrop-filter:blur(8px)}
+.aurora-subscription-count small{color:#80601f}
+.aurora-subscription-count strong{font-size:clamp(27px,7.4vw,40px);line-height:1;color:#5a3d0e;letter-spacing:-.04em}
+.aurora-subscription-count span{font-size:10px;color:#725b2c}
+.aurora-subscription-cta{display:flex;align-items:center;justify-content:space-between;min-height:50px;padding:0 17px;border:1px solid #fff7d8;border-radius:13px 5px 13px 5px;background:#5e4315;color:#fff9e8;font-weight:900}
+.aurora-home-pagination{flex:0 0 34px;display:flex;align-items:center;justify-content:center;gap:8px}
+.aurora-home-pagination button{min-width:37px;min-height:29px;padding:0 9px;border:1px solid #d8d0df;border-radius:20px;background:#fff;color:#75657f;font-size:10px;font-weight:850}
+.aurora-home-pagination button.active{min-width:55px;background:#8126a7;border-color:#8126a7;color:#fff;box-shadow:0 5px 13px #8126a733}
+@media(max-width:620px){
+ body.aurora-home-active>main.shell{height:calc(100dvh - 62px)!important;padding:6px 9px 76px!important}
+ body.aurora-home-active #owner-home.aurora-fixed-home{gap:7px}
+ .aurora-home-heading{flex-basis:36px!important}
+ .aurora-home-heading>div:first-child>strong{font-size:14px}
+ .aurora-home-card{border-radius:22px 6px 22px 6px}
+ .aurora-card-content{padding:17px;gap:8px}
+ .aurora-shop-logo-frame{width:min(58vw,218px);height:min(36vh,205px);min-height:132px}
+ .aurora-invite-content h2,.aurora-overview-content h2,.aurora-subscription-content h2{font-size:27px!important}
+ .aurora-invite-qr-wrap .referral-qr{width:min(32vw,136px);height:min(32vw,136px)}
+ .aurora-invite-share input{font-size:9px!important}
+ .aurora-home-pagination{flex-basis:31px}
+}
+@media(max-height:690px){
+ body.aurora-home-active>main.shell{height:calc(100dvh - 60px)!important;padding-top:4px!important}
+ body.aurora-home-active #owner-home.aurora-fixed-home{gap:4px}
+ .aurora-home-heading{flex-basis:31px!important}
+ .aurora-shop-logo-frame{height:min(30vh,165px);min-height:110px}
+ .aurora-card-content{padding:13px;gap:6px}
+ .aurora-home-pagination{flex-basis:27px}
+ .aurora-invite-qr-wrap .referral-qr{width:min(28vw,115px);height:min(28vw,115px)}
+}
+@media(prefers-reduced-motion:reduce){.aurora-card-sky:before,.aurora-card-sky:after,.aurora-logo-sky-placeholder:before{animation:none!important}}
