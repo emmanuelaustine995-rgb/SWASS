@@ -48,6 +48,11 @@ test('super-admin control room is separate from ordinary shop navigation and POS
   assert.match(app, /document\.body\.classList\.remove\('platform-admin-workspace'\)/);
 });
 
+test('ordinary home never restores a saved Platform Admin session', () => {
+  assert.match(app, /if\(saved\.role==='super_admin'\)\{\s*localStorage\.removeItem\(SESSION_KEY\);\s*showLogin\(\);\s*return;\s*\}/);
+  assert.match(app, /function restoreSession\(\)[\s\S]*?if\(saved\.role==='super_admin'\)/);
+});
+
 test('super-admin cannot navigate into ordinary shop screens', () => {
   assert.match(app, /if\(state\.role==='super_admin'&&screen!=='dashboard'\)screen='dashboard'/);
   assert.match(css, /body\.platform-admin-workspace #workspace-nav/);
