@@ -174,6 +174,9 @@
     }
     const shopState=$('aurora-home-overview-shop');
     if(shopState)shopState.textContent=p.businessName?'Profile ready':'Set up profile';
+    const overviewLocation=$('aurora-home-overview-location'),overviewPhone=$('aurora-home-overview-phone');
+    if(overviewLocation)overviewLocation.textContent=p.storeLocation||'Location not added';
+    if(overviewPhone)overviewPhone.textContent=p.businessPhone||'Shop contact not added';
     const credits=$('aurora-home-overview-credits');
     if(credits&&$('referral-receipts-available'))credits.textContent=$('referral-receipts-available').textContent;
   }
@@ -470,6 +473,7 @@
       $('referral-available').textContent=money(data.availableKes);
       if($('referral-remainder'))$('referral-remainder').textContent=money(data.rewardRemainderKes);
       $('referral-receipts-available').textContent=Math.floor(Math.max(0,Number(data.availableKes)||0)/4).toLocaleString('en-KE');
+      if($('aurora-home-overview-credits'))$('aurora-home-overview-credits').textContent=$('referral-receipts-available').textContent;
       $('referral-link').value=data.referralLink||'';const qr=$('referral-qr');if(qr){qr.innerHTML='';if(data.referralLink&&window.QRCode){new QRCode(qr,{text:data.referralLink,width:240,height:240,correctLevel:QRCode.CorrectLevel.M});}}
       $('referral-message').textContent='Your available reward has been converted into receipt credits. Tap Redeem to add them to your receipt wallet.';
       const history=await request('/api/v1/referrals/transactions');
@@ -1943,12 +1947,7 @@
       });
     },{passive:true});
   }
-  const homeSalesTarget=$('aurora-home-sales-live'),homeSalesSource=$('owner-today-sales');
-  if(homeSalesTarget&&homeSalesSource){
-    const syncHomeSales=()=>{const value=homeSalesSource.textContent?.trim();if(value)homeSalesTarget.textContent=value;};
-    syncHomeSales();
-    new MutationObserver(syncHomeSales).observe(homeSalesSource,{childList:true,subtree:true,characterData:true});
-  }
+
 
   $('back-to-receipts').addEventListener('click',()=>{
     $('pos-view').classList.add('hidden');
