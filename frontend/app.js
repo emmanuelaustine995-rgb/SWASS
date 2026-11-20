@@ -1896,6 +1896,8 @@
   const auroraHomeUser=$('aurora-home-user');if(auroraHomeUser)auroraHomeUser.textContent=state.userName?' '+state.userName:'';
   const auroraHomeSales=$('aurora-home-sales');if(auroraHomeSales&&$('owner-today-sales'))auroraHomeSales.textContent=$('owner-today-sales').textContent;
   const auroraHomeBusiness=$('aurora-home-business-name');if(auroraHomeBusiness)auroraHomeBusiness.textContent=state.businessProfile?.businessName||state.businessProfile?.name||'Your business';
+  const auroraBusinessSource=$('dashboard-profile-name');if(auroraBusinessSource&&auroraHomeBusiness){const syncBusiness=()=>{const value=auroraBusinessSource.textContent?.trim();if(value&&value!=='Complete your business profile')auroraHomeBusiness.textContent=value;};new MutationObserver(syncBusiness).observe(auroraBusinessSource,{childList:true,subtree:true,characterData:true});syncBusiness();}
+  const auroraSalesSource=$('owner-today-sales');if(auroraSalesSource&&auroraHomeSales){new MutationObserver(()=>{auroraHomeSales.textContent=auroraSalesSource.textContent;}).observe(auroraSalesSource,{childList:true,subtree:true,characterData:true});}
 
   $('owner-home-subscription')?.addEventListener('click',()=>showWorkspaceScreen('subscription'));
   $('back-to-receipts').addEventListener('click',()=>{
