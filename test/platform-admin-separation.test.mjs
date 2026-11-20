@@ -54,12 +54,16 @@ test('super-admin cannot navigate into ordinary shop screens', () => {
 });
 
 
-test('ordinary workspace is reduced to navigation while login and Platform Admin remain available', () => {
-  const ordinaryCss = read('../frontend/styles.css');
-  assert.match(ordinaryCss, /body\.workspace-active:not\(\.platform-admin-workspace\) main\.shell > :not\(#workspace-nav\)/);
-  assert.match(ordinaryCss, /body\.workspace-active:not\(\.platform-admin-workspace\) main\.shell > #workspace-nav/);
+test('ordinary workspace uses the new AURORA design while login and Platform Admin remain available', () => {
+  const modernCss = read('../frontend/aurora-modern.css');
+  assert.match(modernCss, /--aurora-purple/);
+  assert.match(modernCss, /\.bottom-nav/);
+  assert.match(modernCss, /prefers-reduced-motion/);
+  assert.doesNotMatch(read('../frontend/styles.css'), /ORDINARY WORKSPACE CLEAN-SLATE RESET/);
+  assert.match(html, /aurora-modern\.css\?v=/);
   assert.match(app, /document\.body\.classList\.add\('workspace-active'\)/);
   assert.match(app, /document\.body\.classList\.toggle\('platform-admin-workspace',state\.role==='super_admin'\)/);
-  assert.match(read('../frontend/admin.html'), /id="admin-app"/);
-  assert.match(read('../frontend/index.html'), /id="login-view"/);
+  assert.match(read('../frontend/admin.html'), /Admin Control Centre/);
+  assert.match(html, /id="login-view"/);
+  assert.match(html, /id="register-form"/);
 });
