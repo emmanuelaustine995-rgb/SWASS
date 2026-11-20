@@ -52,3 +52,29 @@ test('super-admin cannot navigate into ordinary shop screens', () => {
   assert.match(app, /if\(state\.role==='super_admin'&&screen!=='dashboard'\)screen='dashboard'/);
   assert.match(css, /body\.platform-admin-workspace #workspace-nav/);
 });
+
+
+test('ordinary workspace uses the new AURORA design while login and Platform Admin remain available', () => {
+  const modernCss = read('../frontend/aurora-modern.css');
+  assert.match(modernCss, /--aurora-purple/);
+  assert.match(modernCss, /\.bottom-nav/);
+  assert.match(modernCss, /prefers-reduced-motion/);
+  assert.doesNotMatch(read('../frontend/styles.css'), /ORDINARY WORKSPACE CLEAN-SLATE RESET/);
+  assert.match(html, /aurora-modern\.css\?v=/);
+  assert.match(app, /document\.body\.classList\.add\('workspace-active'\)/);
+  assert.match(app, /document\.body\.classList\.toggle\('platform-admin-workspace',state\.role==='super_admin'\)/);
+  assert.match(read('../frontend/admin.html'), /Admin Control Centre/);
+  assert.match(html, /id="login-view"/);
+  assert.match(html, /id="register-form"/);
+});
+
+
+test('fresh ordinary navigation and receipt pages have responsive design rules', () => {
+  const modernCss = read('../frontend/aurora-modern.css');
+  assert.match(modernCss, /body:not\(\.platform-admin-workspace\) #workspace-nav/);
+  assert.match(modernCss, /\.receipt-actions-grid/);
+  assert.match(modernCss, /#pos-view/);
+  assert.match(modernCss, /\.subscription-choice-grid/);
+  assert.match(modernCss, /\.receipt-history-panel/);
+  assert.match(html, /id="workspace-nav"/);
+});
