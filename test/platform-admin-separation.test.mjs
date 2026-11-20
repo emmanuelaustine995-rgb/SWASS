@@ -5,6 +5,7 @@ import { readFileSync } from 'node:fs';
 const read = (path) => readFileSync(new URL(path, import.meta.url), 'utf8');
 const html = read('../frontend/index.html');
 const app = read('../frontend/app.js');
+const css = read('../frontend/responsive-workspace.css');
 
 test('ordinary login exposes only shop, staff, freelancer and customer choices', () => {
   const choices = [...html.matchAll(/data-login-role="([^"]+)"/g)].map((m) => m[1]);
