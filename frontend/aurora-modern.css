@@ -278,3 +278,38 @@ body:not(.platform-admin-workspace) .dashboard-business-card{display:flex;flex-w
  body:not(.platform-admin-workspace) .history-filters label:first-child{grid-column:auto}
  body:not(.platform-admin-workspace) .secondhand-form fieldset{padding:12px}
 }
+
+
+/* Resolve legacy ID-level navigation rules without changing its click targets. */
+body:not(.platform-admin-workspace) #workspace-nav{
+  position:fixed!important;left:50%!important;right:auto!important;top:auto!important;
+  bottom:max(12px,env(safe-area-inset-bottom))!important;transform:translateX(-50%)!important;
+  z-index:1000!important;display:flex!important;grid-template-columns:none!important;
+  align-items:stretch!important;justify-content:space-around!important;flex-wrap:nowrap!important;
+  gap:6px!important;width:min(calc(100% - 24px),680px)!important;max-width:680px!important;
+  margin:0!important;padding:8px!important;border:1px solid rgba(224,231,242,.95)!important;
+  border-radius:20px!important;background:rgba(255,255,255,.95)!important;
+  box-shadow:0 14px 40px rgba(22,37,65,.16)!important;overflow:visible!important;
+  backdrop-filter:blur(18px)
+}
+body:not(.platform-admin-workspace) #workspace-nav button{
+  position:relative!important;flex:1 1 0!important;display:flex!important;
+  flex-direction:column!important;align-items:center!important;justify-content:center!important;
+  gap:6px!important;min-width:0!important;min-height:52px!important;margin:0!important;
+  padding:7px 5px!important;border:0!important;border-radius:14px!important;
+  background:transparent!important;color:#68768b!important;font-size:11px!important;font-weight:750!important;
+  white-space:normal!important
+}
+body:not(.platform-admin-workspace) #workspace-nav button.active{
+  color:#fff!important;background:linear-gradient(135deg,#692db7,#42138b)!important;
+  box-shadow:0 5px 14px rgba(83,31,158,.2)!important
+}
+body:not(.platform-admin-workspace) #workspace-nav .nav-icon{font-size:19px!important;line-height:1}
+@media(min-width:900px){
+ body:not(.platform-admin-workspace) #workspace-nav{bottom:18px!important}
+ body:not(.platform-admin-workspace) #workspace-nav button{flex-direction:row!important;min-height:48px!important;font-size:12px!important}
+}
+@media(max-width:620px){
+ body:not(.platform-admin-workspace) #workspace-nav{width:calc(100% - 16px)!important;bottom:max(7px,env(safe-area-inset-bottom))!important;padding:6px!important}
+ body:not(.platform-admin-workspace) #workspace-nav button{min-height:50px!important;font-size:10px!important}
+}
