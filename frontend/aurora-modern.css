@@ -449,3 +449,76 @@ body:not(.platform-admin-workspace) .invite-card{
 body:not(.platform-admin-workspace) .verify-card h1,
 body:not(.platform-admin-workspace) .recovery-card h1,
 body:not(.platform-admin-workspace) .invite-card h1{font-size:clamp(24px,4vw,32px)}
+
+
+/* Standalone account, recovery and invitation screens use the same centered layout. */
+body:not(.platform-admin-workspace) main.auth-shell{
+  box-sizing:border-box;width:min(calc(100% - 28px),620px);min-height:100svh;
+  margin:0 auto;padding:clamp(22px,6vh,64px) 0;
+  display:flex;flex-direction:column;justify-content:center;align-items:stretch
+}
+body:not(.platform-admin-workspace) main.auth-shell>.panel{
+  width:100%;max-width:620px;margin:0 auto;padding:clamp(20px,4vw,34px);
+  border:1px solid var(--aurora-line)!important;border-radius:22px!important;
+  background:rgba(255,255,255,.97)!important;box-shadow:var(--aurora-shadow)!important
+}
+body:not(.platform-admin-workspace) main.auth-shell h1{
+  margin:8px 0 12px;font-size:clamp(25px,4vw,33px);line-height:1.18
+}
+body:not(.platform-admin-workspace) main.auth-shell form{
+  display:grid;grid-template-columns:minmax(0,1fr);gap:13px;margin-top:20px
+}
+body:not(.platform-admin-workspace) main.auth-shell form label{
+  display:grid;gap:6px;font-size:13px;font-weight:700
+}
+body:not(.platform-admin-workspace) main.auth-shell form button{width:100%;margin-top:4px}
+body:not(.platform-admin-workspace) main.auth-shell .page-back-row{margin:0 0 18px}
+body:not(.platform-admin-workspace) .shell[style*="max-width:560px"]{
+  width:min(calc(100% - 28px),560px)!important;max-width:560px!important;
+  margin:clamp(24px,7vh,72px) auto!important
+}
+
+/* Public About page shares the AURORA palette without altering its content. */
+body:not(.platform-admin-workspace) .wrap{
+  box-sizing:border-box;width:min(100%,1080px);max-width:1080px;margin:0 auto;
+  padding:clamp(16px,3vw,30px) clamp(14px,3vw,24px) 48px
+}
+body:not(.platform-admin-workspace) .wrap>.bar{
+  min-height:60px;padding:4px 0 24px;color:var(--aurora-ink)
+}
+body:not(.platform-admin-workspace) .wrap>.bar .brand{color:var(--aurora-purple)!important}
+body:not(.platform-admin-workspace) .wrap>.bar .brand span{color:var(--aurora-blue)!important}
+body:not(.platform-admin-workspace) .wrap>.bar a{
+  color:var(--aurora-purple)!important;border:1px solid #ded3ef!important;
+  background:#fff!important;border-radius:12px;padding:10px 15px
+}
+body:not(.platform-admin-workspace) .wrap>.hero{
+  border:1px solid var(--aurora-line);border-radius:24px;
+  background:rgba(255,255,255,.98);box-shadow:var(--aurora-shadow)
+}
+body:not(.platform-admin-workspace) .wrap>.hero h1{color:var(--aurora-ink)!important}
+body:not(.platform-admin-workspace) .wrap>.hero .lead{color:var(--aurora-muted)!important}
+body:not(.platform-admin-workspace) .wrap .actions .primary{
+  color:#fff!important;background:linear-gradient(125deg,#6729b6,#3f168b)!important
+}
+body:not(.platform-admin-workspace) .wrap .actions .secondary{
+  color:var(--aurora-purple)!important;background:#f1edfa!important;border:1px solid #e5dcf4
+}
+body:not(.platform-admin-workspace) .wrap .content{margin-top:30px}
+body:not(.platform-admin-workspace) .wrap .content h2{color:var(--aurora-ink)!important}
+body:not(.platform-admin-workspace) .wrap .content>p{color:var(--aurora-muted)!important}
+body:not(.platform-admin-workspace) .wrap .content .card,
+body:not(.platform-admin-workspace) .wrap .faq{
+  border:1px solid var(--aurora-line)!important;border-radius:17px!important;
+  background:#fff!important;box-shadow:0 8px 24px rgba(30,53,89,.045)
+}
+body:not(.platform-admin-workspace) .wrap .content .card h2,
+body:not(.platform-admin-workspace) .wrap .faq h3{color:var(--aurora-ink)!important}
+body:not(.platform-admin-workspace) .wrap .content .card p,
+body:not(.platform-admin-workspace) .wrap .faq p{color:var(--aurora-muted)!important}
+body:not(.platform-admin-workspace) .wrap>footer{color:var(--aurora-muted)!important}
+@media(max-width:560px){
+ body:not(.platform-admin-workspace) main.auth-shell{width:min(calc(100% - 20px),620px);padding:18px 0}
+ body:not(.platform-admin-workspace) .wrap>.bar{align-items:center;flex-wrap:wrap}
+ body:not(.platform-admin-workspace) .wrap>.hero{padding:24px 19px}
+}
