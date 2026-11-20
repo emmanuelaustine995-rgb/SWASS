@@ -68,6 +68,6 @@ test('previous AURORA workspace page layout is restored without the new redesign
   assert.match(html, /id="owner-dashboard-view"/);
   assert.match(html, /id="owner-home"/);
   assert.doesNotMatch(html, /id="platform-referral-admin"/);
-  assert.match(app, /window\\.location\\.replace\\('\.\\/admin\\.html'\\)/);
+  assert.ok(app.includes("window.location.replace('./admin.html')"));
   assert.match(read('../frontend/admin.html'), /Admin Control Centre/);
 });
