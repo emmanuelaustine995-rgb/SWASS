@@ -384,3 +384,116 @@ body:not(.platform-admin-workspace) .modal-content{border-radius:20px}
  body:not(.platform-admin-workspace) .shop-product-results{grid-template-columns:minmax(0,1fr)}
  body:not(.platform-admin-workspace) .owner-home .subscription-expiry-countdown{align-items:flex-start;flex-direction:column}
 }
+
+
+/* Full workflow polish: registration, profile, CRM, inventory, payment and receipt. */
+body:not(.platform-admin-workspace) .section-head,
+body:not(.platform-admin-workspace) .panel-heading{
+  display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap
+}
+body:not(.platform-admin-workspace) .section-head h1{margin:0 0 5px}
+body:not(.platform-admin-workspace) .section-head p,
+body:not(.platform-admin-workspace) .panel-heading p{margin:4px 0 0}
+body:not(.platform-admin-workspace) .form-two,
+body:not(.platform-admin-workspace) .secondhand-fields,
+body:not(.platform-admin-workspace) .customer-lookup-form,
+body:not(.platform-admin-workspace) .lost-item-check-form{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px
+}
+body:not(.platform-admin-workspace) .form-two>label,
+body:not(.platform-admin-workspace) .secondhand-fields>label,
+body:not(.platform-admin-workspace) .customer-lookup-form>label,
+body:not(.platform-admin-workspace) .lost-item-check-form>label{min-width:0}
+body:not(.platform-admin-workspace) .crm-panel .crm-search{
+  display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:end;
+  max-width:760px;margin:18px 0
+}
+body:not(.platform-admin-workspace) .crm-panel .crm-search label{display:grid;gap:6px}
+body:not(.platform-admin-workspace) .crm-panel .crm-search .btn{min-width:112px}
+body:not(.platform-admin-workspace) .customer-lookup-panel{margin-top:16px}
+body:not(.platform-admin-workspace) .customer-lookup-form{grid-template-columns:1fr 1fr auto;align-items:end}
+body:not(.platform-admin-workspace) .profile-panel,
+body:not(.platform-admin-workspace) #profile-form{min-width:0}
+body:not(.platform-admin-workspace) #profile-form{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;
+  padding:clamp(16px,2.4vw,26px);border:1px solid var(--aurora-line);
+  border-radius:20px;background:#fff;box-shadow:var(--aurora-shadow)
+}
+body:not(.platform-admin-workspace) #profile-form>label,
+body:not(.platform-admin-workspace) #profile-form>.profile-form-section,
+body:not(.platform-admin-workspace) #profile-form>.full,
+body:not(.platform-admin-workspace) #profile-form>button,
+body:not(.platform-admin-workspace) #profile-form>p{min-width:0}
+body:not(.platform-admin-workspace) #profile-form .form-section-title{grid-column:1/-1}
+body:not(.platform-admin-workspace) .subscription-payment-view,
+body:not(.platform-admin-workspace) .subscription-payment-success{
+  max-width:780px;margin:0 auto;padding:clamp(18px,3vw,30px);
+  border:1px solid var(--aurora-line);border-radius:20px;background:#fff;box-shadow:var(--aurora-shadow)
+}
+body:not(.platform-admin-workspace) .subscription-payment-view form{display:grid;gap:14px}
+body:not(.platform-admin-workspace) .subscription-payment-view .btn{width:100%;min-height:50px}
+body:not(.platform-admin-workspace) .subscription-payment-success{border-color:#b9e4d2;background:#f4fcf8;color:#155d43}
+body:not(.platform-admin-workspace) .subscription-payment-success h2{color:#155d43}
+body:not(.platform-admin-workspace) .receipt-paper{
+  max-width:720px;margin:0 auto;padding:clamp(18px,4vw,34px);
+  border:1px solid #dce4ed;border-radius:12px;background:#fff;color:#1d2939;
+  box-shadow:0 12px 36px rgba(25,42,68,.1)
+}
+body:not(.platform-admin-workspace) .receipt-paper table{font-size:12px}
+body:not(.platform-admin-workspace) .receipt-paper th{background:#f7f8fa}
+body:not(.platform-admin-workspace) .receipt-paper th,
+body:not(.platform-admin-workspace) .receipt-paper td{padding:8px 6px}
+body:not(.platform-admin-workspace) .receipt-modal-content{max-height:calc(100dvh - 32px);overflow:auto}
+body:not(.platform-admin-workspace) .modal{padding:14px}
+body:not(.platform-admin-workspace) .modal .btn{min-height:42px}
+body:not(.platform-admin-workspace) .history-list .empty,
+body:not(.platform-admin-workspace) .empty{
+  padding:22px;border:1px dashed #cfd9e6;border-radius:14px;
+  background:#f9fbfe;color:var(--aurora-muted);text-align:center
+}
+body:not(.platform-admin-workspace) .lost-item-checker,
+body:not(.platform-admin-workspace) .lost-item-form-panel,
+body:not(.platform-admin-workspace) .lost-items-list-panel{margin-top:16px}
+body:not(.platform-admin-workspace) .lost-item-check-result,
+body:not(.platform-admin-workspace) [role="status"]:not(.muted){overflow-wrap:anywhere}
+body:not(.platform-admin-workspace) .staff-team-card{margin-top:16px}
+body:not(.platform-admin-workspace) .staff-team-card table{min-width:560px}
+body:not(.platform-admin-workspace) .account-profile-menu{
+  position:fixed;z-index:1500;inset:12px 12px auto auto;width:min(440px,calc(100vw - 24px));
+  max-height:calc(100dvh - 24px);overflow:auto;padding:20px;
+  border:1px solid var(--aurora-line);border-radius:20px;background:#fff;box-shadow:0 24px 70px rgba(22,37,65,.24)
+}
+body:not(.platform-admin-workspace) .account-profile-details{
+  display:grid;grid-template-columns:1fr 1fr;gap:12px
+}
+body:not(.platform-admin-workspace) .account-profile-details>div{
+  display:grid;gap:4px;padding:12px;border-radius:12px;background:#f5f8fc
+}
+body:not(.platform-admin-workspace) .account-profile-details span{font-size:11px;color:var(--aurora-muted)}
+body:not(.platform-admin-workspace) .account-profile-details strong{overflow-wrap:anywhere}
+body:not(.platform-admin-workspace) .notice,
+body:not(.platform-admin-workspace) .error,
+body:not(.platform-admin-workspace) [role="alert"]{overflow-wrap:anywhere}
+@media(max-width:720px){
+ body:not(.platform-admin-workspace) .form-two,
+ body:not(.platform-admin-workspace) .secondhand-fields,
+ body:not(.platform-admin-workspace) .customer-lookup-form,
+ body:not(.platform-admin-workspace) .lost-item-check-form,
+ body:not(.platform-admin-workspace) #profile-form{grid-template-columns:minmax(0,1fr)}
+ body:not(.platform-admin-workspace) .crm-panel .crm-search{grid-template-columns:minmax(0,1fr)}
+ body:not(.platform-admin-workspace) .crm-panel .crm-search .btn{width:100%}
+}
+@media(max-width:480px){
+ body:not(.platform-admin-workspace) .account-profile-details{grid-template-columns:minmax(0,1fr)}
+ body:not(.platform-admin-workspace) .receipt-paper{padding:14px;border-radius:8px}
+ body:not(.platform-admin-workspace) .receipt-paper th,
+ body:not(.platform-admin-workspace) .receipt-paper td{font-size:11px;padding:6px 4px}
+}
+@media print{
+ body:not(.platform-admin-workspace){background:#fff!important}
+ body:not(.platform-admin-workspace) .topbar,
+ body:not(.platform-admin-workspace) #workspace-nav,
+ body:not(.platform-admin-workspace) .global-back-row,
+ body:not(.platform-admin-workspace) .modal .modal-actions{display:none!important}
+ body:not(.platform-admin-workspace) .receipt-paper{max-width:none;border:0;border-radius:0;box-shadow:none;padding:0}
+}
