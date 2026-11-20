@@ -293,7 +293,56 @@
   <article class="customer-welcome-card"><button id="customer-back-to-login" class="customer-back-to-login" type="button">← Back to Login</button><p class="eyebrow">CUSTOMER ACCOUNT</p><h1 id="customer-home-name">Welcome</h1><p>Manage your customer account and referral rewards here.</p></article>
   <article class="customer-referral-card"><div class="customer-referral-copy"><p>Let your friends scan your personal QR code to join AURORA. Your referrals will be counted here.</p><strong id="customer-referral-count">0 friends referred</strong></div><div class="customer-referral-qr-wrap"><div id="customer-referral-qr" role="img" aria-label="Your personal customer referral QR code"></div><small>Scan to join</small></div></article>
   <p id="customer-home-message" class="muted small" role="status"></p>
-</section><section id="owner-home" class="owner-home hidden" aria-label="Dashboard"><div class="dashboard-login-return-row"><button id="dashboard-back-to-login" class="dashboard-back-to-login" type="button">← Back to Login</button></div><article class="panel owner-home-card"><h1 id="owner-home-title">Business overview</h1><p id="owner-home-subtitle" class="muted">Your business workspace at a glance.</p></article><div class="subscription-expiry-countdown"><span>Subscription expires in</span><strong id="subscription-expiry-countdown">Checking time…</strong><small id="subscription-expiry">Checking plan dates…</small></div><section id="referral-card" class="referral-area" aria-label="Refer and earn"><article class="panel referral-invite-card"><div class="referral-invite-head"><div><h2>Scan to Invite</h2></div><div id="referral-qr" class="referral-qr" role="img" aria-label="Your referral QR code"></div></div><div class="referral-share-row"><input id="referral-link" type="text" readonly aria-label="Your personal referral link" placeholder="Preparing your referral link…"><button id="referral-share" class="btn" type="button">Share link</button></div></article><article class="panel referral-balance-card"><button id="owner-home-subscription" class="owner-subscription-tab" type="button"><span aria-hidden="true">✦</span> Subscription <span class="owner-subscription-arrow" aria-hidden="true">↗</span></button><div class="referral-balance-number"><strong id="referral-receipts-available">0</strong><span>receipts available</span></div><p class="referral-balance-caption">Receipt rewards ready to redeem</p><button id="referral-redeem" type="button" class="btn referral-redeem-btn">Redeem</button><p id="referral-message" class="muted small" role="status">Loading your reward balance…</p></article><div class="referral-hidden-data" aria-hidden="true"><strong id="referral-total">0</strong><strong id="referral-active">0</strong><strong id="referral-earned">0</strong><strong id="referral-available">KSh 0</strong><strong id="referral-remainder">KSh 0</strong><div id="referral-earning-history"></div><div id="referral-redemption-history"></div></div></section></section><section id="receipts-home" class="panel receipts-home hidden aurora-receipts-view" aria-label="Receipts">
+</section><section id="owner-home" class="owner-home hidden aurora-fixed-home" aria-label="AURORA Home">
+  <header class="aurora-home-heading"><div><span>YOUR BUSINESS SPACE</span><strong id="aurora-home-heading-name">Welcome to AURORA</strong></div><div class="aurora-home-page-count"><span id="aurora-home-page-current">01</span><i>/</i>04</div></header>
+  <div class="aurora-home-deck" id="aurora-home-deck" aria-label="Swipe through your four home cards">
+    <article class="aurora-home-card aurora-home-card-pink" data-home-card="0" aria-label="Shop identity">
+      <div class="aurora-card-sky" aria-hidden="true"></div>
+      <div class="aurora-card-content aurora-identity-content">
+        <span class="aurora-card-kicker">YOUR SHOP IDENTITY</span>
+        <div class="aurora-shop-logo-frame" id="aurora-shop-logo-frame"><div class="aurora-logo-sky-placeholder"><span>A</span><small>YOUR BRAND STARTS HERE</small></div><img id="aurora-home-shop-logo" class="hidden" alt="Shop logo"></div>
+        <div class="aurora-shop-identity-name"><small>WELCOME TO</small><h1 id="aurora-home-shop-name">Your shop name</h1><p id="aurora-home-shop-location">Your business, beautifully represented.</p></div>
+        <button type="button" class="aurora-card-action aurora-card-action-light" data-workspace="shop">Open shop profile <span>↗</span></button>
+      </div>
+    </article>
+    <article class="aurora-home-card aurora-home-card-blue" data-home-card="1" aria-label="Invite customers and partners">
+      <div class="aurora-card-sky" aria-hidden="true"></div>
+      <div class="aurora-card-content aurora-invite-content">
+        <span class="aurora-card-kicker">GROW YOUR NETWORK</span><h2>Invite. Connect. Grow.</h2>
+        <p>Share your personal AURORA link and invite others to join.</p>
+        <div class="aurora-invite-qr-wrap"><div id="referral-qr" class="referral-qr" role="img" aria-label="Your referral QR code"></div></div>
+        <div class="aurora-invite-share"><input id="referral-link" type="text" readonly aria-label="Your personal referral link" placeholder="Preparing your invitation link…"><button id="referral-share" type="button">Share link ↗</button></div>
+        <div class="aurora-invite-reward"><strong id="referral-receipts-available">0</strong><span>receipt credits ready</span><button id="referral-redeem" type="button">Redeem</button></div>
+        <p id="referral-message" class="aurora-card-status" role="status" aria-live="polite">Preparing your invitation…</p>
+      </div>
+    </article>
+    <article class="aurora-home-card aurora-home-card-sky" data-home-card="2" aria-label="Business overview">
+      <div class="aurora-card-sky" aria-hidden="true"></div>
+      <div class="aurora-card-content aurora-overview-content">
+        <span class="aurora-card-kicker">YOUR BUSINESS AT A GLANCE</span><h2>Every day, moving forward.</h2>
+        <div class="aurora-live-sales"><small>RECORDED SALES</small><strong id="aurora-home-sales-live">KSh 0</strong><span>Latest available business total</span></div>
+        <div class="aurora-overview-mini-grid"><div><small>SHOP</small><strong id="aurora-home-overview-shop">Ready</strong></div><div><small>RECEIPT CREDITS</small><strong id="aurora-home-overview-credits">0</strong></div></div>
+        <div class="aurora-overview-actions"><button type="button" data-workspace="receipts">Open receipts ↗</button><button type="button" data-workspace="shop">Manage products ↗</button></div>
+      </div>
+    </article>
+    <article class="aurora-home-card aurora-home-card-gold" data-home-card="3" aria-label="Subscription status">
+      <div class="aurora-card-sky" aria-hidden="true"></div>
+      <div class="aurora-card-content aurora-subscription-content">
+        <span class="aurora-card-kicker">YOUR AURORA MEMBERSHIP</span><h2>Stay connected to your business.</h2>
+        <div class="aurora-subscription-count"><small>SUBSCRIPTION EXPIRES IN</small><strong id="subscription-expiry-countdown">Checking time…</strong><span id="subscription-expiry">Checking plan dates…</span></div>
+        <button id="owner-home-subscription" class="aurora-subscription-cta" type="button">Subscription &amp; plans <span>↗</span></button>
+        <p>Keep your digital receipts and business records within reach.</p>
+      </div>
+    </article>
+  </div>
+  <nav class="aurora-home-pagination" aria-label="Home card navigation">
+    <button type="button" data-home-slide="0" class="active" aria-label="Shop identity card">01</button>
+    <button type="button" data-home-slide="1" aria-label="Invite card">02</button>
+    <button type="button" data-home-slide="2" aria-label="Business overview card">03</button>
+    <button type="button" data-home-slide="3" aria-label="Subscription card">04</button>
+  </nav>
+  <div class="referral-hidden-data" aria-hidden="true"><strong id="referral-total">0</strong><strong id="referral-active">0</strong><strong id="referral-earned">0</strong><strong id="referral-available">KSh 0</strong><strong id="referral-remainder">KSh 0</strong><div id="referral-earning-history"></div><div id="referral-redemption-history"></div></div>
+</section><section id="receipts-home" class="panel receipts-home hidden aurora-receipts-view" aria-label="Receipts">
   <header class="aurora-section-intro"><span class="eyebrow">YOUR SALES DESK</span><h1>Receipts, ready when you need them.</h1><p>Create a new sale, verify a receipt, or complete a declaration — all from one place.</p></header>
   <div class="receipt-actions-grid">
     <button id="open-issue-receipt" class="receipt-choice aurora-receipt-issue" type="button"><span aria-hidden="true">＋</span><strong>Issue Receipt</strong><small>Record a sale and create a customer receipt</small></button>
