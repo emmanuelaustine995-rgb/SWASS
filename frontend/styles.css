@@ -2633,3 +2633,20 @@ body.workspace-active #shop-home details.shop-goods-on-repair-card > .repair-car
 /* Keep the five sign-in choices readable, including the dedicated platform-admin entry. */
 .login-role-tabs{grid-template-columns:repeat(3,minmax(0,1fr))}
 .login-role-tab.platform-admin-login-tab{grid-column:span 2;font-size:11px;letter-spacing:.01em}
+
+
+/* Separate Platform Admin sign-in from every ordinary shop/customer login.
+   Admin mode is available only through the dedicated ?platform-admin=1 entry URL. */
+.login-role-tabs{grid-template-columns:repeat(4,minmax(0,1fr))}
+.login-role-tab.platform-admin-login-tab{display:none!important}
+body.platform-admin-login:not(.workspace-active) .login-role-tabs,
+body.platform-admin-login:not(.workspace-active) #owner-register-entry,
+body.platform-admin-login:not(.workspace-active) #freelancer-register-entry,
+body.platform-admin-login:not(.workspace-active) .aurora-auth-tabs,
+body.platform-admin-login:not(.workspace-active) .aurora-tagline{display:none!important}
+body.platform-admin-login:not(.workspace-active) #login-view .login-card{max-width:430px}
+.platform-admin-login-heading{margin:4px 0 14px;padding:13px;border:1px solid #d8c7f4;border-radius:12px;background:#f7f1ff;text-align:center}
+.platform-admin-login-heading p{margin:0;color:#4a168e;font-size:14px;font-weight:900;letter-spacing:.06em}
+.platform-admin-login-heading span{display:block;margin-top:5px;color:#5f5870;font-size:11px}
+.platform-admin-return{margin:12px 0 0;text-align:center;font-size:12px}
+.platform-admin-return a{color:#4a168e;font-weight:700;text-decoration:none}
