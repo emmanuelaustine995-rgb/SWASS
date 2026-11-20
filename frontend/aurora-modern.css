@@ -905,3 +905,158 @@ body:not(.platform-admin-workspace):has(#login-view:not(.hidden)) .aurora-policy
  body:not(.platform-admin-workspace) .login-role-tabs{gap:3px!important;padding:4px!important}
  body:not(.platform-admin-workspace) .login-role-tab{font-size:9px!important;padding:6px 2px!important}
 }
+
+/* Fully isolated AURORA sign-in portal: no workspace chrome is rendered while signed out. */
+body.aurora-login-active{min-height:100svh!important;margin:0!important;overflow-x:hidden!important;background:#d9e8f4!important;color:#171b2b!important}
+body.aurora-login-active>header,
+body.aurora-login-active>.global-back-row,
+body.aurora-login-active>#account-profile-menu,
+body.aurora-login-active>.hidden[aria-hidden="true"]{display:none!important}
+body.aurora-login-active>main.shell{
+  display:block!important;width:100%!important;max-width:none!important;min-height:100svh!important;
+  margin:0!important;padding:0!important;background:transparent!important;overflow:visible!important;
+}
+body.aurora-login-active>.shell>*:not(#login-view){display:none!important}
+body.aurora-login-active #login-view{
+  display:grid!important;visibility:visible!important;opacity:1!important;
+  grid-template-columns:minmax(0,1.08fr) minmax(330px,.72fr);
+  grid-template-rows:minmax(450px,1fr) auto;gap:0!important;
+  width:100%!important;max-width:none!important;min-height:100svh!important;
+  margin:0!important;padding:clamp(22px,4vw,58px)!important;
+  align-items:center!important;justify-content:center!important;
+  background:linear-gradient(128deg,#d7eaf8 0%,#eaf3fa 43%,#f7f4fb 100%)!important;
+  position:relative!important;isolation:isolate!important;overflow:hidden!important;
+}
+body.aurora-login-active #login-view:before{
+  content:"";position:absolute;z-index:-1;inset:0 0 0 0;pointer-events:none;
+  background:
+    radial-gradient(ellipse at 16% 15%,#ffffffd9 0 8%,transparent 27%),
+    radial-gradient(ellipse at 55% 5%,#ffffffa8 0 8%,transparent 25%),
+    linear-gradient(160deg,transparent 0 38%,#ffffff55 39% 44%,transparent 45% 100%),
+    linear-gradient(180deg,#b8d8f0 0%,#e7eff8 48%,#f2e9f5 100%);
+}
+body.aurora-login-active #login-view:after{
+  content:"";position:absolute;z-index:-1;inset:0;pointer-events:none;opacity:.96;
+  background-repeat:no-repeat;background-position:center bottom;background-size:100% 72%;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 760' preserveAspectRatio='xMidYMax slice'%3E%3Cdefs%3E%3ClinearGradient id='sky' x2='0' y2='1'%3E%3Cstop stop-color='%23c3e1f4' stop-opacity='.05'/%3E%3Cstop offset='1' stop-color='%23e9dff2' stop-opacity='.5'/%3E%3C/linearGradient%3E%3ClinearGradient id='glass' x2='1' y2='1'%3E%3Cstop stop-color='%237d9fba' stop-opacity='.72'/%3E%3Cstop offset='1' stop-color='%234f6687' stop-opacity='.9'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath fill='url(%23sky)' d='M0 0h1600v760H0z'/%3E%3Cg fill='%23fff' opacity='.46'%3E%3Cpath d='M120 130c40-55 116-46 141-1 54-12 91 23 84 60H83c-8-32 8-54 37-59zm720-62c31-39 92-34 112 3 42-7 72 18 67 47H690c-5-26 10-45 37-50zm500 175c35-44 102-40 123 2 48-8 80 20 74 52h-189c-6-28 8-48 36-54z'/%3E%3C/g%3E%3Cg opacity='.86'%3E%3Cpath fill='%235c7390' d='M0 530h95V348h88v182h38V290h116v240h54V380h92v150h44V255h138v275h48V336h90v194h45V215h126v315h49V370h100v160h43V300h118v230h40V350h91v180h48V270h105v260h60v230H0z'/%3E%3Cpath fill='url(%23glass)' d='M95 348h88v182H95zm126-58h116v240H221zm200 90h92v150h-92zm136-125h138v275H557zm186 81h90v194h-90zm135-121h126v315H878zm175 155h100v160h-100zm143-70h118v230h-118zm158 50h91v180h-91zm139-80h105v260h-105z'/%3E%3C/g%3E%3Cg stroke='%23e7f3fa' stroke-width='5' opacity='.48'%3E%3Cpath d='M112 370v145m28-145v145m28-145v145M244 320v200m30-200v200m30-200v200M590 280v240m34-240v240m34-240v240M914 245v275m34-275v275m34-275v275m34-275v275M1218 330v190m32-190v190m32-190v190'/%3E%3C/g%3E%3Cpath fill='%233b4c68' opacity='.75' d='M0 650q260-90 520 0t520 0 560-12v122H0z'/%3E%3C/svg%3E");
+}
+body.aurora-login-active .aurora-login-layout{display:contents!important}
+body.aurora-login-active .aurora-login-story{
+  grid-column:1;grid-row:1;align-self:center;min-height:420px!important;
+  display:flex!important;flex-direction:column;justify-content:center;
+  max-width:760px;padding:clamp(24px,4vw,58px)!important;
+  border:0!important;border-radius:0!important;box-shadow:none!important;
+  background:transparent!important;color:#15233b!important;position:relative!important;
+}
+body.aurora-login-active .aurora-story-mark{
+  display:grid!important;place-items:center;width:58px!important;height:58px!important;
+  margin:0 0 26px!important;border-radius:18px 5px 18px 5px!important;
+  background:linear-gradient(145deg,#8f27bf,#42126e)!important;color:white!important;
+  font-size:38px!important;box-shadow:0 12px 25px #55207830;
+}
+body.aurora-login-active .aurora-login-story .aurora-story-kicker{
+  color:#63368a!important;font-size:10px!important;letter-spacing:.23em!important;font-weight:900!important;
+}
+body.aurora-login-active .aurora-login-story h1{
+  max-width:650px!important;margin:13px 0 18px!important;color:#17233b!important;
+  font-size:clamp(36px,5.4vw,68px)!important;line-height:.99!important;letter-spacing:-.065em!important;
+}
+body.aurora-login-active .aurora-login-story h1 em{color:#7c2aab!important;font-style:normal}
+body.aurora-login-active .aurora-login-story>p:not(.aurora-story-kicker){
+  max-width:510px!important;color:#43536c!important;font-size:16px!important;line-height:1.7!important;
+}
+body.aurora-login-active .aurora-story-points{display:grid!important;gap:12px!important;margin:28px 0 12px!important}
+body.aurora-login-active .aurora-story-points span{
+  color:#24344b!important;font-size:13px!important;font-weight:700;
+}
+body.aurora-login-active .aurora-story-points b{color:#852bb0!important}
+body.aurora-login-active .aurora-login-story>small{color:#5d6680!important;font-size:9px!important;letter-spacing:.18em}
+body.aurora-login-active #login-view .aurora-login-card{
+  grid-column:2;grid-row:1;align-self:center;justify-self:center;
+  width:100%!important;max-width:450px!important;margin:0!important;
+  padding:clamp(24px,3vw,38px)!important;border:1px solid #ffffffd9!important;
+  border-radius:26px 7px 26px 7px!important;
+  background:linear-gradient(145deg,#ffffffed,#f9f7fcf2)!important;
+  color:#202337!important;box-shadow:0 28px 80px #3349652c,0 4px 15px #5e477012!important;
+  backdrop-filter:blur(18px);
+}
+body.aurora-login-active .aurora-brand-lockup{margin:0 auto 16px!important}
+body.aurora-login-active .aurora-login-logo{width:min(100%,205px)!important;max-height:78px!important}
+body.aurora-login-active .aurora-tagline{color:#69728a!important;font-size:11px!important}
+body.aurora-login-active .login-role-tabs{
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important;
+  padding:5px!important;margin:15px 0 19px!important;border:1px solid #e4dbe9!important;
+  border-radius:15px!important;background:#f0ebf5!important;
+}
+body.aurora-login-active .login-role-tab{
+  min-height:41px!important;border:1px solid transparent!important;border-radius:10px!important;
+  background:transparent!important;color:#645b70!important;font-size:12px!important;font-weight:750!important;
+}
+body.aurora-login-active .login-role-tab.active{
+  color:#fff!important;background:linear-gradient(120deg,#9630bd,#58218a)!important;
+  border-color:#9630bd!important;box-shadow:0 6px 16px #79269e30!important;
+}
+body.aurora-login-active #login-form label,
+body.aurora-login-active #password-reset-form label,
+body.aurora-login-active #first-password-form label{color:#323448!important;font-size:12px!important;font-weight:750}
+body.aurora-login-active #login-form input,
+body.aurora-login-active #password-reset-form input,
+body.aurora-login-active #first-password-form input{
+  min-height:50px!important;border:1px solid #d9d6e1!important;border-radius:12px!important;
+  background:#fff!important;color:#202337!important;box-shadow:0 2px 7px #2d214008!important;
+}
+body.aurora-login-active #login-form input:focus,
+body.aurora-login-active #password-reset-form input:focus{outline:3px solid #a94ac52b!important;border-color:#9130b8!important}
+body.aurora-login-active .login-submit-compact{
+  min-height:52px!important;border:0!important;border-radius:13px 5px 13px 5px!important;
+  background:linear-gradient(110deg,#9a2dc0,#582184)!important;color:#fff!important;
+  font-weight:850!important;letter-spacing:.07em!important;box-shadow:0 10px 22px #78259e35!important;
+}
+body.aurora-login-active #login-view .text-btn{color:#7c279f!important}
+body.aurora-login-active #login-view .muted{color:#687087!important}
+body.aurora-login-active #login-view .error{color:#b42336!important}
+body.aurora-login-active .aurora-auth-welcome{display:none!important}
+body.aurora-login-active #aurora-policy-center{
+  grid-column:1/-1;grid-row:2;justify-self:center;width:min(100%,680px);
+  margin:15px auto 0!important;padding:0!important;color:#43516a!important;
+}
+body.aurora-login-active #aurora-policy-center details{
+  border:1px solid #ffffffa8!important;border-radius:13px!important;background:#ffffff85!important;
+}
+body.aurora-login-active #aurora-policy-center summary{color:#39455d!important}
+body.aurora-login-active .aurora-policy-content{color:#39455d!important}
+body.aurora-login-active .aurora-policy-consent{color:#4b5265!important}
+body.aurora-login-active .aurora-policy-consent a{color:#74259b!important}
+body.aurora-login-active .registration-sticky-footer{background:#fbf9fd!important}
+@media(max-width:820px){
+ body.aurora-login-active #login-view{
+  grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto auto;
+  gap:0!important;padding:0 0 18px!important;align-items:start!important;
+ }
+ body.aurora-login-active .aurora-login-story{
+  grid-column:1;grid-row:1;min-height:0!important;max-width:none!important;
+  padding:34px 24px 40px!important;justify-content:flex-start!important;
+ }
+ body.aurora-login-active .aurora-login-story h1{font-size:clamp(32px,8vw,48px)!important;max-width:560px}
+ body.aurora-login-active .aurora-login-story>p:not(.aurora-story-kicker){font-size:13px!important;max-width:500px}
+ body.aurora-login-active .aurora-story-points{display:flex!important;flex-wrap:wrap;gap:8px 16px!important;margin:17px 0 10px!important}
+ body.aurora-login-active .aurora-story-points span{font-size:11px!important}
+ body.aurora-login-active #login-view .aurora-login-card{
+  grid-column:1;grid-row:2;justify-self:center;width:min(calc(100% - 32px),470px)!important;
+  max-width:470px!important;margin:-18px auto 0!important;padding:23px 20px!important;
+ }
+ body.aurora-login-active #aurora-policy-center{grid-column:1;grid-row:3;width:calc(100% - 32px);margin:16px auto 0!important}
+ body.aurora-login-active #login-view:after{background-size:auto 56%;background-position:center bottom}
+}
+@media(max-width:420px){
+ body.aurora-login-active .aurora-login-story{padding:28px 19px 35px!important}
+ body.aurora-login-active .aurora-story-mark{width:48px!important;height:48px!important;font-size:31px!important;margin-bottom:18px!important}
+ body.aurora-login-active .aurora-login-story h1{font-size:34px!important}
+ body.aurora-login-active .aurora-story-points span{font-size:10px!important}
+ body.aurora-login-active #login-view .aurora-login-card{width:calc(100% - 24px)!important;padding:20px 16px!important}
+ body.aurora-login-active .login-role-tab{font-size:11px!important}
+}
+@media(prefers-reduced-motion:no-preference){
+ body.aurora-login-active #login-view:before{animation:aurora-sky-drift 22s ease-in-out infinite alternate}
+ @keyframes aurora-sky-drift{from{background-position:0 0,100% 0,0 0,0 0}to{background-position:8% 2%,93% 3%,0 0,0 0}}
+}
