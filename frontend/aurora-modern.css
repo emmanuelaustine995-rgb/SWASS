@@ -522,3 +522,88 @@ body:not(.platform-admin-workspace) .wrap>footer{color:var(--aurora-muted)!impor
  body:not(.platform-admin-workspace) .wrap>.bar{align-items:center;flex-wrap:wrap}
  body:not(.platform-admin-workspace) .wrap main>.hero{padding:24px 19px}
 }
+
+
+/* AURORA identity suite — original layouts, not a repeated card template. */
+body:not(.platform-admin-workspace) .login-wrap{grid-template-columns:minmax(0,480px) minmax(320px,520px);gap:clamp(24px,5vw,72px);align-items:center}
+body:not(.platform-admin-workspace) .aurora-auth-welcome{position:relative;isolation:isolate;overflow:hidden;border-radius:30px;padding:clamp(28px,4vw,52px);background:linear-gradient(145deg,#24123f 0%,#42206d 55%,#145f78 100%);color:#fff;box-shadow:0 30px 80px rgba(30,24,62,.2)}
+body:not(.platform-admin-workspace) .aurora-auth-welcome:before{content:"";position:absolute;z-index:-1;width:310px;height:310px;right:-110px;top:-120px;border:1px solid rgba(255,255,255,.2);border-radius:50%;box-shadow:0 0 0 32px rgba(255,255,255,.035),0 0 0 68px rgba(255,255,255,.025)}
+body:not(.platform-admin-workspace) .aurora-auth-welcome h1,body:not(.platform-admin-workspace) .aurora-auth-welcome h2,body:not(.platform-admin-workspace) .aurora-auth-welcome p{color:#fff!important}
+body:not(.platform-admin-workspace) #login-view .login-card{border-radius:28px!important;border-top:5px solid #7a4db2!important}
+body:not(.platform-admin-workspace) .login-role-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+body:not(.platform-admin-workspace) .login-role-tab{border:1px solid #e5deee;border-radius:11px;padding:10px;background:#fbf9fd;color:#4d4260}
+body:not(.platform-admin-workspace) .login-role-tab.active{background:#2b1747;color:#fff;border-color:#2b1747}
+body.registration-open:not(.platform-admin-workspace) #register-form:not(.hidden){gap:16px!important}
+body.registration-open:not(.platform-admin-workspace) .signup-identity-step,body.registration-open:not(.platform-admin-workspace) .signup-account-step{display:grid;gap:12px;padding:18px;border-radius:18px}
+body.registration-open:not(.platform-admin-workspace) .signup-identity-step{background:linear-gradient(135deg,#f2edf9,#f8f6fb);border:1px solid #e5d9f1}
+body.registration-open:not(.platform-admin-workspace) .signup-account-step{background:#f8fafc;border:1px solid #e4eaf1}
+body.registration-open:not(.platform-admin-workspace) .signup-step-heading{display:flex;align-items:flex-start;gap:13px;margin-bottom:3px}
+body.registration-open:not(.platform-admin-workspace) .signup-step-heading h3{margin:2px 0 4px;font-size:19px}
+body.registration-open:not(.platform-admin-workspace) .signup-step-heading p{margin:0}
+body.registration-open:not(.platform-admin-workspace) .signup-step-number{display:grid;place-items:center;flex:0 0 38px;height:38px;border-radius:12px;background:#321d50;color:white;font-size:13px;font-weight:850}
+body:not(.platform-admin-workspace) .brand-identity-panel{margin:8px 0 18px;padding:clamp(18px,2.6vw,28px);border:1px solid #ded4ec;border-radius:22px;background:linear-gradient(145deg,#fbf8ff 0%,#fff 62%,#f0f8f8 100%)}
+body:not(.platform-admin-workspace) .brand-identity-heading{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
+body:not(.platform-admin-workspace) .brand-identity-heading h3{margin:2px 0 5px;font-size:21px}
+body:not(.platform-admin-workspace) .brand-identity-heading p{margin:0}
+body:not(.platform-admin-workspace) .brand-identity-seal{display:grid;place-items:center;width:48px;height:48px;flex:0 0 48px;border:1px solid #cfc0e2;border-radius:15px;background:#fff;color:#46216f;font-family:Georgia,serif;font-size:27px;font-weight:800;box-shadow:0 5px 14px #37205212}
+body:not(.platform-admin-workspace) .profile-logo-row{display:grid;grid-template-columns:132px minmax(0,1fr);gap:18px;align-items:center;margin:18px 0;padding:16px;border:1px dashed #cbb9df;border-radius:18px;background:rgba(255,255,255,.76)}
+body:not(.platform-admin-workspace) .logo-artboard{position:relative;display:grid;place-items:center;width:132px;height:112px;overflow:hidden;border-radius:15px;background:repeating-linear-gradient(135deg,#f5f1fa 0 12px,#fff 12px 24px);border:1px solid #e4d9ee}
+body:not(.platform-admin-workspace) .logo-artboard-mark{font-family:Georgia,serif;font-size:56px;font-weight:800;color:#58317e;text-shadow:3px 3px 0 #d7c8e7}
+body:not(.platform-admin-workspace) .logo-artboard:has(.logo-preview:not(.hidden)) .logo-artboard-mark{display:none}
+body:not(.platform-admin-workspace) .logo-artboard .logo-preview{display:block!important;width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;padding:9px;background:#fff}
+body:not(.platform-admin-workspace) .logo-upload-copy{display:grid;justify-items:start;gap:6px;min-width:0}
+body:not(.platform-admin-workspace) .logo-upload-copy>strong{font-size:15px;color:#2e2142}
+body:not(.platform-admin-workspace) .logo-upload-copy p{margin:0}
+body:not(.platform-admin-workspace) .logo-upload-control{display:inline-flex;align-items:center;justify-content:center;min-height:39px;padding:8px 14px;border:1px solid #cdb9e3;border-radius:10px;background:#f3edf9;color:#4c2773;font-size:13px;font-weight:800;cursor:pointer}
+body:not(.platform-admin-workspace) .logo-upload-control input{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none}
+body:not(.platform-admin-workspace) .logo-upload-note{font-size:11px;color:#778196}
+body:not(.platform-admin-workspace) .brand-name-fields{display:grid;grid-template-columns:1.15fr .85fr;gap:14px}
+body:not(.platform-admin-workspace) .brand-name-fields label{display:grid;gap:6px;padding:14px;border-radius:14px;background:#fff;border:1px solid #e8e1f0}
+body:not(.platform-admin-workspace) .brand-name-fields label>span{font-weight:800;color:#35244a}
+body:not(.platform-admin-workspace) .brand-name-fields label>small{font-size:11px;font-weight:500;color:#788397;line-height:1.4}
+body:not(.platform-admin-workspace) .brand-contact-panel{padding:18px;margin:0 0 16px;border-left:4px solid #1c8a91;border-radius:4px 16px 16px 4px;background:#f4f9fa}
+body:not(.platform-admin-workspace) .brand-subsection-heading{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+body:not(.platform-admin-workspace) .brand-section-index{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:#1c5963;color:#fff;font-size:12px;font-weight:850}
+body:not(.platform-admin-workspace) .brand-subsection-heading strong,body:not(.platform-admin-workspace) .brand-subsection-heading small{display:block}
+body:not(.platform-admin-workspace) .brand-subsection-heading small{margin-top:2px;color:#687c83;font-size:11px}
+body:not(.platform-admin-workspace) .shop-photo-fields label{padding:14px;border:1px solid #e4eaf0;border-radius:14px;background:#fff}
+body.page-recover .auth-shell,body.page-secondhand .auth-shell{max-width:760px;margin:7vh auto;padding:0 20px}
+body.page-recover .auth-shell>.panel{border-top:5px solid #247e91;background:linear-gradient(145deg,#fff,#f4fbfc)!important}
+body.page-verify .auth-shell{max-width:620px;margin:12vh auto;padding:0 20px}
+body.page-verify .auth-shell>.panel{border-top:5px solid #267c62;background:#f5fbf8!important;text-align:center}
+body.page-verify-email .auth-shell{max-width:560px;margin:13vh auto;padding:0 20px}
+body.page-verify-email .auth-shell>.panel{border-top:5px solid #7050a0;background:#faf7ff!important;text-align:center}
+body.page-secondhand .auth-shell>.panel{border-top:5px solid #b07b37;background:linear-gradient(145deg,#fffaf1,#fff)!important}
+body.page-staff-invite main.shell{width:min(100% - 32px,620px)!important;margin:8vh auto!important;padding:0!important}
+body.page-staff-invite main.shell>.panel{border-top:5px solid #287b82;background:#f5fbfb!important}
+body.page-about .wrap{max-width:1180px;padding:28px 22px 72px}
+body.page-about{background:linear-gradient(120deg,#17243a 0 38%,#edf3f8 38% 100%)!important}
+body.page-about .bar{max-width:100%;padding:10px 0 30px}
+body.page-about .bar .brand{font-size:17px;letter-spacing:.04em}
+body.page-about .bar>a{display:inline-flex;padding:11px 16px;border:1px solid rgba(255,255,255,.32);border-radius:999px;text-decoration:none}
+body.page-about main{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(250px,.8fr);gap:22px;align-items:start}
+body.page-about main>.hero{grid-column:1;grid-row:1 / span 2;border-radius:8px 30px 8px 30px;background:linear-gradient(150deg,#fff,#f5f8fc);box-shadow:0 22px 55px rgba(10,28,50,.15)}
+body.page-about main>.hero h1{font-size:clamp(38px,5vw,62px);max-width:680px;line-height:1.02}
+body.page-about main>.content:first-of-type{grid-column:2;grid-row:1;background:#e6f1f2;border-radius:26px 8px 26px 8px;padding:22px}
+body.page-about main>.content:first-of-type .grid{display:grid;grid-template-columns:1fr;gap:10px}
+body.page-about main>.content:first-of-type .card{border:0;border-left:3px solid #3b858d;border-radius:5px 14px 14px 5px;padding:13px 15px;box-shadow:none}
+body.page-about main>.content:last-of-type{grid-column:1 / -1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+body.page-about main>.content:last-of-type>h2,body.page-about main>.content:last-of-type>p{grid-column:1 / -1}
+body.page-about main>.content:last-of-type .faq{padding:17px;border-top:2px solid #7050a0;background:#fff;border-radius:4px 4px 16px 16px}
+body.page-about footer{margin-top:24px;color:#64748b}
+@media(max-width:760px){
+ body:not(.platform-admin-workspace) .login-wrap{grid-template-columns:minmax(0,1fr);gap:16px;padding:14px 0}
+ body:not(.platform-admin-workspace) .aurora-auth-welcome{order:-1;border-radius:22px;padding:22px}
+ body:not(.platform-admin-workspace) .profile-logo-row{grid-template-columns:100px minmax(0,1fr);gap:12px;padding:12px}
+ body:not(.platform-admin-workspace) .logo-artboard{width:100px;height:94px}
+ body:not(.platform-admin-workspace) .brand-name-fields{grid-template-columns:1fr}
+ body.page-about{background:#edf3f8!important}
+ body.page-about main{grid-template-columns:1fr}
+ body.page-about main>.hero,body.page-about main>.content:first-of-type,body.page-about main>.content:last-of-type{grid-column:1;grid-row:auto}
+ body.page-about main>.content:last-of-type{grid-template-columns:1fr 1fr}
+}
+@media(max-width:480px){
+ body:not(.platform-admin-workspace) .profile-logo-row{grid-template-columns:1fr}
+ body:not(.platform-admin-workspace) .logo-artboard{width:100%;height:126px}
+ body.page-about main>.content:last-of-type{grid-template-columns:1fr}
+}
