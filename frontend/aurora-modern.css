@@ -1074,7 +1074,7 @@ body.aurora-home-active .aurora-home-heading{flex:0 0 42px;display:flex;align-it
 .aurora-home-heading>div:first-child>strong{font-size:16px;line-height:1.2;max-width:75vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .aurora-home-page-count{display:flex;align-items:center;gap:5px;font-size:11px;color:#82758e;font-weight:800}
 .aurora-home-page-count span{color:#7e259f;font-size:18px}
-.aurora-home-deck{display:flex;flex:1 1 auto;min-height:0;width:100%;gap:0;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scroll-behavior:smooth;overscroll-behavior-x:contain;scrollbar-width:none;border-radius:25px}
+.aurora-home-deck{display:flex;flex:1 1 auto;min-height:0;width:100%;gap:0;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scroll-behavior:smooth;overscroll-behavior-x:contain;touch-action:pan-x;scrollbar-width:none;border-radius:25px}
 .aurora-home-deck::-webkit-scrollbar{display:none}
 .aurora-home-card{position:relative;isolation:isolate;flex:0 0 100%;width:100%;height:100%;min-height:0;overflow:hidden;scroll-snap-align:start;scroll-snap-stop:always;border:1px solid #ffffff8c;border-radius:25px 7px 25px 7px;box-shadow:0 18px 45px #25334a24;color:#fff}
 .aurora-home-card-pink{background:linear-gradient(145deg,#ed9fbd 0%,#d65e91 52%,#a93475 100%)}
