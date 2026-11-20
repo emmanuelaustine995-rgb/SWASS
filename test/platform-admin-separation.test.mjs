@@ -72,9 +72,9 @@ test('ordinary workspace uses the new AURORA design while login and Platform Adm
 test('fresh ordinary navigation and receipt pages have responsive design rules', () => {
   const modernCss = read('../frontend/aurora-modern.css');
   assert.match(modernCss, /body:not\\(\\.platform-admin-workspace\\) #workspace-nav/);
-  assert.match(modernCss, /#receipts-home/);
+  assert.match(modernCss, /\.receipt-actions-grid/);
   assert.match(modernCss, /#pos-view/);
-  assert.match(modernCss, /#subscription-home/);
-  assert.match(modernCss, /#history-panel/);
+  assert.match(modernCss, /\.subscription-choice-grid/);
+  assert.match(modernCss, /\.receipt-history-panel/);
   assert.match(html, /id="workspace-nav"/);
 });
