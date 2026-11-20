@@ -794,3 +794,114 @@ body:not(.platform-admin-workspace) .aurora-dashboard-view .command-bar{border-r
  .aurora-feature-carousel article{flex-basis:82%}
 }
 @media(prefers-reduced-motion:reduce){.aurora-account-carousel,.aurora-feature-carousel{scroll-behavior:auto}}
+
+/* Login entrance shares the same premium AURORA visual language as the new home. */
+body:not(.platform-admin-workspace):has(#login-view:not(.hidden)){
+  background:#0d0b10!important;color:#f7f2fb!important;
+}
+body:not(.platform-admin-workspace):has(#login-view:not(.hidden)) .topbar{
+  background:#0d0b10!important;border-bottom:1px solid #ffffff14!important;box-shadow:none!important;
+}
+body:not(.platform-admin-workspace):has(#login-view:not(.hidden)) .topbar .brand{color:#f8efff!important;letter-spacing:.13em}
+body:not(.platform-admin-workspace):has(#login-view:not(.hidden)) .global-back-row{display:none!important}
+body:not(.platform-admin-workspace):has(#login-view:not(.hidden)) .shell{
+  width:min(100% - 28px,1060px)!important;margin:16px auto 32px!important;padding:0 0 32px!important;
+}
+body:not(.platform-admin-workspace) .aurora-login-layout{
+  min-height:0!important;width:100%;max-width:100%;display:grid;
+  grid-template-columns:minmax(0,1fr);gap:14px!important;align-items:stretch;
+  padding:0!important;margin:0 auto!important;
+}
+body:not(.platform-admin-workspace) .aurora-login-story{
+  min-height:0!important;padding:clamp(20px,4vw,30px)!important;
+  border:1px solid #ffffff25!important;border-radius:24px 7px 24px 7px!important;
+  background:radial-gradient(circle at 94% 0%,#8e2dbb45,transparent 42%),linear-gradient(125deg,#21132b,#111016 72%)!important;
+  box-shadow:0 18px 44px #0006;position:relative;overflow:hidden;
+}
+body:not(.platform-admin-workspace) .aurora-story-mark{
+  width:43px!important;height:43px!important;border-radius:50%!important;
+  border:1px solid #c47be4!important;background:linear-gradient(145deg,#9d27c9,#4b176e);
+  color:white!important;font-size:30px!important;margin-bottom:18px!important;
+}
+body:not(.platform-admin-workspace) .aurora-login-story h1{
+  max-width:760px!important;font-size:clamp(27px,5vw,43px)!important;
+  line-height:1.08!important;margin:8px 0 11px!important;letter-spacing:-.045em!important;
+}
+body:not(.platform-admin-workspace) .aurora-login-story h1 em{color:#d88af0!important}
+body:not(.platform-admin-workspace) .aurora-login-story>p:not(.aurora-story-kicker){
+  max-width:680px!important;font-size:13px!important;line-height:1.55!important;color:#d5cbdc!important;margin:0;
+}
+body:not(.platform-admin-workspace) .aurora-story-points{
+  display:flex!important;flex-wrap:wrap;gap:9px 18px!important;margin:17px 0 8px!important;font-size:11px!important;
+}
+body:not(.platform-admin-workspace) .aurora-story-points span{
+  display:flex;gap:7px;align-items:center;color:#eee5f3;
+}
+body:not(.platform-admin-workspace) .aurora-story-points b{color:#d58bea!important}
+body:not(.platform-admin-workspace) .aurora-login-story>small{
+  display:block;margin-top:12px!important;color:#aa9ab6!important;font-size:8px!important;letter-spacing:.16em;
+}
+body:not(.platform-admin-workspace) #login-view .aurora-login-card{
+  width:100%!important;max-width:100%!important;margin:0!important;padding:clamp(20px,4vw,30px)!important;
+  border:1px solid #ffffff30!important;border-top:1px solid #ffffff30!important;
+  border-radius:7px 24px 7px 24px!important;background:linear-gradient(145deg,#17141b,#100e13)!important;
+  color:#f8f3fa!important;box-shadow:0 20px 55px #0007!important;
+}
+body:not(.platform-admin-workspace) .aurora-brand-lockup{margin:0 auto 14px!important}
+body:not(.platform-admin-workspace) .aurora-login-logo{width:min(100%,230px)!important;max-height:94px!important}
+body:not(.platform-admin-workspace) .aurora-tagline{color:#c2b3cc!important;font-size:11px}
+body:not(.platform-admin-workspace) .login-role-tabs{
+  display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:6px!important;margin:15px 0 18px!important;
+  padding:5px!important;border:1px solid #ffffff20;border-radius:14px;background:#0d0b10;
+}
+body:not(.platform-admin-workspace) .login-role-tab{
+  min-width:0!important;min-height:39px!important;padding:7px 4px!important;border:1px solid transparent!important;
+  border-radius:9px!important;background:transparent!important;color:#c6b9cd!important;font-size:11px!important;font-weight:700;
+}
+body:not(.platform-admin-workspace) .login-role-tab.active{
+  background:linear-gradient(135deg,#8c24b6,#55217b)!important;border-color:#bb71d4!important;color:#fff!important;
+  box-shadow:0 5px 15px #8b25b633!important;
+}
+body:not(.platform-admin-workspace) #login-form label,
+body:not(.platform-admin-workspace) #password-reset-form label,
+body:not(.platform-admin-workspace) #first-password-form label{
+  color:#e9e0ed!important;font-size:12px!important;font-weight:700;
+}
+body:not(.platform-admin-workspace) #login-form input,
+body:not(.platform-admin-workspace) #password-reset-form input,
+body:not(.platform-admin-workspace) #first-password-form input{
+  min-height:49px!important;border:1px solid #ffffff2d!important;border-radius:12px!important;
+  background:#0d0b10!important;color:#fff!important;box-shadow:none!important;
+}
+body:not(.platform-admin-workspace) #login-form input::placeholder{color:#81758a}
+body:not(.platform-admin-workspace) .login-submit-compact{
+  min-height:51px!important;border:1px solid #c56cde!important;border-radius:13px 5px 13px 5px!important;
+  background:linear-gradient(110deg,#a22ac6,#63218d)!important;color:#fff!important;
+  font-weight:850!important;letter-spacing:.08em!important;box-shadow:0 10px 22px #8b22b533!important;
+}
+body:not(.platform-admin-workspace) #login-view .text-btn{color:#d58bea!important}
+body:not(.platform-admin-workspace) #login-view .muted,
+body:not(.platform-admin-workspace) #login-view .login-forgot-wrap{color:#b9adbf!important}
+body:not(.platform-admin-workspace) #login-view .error{color:#ffaaa8!important}
+body:not(.platform-admin-workspace):has(#login-view:not(.hidden)) .aurora-policy-center{
+  color:#e9e0ed!important;margin:15px auto!important;padding:0!important;
+}
+body:not(.platform-admin-workspace):has(#login-view:not(.hidden)) .aurora-policy-center details{
+  border:1px solid #ffffff25!important;border-radius:14px!important;background:#17141b!important;color:#eee!important;
+}
+body:not(.platform-admin-workspace):has(#login-view:not(.hidden)) .aurora-policy-center summary{color:#f3e9f8}
+@media(max-width:620px){
+ body:not(.platform-admin-workspace):has(#login-view:not(.hidden)) .shell{width:calc(100% - 20px)!important;margin:10px auto 24px!important}
+ body:not(.platform-admin-workspace) .aurora-login-layout{gap:10px!important}
+ body:not(.platform-admin-workspace) .aurora-login-story{padding:18px!important;border-radius:19px 6px 19px 6px!important}
+ body:not(.platform-admin-workspace) .aurora-login-story h1{font-size:27px!important}
+ body:not(.platform-admin-workspace) .aurora-story-points{gap:8px 12px!important;margin:12px 0 5px!important}
+ body:not(.platform-admin-workspace) .aurora-story-points span{font-size:10px}
+ body:not(.platform-admin-workspace) #login-view .aurora-login-card{padding:18px 15px!important}
+ body:not(.platform-admin-workspace) .aurora-login-logo{max-height:82px!important}
+ body:not(.platform-admin-workspace) .login-role-tab{font-size:10px!important;min-height:38px!important}
+}
+@media(max-width:360px){
+ body:not(.platform-admin-workspace) .login-role-tabs{gap:3px!important;padding:4px!important}
+ body:not(.platform-admin-workspace) .login-role-tab{font-size:9px!important;padding:6px 2px!important}
+}
