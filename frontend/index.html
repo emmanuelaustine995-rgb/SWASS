@@ -32,7 +32,7 @@
   <link rel="stylesheet" href="./registration-layout.css?v=aurora-purple-auth-20261117">
   <link rel="stylesheet" href="./responsive-auth.css?v=shop-card-disclosure-fix-20261119">
   <link rel="stylesheet" href="./responsive-workspace.css?v=single-page-swipe-scroll-20261119">
-  <link rel="stylesheet" href="./aurora-modern.css?v=20261120-enterprise-refresh">
+  <link rel="stylesheet" href="./aurora-modern.css?v=20261120-brand-identity">
 </head>
 <body>
   <header class="topbar"><a class="brand" href="#" aria-label="AURORA E-RECEIPT PLATFORM"><span>AURORA E-RECEIPT PLATFORM</span></a><div class="topbar-actions"></div></header>
@@ -115,11 +115,13 @@
           <button id="signup-back-btn" class="btn btn-light btn-small hidden" type="button" style="align-self:flex-start;margin-bottom:2px">← Back</button>
           <p class="eyebrow">CREATE YOUR AURORA E-RECEIPT ACCOUNT</p>
           <p class="muted small">If your previous shop account was deactivated, register again using the same registered phone number and National ID. After SMS verification, your existing shop records will be restored.</p>
-          <div id="owner-signup-fields">
-            <label>Shop / business name<input id="reg-business" required maxlength="120" placeholder="Business name"></label>
-            <label>Business location<input id="reg-location" required maxlength="200" placeholder="Town, street or area"></label>
-          </div>
-          <div id="register-fields">
+          <section id="owner-signup-fields" class="signup-identity-step" aria-labelledby="signup-business-title">
+            <div class="signup-step-heading"><span class="signup-step-number">01</span><div><p class="eyebrow">BUSINESS IDENTITY</p><h3 id="signup-business-title">What should customers see?</h3><p class="muted small">Use the name customers know your shop by. Add your registered legal name and branch details later.</p></div></div>
+            <label>Public shop / trading name<input id="reg-business" required maxlength="120" placeholder="e.g. Aurora Electronics"></label>
+            <label>Where is your business based?<input id="reg-location" required maxlength="200" placeholder="Town, street or area"></label>
+          </section>
+          <div id="register-fields" class="signup-account-step">
+            <div class="signup-step-heading"><span class="signup-step-number">02</span><div><p class="eyebrow">ACCOUNT OWNER</p><h3>Your personal details</h3><p class="muted small">These details identify the person responsible for this account.</p></div></div>
             <label>Full name<input id="reg-name" required maxlength="120" autocomplete="name"></label>
             <label>Phone number<input id="reg-phone" type="tel" required inputmode="tel" autocomplete="tel" placeholder="07XX XXX XXX"></label>
             <label>Email address<input id="reg-email" type="email" required autocomplete="email" placeholder="you@example.com"></label>
@@ -247,10 +249,14 @@
         </div>
       </details>
       <details class="profile-shop-card profile-card panel shop-business-details-card hidden"><summary class="profile-card-summary"><span><strong>Shop Details</strong><small>Business information, branding and shop photos</small></span><span class="profile-card-chevron" aria-hidden="true">⌄</span></summary><div class="profile-card-body"><p id="profile-readonly-note" class="profile-readonly-note hidden">Viewing mode · Shop owners can edit these details. Vendors and freelancers can view them only.</p><form id="profile-form">
-<div class="profile-logo-row"><img id="logo-preview" alt="Business logo preview" class="logo-preview hidden"><label>Business logo (optional)<input id="business-logo" type="file" accept="image/png,image/jpeg,image/webp"></label></div>
-<div class="form-two"><label>Company / trading name<input id="profile-business-name" maxlength="120" required></label><label>Support telephone number<input id="profile-business-phone" maxlength="30" required></label></div>
-<div class="form-two"><label>Physical location / address<input id="profile-store-location" maxlength="200" required></label><label>Branch / outlet name<input id="profile-store-name" maxlength="120" required></label></div>
-<div class="form-two"><label>Legal registered entity name<input id="profile-legal-name" maxlength="160"></label><label>Business email address<input id="profile-business-email" type="email" maxlength="254"></label></div>
+<section class="brand-identity-panel" aria-labelledby="brand-identity-title">
+  <div class="brand-identity-heading"><div><p class="eyebrow">YOUR SHOP'S IDENTITY</p><h3 id="brand-identity-title">Brand &amp; business name</h3><p class="muted small">Set the name customers recognise, then add your official registration details separately.</p></div><span class="brand-identity-seal" aria-hidden="true">A</span></div>
+  <div class="profile-logo-row"><div class="logo-artboard"><span class="logo-artboard-mark" aria-hidden="true">A</span><img id="logo-preview" alt="Business logo preview" class="logo-preview hidden"></div><div class="logo-upload-copy"><strong>Business logo</strong><p class="muted small">Add a clear square or landscape logo. PNG, JPG or WebP.</p><label class="logo-upload-control">Choose logo<input id="business-logo" type="file" accept="image/png,image/jpeg,image/webp"></label><span class="logo-upload-note">Your logo appears on your saved business profile and receipts.</span></div></div>
+  <div class="brand-name-fields"><label><span>Customer-facing business name</span><small>The trading name shown on receipts and your shop profile.</small><input id="profile-business-name" maxlength="120" required placeholder="Your public business name"></label><label><span>Branch / outlet name</span><small>Use a branch name when you operate more than one location.</small><input id="profile-store-name" maxlength="120" required placeholder="e.g. Town Centre Branch"></label></div>
+</section>
+<section class="brand-contact-panel" aria-label="Business contact and registration"><div class="brand-subsection-heading"><span class="brand-section-index">02</span><div><strong>Contact &amp; location</strong><small>How customers and delivery partners can reach this outlet.</small></div></div>
+  <div class="form-two"><label>Support telephone number<input id="profile-business-phone" maxlength="30" required></label><label>Physical location / address<input id="profile-store-location" maxlength="200" required></label></div>
+  <div class="form-two"><label>Business email address<input id="profile-business-email" type="email" maxlength="254"></label><label>Legal registered entity name<input id="profile-legal-name" maxlength="160"></label></div></section>
 <div class="form-two"><label>House / building name<input id="profile-house-name" maxlength="120"></label><label>Floor<input id="profile-floor" maxlength="40"></label></div>
 <div class="form-two"><label>House / unit number<input id="profile-house-number" maxlength="40"></label><label>Website URL<input id="profile-website" type="url" maxlength="255"></label></div>
 <div class="form-two"><label>KRA PIN<input id="profile-kra-pin" maxlength="40"></label><label>Business registration code<input id="profile-registration-code" maxlength="80"></label></div>
