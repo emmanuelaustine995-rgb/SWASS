@@ -584,9 +584,9 @@ body.page-about .bar>a{display:inline-flex;padding:11px 16px;border:1px solid rg
 body.page-about main{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(250px,.8fr);gap:22px;align-items:start}
 body.page-about main>.hero{grid-column:1;grid-row:1 / span 2;border-radius:8px 30px 8px 30px;background:linear-gradient(150deg,#fff,#f5f8fc);box-shadow:0 22px 55px rgba(10,28,50,.15)}
 body.page-about main>.hero h1{font-size:clamp(38px,5vw,62px);max-width:680px;line-height:1.02}
-body.page-about main>.content:first-of-type{grid-column:2;grid-row:1;background:#e6f1f2;border-radius:26px 8px 26px 8px;padding:22px}
-body.page-about main>.content:first-of-type .grid{display:grid;grid-template-columns:1fr;gap:10px}
-body.page-about main>.content:first-of-type .card{border:0;border-left:3px solid #3b858d;border-radius:5px 14px 14px 5px;padding:13px 15px;box-shadow:none}
+body.page-about main>#features{grid-column:2;grid-row:1;background:#e6f1f2;border-radius:26px 8px 26px 8px;padding:22px}
+body.page-about main>#features{background:#e6f1f2;border-radius:26px 8px 26px 8px;padding:22px}\nbody.page-about main>#features h2{color:#213d4a}\nbody.page-about main>#features>p{color:#536c75}\nbody.page-about main>#features .grid{display:grid;grid-template-columns:1fr;gap:10px}
+body.page-about main>#features .card{border:0;border-left:3px solid #3b858d;border-radius:5px 14px 14px 5px;padding:13px 15px;box-shadow:none}
 body.page-about main>.content:last-of-type{grid-column:1 / -1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
 body.page-about main>.content:last-of-type>h2,body.page-about main>.content:last-of-type>p{grid-column:1 / -1}
 body.page-about main>.content:last-of-type .faq{padding:17px;border-top:2px solid #7050a0;background:#fff;border-radius:4px 4px 16px 16px}
@@ -599,7 +599,7 @@ body.page-about footer{margin-top:24px;color:#64748b}
  body:not(.platform-admin-workspace) .brand-name-fields{grid-template-columns:1fr}
  body.page-about{background:#edf3f8!important}
  body.page-about main{grid-template-columns:1fr}
- body.page-about main>.hero,body.page-about main>.content:first-of-type,body.page-about main>.content:last-of-type{grid-column:1;grid-row:auto}
+ body.page-about main>.hero,body.page-about main>#features,body.page-about main>.content:last-of-type{grid-column:1;grid-row:auto}
  body.page-about main>.content:last-of-type{grid-template-columns:1fr 1fr}
 }
 @media(max-width:480px){
