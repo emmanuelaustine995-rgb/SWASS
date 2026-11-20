@@ -787,3 +787,38 @@ html body.workspace-active #shop-lost-items-panel button,
 html body.workspace-active #shop-lost-items-panel summary {
   touch-action: manipulation !important;
 }
+
+
+/* Platform Admin is a separate control-room page, not an ordinary shop tab. */
+html body.platform-admin-workspace #workspace-nav,
+html body.platform-admin-workspace .topbar,
+html body.platform-admin-workspace .global-back-row,
+html body.platform-admin-workspace #pos-view,
+html body.platform-admin-workspace #owner-home,
+html body.platform-admin-workspace #customer-home,
+html body.platform-admin-workspace #receipts-home,
+html body.platform-admin-workspace #shop-home,
+html body.platform-admin-workspace #subscription-home,
+html body.platform-admin-workspace #profile-panel,
+html body.platform-admin-workspace #staff-profile-panel {
+  display: none !important;
+}
+html body.platform-admin-workspace main.shell {
+  width: min(100% - 24px, 1120px) !important;
+  max-width: 1120px !important;
+  min-height: 100vh !important;
+  margin: 18px auto !important;
+  padding: 0 0 28px !important;
+}
+html body.platform-admin-workspace #platform-referral-admin:not(.hidden) {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 auto !important;
+  padding: clamp(16px, 3vw, 30px) !important;
+}
+html body.platform-admin-workspace #platform-referral-admin .platform-admin-tabs {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
