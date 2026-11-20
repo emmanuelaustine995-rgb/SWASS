@@ -90,7 +90,7 @@ test('all ordinary account recovery and support pages share the AURORA design sy
     '../frontend/about.html',
   ]) {
     const source = read(page);
-    assert.match(source, /aurora-modern\.css\?v=20261120-sitewide/, page);
+    assert.match(source, /aurora-modern\.css\?v=20261120-brand-identity/, page);
   }
   const modernCss = read('../frontend/aurora-modern.css');
   assert.match(modernCss, /body\.registration-open:not\(\.platform-admin-workspace\)/);
@@ -115,11 +115,50 @@ test('standalone recovery, verification, invitation and About pages have respons
     '../frontend/staff-invite.html',
     '../frontend/about.html',
   ]) {
-    assert.match(read(page), /aurora-modern\.css\?v=20261120-sitewide/, page);
+    assert.match(read(page), /aurora-modern\.css\?v=20261120-brand-identity/, page);
   }
 });
 
 test('ordinary workspace HTML has no duplicate element IDs', () => {
   const ids = [...html.matchAll(/\bid=["']([^"']+)["']/g)].map((match) => match[1]);
   assert.equal(ids.length, new Set(ids).size, 'Duplicate IDs can break form and navigation handlers');
+});
+
+
+test('business naming flow distinguishes the public shop name from the account owner', () => {
+  assert.match(html, /id="owner-signup-fields" class="signup-identity-step"/);
+  assert.match(html, /Public shop \/ trading name/);
+  assert.match(html, /id="reg-business"/);
+  assert.match(html, /id="reg-name"/);
+  assert.match(html, /signup-step-number/);
+  assert.match(app, /businessName:customerSignupMode\?'':\$\('reg-business'\)\.value\.trim\(\)/);
+});
+
+test('shop branding has a dedicated logo artboard and separate customer-facing and branch names', () => {
+  assert.match(html, /class="brand-identity-panel"/);
+  assert.match(html, /class="logo-artboard"/);
+  assert.match(html, /id="logo-preview"/);
+  assert.match(html, /id="business-logo"/);
+  assert.match(html, /id="profile-business-name"/);
+  assert.match(html, /id="profile-store-name"/);
+  assert.match(app, /state\.profileLogoData=await compressLogo\(file\)/);
+  assert.match(app, /payload\.logoData=state\.profileLogoData/);
+});
+
+test('public and account support pages use distinct page compositions', () => {
+  const pages = {
+    '../frontend/about.html': /class="page-about"/,
+    '../frontend/recover.html': /class="page-recover"/,
+    '../frontend/verify.html': /class="page-verify"/,
+    '../frontend/verify-email.html': /class="page-verify-email"/,
+    '../frontend/recover-secondhand.html': /class="page-secondhand"/,
+    '../frontend/staff-invite.html': /class="page-staff-invite"/,
+  };
+  for (const [path, marker] of Object.entries(pages)) assert.match(read(path), marker, path);
+  const modernCss = read('../frontend/aurora-modern.css');
+  assert.match(modernCss, /body\.page-about main/);
+  assert.match(modernCss, /body\.page-recover/);
+  assert.match(modernCss, /body\.page-verify-email/);
+  assert.match(modernCss, /body\.page-staff-invite/);
+  assert.doesNotMatch(read('../frontend/admin.html'), /aurora-modern\.css/);
 });
