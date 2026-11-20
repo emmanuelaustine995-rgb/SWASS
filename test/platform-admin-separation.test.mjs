@@ -162,3 +162,23 @@ test('public and account support pages use distinct page compositions', () => {
   assert.match(modernCss, /body\.page-staff-invite/);
   assert.doesNotMatch(read('../frontend/admin.html'), /aurora-modern\.css/);
 });
+
+
+test('AURORA workspace uses distinct structural screen compositions', () => {
+  const html = read('../frontend/index.html');
+  const css = read('../frontend/aurora-modern.css');
+  const app = read('../frontend/app.js');
+  assert.match(html, /class="login-wrap aurora-auth-screen"/);
+  assert.match(html, /class="login-card aurora-login-panel"/);
+  assert.match(html, /class="aurora-dashboard-banner"/);
+  assert.match(html, /class="panel receipts-home aurora-receipts-screen hidden"/);
+  assert.match(html, /class="shop-home aurora-shop-screen hidden"/);
+  assert.match(html, /class="aurora-pos-screen hidden"/);
+  assert.match(css, /AURORA structural redesign/);
+  assert.match(css, /\.aurora-auth-screen/);
+  assert.match(css, /\.aurora-dashboard-banner/);
+  assert.match(css, /\.aurora-receipts-screen/);
+  assert.match(css, /\.aurora-shop-screen/);
+  assert.match(app, /aurora-dashboard-shortcuts \[data-workspace\]/);
+  assert.doesNotMatch(read('../frontend/admin.html'), /aurora-modern\.css/);
+});

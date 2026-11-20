@@ -45,8 +45,8 @@
     <div class="account-profile-actions"><button id="account-profile-business-edit" class="btn btn-light hidden" type="button">Edit business details</button></div>
   </section>
   <main class="shell">
-    <section id="login-view" class="login-wrap">
-      <div class="login-card">
+    <section id="login-view" class="login-wrap aurora-auth-screen">
+      <div class="login-card aurora-login-panel">
         
         <div class="aurora-brand-lockup" aria-label="AURORA E-RECEIPT">
           <svg class="aurora-login-logo" viewBox="0 0 360 142" role="img" aria-labelledby="aurora-logo-title">
@@ -191,7 +191,7 @@
       <p class="muted small" style="text-align:center;margin:14px 0 0"><a href="./about.html" style="color:#dceaff;font-weight:700">About AURORA E-RECEIPT · Digital receipts in Kenya</a></p>
     </section>
     <nav id="workspace-nav" class="bottom-nav hidden" aria-label="Main navigation"><button type="button" data-workspace="dashboard" class="nav-dashboard"><span class="nav-icon" aria-hidden="true">⌂</span><span>Home</span></button><button type="button" data-workspace="receipts" class="receipt-nav"><span class="nav-icon" aria-hidden="true">▤</span><span>Receipt</span></button><button type="button" data-workspace="shop" class="nav-shop"><span class="nav-icon" aria-hidden="true">◇</span><span>Shop</span></button><button type="button" data-workspace="lost-goods" class="nav-lost-goods"><span class="nav-icon flagged-alarm-icon" aria-hidden="true">🚨</span><span>Flagged Items</span></button></nav>
-    <section id="shop-home" class="shop-home hidden" aria-label="Shop">
+    <section id="shop-home" class="shop-home aurora-shop-screen hidden" aria-label="Shop">
       <nav class="shop-section-tabs" aria-label="Shop sections"><button type="button" class="active" data-shop-tab="products">Products</button><button type="button" data-shop-tab="repairs">Goods on Repair</button><button type="button" data-shop-tab="profile">Profile</button></nav>
       <details id="shop-register-product-card" class="shop-register-product-card">
         <summary><strong>Add Product</strong><small>Register goods in your shop so customers can find them.</small></summary>
@@ -330,7 +330,7 @@
       </article>
     </div>
   </section>
-<section id="receipts-home" class="panel receipts-home hidden" aria-label="Receipts">
+<section id="receipts-home" class="panel receipts-home aurora-receipts-screen hidden" aria-label="Receipts">
   <div class="section-head"><div><h1>Receipts</h1></div></div>
   <div class="receipt-actions-grid">
     <button id="open-issue-receipt" class="receipt-choice" type="button"><span aria-hidden="true">＋</span><strong>Issue Receipt</strong><small>Record a sale and create a customer receipt</small></button>
@@ -398,7 +398,7 @@
   <article id="shop-receipt-history-card" class="profile-card panel shop-receipt-history-card"><div class="profile-card-body"><section id="history-panel" class="receipt-history-panel shop-receipt-history" aria-label="Receipt History"><h3>Receipt History</h3><p class="muted small">View and search all receipts and sales declaration forms issued through your account.</p><button id="history-toggle" class="receipt-history-toggle" type="button" aria-expanded="false" aria-controls="history-content">View Receipt History</button><div id="history-content" class="panel history-panel hidden"><div class="history-filters"><label>Search by IMEI, National ID, phone or name<input id="history-search" type="search" placeholder="Enter IMEI, National ID, phone or customer name"></label><label>From date<input id="history-from" type="date"></label><label>To date<input id="history-to" type="date"></label><button id="history-search-btn" class="btn btn-primary" type="button">Search</button></div><p id="history-error" class="error" role="alert"></p><div id="history-list" class="history-list"><div class="empty">Open your issued receipt history or choose a date range to load receipts issued through your account.</div></div></div></section></div></article>
 
 </section>
-<section id="pos-view" class="hidden">
+<section id="pos-view" class="aurora-pos-screen hidden">
       
       <div class="page-heading"><div><button id="back-to-receipts" class="btn btn-light" type="button">← Back to Receipts</button><p class="eyebrow">ISSUE RECEIPT</p><h1>New sale</h1><p class="muted small">Step 1: Add products. Step 2: Issue the receipt and enter customer details.</p></div></div>
       <div id="notice" class="notice hidden" role="status"></div>
@@ -438,7 +438,7 @@
         </form><div id="lost-item-qr" class="lost-item-qr hidden"></div></details>
         <div class="lost-items-list-head hidden" id="lost-active-items-section" data-lost-panel="found" data-lost-owner-only><strong>Active lost items · Mark as found here</strong><button id="lost-items-refresh" class="btn btn-light btn-small" type="button">Refresh</button></div><div id="lost-items-list" data-lost-panel="found" data-lost-owner-only><p class="muted small">Loading registered items…</p></div>
       </section>
-<section id="owner-dashboard-view" class="hidden">
+<section id="owner-dashboard-view" class="aurora-dashboard-screen hidden">
 <section id="freelancer-home" class="hidden" aria-label="Freelancer home">
   <article class="freelancer-home-card">
     <p class="eyebrow">AURORA FREELANCER WORKSPACE</p>
@@ -460,7 +460,7 @@
 
 <section id="profile-panel" class="profile-panel hidden">
 </section>
-      <section id="dashboard-business-card" class="panel dashboard-business-card hidden" aria-label="Business profile"><div class="dashboard-business-identity"><img id="dashboard-profile-image" alt="Business profile photo" class="dashboard-profile-image hidden"><div><p class="eyebrow">BUSINESS PROFILE</p><h2 id="dashboard-profile-name">Complete your business profile</h2><p id="dashboard-profile-meta" class="muted small">Add your business details and logo to personalise AURORA E-RECEIPT receipts.</p></div></div><div id="dashboard-shop-photos" class="dashboard-shop-photos hidden"><figure><img id="dashboard-shop-inside-photo" class="dashboard-shop-photo hidden" alt="Inside of registered shop"><figcaption>Inside shop</figcaption></figure><figure><img id="dashboard-shop-outside-photo" class="dashboard-shop-photo hidden" alt="Outside of registered shop"><figcaption>Outside shop</figcaption></figure></div><button id="dashboard-edit-profile" class="btn btn-primary" type="button">Complete business profile</button></section><div class="page-heading"><div><h1>Sales performance</h1><p class="muted">View sales results, daily trends and comparisons with previous periods.</p></div><div class="date-filter"><label>From<input id="owner-date-from" type="date"></label><label>To<input id="owner-date-to" type="date"></label><button id="owner-refresh-btn" class="btn btn-primary">Refresh</button></div></div><p id="owner-notice" class="notice hidden"></p>
+      <section id="dashboard-business-card" class="panel dashboard-business-card hidden" aria-label="Business profile"><div class="dashboard-business-identity"><img id="dashboard-profile-image" alt="Business profile photo" class="dashboard-profile-image hidden"><div><p class="eyebrow">BUSINESS PROFILE</p><h2 id="dashboard-profile-name">Complete your business profile</h2><p id="dashboard-profile-meta" class="muted small">Add your business details and logo to personalise AURORA E-RECEIPT receipts.</p></div></div><div id="dashboard-shop-photos" class="dashboard-shop-photos hidden"><figure><img id="dashboard-shop-inside-photo" class="dashboard-shop-photo hidden" alt="Inside of registered shop"><figcaption>Inside shop</figcaption></figure><figure><img id="dashboard-shop-outside-photo" class="dashboard-shop-photo hidden" alt="Outside of registered shop"><figcaption>Outside shop</figcaption></figure></div><button id="dashboard-edit-profile" class="btn btn-primary" type="button">Complete business profile</button></section><section class="aurora-dashboard-banner" aria-label="Business workspace introduction"><div class="aurora-dashboard-banner-copy"><span class="aurora-dashboard-overline">AURORA BUSINESS DESK</span><h2>Your business, clearly in view.</h2><p>Receipts, sales and customer records—organised in one workspace.</p><div class="aurora-dashboard-shortcuts"><button type="button" data-workspace="receipts">Open receipts <span aria-hidden="true">↗</span></button><button type="button" data-workspace="shop">Manage shop <span aria-hidden="true">↗</span></button></div></div><div class="aurora-dashboard-orbit" aria-hidden="true"><span class="orbit-ring orbit-ring-one"></span><span class="orbit-ring orbit-ring-two"></span><span class="orbit-core">A</span><span class="orbit-dot orbit-dot-one"></span><span class="orbit-dot orbit-dot-two"></span></div></section><div class="page-heading"><div><h1>Sales performance</h1><p class="muted">View sales results, daily trends and comparisons with previous periods.</p></div><div class="date-filter"><label>From<input id="owner-date-from" type="date"></label><label>To<input id="owner-date-to" type="date"></label><button id="owner-refresh-btn" class="btn btn-primary">Refresh</button></div></div><p id="owner-notice" class="notice hidden"></p>
 <div class="dashboard-layout">
 
 <div class="dashboard-main">
