@@ -492,12 +492,12 @@ body:not(.platform-admin-workspace) .wrap>.bar a{
   color:var(--aurora-purple)!important;border:1px solid #ded3ef!important;
   background:#fff!important;border-radius:12px;padding:10px 15px
 }
-body:not(.platform-admin-workspace) .wrap>.hero{
+body:not(.platform-admin-workspace) .wrap main>.hero{
   border:1px solid var(--aurora-line);border-radius:24px;
   background:rgba(255,255,255,.98);box-shadow:var(--aurora-shadow)
 }
-body:not(.platform-admin-workspace) .wrap>.hero h1{color:var(--aurora-ink)!important}
-body:not(.platform-admin-workspace) .wrap>.hero .lead{color:var(--aurora-muted)!important}
+body:not(.platform-admin-workspace) .wrap main>.hero h1{color:var(--aurora-ink)!important}
+body:not(.platform-admin-workspace) .wrap main>.hero .lead{color:var(--aurora-muted)!important}
 body:not(.platform-admin-workspace) .wrap .actions .primary{
   color:#fff!important;background:linear-gradient(125deg,#6729b6,#3f168b)!important
 }
@@ -520,5 +520,5 @@ body:not(.platform-admin-workspace) .wrap>footer{color:var(--aurora-muted)!impor
 @media(max-width:560px){
  body:not(.platform-admin-workspace) main.auth-shell{width:min(calc(100% - 20px),620px);padding:18px 0}
  body:not(.platform-admin-workspace) .wrap>.bar{align-items:center;flex-wrap:wrap}
- body:not(.platform-admin-workspace) .wrap>.hero{padding:24px 19px}
+ body:not(.platform-admin-workspace) .wrap main>.hero{padding:24px 19px}
 }
