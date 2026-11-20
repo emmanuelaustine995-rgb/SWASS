@@ -550,7 +550,8 @@ body:not(.platform-admin-workspace) .profile-logo-row{display:grid;grid-template
 body:not(.platform-admin-workspace) .logo-artboard{position:relative;display:grid;place-items:center;width:132px;height:112px;overflow:hidden;border-radius:15px;background:repeating-linear-gradient(135deg,#f5f1fa 0 12px,#fff 12px 24px);border:1px solid #e4d9ee}
 body:not(.platform-admin-workspace) .logo-artboard-mark{font-family:Georgia,serif;font-size:56px;font-weight:800;color:#58317e;text-shadow:3px 3px 0 #d7c8e7}
 body:not(.platform-admin-workspace) .logo-artboard:has(.logo-preview:not(.hidden)) .logo-artboard-mark{display:none}
-body:not(.platform-admin-workspace) .logo-artboard .logo-preview.hidden{display:none!important}\nbody:not(.platform-admin-workspace) .logo-artboard .logo-preview:not(.hidden){display:block!important;width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;padding:9px;background:#fff}
+body:not(.platform-admin-workspace) .logo-artboard .logo-preview.hidden{display:none!important}
+body:not(.platform-admin-workspace) .logo-artboard .logo-preview:not(.hidden){display:block!important;width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;padding:9px;background:#fff}
 body:not(.platform-admin-workspace) .logo-upload-copy{display:grid;justify-items:start;gap:6px;min-width:0}
 body:not(.platform-admin-workspace) .logo-upload-copy>strong{font-size:15px;color:#2e2142}
 body:not(.platform-admin-workspace) .logo-upload-copy p{margin:0}
@@ -585,7 +586,10 @@ body.page-about main{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(2
 body.page-about main>.hero{grid-column:1;grid-row:1 / span 2;border-radius:8px 30px 8px 30px;background:linear-gradient(150deg,#fff,#f5f8fc);box-shadow:0 22px 55px rgba(10,28,50,.15)}
 body.page-about main>.hero h1{font-size:clamp(38px,5vw,62px);max-width:680px;line-height:1.02}
 body.page-about main>#features{grid-column:2;grid-row:1;background:#e6f1f2;border-radius:26px 8px 26px 8px;padding:22px}
-body.page-about main>#features{background:#e6f1f2;border-radius:26px 8px 26px 8px;padding:22px}\nbody.page-about main>#features h2{color:#213d4a}\nbody.page-about main>#features>p{color:#536c75}\nbody.page-about main>#features .grid{display:grid;grid-template-columns:1fr;gap:10px}
+body.page-about main>#features{background:#e6f1f2;border-radius:26px 8px 26px 8px;padding:22px}
+body.page-about main>#features h2{color:#213d4a}
+body.page-about main>#features>p{color:#536c75}
+body.page-about main>#features .grid{display:grid;grid-template-columns:1fr;gap:10px}
 body.page-about main>#features .card{border:0;border-left:3px solid #3b858d;border-radius:5px 14px 14px 5px;padding:13px 15px;box-shadow:none}
 body.page-about main>.content:last-of-type{grid-column:1 / -1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
 body.page-about main>.content:last-of-type>h2,body.page-about main>.content:last-of-type>p{grid-column:1 / -1}
@@ -606,4 +610,122 @@ body.page-about footer{margin-top:24px;color:#64748b}
  body:not(.platform-admin-workspace) .profile-logo-row{grid-template-columns:1fr}
  body:not(.platform-admin-workspace) .logo-artboard{width:100%;height:126px}
  body.page-about main>.content:last-of-type{grid-template-columns:1fr}
+}
+
+
+/* AURORA structural redesign — distinct screen compositions and navigation. */
+body:not(.platform-admin-workspace) .aurora-auth-screen{
+  display:grid!important;grid-template-columns:minmax(0,1fr) minmax(360px,520px)!important;
+  align-items:stretch!important;justify-items:stretch!important;gap:clamp(18px,3vw,34px)!important;
+  width:min(100%,1120px);margin:clamp(12px,4vh,42px) auto!important;padding:0 18px 28px!important;
+}
+body:not(.platform-admin-workspace) .aurora-auth-screen>.aurora-login-panel{
+  grid-column:2;grid-row:1;align-self:center;width:100%!important;max-width:520px!important;
+  margin:0!important;padding:clamp(22px,3vw,34px)!important;border:1px solid #e7e0ee!important;
+  border-top:0!important;border-radius:8px 26px 26px 8px!important;
+  box-shadow:0 26px 80px rgba(35,20,60,.14)!important;
+}
+body:not(.platform-admin-workspace) .aurora-auth-screen>.aurora-auth-welcome{
+  grid-column:1;grid-row:1;align-self:stretch;min-height:620px;display:flex;flex-direction:column;
+  justify-content:center;padding:clamp(28px,4vw,54px)!important;border-radius:30px 8px 30px 8px!important;
+  background:radial-gradient(circle at 18% 18%,rgba(111,221,214,.2),transparent 34%),
+             linear-gradient(150deg,#17162f 0%,#30204f 52%,#176b75 100%)!important;
+}
+body:not(.platform-admin-workspace) .aurora-auth-screen .aurora-auth-brand{width:min(100%,300px);margin:0 auto 32px}
+body:not(.platform-admin-workspace) .aurora-auth-screen .aurora-auth-logo{width:100%;height:auto;filter:drop-shadow(0 14px 24px rgba(0,0,0,.2))}
+body:not(.platform-admin-workspace) .aurora-auth-screen .aurora-auth-welcome h1{max-width:440px;font-size:clamp(30px,4vw,46px);line-height:1.08;letter-spacing:-.04em}
+body:not(.platform-admin-workspace) .aurora-auth-screen .aurora-auth-subtitle{font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:#8de2dc!important;font-weight:850}
+body:not(.platform-admin-workspace) .aurora-auth-screen .aurora-auth-description{max-width:390px;color:#e5edf5!important;font-size:16px;line-height:1.75}
+body:not(.platform-admin-workspace) .aurora-auth-screen .login-role-tabs{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:20px 0}
+body:not(.platform-admin-workspace) .aurora-auth-screen .login-role-tab{min-height:46px;border-radius:9px 14px 9px 14px;background:#f4f2f8;border:1px solid #e6dfed}
+body:not(.platform-admin-workspace) .aurora-auth-screen .login-role-tab.active{background:#25203e;border-color:#25203e;color:#fff}
+body:not(.platform-admin-workspace) .aurora-auth-screen .aurora-brand-lockup{padding-bottom:16px;border-bottom:1px solid #edf0f5}
+body:not(.platform-admin-workspace) .aurora-auth-screen .aurora-tagline{font-size:12px;letter-spacing:.03em}
+body:not(.platform-admin-workspace) .aurora-auth-screen #login-form label{display:grid;gap:7px;margin:13px 0}
+body:not(.platform-admin-workspace) .aurora-auth-screen .login-submit-compact{min-height:52px;border-radius:9px 15px 9px 15px!important}
+body:not(.platform-admin-workspace) .aurora-dashboard-screen{max-width:1380px;margin:0 auto}
+body:not(.platform-admin-workspace) .aurora-dashboard-banner{
+  display:grid;grid-template-columns:minmax(0,1.2fr) minmax(220px,.8fr);align-items:center;gap:22px;
+  position:relative;isolation:isolate;overflow:hidden;margin:18px 0 22px;padding:clamp(22px,3vw,38px);
+  min-height:220px;border-radius:8px 28px 8px 28px;color:#fff;
+  background:linear-gradient(112deg,#1c1833 0%,#38235b 52%,#176a75 100%);
+  box-shadow:0 22px 55px rgba(30,27,65,.18);
+}
+body:not(.platform-admin-workspace) .aurora-dashboard-banner:after{content:"";position:absolute;z-index:-1;width:420px;height:420px;right:-150px;top:-240px;border:1px solid #ffffff25;border-radius:50%;box-shadow:0 0 0 35px #ffffff08,0 0 0 75px #ffffff06}
+body:not(.platform-admin-workspace) .aurora-dashboard-overline{font-size:10px;font-weight:900;letter-spacing:.2em;color:#9be7df}
+body:not(.platform-admin-workspace) .aurora-dashboard-banner h2{margin:9px 0 7px;color:#fff!important;font-size:clamp(25px,3vw,38px);line-height:1.12;letter-spacing:-.04em}
+body:not(.platform-admin-workspace) .aurora-dashboard-banner p{margin:0;color:#e0e9f0!important;max-width:520px}
+body:not(.platform-admin-workspace) .aurora-dashboard-shortcuts{display:flex;gap:9px;flex-wrap:wrap;margin-top:20px}
+body:not(.platform-admin-workspace) .aurora-dashboard-shortcuts button{min-height:40px;padding:9px 14px;border:1px solid #ffffff4d;border-radius:5px 12px 5px 12px;background:#ffffff12;color:#fff;font-weight:800}
+body:not(.platform-admin-workspace) .aurora-dashboard-shortcuts button:first-child{background:#fff;color:#2a2044}
+body:not(.platform-admin-workspace) .aurora-dashboard-orbit{position:relative;width:min(100%,260px);aspect-ratio:1;justify-self:center;display:grid;place-items:center}
+body:not(.platform-admin-workspace) .orbit-ring{position:absolute;border:1px solid #ffffff45;border-radius:50%;inset:8%}
+body:not(.platform-admin-workspace) .orbit-ring-two{inset:22%;border-style:dashed;transform:rotate(25deg)}
+body:not(.platform-admin-workspace) .orbit-core{display:grid;place-items:center;width:86px;height:86px;border-radius:25px 8px 25px 8px;background:linear-gradient(145deg,#fff,#dff7f3);color:#30204c;font-family:Georgia,serif;font-size:58px;font-weight:900;box-shadow:0 16px 40px #080b2245}
+body:not(.platform-admin-workspace) .orbit-dot{position:absolute;width:13px;height:13px;border:3px solid #d5fffa;border-radius:50%;background:#55c4b9;box-shadow:0 0 0 7px #ffffff16}
+body:not(.platform-admin-workspace) .orbit-dot-one{top:14%;right:22%}
+body:not(.platform-admin-workspace) .orbit-dot-two{bottom:19%;left:13%;background:#e5c17d}
+body:not(.platform-admin-workspace) .aurora-dashboard-screen>.page-heading{display:flex;align-items:end;justify-content:space-between;gap:18px;padding:0 2px 14px;border-bottom:1px solid #e0e8ee}
+body:not(.platform-admin-workspace) .aurora-dashboard-screen>.page-heading h1{font-size:24px}
+body:not(.platform-admin-workspace) .aurora-dashboard-screen .owner-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:18px 0}
+body:not(.platform-admin-workspace) .aurora-dashboard-screen .owner-stat{border:0;border-radius:4px 16px 4px 16px;padding:18px;background:#fff;box-shadow:0 8px 26px #182c4510;border-left:3px solid #368d8b}
+body:not(.platform-admin-workspace) .aurora-dashboard-screen .owner-stat:nth-child(2){border-left-color:#7652a3}
+body:not(.platform-admin-workspace) .aurora-dashboard-screen .owner-stat:nth-child(3){border-left-color:#c08c42}
+body:not(.platform-admin-workspace) .aurora-dashboard-screen .owner-stat:nth-child(4){border-left-color:#3984b5}
+body:not(.platform-admin-workspace) .aurora-dashboard-screen .period-comparison{border-radius:6px 20px 6px 20px!important;box-shadow:none!important;background:#edf4f5!important}
+body:not(.platform-admin-workspace) .aurora-dashboard-screen .period-comparison .comparison-grid article{background:#fff;border:0;border-radius:4px 12px 4px 12px;padding:16px}
+body:not(.platform-admin-workspace) .aurora-dashboard-screen .analytics-intro{margin:25px 0 10px}
+body:not(.platform-admin-workspace) .aurora-dashboard-screen .dashboard-layout{display:block}
+body:not(.platform-admin-workspace) .aurora-dashboard-screen .dashboard-main{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
+body:not(.platform-admin-workspace) .aurora-dashboard-screen .command-bar{border:0;background:transparent;padding:0;box-shadow:none}
+body:not(.platform-admin-workspace) .aurora-dashboard-screen .headline-metrics,
+body:not(.platform-admin-workspace) .aurora-dashboard-screen #owner-overview-section,
+body:not(.platform-admin-workspace) .aurora-dashboard-screen .secondary-metrics,
+body:not(.platform-admin-workspace) .aurora-dashboard-screen #owner-reports-section{display:none!important}
+body:not(.platform-admin-workspace) .aurora-dashboard-screen #owner-payments-section{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
+body:not(.platform-admin-workspace) .aurora-dashboard-screen #owner-payments-section>section:first-child,
+body:not(.platform-admin-workspace) .aurora-dashboard-screen #owner-payments-section>section:last-child{display:none!important}
+body:not(.platform-admin-workspace) .aurora-dashboard-screen #owner-payments-section>section:nth-child(2){border-radius:8px 24px 8px 24px!important;border:1px solid #dfe8ec!important;background:linear-gradient(145deg,#fff,#f1f8f8)!important}
+body:not(.platform-admin-workspace) .aurora-receipts-screen{padding:clamp(16px,2.5vw,28px)!important;border-radius:6px 26px 6px 26px!important;background:linear-gradient(140deg,#f7f9fc,#fff 45%,#eef7f6)!important}
+body:not(.platform-admin-workspace) .aurora-receipts-screen>.section-head{padding:0 0 18px;border-bottom:1px solid #dce7eb}
+body:not(.platform-admin-workspace) .aurora-receipts-screen>.section-head h1{font-size:clamp(28px,3vw,38px);letter-spacing:-.045em}
+body:not(.platform-admin-workspace) .aurora-receipts-screen .receipt-actions-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:18px 0}
+body:not(.platform-admin-workspace) .aurora-receipts-screen .receipt-choice{min-height:148px;display:grid;grid-template-columns:48px minmax(0,1fr);grid-template-rows:auto auto;align-content:center;align-items:center;column-gap:13px;text-align:left;padding:20px;border:1px solid #dce7e9;border-radius:5px 20px 5px 20px;background:#fff;box-shadow:0 8px 24px #1c39400b}
+body:not(.platform-admin-workspace) .aurora-receipts-screen .receipt-choice>span{grid-row:1/3;display:grid;place-items:center;width:46px;height:46px;border-radius:15px 5px 15px 5px;background:#e6f2f1;color:#216b70;font-size:24px}
+body:not(.platform-admin-workspace) .aurora-receipts-screen .receipt-choice strong{font-size:16px;color:#24374a}
+body:not(.platform-admin-workspace) .aurora-receipts-screen .receipt-choice small{margin-top:5px;color:#687b87;line-height:1.5}
+body:not(.platform-admin-workspace) .aurora-receipts-screen .declaration-card{grid-column:1/-1;border:1px solid #e7d9c4;border-radius:5px 20px 5px 20px;background:#fffaf2;padding:12px}
+body:not(.platform-admin-workspace) .aurora-receipts-screen .declaration-choice{width:100%;min-height:90px;background:transparent;border:0;box-shadow:none}
+body:not(.platform-admin-workspace) .aurora-receipts-screen .declaration-choice>span{background:#f2e5d0;color:#92652d}
+body:not(.platform-admin-workspace) .aurora-receipts-screen .secondhand-panel{margin-top:14px;border-top:1px solid #e8dccb;padding-top:18px}
+body:not(.platform-admin-workspace) .aurora-shop-screen{padding:0 0 20px!important;background:transparent!important;box-shadow:none!important;border:0!important}
+body:not(.platform-admin-workspace) .aurora-shop-screen .shop-section-tabs{display:flex;gap:0;padding:0;border:0;border-bottom:1px solid #dbe4e9;border-radius:0;background:transparent;margin:4px 0 20px}
+body:not(.platform-admin-workspace) .aurora-shop-screen .shop-section-tabs button{padding:14px 18px;border-radius:0;border-bottom:3px solid transparent;color:#63727e}
+body:not(.platform-admin-workspace) .aurora-shop-screen .shop-section-tabs button.active{background:transparent;color:#245e67;border-bottom-color:#278c8b}
+body:not(.platform-admin-workspace) .aurora-shop-screen details{border:1px solid #dce6e8;border-radius:5px 18px 5px 18px;background:#fff;margin:12px 0;overflow:hidden}
+body:not(.platform-admin-workspace) .aurora-shop-screen details>summary{padding:18px 20px;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:14px}
+body:not(.platform-admin-workspace) .aurora-shop-screen details>summary::-webkit-details-marker{display:none}
+body:not(.platform-admin-workspace) .aurora-shop-screen details>summary:after{content:"＋";font-size:20px;color:#267e7e}
+body:not(.platform-admin-workspace) .aurora-shop-screen details[open]>summary:after{content:"−"}
+body:not(.platform-admin-workspace) .aurora-pos-screen .pos-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(340px,.82fr);gap:18px;align-items:start}
+body:not(.platform-admin-workspace) .aurora-pos-screen .cart-panel{position:sticky;top:88px;border-radius:5px 22px 5px 22px!important;border-top:4px solid #2b8585!important}
+body:not(.platform-admin-workspace) .aurora-pos-screen .cart-list{min-height:170px}
+body:not(.platform-admin-workspace) .aurora-pos-screen .grand-total{background:#1e2940;color:#fff;border-radius:4px 14px 4px 14px;padding:15px}
+body:not(.platform-admin-workspace) .aurora-pos-screen .grand-total strong{color:#fff}
+@media(max-width:850px){
+ body:not(.platform-admin-workspace) .aurora-auth-screen{grid-template-columns:minmax(0,1fr)!important;gap:14px!important;padding:0 10px 20px!important}
+ body:not(.platform-admin-workspace) .aurora-auth-screen>.aurora-auth-welcome{grid-column:1;grid-row:1;min-height:0;padding:22px!important;border-radius:22px 8px 22px 8px!important}
+ body:not(.platform-admin-workspace) .aurora-auth-screen>.aurora-login-panel{grid-column:1;grid-row:2;max-width:100%!important;border-radius:8px 20px 20px 8px!important}
+ body:not(.platform-admin-workspace) .aurora-auth-screen .aurora-auth-brand{width:145px;margin:0 auto 12px}
+ body:not(.platform-admin-workspace) .aurora-auth-screen .aurora-auth-welcome h1{font-size:27px;margin:0 0 6px;text-align:center}
+ body:not(.platform-admin-workspace) .aurora-auth-screen .aurora-auth-subtitle{text-align:center;margin:0 0 6px}
+ body:not(.platform-admin-workspace) .aurora-auth-screen .aurora-auth-description{text-align:center;font-size:13px;margin:0 auto}
+ body:not(.platform-admin-workspace) .aurora-dashboard-banner{grid-template-columns:minmax(0,1fr);min-height:0}
+ body:not(.platform-admin-workspace) .aurora-dashboard-orbit{display:none}
+ body:not(.platform-admin-workspace) .aurora-dashboard-screen>.page-heading{align-items:flex-start;flex-direction:column}
+ body:not(.platform-admin-workspace) .aurora-dashboard-screen .owner-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+ body:not(.platform-admin-workspace) .aurora-receipts-screen .receipt-actions-grid{grid-template-columns:minmax(0,1fr)}
+ body:not(.platform-admin-workspace) .aurora-receipts-screen .declaration-card{grid-column:1}
+ body:not(.platform-admin-workspace) .aurora-pos-screen .pos-grid{grid-template-columns:minmax(0,1fr)}
+ body:not(.platform-admin-workspace) .aurora-pos-screen .cart-panel{position:static}
 }
