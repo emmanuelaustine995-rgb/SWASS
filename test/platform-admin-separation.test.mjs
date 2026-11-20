@@ -99,3 +99,27 @@ test('all ordinary account recovery and support pages share the AURORA design sy
   assert.match(read('../frontend/admin.html'), /Admin Control Centre/);
   assert.doesNotMatch(read('../frontend/admin.html'), /aurora-modern\.css/);
 });
+
+
+test('standalone recovery, verification, invitation and About pages have responsive AURORA layouts', () => {
+  const modernCss = read('../frontend/aurora-modern.css');
+  assert.match(modernCss, /main\.auth-shell/);
+  assert.match(modernCss, /\.shell\[style\*="max-width:560px"\]/);
+  assert.match(modernCss, /\.wrap>\.hero/);
+  assert.match(modernCss, /\.wrap \.content \.card/);
+  for (const page of [
+    '../frontend/recover.html',
+    '../frontend/verify.html',
+    '../frontend/verify-email.html',
+    '../frontend/recover-secondhand.html',
+    '../frontend/staff-invite.html',
+    '../frontend/about.html',
+  ]) {
+    assert.match(read(page), /aurora-modern\.css\?v=20261120-sitewide/, page);
+  }
+});
+
+test('ordinary workspace HTML has no duplicate element IDs', () => {
+  const ids = [...html.matchAll(/\\bid=["']([^"']+)["']/g)].map((match) => match[1]);
+  assert.equal(ids.length, new Set(ids).size, 'Duplicate IDs can break form and navigation handlers');
+});
