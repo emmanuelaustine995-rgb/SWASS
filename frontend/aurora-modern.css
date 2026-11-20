@@ -313,3 +313,74 @@ body:not(.platform-admin-workspace) #workspace-nav .nav-icon{font-size:19px!impo
  body:not(.platform-admin-workspace) #workspace-nav{width:calc(100% - 16px)!important;bottom:max(7px,env(safe-area-inset-bottom))!important;padding:6px!important}
  body:not(.platform-admin-workspace) #workspace-nav button{min-height:50px!important;font-size:10px!important}
 }
+
+
+/* Customer, shop, profile and service pages. */
+body:not(.platform-admin-workspace) #shop-home,
+body:not(.platform-admin-workspace) #customer-home,
+body:not(.platform-admin-workspace) #owner-home,
+body:not(.platform-admin-workspace) #owner-dashboard-view,
+body:not(.platform-admin-workspace) #shop-lost-items-panel{min-width:0}
+body:not(.platform-admin-workspace) #shop-home .shop-section-tabs{position:sticky;top:76px;z-index:20}
+body:not(.platform-admin-workspace) .shop-grid,
+body:not(.platform-admin-workspace) .shop-product-grid,
+body:not(.platform-admin-workspace) .shop-product-results{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+body:not(.platform-admin-workspace) .shop-product-card,
+body:not(.platform-admin-workspace) .product-card,
+body:not(.platform-admin-workspace) .shop-goods-card{
+  min-width:0;padding:16px;border:1px solid var(--aurora-line);border-radius:16px;
+  background:#fff;box-shadow:0 7px 22px rgba(30,53,89,.045)
+}
+body:not(.platform-admin-workspace) .shop-product-card img,
+body:not(.platform-admin-workspace) .product-card img{max-width:100%;height:auto;object-fit:contain;border-radius:12px}
+body:not(.platform-admin-workspace) .shop-product-card strong,
+body:not(.platform-admin-workspace) .product-card strong{color:var(--aurora-ink)}
+body:not(.platform-admin-workspace) .shop-home details,
+body:not(.platform-admin-workspace) .profile-panel details{border:1px solid var(--aurora-line);border-radius:15px;background:#fff;margin:12px 0;overflow:hidden}
+body:not(.platform-admin-workspace) .shop-home details>summary,
+body:not(.platform-admin-workspace) .profile-panel details>summary{padding:15px 17px;cursor:pointer;background:#f7f9fd;color:#35445b;font-weight:750}
+body:not(.platform-admin-workspace) .shop-register-product-body,
+body:not(.platform-admin-workspace) .shop-home details>div:not(:first-child){padding:15px}
+body:not(.platform-admin-workspace) .customer-home,
+body:not(.platform-admin-workspace) .public-lost-item-view{max-width:980px;margin:0 auto}
+body:not(.platform-admin-workspace) .customer-home>article,
+body:not(.platform-admin-workspace) .customer-home .panel,
+body:not(.platform-admin-workspace) .public-lost-item-view .panel{padding:clamp(18px,3vw,28px);border:1px solid var(--aurora-line);border-radius:18px;background:#fff;box-shadow:var(--aurora-shadow)}
+body:not(.platform-admin-workspace) .freelancer-home-actions{gap:11px}
+body:not(.platform-admin-workspace) .freelancer-home-actions button{min-height:52px}
+body:not(.platform-admin-workspace) .profile-grid,
+body:not(.platform-admin-workspace) .profile-layout{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+body:not(.platform-admin-workspace) .profile-grid>.panel,
+body:not(.platform-admin-workspace) .profile-layout>.panel{margin:0}
+body:not(.platform-admin-workspace) .profile-panel .profile-section-title{padding-bottom:10px;border-bottom:1px solid var(--aurora-line)}
+body:not(.platform-admin-workspace) .profile-panel img{max-width:100%;height:auto;object-fit:cover;border-radius:13px}
+body:not(.platform-admin-workspace) .owner-home .subscription-expiry-countdown{
+  display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;
+  padding:15px 18px;margin:14px 0;border:1px solid #dfe7f2;border-radius:15px;background:#fff
+}
+body:not(.platform-admin-workspace) .owner-home .subscription-expiry-countdown strong{color:var(--aurora-purple);font-size:20px}
+body:not(.platform-admin-workspace) .shop-home .section-head{align-items:flex-start}
+body:not(.platform-admin-workspace) .shop-home .empty,
+body:not(.platform-admin-workspace) .history-list .empty{
+  padding:24px;border:1px dashed #cbd7e6;border-radius:14px;background:#f8fafd;color:#64748b;text-align:center
+}
+body:not(.platform-admin-workspace) .customer-lookup-panel,
+body:not(.platform-admin-workspace) .crm-panel{background:#fff}
+body:not(.platform-admin-workspace) .crm-search{grid-template-columns:minmax(0,1fr) auto}
+body:not(.platform-admin-workspace) .staff-team-card{overflow:hidden}
+body:not(.platform-admin-workspace) .staff-team-card .table-scroll{margin-top:12px}
+body:not(.platform-admin-workspace) .receipt-modal,
+body:not(.platform-admin-workspace) .modal-content{border-radius:20px}
+@media(max-width:900px){
+ body:not(.platform-admin-workspace) .shop-grid,
+ body:not(.platform-admin-workspace) .shop-product-grid,
+ body:not(.platform-admin-workspace) .shop-product-results{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:620px){
+ body:not(.platform-admin-workspace) .profile-grid,
+ body:not(.platform-admin-workspace) .profile-layout{grid-template-columns:minmax(0,1fr)}
+ body:not(.platform-admin-workspace) .shop-grid,
+ body:not(.platform-admin-workspace) .shop-product-grid,
+ body:not(.platform-admin-workspace) .shop-product-results{grid-template-columns:minmax(0,1fr)}
+ body:not(.platform-admin-workspace) .owner-home .subscription-expiry-countdown{align-items:flex-start;flex-direction:column}
+}
