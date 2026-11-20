@@ -162,3 +162,14 @@ test('public and account support pages use distinct page compositions', () => {
   assert.match(modernCss, /body\.page-staff-invite/);
   assert.doesNotMatch(read('../frontend/admin.html'), /aurora-modern\.css/);
 });
+
+
+test('platform finance and cybersecurity controls never render in the ordinary AURORA home page', () => {
+  assert.doesNotMatch(html, /id="platform-referral-admin"/);
+  assert.doesNotMatch(html, /Cybersecurity &amp; system maintenance/);
+  assert.match(app, /if\(state\.role==='super_admin'\)[\s\S]*?sessionStorage\.setItem\('aurora-admin-token',state\.token\)[\s\S]*?window\.location\.replace\('\.\/admin\.html'\)/);
+  const adminPage = read('../frontend/admin.html');
+  assert.match(adminPage, /let token=sessionStorage\.getItem\('aurora-admin-token'\)\|\|''/);
+  assert.match(adminPage, /api\('\/platform-admin\/overview'\)\.then\([\s\S]*?showApp\(\)/);
+  assert.match(adminPage, /localStorage\.removeItem\('swass-auth-session-v1'\)/);
+});
