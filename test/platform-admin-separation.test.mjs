@@ -282,3 +282,18 @@ test('AURORA Home is exactly four fixed-height swipe cards with live shop, invit
   assert.match(modernCss,/\.aurora-home-card-gold/);
   assert.match(modernCss,/@keyframes aurora-cloud-flow/);
 });
+
+
+test('AURORA workspace navigation opens one independent destination at a time', () => {
+  assert.doesNotMatch(html,/class="aurora-bank-home"/);
+  assert.match(html,/<nav id="workspace-nav" class="bottom-nav hidden"/);
+  assert.match(app,/const mainNavigation=\$\('workspace-nav'\)[\s\S]*?mainNavigation\.classList\.remove\('hidden'\)/);
+  assert.match(app,/Hide every workspace root before opening exactly one destination/);
+  assert.match(app,/ownerHome\?\.classList\.remove\('hidden'\)/);
+  assert.match(app,/receiptHome\?\.classList\.remove\('hidden'\)/);
+  assert.match(app,/\$\('shop-home'\)\?\.classList\.remove\('hidden'\)/);
+  assert.match(app,/\$\('shop-lost-items-panel'\)\?\.classList\.remove\('hidden'\)/);
+  assert.doesNotMatch(app,/else if\(state\.role==='owner'\)dashboardBusinessCard\?\.classList\.remove\('hidden'\)/);
+  const modernCss=read('../frontend/aurora-modern.css');
+  assert.match(modernCss,/body:not\(\.platform-admin-workspace\) \.hidden\{display:none!important\}/);
+});
