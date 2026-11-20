@@ -11,7 +11,8 @@ test('ordinary login exposes only shop, staff, freelancer and customer choices',
   const choices = [...html.matchAll(/data-login-role="([^"]+)"/g)].map((m) => m[1]);
   assert.deepEqual(choices, ['owner', 'staff', 'freelancer', 'customer']);
   assert.doesNotMatch(html, /class="[^"]*platform-admin-login-tab[^"]*"[^>]*data-login-role="platform_admin"/);
-  assert.doesNotMatch(html, /<option value="platform_admin">Platform Admin<\/option>/);
+  // The hidden value is required by the separate admin URL mode, but is not an ordinary login choice.
+  assert.match(html, /<option value="platform_admin">Platform Admin<\/option>/);
 });
 
 test('Platform Admin login is available only through its separate URL mode', () => {
