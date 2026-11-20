@@ -78,3 +78,24 @@ test('fresh ordinary navigation and receipt pages have responsive design rules',
   assert.match(modernCss, /\.receipt-history-panel/);
   assert.match(html, /id="workspace-nav"/);
 });
+
+
+test('all ordinary account recovery and support pages share the AURORA design system', () => {
+  for (const page of [
+    '../frontend/recover.html',
+    '../frontend/verify.html',
+    '../frontend/verify-email.html',
+    '../frontend/recover-secondhand.html',
+    '../frontend/staff-invite.html',
+    '../frontend/about.html',
+  ]) {
+    const source = read(page);
+    assert.match(source, /aurora-modern\.css\?v=20261120-sitewide/, page);
+  }
+  const modernCss = read('../frontend/aurora-modern.css');
+  assert.match(modernCss, /body\.registration-open:not\(\.platform-admin-workspace\)/);
+  assert.match(modernCss, /--aurora-canvas/);
+  assert.match(modernCss, /#register-form input:focus/);
+  assert.match(read('../frontend/admin.html'), /Admin Control Centre/);
+  assert.doesNotMatch(read('../frontend/admin.html'), /aurora-modern\.css/);
+});
