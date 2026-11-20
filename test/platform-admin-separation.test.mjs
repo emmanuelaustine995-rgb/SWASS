@@ -234,3 +234,18 @@ test('AURORA sign-in uses the premium dark mobile-first entrance without changin
   assert.match(modernCss, /\.aurora-login-card[\s\S]*?background:linear-gradient\(145deg,#17141b,#100e13\)/);
   assert.match(modernCss, /\.login-role-tab\.active[\s\S]*?linear-gradient\(135deg,#8c24b6,#55217b\)/);
 });
+
+
+test('AURORA sign-in is a standalone portal with no ordinary workspace navigation', () => {
+  assert.match(html, /<body class="aurora-login-active">/);
+  assert.match(app, /function showLogin\(\)[\s\S]*?classList\.add\('aurora-login-active'\)/);
+  assert.match(app, /function showWorkspaceScreen\([\s\S]*?classList\.remove\('aurora-login-active'\)/);
+  assert.match(app, /function showPOS\(\)[\s\S]*?classList\.remove\('aurora-login-active'\)/);
+  const modernCss = read('../frontend/aurora-modern.css');
+  assert.match(modernCss, /body\.aurora-login-active>header[\s\S]*?display:none!important/);
+  assert.match(modernCss, /body\.aurora-login-active>\.global-back-row/);
+  assert.match(modernCss, /body\.aurora-login-active>\.shell>\*:\not\(#login-view\)/);
+  assert.match(modernCss, /linear-gradient\(180deg,#b8d8f0 0%,#e7eff8 48%,#f2e9f5 100%\)/);
+  assert.match(modernCss, /viewBox='0 0 1600 760'/);
+  assert.match(modernCss, /\.aurora-login-active #login-view \.aurora-login-card/);
+});
