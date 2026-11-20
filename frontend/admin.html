@@ -343,10 +343,10 @@ body{background:#eef3fb}
 (() => {
   const API='https://swass-api.onrender.com/api/v1';
   const $=id=>document.getElementById(id);
-  let token='';
+  let token=sessionStorage.getItem('aurora-admin-token')||'';
   const kes=n=>'KSh '+Number(n||0).toLocaleString('en-KE');
   function showApp(){ $('login-screen').classList.add('hidden');$('admin-app').classList.remove('hidden');loadFinance();loadOverview(); }
-  function logout(){token='';sessionStorage.removeItem('aurora-admin-token');$('admin-app').classList.add('hidden');$('login-screen').classList.remove('hidden');$('admin-password').value='';}
+  function logout(){token='';sessionStorage.removeItem('aurora-admin-token');localStorage.removeItem('swass-auth-session-v1');$('admin-app').classList.add('hidden');$('login-screen').classList.remove('hidden');$('admin-password').value='';}
   async function api(path){const res=await fetch(API+path,{headers:{Authorization:'Bearer '+token,Accept:'application/json'}});const data=await res.json().catch(()=>({}));if(!res.ok)throw new Error(data.message||'Could not load admin data');return data;}
   async function loadOverview(){
     try{
@@ -848,6 +848,8 @@ body{background:#eef3fb}
     finally{btn.disabled=false;btn.textContent='SECURE ADMIN LOGIN';}
   });
   $('admin-logout').addEventListener('click',logout);
+  // Reuse a super-admin session handed off by the ordinary app only after the API confirms its privileges.
+  if(token){api('/platform-admin/overview').then(()=>{ $('admin-welcome').textContent='Welcome, Platform Administrator';showApp(); }).catch(()=>logout());}
   $('shop-search-btn').addEventListener('click',loadShops);
   $('subscription-payments-refresh')?.addEventListener('click',loadSubscriptionPaymentQueue);
   $('security-refresh').addEventListener('click',loadSecurity);
