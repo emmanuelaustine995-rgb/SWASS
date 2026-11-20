@@ -384,3 +384,68 @@ body:not(.platform-admin-workspace) .modal-content{border-radius:20px}
  body:not(.platform-admin-workspace) .shop-product-results{grid-template-columns:minmax(0,1fr)}
  body:not(.platform-admin-workspace) .owner-home .subscription-expiry-countdown{align-items:flex-start;flex-direction:column}
 }
+
+
+/* Consistent AURORA identity across sign-in, registration and recovery. */
+body.registration-open:not(.platform-admin-workspace){
+  color:var(--aurora-ink)!important;
+  background:radial-gradient(ellipse at 12% 8%,rgba(105,65,190,.11),transparent 34rem),
+    radial-gradient(ellipse at 90% 90%,rgba(36,158,218,.12),transparent 38rem),
+    var(--aurora-canvas)!important;
+}
+body.registration-open:not(.platform-admin-workspace) .topbar{
+  position:relative!important;color:var(--aurora-ink)!important;
+  background:rgba(255,255,255,.94)!important;border-bottom:1px solid var(--aurora-line)!important;
+  box-shadow:0 5px 22px rgba(27,46,76,.045)!important
+}
+body.registration-open:not(.platform-admin-workspace) .brand{color:var(--aurora-purple)!important}
+body.registration-open:not(.platform-admin-workspace) .shell{
+  width:min(calc(100% - 24px),560px)!important;max-width:560px!important;
+  margin:clamp(14px,3vh,30px) auto 36px!important;padding:0 0 28px!important
+}
+body.registration-open:not(.platform-admin-workspace) #login-view .login-card{
+  width:100%!important;max-width:560px!important;padding:clamp(20px,4vw,34px)!important;
+  border:1px solid var(--aurora-line)!important;border-radius:24px!important;
+  background:rgba(255,255,255,.97)!important;
+  box-shadow:0 22px 70px rgba(43,35,87,.13)!important
+}
+body.registration-open:not(.platform-admin-workspace) #register-form:not(.hidden),
+body.registration-open:not(.platform-admin-workspace) #freelancer-register-form:not(.hidden){
+  display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:13px!important
+}
+body.registration-open:not(.platform-admin-workspace) #register-form label,
+body.registration-open:not(.platform-admin-workspace) #freelancer-register-form label{
+  color:#33435b!important;font-weight:650!important
+}
+body.registration-open:not(.platform-admin-workspace) #register-form input:not([type=checkbox]),
+body.registration-open:not(.platform-admin-workspace) #freelancer-register-form input:not([type=checkbox]){
+  width:100%!important;min-height:48px!important;border:1px solid #d8e1ed!important;
+  border-radius:11px!important;background:#fff!important;color:var(--aurora-ink)!important;
+  font:inherit!important;font-size:16px!important;box-shadow:none!important
+}
+body.registration-open:not(.platform-admin-workspace) #register-form input:focus,
+body.registration-open:not(.platform-admin-workspace) #freelancer-register-form input:focus{
+  outline:none!important;border-color:#8656cb!important;box-shadow:0 0 0 4px rgba(111,62,183,.12)!important
+}
+body.registration-open:not(.platform-admin-workspace) .registration-sticky-footer{
+  position:static!important;background:transparent!important;box-shadow:none!important
+}
+body.registration-open:not(.platform-admin-workspace) .login-role-tab.active{
+  color:var(--aurora-purple)!important;border-color:#cbb8e8!important;background:#f3edfb!important
+}
+body.registration-open:not(.platform-admin-workspace) .aurora-policy-center{
+  max-width:100%!important;padding:0!important
+}
+body.registration-open:not(.platform-admin-workspace) .aurora-policy-center details{
+  border:1px solid var(--aurora-line)!important;border-radius:14px!important;background:#fff!important
+}
+body:not(.platform-admin-workspace) .verify-card,
+body:not(.platform-admin-workspace) .recovery-card,
+body:not(.platform-admin-workspace) .invite-card{
+  width:min(calc(100% - 28px),560px);margin:clamp(24px,7vh,70px) auto;
+  padding:clamp(20px,4vw,34px);border:1px solid var(--aurora-line);
+  border-radius:22px;background:#fff;box-shadow:var(--aurora-shadow)
+}
+body:not(.platform-admin-workspace) .verify-card h1,
+body:not(.platform-admin-workspace) .recovery-card h1,
+body:not(.platform-admin-workspace) .invite-card h1{font-size:clamp(24px,4vw,32px)}
