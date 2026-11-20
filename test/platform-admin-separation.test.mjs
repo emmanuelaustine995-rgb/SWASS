@@ -52,3 +52,14 @@ test('super-admin cannot navigate into ordinary shop screens', () => {
   assert.match(app, /if\(state\.role==='super_admin'&&screen!=='dashboard'\)screen='dashboard'/);
   assert.match(css, /body\.platform-admin-workspace #workspace-nav/);
 });
+
+
+test('ordinary workspace is reduced to navigation while login and Platform Admin remain available', () => {
+  const ordinaryCss = read('../frontend/styles.css');
+  assert.match(ordinaryCss, /body\.workspace-active:not\(\.platform-admin-workspace\) main\.shell > :not\(#workspace-nav\)/);
+  assert.match(ordinaryCss, /body\.workspace-active:not\(\.platform-admin-workspace\) main\.shell > #workspace-nav/);
+  assert.match(app, /document\.body\.classList\.add\('workspace-active'\)/);
+  assert.match(app, /document\.body\.classList\.toggle\('platform-admin-workspace',state\.role==='super_admin'\)/);
+  assert.match(read('../frontend/admin.html'), /id="admin-app"/);
+  assert.match(read('../frontend/index.html'), /id="login-view"/);
+});
