@@ -1,0 +1,189 @@
+/* AURORA E-RECEIPT — fresh enterprise interface system
+   Original visual language informed by Safaricom, Airtel, I&M, KCB, Equity,
+   Family Bank and AWS Cloudscape patterns. No third-party assets or branding copied. */
+:root{
+  --aurora-ink:#17243a;--aurora-muted:#68768b;--aurora-purple:#5720a5;
+  --aurora-purple-dark:#35106f;--aurora-blue:#1688c9;--aurora-line:#e4eaf2;
+  --aurora-paper:#fff;--aurora-canvas:#f4f8fd;--aurora-soft:#f0f5fc;
+  --aurora-success:#147a58;--aurora-warning:#a96b11;--aurora-danger:#b52e45;
+  --aurora-radius:18px;--aurora-shadow:0 12px 34px rgba(30,53,89,.075);
+  color-scheme:light;
+}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body:not(.platform-admin-workspace){
+  color:var(--aurora-ink)!important;
+  background:radial-gradient(ellipse at 12% 0%,rgba(105,65,190,.09),transparent 32rem),
+             radial-gradient(ellipse at 100% 12%,rgba(36,158,218,.10),transparent 30rem),
+             var(--aurora-canvas)!important;
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif!important;
+  font-size:14px;line-height:1.55;
+}
+body:not(.platform-admin-workspace) .topbar{
+  position:sticky;top:0;z-index:80;min-height:68px;height:auto;
+  padding:12px clamp(16px,3vw,38px)!important;
+  color:var(--aurora-ink)!important;background:rgba(255,255,255,.92)!important;
+  border-bottom:1px solid rgba(220,229,241,.9);
+  box-shadow:0 5px 22px rgba(27,46,76,.045);backdrop-filter:blur(16px);
+}
+body:not(.platform-admin-workspace) .brand{color:var(--aurora-purple)!important;letter-spacing:.035em;font-size:14px}
+body:not(.platform-admin-workspace) .brand-mark{background:#f0eaff;color:var(--aurora-purple)}
+body:not(.platform-admin-workspace) .shell{
+  width:min(100% - 32px,1360px)!important;max-width:1360px!important;
+  margin:clamp(18px,3vw,34px) auto!important;padding:0 0 116px!important;
+}
+body:not(.platform-admin-workspace) h1,body:not(.platform-admin-workspace) h2,
+body:not(.platform-admin-workspace) h3{color:var(--aurora-ink);letter-spacing:-.025em}
+body:not(.platform-admin-workspace) h1{font-size:clamp(25px,3vw,34px);line-height:1.17;font-weight:780}
+body:not(.platform-admin-workspace) h2{font-size:clamp(18px,2vw,22px);font-weight:750}
+body:not(.platform-admin-workspace) .eyebrow{color:var(--aurora-purple)!important;letter-spacing:.13em;font-weight:800}
+body:not(.platform-admin-workspace) .muted{color:var(--aurora-muted)!important}
+body:not(.platform-admin-workspace) .panel,
+body:not(.platform-admin-workspace) .login-card,
+body:not(.platform-admin-workspace) .card,
+body:not(.platform-admin-workspace) .metric,
+body:not(.platform-admin-workspace) .freelancer-home-card{
+  background:var(--aurora-paper)!important;border:1px solid var(--aurora-line)!important;
+  border-radius:var(--aurora-radius)!important;box-shadow:var(--aurora-shadow)!important;
+}
+body:not(.platform-admin-workspace) .panel{padding:clamp(16px,2.2vw,26px);margin-bottom:16px}
+body:not(.platform-admin-workspace) .section-head,
+body:not(.platform-admin-workspace) .page-heading,
+body:not(.platform-admin-workspace) .panel-heading{gap:14px;align-items:center}
+body:not(.platform-admin-workspace) .btn,
+body:not(.platform-admin-workspace) button:not(.text-btn):not(.login-role-tab):not(.bottom-nav button):not(.shop-section-tabs button):not(.platform-admin-tab){
+  border-radius:12px;min-height:44px;font-weight:720;transition:transform .18s ease,box-shadow .18s ease,background .18s ease,border-color .18s ease;
+}
+body:not(.platform-admin-workspace) .btn-primary{
+  color:#fff!important;background:linear-gradient(125deg,#6729b6,#3f168b)!important;
+  box-shadow:0 7px 16px rgba(83,31,158,.17);
+}
+body:not(.platform-admin-workspace) .btn-primary:hover{background:linear-gradient(125deg,#7437c4,#4b1a9c)!important;transform:translateY(-1px);box-shadow:0 10px 22px rgba(83,31,158,.23)}
+body:not(.platform-admin-workspace) .btn-light{color:#3c2770!important;background:#f1edfa!important;border:1px solid #e5dcf4}
+body:not(.platform-admin-workspace) .btn-quiet{background:#263b58!important;color:#fff!important}
+body:not(.platform-admin-workspace) input,
+body:not(.platform-admin-workspace) select,
+body:not(.platform-admin-workspace) textarea{
+  min-height:46px;border:1px solid #d8e1ed!important;border-radius:11px!important;
+  padding:11px 13px!important;background:#fff!important;color:var(--aurora-ink)!important;
+  box-shadow:inset 0 1px 2px rgba(24,42,68,.025);font:inherit;
+  transition:border-color .18s ease,box-shadow .18s ease;
+}
+body:not(.platform-admin-workspace) textarea{min-height:100px}
+body:not(.platform-admin-workspace) input:focus,
+body:not(.platform-admin-workspace) select:focus,
+body:not(.platform-admin-workspace) textarea:focus{
+  outline:none!important;border-color:#8656cb!important;
+  box-shadow:0 0 0 4px rgba(111,62,183,.12)!important;
+}
+body:not(.platform-admin-workspace) label{color:#33435b;font-weight:650}
+body:not(.platform-admin-workspace) table{border-collapse:separate;border-spacing:0;width:100%;font-size:13px}
+body:not(.platform-admin-workspace) th{
+  color:#53647b;background:#f4f7fb;font-size:11px;text-transform:uppercase;
+  letter-spacing:.055em;font-weight:800;
+}
+body:not(.platform-admin-workspace) th,body:not(.platform-admin-workspace) td{
+  padding:13px 12px;border-bottom:1px solid #eaf0f6;white-space:normal;
+}
+body:not(.platform-admin-workspace) tr:last-child td{border-bottom:0}
+body:not(.platform-admin-workspace) .table-scroll{border:1px solid var(--aurora-line);border-radius:14px;overflow:auto;background:#fff}
+body:not(.platform-admin-workspace) .metric{padding:18px;position:relative;overflow:hidden}
+body:not(.platform-admin-workspace) .metric:after{
+  content:"";position:absolute;width:76px;height:76px;right:-28px;top:-30px;
+  border-radius:50%;background:linear-gradient(135deg,rgba(110,64,188,.12),rgba(36,158,218,.08));
+}
+body:not(.platform-admin-workspace) .metric strong{color:var(--aurora-purple);font-size:clamp(21px,2.4vw,29px)}
+body:not(.platform-admin-workspace) .count-pill,
+body:not(.platform-admin-workspace) .badge,
+body:not(.platform-admin-workspace) .status-pill{border-radius:999px}
+body:not(.platform-admin-workspace) .bottom-nav{
+  position:fixed!important;z-index:100;left:50%;bottom:max(12px,env(safe-area-inset-bottom));
+  transform:translateX(-50%);width:min(calc(100% - 24px),680px);
+  display:flex;justify-content:space-around;gap:6px;padding:8px;
+  border:1px solid rgba(224,231,242,.95);border-radius:20px;
+  background:rgba(255,255,255,.94)!important;box-shadow:0 14px 40px rgba(22,37,65,.16);
+  backdrop-filter:blur(18px);
+}
+body:not(.platform-admin-workspace) .bottom-nav button{
+  flex:1;display:flex;align-items:center;justify-content:center;gap:7px;flex-direction:column;
+  min-height:54px;padding:7px 8px;border:0;border-radius:14px;background:transparent;
+  color:#68768b;font-size:11px;font-weight:750;
+}
+body:not(.platform-admin-workspace) .bottom-nav button.active,
+body:not(.platform-admin-workspace) .bottom-nav button[aria-current="page"]{
+  color:#fff;background:linear-gradient(135deg,#692db7,#42138b);box-shadow:0 5px 14px rgba(83,31,158,.2);
+}
+body:not(.platform-admin-workspace) .bottom-nav .nav-icon{font-size:19px;line-height:1}
+body:not(.platform-admin-workspace) .global-back-row{max-width:1360px;margin:10px auto;padding:0 16px}
+body:not(.platform-admin-workspace) .global-back-btn{border:1px solid var(--aurora-line);background:#fff;color:#4d3679;border-radius:12px;padding:8px 13px}
+body:not(.platform-admin-workspace) .shop-section-tabs{
+  display:flex;gap:7px;flex-wrap:wrap;padding:6px;margin:0 0 16px;
+  border:1px solid var(--aurora-line);border-radius:14px;background:#fff;
+}
+body:not(.platform-admin-workspace) .shop-section-tabs button{
+  border:0;border-radius:10px;padding:10px 15px;background:transparent;color:#64748b;font-weight:750;
+}
+body:not(.platform-admin-workspace) .shop-section-tabs button.active{background:#f0eafa;color:var(--aurora-purple)}
+body:not(.platform-admin-workspace) .login-wrap{min-height:calc(100vh - 100px);display:grid;place-items:center;padding:24px 0}
+body:not(.platform-admin-workspace) #login-view .login-card{
+  width:min(100%,480px);margin:0 auto;padding:clamp(22px,4vw,34px);
+  border-radius:24px!important;background:rgba(255,255,255,.96)!important;
+  box-shadow:0 22px 70px rgba(43,35,87,.13)!important;
+}
+body:not(.platform-admin-workspace) .aurora-brand-lockup{text-align:center;margin:0 auto 20px}
+body:not(.platform-admin-workspace) .aurora-login-logo{width:min(100%,300px);height:auto;max-height:122px}
+body:not(.platform-admin-workspace) .aurora-tagline{color:#63738a;font-weight:600}
+body:not(.platform-admin-workspace) .login-role-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:14px 0 18px}
+body:not(.platform-admin-workspace) .login-role-tab{
+  min-height:42px;border:1px solid var(--aurora-line);border-radius:11px;
+  background:#f7f9fc;color:#506079;font-weight:720;
+}
+body:not(.platform-admin-workspace) .login-role-tab.active{color:var(--aurora-purple);border-color:#cbb8e8;background:#f3edfb}
+body:not(.platform-admin-workspace) .login-submit-compact{min-height:50px;letter-spacing:.045em}
+body:not(.platform-admin-workspace) .text-btn{color:var(--aurora-purple)!important}
+body:not(.platform-admin-workspace) .aurora-policy-center{max-width:850px;margin:24px auto;padding:18px}
+body:not(.platform-admin-workspace) .aurora-policy-center details{border:1px solid var(--aurora-line);border-radius:14px;background:#fff;padding:14px;margin:10px 0}
+body:not(.platform-admin-workspace) .shop-register-product-card,
+body:not(.platform-admin-workspace) details{border-color:var(--aurora-line)}
+body:not(.platform-admin-workspace) .shop-register-product-card>summary{
+  padding:15px 17px;border-radius:14px;background:linear-gradient(110deg,#f8f5fd,#f3f9ff);
+  color:#382260;cursor:pointer;font-weight:750;
+}
+body:not(.platform-admin-workspace) .error{color:var(--aurora-danger)}
+body:not(.platform-admin-workspace) .notice{border-radius:12px}
+body:not(.platform-admin-workspace) .referral-area{border-radius:18px}
+body:not(.platform-admin-workspace) .hidden{display:none!important}
+body:not(.platform-admin-workspace) button:focus-visible,
+body:not(.platform-admin-workspace) a:focus-visible{outline:3px solid rgba(103,49,177,.35);outline-offset:3px}
+body:not(.platform-admin-workspace) .panel,
+body:not(.platform-admin-workspace) .product-card,
+body:not(.platform-admin-workspace) .metric{animation:aurora-rise .36s ease both}
+@keyframes aurora-rise{from{opacity:.0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+@media(min-width:900px){
+  body:not(.platform-admin-workspace) .bottom-nav{bottom:18px}
+  body:not(.platform-admin-workspace) .bottom-nav button{flex-direction:row;min-height:48px;font-size:12px}
+  body:not(.platform-admin-workspace) .pos-grid{gap:22px}
+}
+@media(max-width:620px){
+  body:not(.platform-admin-workspace) .shell{width:calc(100% - 22px)!important;margin:16px auto!important;padding-bottom:112px!important}
+  body:not(.platform-admin-workspace) .topbar{min-height:58px;padding:10px 14px!important}
+  body:not(.platform-admin-workspace) .brand{font-size:12px}
+  body:not(.platform-admin-workspace) .panel{padding:15px!important;border-radius:15px!important}
+  body:not(.platform-admin-workspace) .page-heading{align-items:flex-start;flex-direction:column}
+  body:not(.platform-admin-workspace) .bottom-nav{width:calc(100% - 16px);bottom:max(7px,env(safe-area-inset-bottom));padding:6px}
+  body:not(.platform-admin-workspace) .bottom-nav button{min-height:50px;font-size:10px}
+  body:not(.platform-admin-workspace) .bottom-nav .nav-icon{font-size:18px}
+  body:not(.platform-admin-workspace) .pos-grid{grid-template-columns:minmax(0,1fr)}
+  body:not(.platform-admin-workspace) .product-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+  body:not(.platform-admin-workspace) .metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  body:not(.platform-admin-workspace) .content-grid{grid-template-columns:minmax(0,1fr)}
+}
+@media(max-width:380px){
+  body:not(.platform-admin-workspace) .bottom-nav button{padding:6px 3px;font-size:9px}
+  body:not(.platform-admin-workspace) .product-list{grid-template-columns:minmax(0,1fr)}
+}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  body:not(.platform-admin-workspace) *,body:not(.platform-admin-workspace) *:before,body:not(.platform-admin-workspace) *:after{
+    animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important
+  }
+}
