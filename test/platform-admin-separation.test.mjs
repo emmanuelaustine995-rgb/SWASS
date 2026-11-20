@@ -249,3 +249,36 @@ test('AURORA sign-in is a standalone portal with no ordinary workspace navigatio
   assert.match(modernCss, /viewBox='0 0 1600 760'/);
   assert.match(modernCss, /\.aurora-login-active #login-view \.aurora-login-card/);
 });
+
+
+test('AURORA Home is exactly four fixed-height swipe cards with live shop, invite and subscription content', () => {
+  const start=html.indexOf('<section id="owner-home"');
+  const end=html.indexOf('<section id="receipts-home"',start);
+  assert.ok(start>=0&&end>start,'owner home section exists');
+  const home=html.slice(start,end);
+  assert.match(home,/class="aurora-home-card aurora-home-card-pink"/);
+  assert.match(home,/id="referral-card" class="aurora-home-card aurora-home-card-blue"/);
+  assert.match(home,/class="aurora-home-card aurora-home-card-sky"/);
+  assert.match(home,/class="aurora-home-card aurora-home-card-gold"/);
+  assert.equal((home.match(/class="aurora-home-card /g)||[]).length,4);
+  assert.match(home,/id="aurora-home-shop-name"/);
+  assert.match(home,/id="aurora-home-shop-logo"/);
+  assert.match(home,/id="aurora-home-deck"/);
+  assert.match(home,/id="referral-link"/);
+  assert.match(home,/id="referral-qr"/);
+  assert.match(home,/id="referral-share"/);
+  assert.match(home,/id="subscription-expiry-countdown"/);
+  assert.match(home,/id="owner-home-subscription"/);
+  assert.match(app,/function renderAuroraHomeIdentity\([\s\S]*?logoData/);
+  assert.match(app,/function updateSubscriptionCountdown\([\s\S]*?setInterval\(tick,1000\)/);
+  assert.match(app,/data-home-slide/);
+  assert.match(app,/aurora-home-active',screen==='dashboard'/);
+  const modernCss=read('../frontend/aurora-modern.css');
+  assert.match(modernCss,/body\.aurora-home-active[\s\S]*?overflow:hidden!important/);
+  assert.match(modernCss,/\.aurora-home-deck[\s\S]*?overflow-x:auto;overflow-y:hidden/);
+  assert.match(modernCss,/\.aurora-home-card-pink/);
+  assert.match(modernCss,/\.aurora-home-card-blue/);
+  assert.match(modernCss,/\.aurora-home-card-sky/);
+  assert.match(modernCss,/\.aurora-home-card-gold/);
+  assert.match(modernCss,/@keyframes aurora-cloud-flow/);
+});
