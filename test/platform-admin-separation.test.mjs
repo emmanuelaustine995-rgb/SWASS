@@ -218,3 +218,19 @@ test('AURORA home uses a swipeable business overview and working workspace short
   assert.match(app, /aurora-bank-home[\s\S]*?showWorkspaceScreen\(workspace\.dataset\.workspace\)/);
   assert.match(app, /aurora-home-search[\s\S]*?owner-workspace-search/);
 });
+
+
+test('AURORA sign-in uses the premium dark mobile-first entrance without changing account roles', () => {
+  assert.match(html, /id="login-view" class="login-wrap aurora-login-layout"/);
+  assert.match(html, /data-login-role="owner"/);
+  assert.match(html, /data-login-role="staff"/);
+  assert.match(html, /data-login-role="freelancer"/);
+  assert.match(html, /data-login-role="customer"/);
+  assert.match(html, /id="login-phone"/);
+  assert.match(html, /id="login-password"/);
+  assert.match(html, /id="show-password-reset"/);
+  const modernCss = read('../frontend/aurora-modern.css');
+  assert.match(modernCss, /:has\(#login-view:not\(\.hidden\)\)/);
+  assert.match(modernCss, /\.aurora-login-card[\s\S]*?background:linear-gradient\(145deg,#17141b,#100e13\)/);
+  assert.match(modernCss, /\.login-role-tab\.active[\s\S]*?linear-gradient\(135deg,#8c24b6,#55217b\)/);
+});
