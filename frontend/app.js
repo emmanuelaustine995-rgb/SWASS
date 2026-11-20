@@ -22,6 +22,13 @@
   function restoreSession(){
     let saved;try{saved=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');}catch{}
     if(!sessionIsValid(saved)){clearSession();showLogin();return;}
+    // Never restore a Platform Admin credential into the ordinary shop app.
+    // The dedicated admin.html portal owns that session via sessionStorage.
+    if(saved.role==='super_admin'){
+      localStorage.removeItem(SESSION_KEY);
+      showLogin();
+      return;
+    }
     state.token=saved.token;state.role=saved.role||null;state.userName=saved.userName||'';
     state.staffTitle=saved.staffTitle||'';state.userPhotoData=saved.userPhotoData||'';
     state.userPhone=saved.userPhone||'';state.userEmail=saved.userEmail||'';
