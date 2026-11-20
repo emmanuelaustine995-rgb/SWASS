@@ -244,7 +244,7 @@ test('AURORA sign-in is a standalone portal with no ordinary workspace navigatio
   const modernCss = read('../frontend/aurora-modern.css');
   assert.match(modernCss, /body\.aurora-login-active>header[\s\S]*?display:none!important/);
   assert.match(modernCss, /body\.aurora-login-active>\.global-back-row/);
-  assert.match(modernCss, /body\.aurora-login-active>\.shell>\*:\not\(#login-view\)/);
+  assert.ok(modernCss.includes('body.aurora-login-active>.shell>*:not(#login-view)'));
   assert.match(modernCss, /linear-gradient\(180deg,#b8d8f0 0%,#e7eff8 48%,#f2e9f5 100%\)/);
   assert.match(modernCss, /viewBox='0 0 1600 760'/);
   assert.match(modernCss, /\.aurora-login-active #login-view \.aurora-login-card/);
