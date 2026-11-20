@@ -105,7 +105,7 @@ test('standalone recovery, verification, invitation and About pages have respons
   const modernCss = read('../frontend/aurora-modern.css');
   assert.match(modernCss, /main\.auth-shell/);
   assert.match(modernCss, /\.shell\[style\*="max-width:560px"\]/);
-  assert.match(modernCss, /\.wrap>\.hero/);
+  assert.match(modernCss, /\.wrap main>\.hero/);
   assert.match(modernCss, /\.wrap \.content \.card/);
   for (const page of [
     '../frontend/recover.html',
