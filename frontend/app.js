@@ -11,6 +11,7 @@
   const SESSION_KEY = 'swass-auth-session-v1';
   const referralCodeFromUrl = new URLSearchParams(window.location.search).get('ref') || '';
   const customerReferralCodeFromUrl = new URLSearchParams(window.location.search).get('customer_ref') || '';
+  const platformAdminLoginMode = new URLSearchParams(window.location.search).get('platform-admin') === '1';
   const SESSION_IDLE_MS = 5 * 60 * 60 * 1000;
   let lastSessionWrite = 0;
   function saveSession(){ if(!state.token)return; const now=Date.now(); localStorage.setItem(SESSION_KEY,JSON.stringify({token:state.token,role:state.role,userName:state.userName,staffTitle:state.staffTitle,userPhotoData:state.userPhotoData,userPhone:state.userPhone,userEmail:state.userEmail,lastActivity:now})); lastSessionWrite=now; }
@@ -1315,6 +1316,22 @@
     updateLoginAccountType();
   }));
   updateLoginAccountType();
+  if(platformAdminLoginMode){
+    // Platform Admin uses a separate entry URL and never appears as an account
+    // choice on the ordinary shop/customer sign-in screen.
+    $('login-account-type').value='platform_admin';
+    updateLoginAccountType();
+    document.body.classList.add('platform-admin-login');
+    $('login-role-tabs')?.classList.add('hidden');
+    document.querySelector('.login-role-tabs')?.classList.add('hidden');
+    $('platform-admin-login-heading')?.classList.remove('hidden');
+    $('platform-admin-return')?.classList.remove('hidden');
+    $('owner-register-entry')?.classList.add('hidden');
+    $('freelancer-register-entry')?.classList.add('hidden');
+    $('aurora-tab-signup')?.classList.add('hidden');
+    $('aurora-tab-recovery')?.classList.add('hidden');
+    document.title='Platform Admin Control Centre | AURORA';
+  }
   $('show-freelancer-register')?.addEventListener('click',()=>{
     setAuroraAuthTab('aurora-tab-signup');
     document.body.classList.add('registration-open');$('login-form').classList.add('hidden');$('password-reset-form')?.classList.add('hidden');
