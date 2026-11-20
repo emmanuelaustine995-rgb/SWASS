@@ -22,13 +22,7 @@
   function restoreSession(){
     let saved;try{saved=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');}catch{}
     if(!sessionIsValid(saved)){clearSession();showLogin();return;}
-    // Never restore a Platform Admin credential into the ordinary shop app.
-    // The dedicated admin.html portal owns that session via sessionStorage.
-    if(saved.role==='super_admin'){
-      localStorage.removeItem(SESSION_KEY);
-      showLogin();
-      return;
-    }
+    if(saved.role==='super_admin'){localStorage.removeItem(SESSION_KEY);showLogin();return;}
     state.token=saved.token;state.role=saved.role||null;state.userName=saved.userName||'';
     state.staffTitle=saved.staffTitle||'';state.userPhotoData=saved.userPhotoData||'';
     state.userPhone=saved.userPhone||'';state.userEmail=saved.userEmail||'';
@@ -84,8 +78,6 @@
   function showNotice(message, error = false) { const el=$('notice'); el.textContent=message; el.classList.remove('hidden'); el.style.background=error?'#fff0ef':'#fff5e8'; el.style.color=error?'#a12b22':'#8a4b08'; }
   function hideNotice(){ $('notice').classList.add('hidden'); }
   function showLogin(){
-    document.body.classList.remove('aurora-home-active');
-    document.body.classList.add('aurora-login-active');
     clearSession();
     document.body.classList.remove('platform-admin-workspace');
     document.body.classList.remove('workspace-active');
@@ -160,29 +152,7 @@
     }
   }
 
-  function renderAuroraHomeIdentity(){
-    const p=state.businessProfile||{};
-    const shopName=String(p.storeName||p.businessName||'Your shop name').trim();
-    const heading=$('aurora-home-heading-name'),name=$('aurora-home-shop-name'),location=$('aurora-home-shop-location');
-    if(heading)heading.textContent=shopName==='Your shop name'?'Welcome to AURORA':shopName;
-    if(name)name.textContent=shopName;
-    if(location)location.textContent=[p.storeLocation,p.businessPhone].filter(Boolean).join(' · ')||'Your business, beautifully represented.';
-    const frame=$('aurora-shop-logo-frame'),image=$('aurora-home-shop-logo');
-    if(frame&&image){
-      if(p.logoData){image.src=p.logoData;image.classList.remove('hidden');frame.classList.add('has-logo');}
-      else{image.removeAttribute('src');image.classList.add('hidden');frame.classList.remove('has-logo');}
-    }
-    const shopState=$('aurora-home-overview-shop');
-    if(shopState)shopState.textContent=p.businessName?'Profile ready':'Set up profile';
-    const overviewLocation=$('aurora-home-overview-location'),overviewPhone=$('aurora-home-overview-phone');
-    if(overviewLocation)overviewLocation.textContent=p.storeLocation||'Location not added';
-    if(overviewPhone)overviewPhone.textContent=p.businessPhone||'Shop contact not added';
-    const credits=$('aurora-home-overview-credits');
-    if(credits&&$('referral-receipts-available'))credits.textContent=$('referral-receipts-available').textContent;
-  }
-
   function renderDashboardBusinessProfile(){
-    renderAuroraHomeIdentity();
     // Business details are managed in Shop > Profile. Do not repeat a
     // "Complete Shop Profile" prompt/card on Home or the Shop overview.
     const card=$('dashboard-business-card');
@@ -473,7 +443,6 @@
       $('referral-available').textContent=money(data.availableKes);
       if($('referral-remainder'))$('referral-remainder').textContent=money(data.rewardRemainderKes);
       $('referral-receipts-available').textContent=Math.floor(Math.max(0,Number(data.availableKes)||0)/4).toLocaleString('en-KE');
-      if($('aurora-home-overview-credits'))$('aurora-home-overview-credits').textContent=$('referral-receipts-available').textContent;
       $('referral-link').value=data.referralLink||'';const qr=$('referral-qr');if(qr){qr.innerHTML='';if(data.referralLink&&window.QRCode){new QRCode(qr,{text:data.referralLink,width:240,height:240,correctLevel:QRCode.CorrectLevel.M});}}
       $('referral-message').textContent='Your available reward has been converted into receipt credits. Tap Redeem to add them to your receipt wallet.';
       const history=await request('/api/v1/referrals/transactions');
@@ -522,7 +491,8 @@
     if(!['owner','manager','vendor','freelancer'].includes(state.role))return;
     void loadOwnerReferralSummary();
     void loadSubscriptionBalance();
-    renderAuroraHomeIdentity();
+    $('owner-home-title').textContent=state.businessProfile?.businessName||'Business overview';
+    $('owner-home-subtitle').textContent=state.businessProfile?.storeName||'Your business workspace at a glance.';
 
   }
 
@@ -581,28 +551,14 @@
   document.querySelectorAll('[data-freelancer-screen]').forEach(button=>button.addEventListener('click',()=>showWorkspaceScreen(button.dataset.freelancerScreen)));
   function showWorkspaceScreen(screen,options={}){
     if(!state.token){showLogin();return;}
-    // Platform administrators must leave the ordinary shop application entirely.
-    // Pass the already authenticated token to the dedicated admin portal, where it is revalidated.
-    if(state.role==='super_admin'){
-      try{sessionStorage.setItem('aurora-admin-token',state.token);}catch{}
-      window.location.replace('./admin.html');
-      return;
-    }
+    if(state.role==='super_admin'){try{sessionStorage.setItem('aurora-admin-token',state.token);}catch{}window.location.replace('./admin.html');return;}
     // Platform Admin has a dedicated control-room destination, never the shop workspace.
     if(state.role==='super_admin'&&screen!=='dashboard')screen='dashboard';
     document.body.classList.toggle('platform-admin-workspace',state.role==='super_admin');
-    document.body.classList.remove('aurora-login-active');
     document.body.classList.add('workspace-active');
     $('login-view')?.classList.add('hidden');
-    const mainNavigation=$('workspace-nav');
-    if(mainNavigation&&state.role!=='super_admin'){
-      mainNavigation.classList.remove('hidden');
-      mainNavigation.style.setProperty('display','grid','important');
-      mainNavigation.setAttribute('aria-hidden','false');
-    }
     $('back-to-login-btn')?.classList.remove('hidden');
     if(!['dashboard','receipts','profile','shop','subscription','lost-goods'].includes(screen))screen='dashboard';
-    document.body.classList.toggle('aurora-home-active',screen==='dashboard'&&['owner','manager','vendor','freelancer'].includes(state.role));
     const previous=state.currentWorkspace;
     if(!options.fromBack&&previous&&previous!==screen){state.workspaceHistory.push(previous);if(state.workspaceHistory.length>30)state.workspaceHistory.shift();}
     state.currentWorkspace=screen;
@@ -642,7 +598,8 @@
         dashboardBusinessCard?.classList.add('hidden');customerHome?.classList.remove('hidden');
         if($('customer-home-name'))$('customer-home-name').textContent=state.userName||'Welcome';
         void loadCustomerReferralSummary();
-      }else dashboardBusinessCard?.classList.add('hidden');
+      }else if(state.role==='owner')dashboardBusinessCard?.classList.remove('hidden');
+      else dashboardBusinessCard?.classList.add('hidden');
       if(state.role==='super_admin'){
         // The platform control room is a separate top-level page, not a POS/profile tab.
         // Keep every ordinary shop root and its bottom navigation hidden.
@@ -746,19 +703,13 @@
         document.getElementById('staff-profile-panel')?.classList.remove('hidden');
       }
     }
-    document.body.classList.toggle('aurora-home-active',screen==='dashboard'&&['owner','manager','vendor','freelancer'].includes(state.role));
     document.querySelectorAll('#workspace-nav button').forEach(b=>b.classList.toggle('active',b.dataset.workspace===screen));
-    if(mainNavigation&&state.role!=='super_admin'){
-      mainNavigation.classList.remove('hidden');
-      mainNavigation.style.setProperty('display','grid','important');
-      mainNavigation.setAttribute('aria-hidden','false');
-    }
     // Re-apply the customer dock after workspace visibility and active-tab updates.
     if(state.role==='customer')enforceCustomerReceiptActions();
     syncGlobalBackButton();
   }
 
-  function showPOS(){ document.body.classList.remove('aurora-home-active'); document.body.classList.remove('aurora-login-active'); if(!state.token){showLogin();return;} document.body.classList.add('workspace-active'); $('login-view').classList.add('hidden'); $('back-to-login-btn')?.classList.remove('hidden'); $('pos-view').classList.remove('hidden'); $('welcome-back-banner')?.classList.add('hidden'); $('profile-menu-btn')?.classList.remove('hidden'); $('logout-btn')?.classList.remove('hidden'); const label=$('user-label');label.textContent=state.userName||state.staffTitle||(state.role==='cashier'?'Shop Attendant':state.role?state.role.replace('_',' '):'Staff');if(state.userPhotoData){const avatar=document.createElement('img');avatar.src=state.userPhotoData;avatar.alt='Profile photo';avatar.style.cssText='width:30px;height:30px;object-fit:cover;border-radius:50%;vertical-align:middle;margin-right:8px';label.prepend(avatar);} $('dashboard-link').classList.toggle('hidden', !['owner','manager','vendor','freelancer'].includes(state.role));$('workspace-nav').classList.toggle('hidden',state.role==='super_admin');const isCustomerAccount=state.role==='customer';document.body.classList.toggle('customer-account-active',isCustomerAccount);document.body.classList.toggle('freelancer-account-active',state.role==='freelancer');const canAccessShopTab=!isCustomerAccount&&['owner','vendor','freelancer'].includes(state.role);document.querySelectorAll('#workspace-nav [data-workspace="shop"]').forEach(el=>{el.hidden=!canAccessShopTab;el.classList.toggle('hidden',!canAccessShopTab);el.style.setProperty('display',canAccessShopTab?'':'none','important');el.setAttribute('aria-hidden',canAccessShopTab?'false':'true');});document.querySelectorAll('#workspace-nav [data-workspace="customers"]').forEach(el=>{el.hidden=true;el.classList.add('hidden');el.style.setProperty('display','none','important');el.setAttribute('aria-hidden','true');});if(state.role==='customer')enforceCustomerReceiptActions();syncGlobalBackButton();  }
+  function showPOS(){ if(!state.token){showLogin();return;} document.body.classList.add('workspace-active'); $('login-view').classList.add('hidden'); $('back-to-login-btn')?.classList.remove('hidden'); $('pos-view').classList.remove('hidden'); $('welcome-back-banner')?.classList.add('hidden'); $('profile-menu-btn')?.classList.remove('hidden'); $('logout-btn')?.classList.remove('hidden'); const label=$('user-label');label.textContent=state.userName||state.staffTitle||(state.role==='cashier'?'Shop Attendant':state.role?state.role.replace('_',' '):'Staff');if(state.userPhotoData){const avatar=document.createElement('img');avatar.src=state.userPhotoData;avatar.alt='Profile photo';avatar.style.cssText='width:30px;height:30px;object-fit:cover;border-radius:50%;vertical-align:middle;margin-right:8px';label.prepend(avatar);} $('dashboard-link').classList.toggle('hidden', !['owner','manager','vendor','freelancer'].includes(state.role));$('workspace-nav').classList.toggle('hidden',state.role==='super_admin');const isCustomerAccount=state.role==='customer';document.body.classList.toggle('customer-account-active',isCustomerAccount);document.body.classList.toggle('freelancer-account-active',state.role==='freelancer');const canAccessShopTab=!isCustomerAccount&&['owner','vendor','freelancer'].includes(state.role);document.querySelectorAll('#workspace-nav [data-workspace="shop"]').forEach(el=>{el.hidden=!canAccessShopTab;el.classList.toggle('hidden',!canAccessShopTab);el.style.setProperty('display',canAccessShopTab?'':'none','important');el.setAttribute('aria-hidden',canAccessShopTab?'false':'true');});document.querySelectorAll('#workspace-nav [data-workspace="customers"]').forEach(el=>{el.hidden=true;el.classList.add('hidden');el.style.setProperty('display','none','important');el.setAttribute('aria-hidden','true');});if(state.role==='customer')enforceCustomerReceiptActions();syncGlobalBackButton();  }
   async function lookupCustomer(ev){
     ev.preventDefault();
     const phone=$('lookup-phone').value.trim();
@@ -1920,46 +1871,7 @@
     if(performance)void loadOwnerStaffPerformance();
   });
   $('workspace-nav').addEventListener('click',e=>{const b=e.target.closest('[data-workspace]');if(b)showWorkspaceScreen(b.dataset.workspace);});
-  document.querySelector('.aurora-hero-actions')?.addEventListener('click',e=>{const button=e.target.closest('[data-workspace]');if(button)showWorkspaceScreen(button.dataset.workspace);});
-  // AURORA home shortcuts share the existing workspace router.
-  document.querySelector('.aurora-bank-home')?.addEventListener('click',e=>{
-    const workspace=e.target.closest('[data-workspace]');
-    if(workspace){showWorkspaceScreen(workspace.dataset.workspace);return;}
-    const scroll=e.target.closest('[data-home-scroll]');
-    if(scroll){const target=$(scroll.dataset.homeScroll);if(target){target.scrollIntoView({behavior:'smooth',block:'start'});}document.querySelectorAll('.aurora-home-tabs button').forEach(tab=>tab.classList.toggle('active',tab===scroll));}
-  });
-  $('aurora-home-search')?.addEventListener('click',()=>{const search=$('owner-workspace-search');if(search){search.focus();search.scrollIntoView({behavior:'smooth',block:'center'});}});
-  $('aurora-home-profile')?.addEventListener('click',()=> $('profile-menu-btn')?.click());
-  const auroraHomeUser=$('aurora-home-user');if(auroraHomeUser)auroraHomeUser.textContent=state.userName?' '+state.userName:'';
-  const auroraHomeSales=$('aurora-home-sales');if(auroraHomeSales&&$('owner-today-sales'))auroraHomeSales.textContent=$('owner-today-sales').textContent;
-  const auroraHomeBusiness=$('aurora-home-business-name');if(auroraHomeBusiness)auroraHomeBusiness.textContent=state.businessProfile?.businessName||state.businessProfile?.name||'Your business';
-  const auroraBusinessSource=$('dashboard-profile-name');if(auroraBusinessSource&&auroraHomeBusiness){const syncBusiness=()=>{const value=auroraBusinessSource.textContent?.trim();if(value&&value!=='Complete your business profile')auroraHomeBusiness.textContent=value;};new MutationObserver(syncBusiness).observe(auroraBusinessSource,{childList:true,subtree:true,characterData:true});syncBusiness();}
-  const auroraSalesSource=$('owner-today-sales');if(auroraSalesSource&&auroraHomeSales){new MutationObserver(()=>{auroraHomeSales.textContent=auroraSalesSource.textContent;}).observe(auroraSalesSource,{childList:true,subtree:true,characterData:true});}
-
   $('owner-home-subscription')?.addEventListener('click',()=>showWorkspaceScreen('subscription'));
-  // Four-card Home pager: horizontal swipe and numbered controls share one position.
-  const auroraHomeDeck=$('aurora-home-deck');
-  const auroraHomeDots=[...document.querySelectorAll('[data-home-slide]')];
-  const auroraHomePageCurrent=$('aurora-home-page-current');
-  function setAuroraHomeSlide(index){
-    if(!auroraHomeDeck)return;
-    const target=Math.max(0,Math.min(3,Number(index)||0));
-    auroraHomeDeck.scrollTo({left:target*auroraHomeDeck.clientWidth,behavior:'smooth'});
-  }
-  auroraHomeDots.forEach(button=>button.addEventListener('click',()=>setAuroraHomeSlide(button.dataset.homeSlide)));
-  if(auroraHomeDeck){
-    let homeScrollFrame=0;
-    auroraHomeDeck.addEventListener('scroll',()=>{
-      if(homeScrollFrame)cancelAnimationFrame(homeScrollFrame);
-      homeScrollFrame=requestAnimationFrame(()=>{
-        const index=Math.max(0,Math.min(3,Math.round(auroraHomeDeck.scrollLeft/Math.max(1,auroraHomeDeck.clientWidth))));
-        auroraHomeDots.forEach((dot,i)=>dot.classList.toggle('active',i===index));
-        if(auroraHomePageCurrent)auroraHomePageCurrent.textContent=String(index+1).padStart(2,'0');
-      });
-    },{passive:true});
-  }
-
-
   $('back-to-receipts').addEventListener('click',()=>{
     $('pos-view').classList.add('hidden');
     $('pos-view').classList.remove('workspace-issue-mode');
