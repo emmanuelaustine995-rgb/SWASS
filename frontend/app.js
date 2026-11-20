@@ -84,6 +84,7 @@
   function showNotice(message, error = false) { const el=$('notice'); el.textContent=message; el.classList.remove('hidden'); el.style.background=error?'#fff0ef':'#fff5e8'; el.style.color=error?'#a12b22':'#8a4b08'; }
   function hideNotice(){ $('notice').classList.add('hidden'); }
   function showLogin(){
+    document.body.classList.remove('aurora-home-active');
     document.body.classList.add('aurora-login-active');
     clearSession();
     document.body.classList.remove('platform-admin-workspace');
@@ -159,7 +160,26 @@
     }
   }
 
+  function renderAuroraHomeIdentity(){
+    const p=state.businessProfile||{};
+    const shopName=String(p.storeName||p.businessName||'Your shop name').trim();
+    const heading=$('aurora-home-heading-name'),name=$('aurora-home-shop-name'),location=$('aurora-home-shop-location');
+    if(heading)heading.textContent=shopName==='Your shop name'?'Welcome to AURORA':shopName;
+    if(name)name.textContent=shopName;
+    if(location)location.textContent=[p.storeLocation,p.businessPhone].filter(Boolean).join(' · ')||'Your business, beautifully represented.';
+    const frame=$('aurora-shop-logo-frame'),image=$('aurora-home-shop-logo');
+    if(frame&&image){
+      if(p.logoData){image.src=p.logoData;image.classList.remove('hidden');frame.classList.add('has-logo');}
+      else{image.removeAttribute('src');image.classList.add('hidden');frame.classList.remove('has-logo');}
+    }
+    const shopState=$('aurora-home-overview-shop');
+    if(shopState)shopState.textContent=p.businessName?'Profile ready':'Set up profile';
+    const credits=$('aurora-home-overview-credits');
+    if(credits&&$('referral-receipts-available'))credits.textContent=$('referral-receipts-available').textContent;
+  }
+
   function renderDashboardBusinessProfile(){
+    renderAuroraHomeIdentity();
     // Business details are managed in Shop > Profile. Do not repeat a
     // "Complete Shop Profile" prompt/card on Home or the Shop overview.
     const card=$('dashboard-business-card');
@@ -498,8 +518,7 @@
     if(!['owner','manager','vendor','freelancer'].includes(state.role))return;
     void loadOwnerReferralSummary();
     void loadSubscriptionBalance();
-    $('owner-home-title').textContent=state.businessProfile?.businessName||'Business overview';
-    $('owner-home-subtitle').textContent=state.businessProfile?.storeName||'Your business workspace at a glance.';
+    renderAuroraHomeIdentity();
 
   }
 
@@ -573,6 +592,7 @@
     $('login-view')?.classList.add('hidden');
     $('back-to-login-btn')?.classList.remove('hidden');
     if(!['dashboard','receipts','profile','shop','subscription','lost-goods'].includes(screen))screen='dashboard';
+    document.body.classList.toggle('aurora-home-active',screen==='dashboard'&&['owner','manager','vendor','freelancer'].includes(state.role));
     const previous=state.currentWorkspace;
     if(!options.fromBack&&previous&&previous!==screen){state.workspaceHistory.push(previous);if(state.workspaceHistory.length>30)state.workspaceHistory.shift();}
     state.currentWorkspace=screen;
@@ -723,7 +743,7 @@
     syncGlobalBackButton();
   }
 
-  function showPOS(){ document.body.classList.remove('aurora-login-active'); if(!state.token){showLogin();return;} document.body.classList.add('workspace-active'); $('login-view').classList.add('hidden'); $('back-to-login-btn')?.classList.remove('hidden'); $('pos-view').classList.remove('hidden'); $('welcome-back-banner')?.classList.add('hidden'); $('profile-menu-btn')?.classList.remove('hidden'); $('logout-btn')?.classList.remove('hidden'); const label=$('user-label');label.textContent=state.userName||state.staffTitle||(state.role==='cashier'?'Shop Attendant':state.role?state.role.replace('_',' '):'Staff');if(state.userPhotoData){const avatar=document.createElement('img');avatar.src=state.userPhotoData;avatar.alt='Profile photo';avatar.style.cssText='width:30px;height:30px;object-fit:cover;border-radius:50%;vertical-align:middle;margin-right:8px';label.prepend(avatar);} $('dashboard-link').classList.toggle('hidden', !['owner','manager','vendor','freelancer'].includes(state.role));$('workspace-nav').classList.toggle('hidden',state.role==='super_admin');const isCustomerAccount=state.role==='customer';document.body.classList.toggle('customer-account-active',isCustomerAccount);document.body.classList.toggle('freelancer-account-active',state.role==='freelancer');const canAccessShopTab=!isCustomerAccount&&['owner','vendor','freelancer'].includes(state.role);document.querySelectorAll('#workspace-nav [data-workspace="shop"]').forEach(el=>{el.hidden=!canAccessShopTab;el.classList.toggle('hidden',!canAccessShopTab);el.style.setProperty('display',canAccessShopTab?'':'none','important');el.setAttribute('aria-hidden',canAccessShopTab?'false':'true');});document.querySelectorAll('#workspace-nav [data-workspace="customers"]').forEach(el=>{el.hidden=true;el.classList.add('hidden');el.style.setProperty('display','none','important');el.setAttribute('aria-hidden','true');});if(state.role==='customer')enforceCustomerReceiptActions();syncGlobalBackButton();  }
+  function showPOS(){ document.body.classList.remove('aurora-home-active'); document.body.classList.remove('aurora-login-active'); if(!state.token){showLogin();return;} document.body.classList.add('workspace-active'); $('login-view').classList.add('hidden'); $('back-to-login-btn')?.classList.remove('hidden'); $('pos-view').classList.remove('hidden'); $('welcome-back-banner')?.classList.add('hidden'); $('profile-menu-btn')?.classList.remove('hidden'); $('logout-btn')?.classList.remove('hidden'); const label=$('user-label');label.textContent=state.userName||state.staffTitle||(state.role==='cashier'?'Shop Attendant':state.role?state.role.replace('_',' '):'Staff');if(state.userPhotoData){const avatar=document.createElement('img');avatar.src=state.userPhotoData;avatar.alt='Profile photo';avatar.style.cssText='width:30px;height:30px;object-fit:cover;border-radius:50%;vertical-align:middle;margin-right:8px';label.prepend(avatar);} $('dashboard-link').classList.toggle('hidden', !['owner','manager','vendor','freelancer'].includes(state.role));$('workspace-nav').classList.toggle('hidden',state.role==='super_admin');const isCustomerAccount=state.role==='customer';document.body.classList.toggle('customer-account-active',isCustomerAccount);document.body.classList.toggle('freelancer-account-active',state.role==='freelancer');const canAccessShopTab=!isCustomerAccount&&['owner','vendor','freelancer'].includes(state.role);document.querySelectorAll('#workspace-nav [data-workspace="shop"]').forEach(el=>{el.hidden=!canAccessShopTab;el.classList.toggle('hidden',!canAccessShopTab);el.style.setProperty('display',canAccessShopTab?'':'none','important');el.setAttribute('aria-hidden',canAccessShopTab?'false':'true');});document.querySelectorAll('#workspace-nav [data-workspace="customers"]').forEach(el=>{el.hidden=true;el.classList.add('hidden');el.style.setProperty('display','none','important');el.setAttribute('aria-hidden','true');});if(state.role==='customer')enforceCustomerReceiptActions();syncGlobalBackButton();  }
   async function lookupCustomer(ev){
     ev.preventDefault();
     const phone=$('lookup-phone').value.trim();
@@ -1902,6 +1922,34 @@
   const auroraSalesSource=$('owner-today-sales');if(auroraSalesSource&&auroraHomeSales){new MutationObserver(()=>{auroraHomeSales.textContent=auroraSalesSource.textContent;}).observe(auroraSalesSource,{childList:true,subtree:true,characterData:true});}
 
   $('owner-home-subscription')?.addEventListener('click',()=>showWorkspaceScreen('subscription'));
+  // Four-card Home pager: horizontal swipe and numbered controls share one position.
+  const auroraHomeDeck=$('aurora-home-deck');
+  const auroraHomeDots=[...document.querySelectorAll('[data-home-slide]')];
+  const auroraHomePageCurrent=$('aurora-home-page-current');
+  function setAuroraHomeSlide(index){
+    if(!auroraHomeDeck)return;
+    const target=Math.max(0,Math.min(3,Number(index)||0));
+    auroraHomeDeck.scrollTo({left:target*auroraHomeDeck.clientWidth,behavior:'smooth'});
+  }
+  auroraHomeDots.forEach(button=>button.addEventListener('click',()=>setAuroraHomeSlide(button.dataset.homeSlide)));
+  if(auroraHomeDeck){
+    let homeScrollFrame=0;
+    auroraHomeDeck.addEventListener('scroll',()=>{
+      if(homeScrollFrame)cancelAnimationFrame(homeScrollFrame);
+      homeScrollFrame=requestAnimationFrame(()=>{
+        const index=Math.max(0,Math.min(3,Math.round(auroraHomeDeck.scrollLeft/Math.max(1,auroraHomeDeck.clientWidth))));
+        auroraHomeDots.forEach((dot,i)=>dot.classList.toggle('active',i===index));
+        if(auroraHomePageCurrent)auroraHomePageCurrent.textContent=String(index+1).padStart(2,'0');
+      });
+    },{passive:true});
+  }
+  const homeSalesTarget=$('aurora-home-sales-live'),homeSalesSource=$('owner-today-sales');
+  if(homeSalesTarget&&homeSalesSource){
+    const syncHomeSales=()=>{const value=homeSalesSource.textContent?.trim();if(value)homeSalesTarget.textContent=value;};
+    syncHomeSales();
+    new MutationObserver(syncHomeSales).observe(homeSalesSource,{childList:true,subtree:true,characterData:true});
+  }
+
   $('back-to-receipts').addEventListener('click',()=>{
     $('pos-view').classList.add('hidden');
     $('pos-view').classList.remove('workspace-issue-mode');
