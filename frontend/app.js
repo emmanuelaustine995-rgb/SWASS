@@ -1869,6 +1869,7 @@
     if(performance)void loadOwnerStaffPerformance();
   });
   $('workspace-nav').addEventListener('click',e=>{const b=e.target.closest('[data-workspace]');if(b)showWorkspaceScreen(b.dataset.workspace);});
+  document.addEventListener('click',e=>{const b=e.target.closest('.aurora-dashboard-shortcuts [data-workspace]');if(b)showWorkspaceScreen(b.dataset.workspace);});
   $('owner-home-subscription')?.addEventListener('click',()=>showWorkspaceScreen('subscription'));
   $('back-to-receipts').addEventListener('click',()=>{
     $('pos-view').classList.add('hidden');
