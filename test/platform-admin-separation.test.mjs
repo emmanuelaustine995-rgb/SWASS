@@ -19,6 +19,9 @@ test('Platform Admin login is available only through its separate URL mode', () 
   assert.match(app, /if\s*\(platformAdminLoginMode\)[\s\S]*?\$\('login-account-type'\)\.value\s*=\s*'platform_admin'/);
   assert.match(app, /accountType\s*===\s*'platform_admin'[\s\S]*?\/api\/v1\/auth\/admin\/login/);
   assert.match(app, /\/api\/v1\/auth\/login/);
+  assert.match(app, /accountType==='platform_admin' && claims\.role!=='super_admin'/);
+  assert.match(app, /accountType!=='platform_admin' && claims\.role==='super_admin'/);
+  assert.match(app, /if\(platformAdminLoginMode\)\{clearSession\(\);showLogin\(\);\}/);
 });
 
 test('global platform controllers remain restricted to super_admin', () => {
