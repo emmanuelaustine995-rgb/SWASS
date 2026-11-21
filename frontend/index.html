@@ -31,7 +31,7 @@
   <link rel="stylesheet" href="./dashboard.css?v=invite-qr-fixed-size-20261121">
   <link rel="stylesheet" href="./registration-layout.css?v=aurora-purple-auth-20261117">
   <link rel="stylesheet" href="./responsive-auth.css?v=shop-card-disclosure-fix-20261119">
-  <link rel="stylesheet" href="./responsive-workspace.css?v=repair-workflow-four-tabs-20261121">
+  <link rel="stylesheet" href="./responsive-workspace.css?v=repair-collection-receipts-20261121">
   <link rel="stylesheet" href="./auth-sunset.css?v=diamond-beach-photo-fix-20261121">
 </head>
 <body>
@@ -251,7 +251,10 @@
           </section>
           <section class="repair-stage-panel" id="repair-stage-issue" data-repair-panel="issue" role="tabpanel" hidden>
             <div class="repair-stage-intro repair-stage-intro--issue"><span class="repair-stage-large-icon" aria-hidden="true">🧾</span><div><h3>Issue goods &amp; payment receipt</h3><p>Collected items are recorded here so the shop can verify the handover and find the customer's repair record.</p></div></div>
-            <div class="repair-payment-notice"><strong>Payment receipt step</strong><span>Final repair-payment receipt generation and saving to the customer's account must be connected to the repair payment service before this step can be completed. This screen will not mark an unpaid item as paid.</span></div>
+            <div class="repair-payment-notice"><strong>Before handing over the item</strong><span>Enter the full amount received. For M-Pesa, verify the transaction code in the customer's payment confirmation message. SWASS will then issue the official receipt and save it to the customer's repair account.</span></div>
+            <h4 class="repair-subheading">Ready to issue</h4>
+            <div id="repair-issue-ready-list" class="repair-records-list" aria-live="polite"><p class="muted small">Ready goods will appear here.</p></div>
+            <h4 class="repair-subheading">Recently collected</h4>
             <div id="repair-collected-list" class="repair-records-list" aria-live="polite"><p class="muted small">Collected items will appear here.</p></div>
           </section>
         </div>
@@ -509,7 +512,7 @@
   <footer class="aurora-copyright" aria-label="Copyright">copyright@auroraskyholdings2026</footer>
   <script src="./config.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script src="./app.js?v=repair-workflow-four-tabs-20261121"></script>
+  <script src="./app.js?v=repair-collection-receipts-20261121"></script>
   <script src="./dashboard.js?v=all-accounts-login-landing-20261117"></script>
 
 <script>
