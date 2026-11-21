@@ -214,7 +214,7 @@ export class RepairsController {
       clientUuid,
       receiptNo: 'AUR-RP-' + String(repair.id).padStart(7,'0') + '-PAY',
       paymentMethod: paymentMethod as 'cash'|'mpesa'|'card',
-      items: [{ name: 'Repair service - ' + repair.itemName, qty: 1, unitPriceKes: amountKes }],
+      items: [{ name: 'Repair service: ' + repair.itemName + ' · Ref ' + repair.reference, qty: 1, unitPriceKes: amountKes, serialNo: repair.itemIdentifier || undefined }],
       customer: { fullName: repair.customerName, phone: repair.customerPhone, email: repair.customerEmail || undefined, nationalId: nationalId === 'Unavailable' ? undefined : nationalId },
     });
     const updated = await this.db.pool.query(
