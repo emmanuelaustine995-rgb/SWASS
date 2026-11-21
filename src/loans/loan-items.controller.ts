@@ -75,6 +75,7 @@ export class LoanItemsController {
   async createOffer(@Req() req:any,@Body() b:any){
     const role=this.partyRole(req.user),lender=await this.partyDetails(role,req.user.sub);
     if(!lender)throw new BadRequestException('Your active account could not be verified');
+    if(b?.ownershipConfirmed!==true)throw new BadRequestException('Confirm that you own or are authorised to lend this item');
     const itemName=String(b?.itemName||'').trim();
     const borrowerPhone=String(b?.borrowerPhone||'').trim();
     const conditionOut=String(b?.conditionOut||'').trim();
@@ -91,8 +92,8 @@ export class LoanItemsController {
     const params=[reference,role,req.user.sub,lender.name,lender.phone,lender.tenantId||null,lender.storeId||null,borrower.role,borrower.id,borrower.name,borrower.phone,itemName,quantity,value,String(b?.imei||'').trim()||null,String(b?.serialNumber||'').trim()||null,conditionOut,due,b?.sellingAllowed===true];
     try{
       const q=await this.db.pool.query(
-        `INSERT INTO aurora_loans(reference,lender_role,lender_id,lender_name,lender_phone,lender_tenant_id,lender_store_id,borrower_role,borrower_id,borrower_name,borrower_phone,item_name,quantity,value_kes,imei,serial_number,condition_out,expected_return_date,selling_allowed)
-         VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18::date,$19)
+        `INSERT INTO aurora_loans(reference,lender_role,lender_id,lender_name,lender_phone,lender_tenant_id,lender_store_id,borrower_role,borrower_id,borrower_name,borrower_phone,item_name,quantity,value_kes,imei,serial_number,condition_out,expected_return_date,selling_allowed,lender_authorised)
+         VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18::date,$19,true)
          RETURNING id,reference,status,created_at AS "createdAt",expected_return_date AS "expectedReturnDate"`,
         params,
       );
