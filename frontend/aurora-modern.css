@@ -1170,3 +1170,19 @@ body.aurora-home-active .aurora-home-heading{flex:0 0 42px;display:flex;align-it
 
 .aurora-logo-sky-placeholder:after{content:"";position:absolute;left:0;right:0;bottom:0;height:38%;opacity:.24;background:linear-gradient(90deg,transparent 0 8%,#fff 8% 20%,transparent 20% 24%,#fff 24% 39%,transparent 39% 44%,#fff 44% 62%,transparent 62% 68%,#fff 68% 82%,transparent 82%);clip-path:polygon(0 55%,12% 55%,12% 10%,25% 10%,25% 60%,39% 60%,39% 25%,53% 25%,53% 0,66% 0,66% 48%,80% 48%,80% 16%,91% 16%,91% 58%,100% 58%,100% 100%,0 100%)}
 .aurora-logo-sky-placeholder small{font-size:8px;letter-spacing:.2em;color:#fff;font-weight:900;text-shadow:0 1px 8px #285c8a}
+
+
+/* AURORA Shop catalogue: action cards are the single visible entry points.
+   Their linked disclosures retain the existing forms and inventory behaviour
+   without repeating a second set of card headings beneath the action grid. */
+#shop-home .shop-action-panel-summary { display: none !important; }
+#shop-home .shop-stock-manager-body > #shop-stock-title {
+  margin: 0 0 14px;
+  color: var(--text, #18324d);
+  font-size: 1.05rem;
+  font-weight: 750;
+}
+#shop-home .shop-product-action-grid[data-shop-tab-panel="products"],
+#shop-home .shop-products-intro[data-shop-tab-panel="products"] {
+  min-width: 0;
+}
