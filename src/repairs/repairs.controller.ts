@@ -184,7 +184,7 @@ export class RepairsController {
     if (!Number.isSafeInteger(amountKes) || amountKes < 1 || amountKes > 100000000) throw new BadRequestException('Enter the full repair charge as a positive whole-KSh amount.');
     if (!['cash','mpesa','card'].includes(paymentMethod)) throw new BadRequestException('Choose cash, M-Pesa or card.');
     const paymentReference = String(body?.paymentReference || '').trim().toUpperCase();
-    if (paymentMethod === 'mpesa' && !/^[A-Z0-9]{8,16}$/.test(paymentReference)) throw new BadRequestException('Enter the M-Pesa transaction code and confirm it in the customer's payment message before issuing the receipt.');
+    if (paymentMethod === 'mpesa' && !/^[A-Z0-9]{8,16}$/.test(paymentReference)) throw new BadRequestException("Enter the M-Pesa transaction code and confirm it in the customer's payment message before issuing the receipt.");
     const found = await this.db.pool.query(
       'SELECT id,reference,item_name AS "itemName",customer_name AS "customerName",customer_phone AS "customerPhone",customer_email AS "customerEmail",customer_id AS "customerId",status,payment_client_uuid AS "paymentClientUuid",payment_total_kes AS "paymentTotalKes",payment_method AS "paymentMethod",payment_reference AS "paymentReference",payment_receipt_id AS "paymentReceiptId" FROM shop_repair_jobs WHERE id=$1 AND tenant_id=$2 AND store_id=$3 LIMIT 1',
       [id,user.tenantId,user.storeId],
