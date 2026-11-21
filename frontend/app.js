@@ -2466,17 +2466,54 @@
   });
 
 
+  function renderRepairStageRow(x,mode){
+    const labels={received:'Received',diagnosing:'Diagnosing',in_repair:'In repair',ready:'Ready for collection',collected:'Collected',cancelled:'Cancelled'};
+    const status=labels[x.status]||x.status||'Received';
+    const statusOptions=mode==='ready'
+      ? '<option value="ready" '+(x.status==='ready'?'selected':'')+'>Ready for collection</option><option value="collected">Confirm collected</option>'
+      : '<option value="received" '+(x.status==='received'?'selected':'')+'>Received</option><option value="diagnosing" '+(x.status==='diagnosing'?'selected':'')+'>Diagnosing</option><option value="in_repair" '+(x.status==='in_repair'?'selected':'')+'>In repair</option><option value="ready">Mark ready for collection</option><option value="cancelled" '+(x.status==='cancelled'?'selected':'')+'>Cancelled</option>';
+    const tools=mode==='issue'
+      ? '<p class="repair-payment-pending">Handover recorded. Check the payment record before closing this job.</p>'
+      : '<select aria-label="Update repair status" data-repair-status-id="'+Number(x.id)+'" data-previous-status="'+escapeHtml(x.status)+'">'+statusOptions+'</select>'+
+        (mode==='service'?'<textarea rows="2" maxlength="2000" aria-label="Technician diagnosis" data-repair-detected-id="'+Number(x.id)+'" placeholder="Technician diagnosis / work performed">'+escapeHtml(x.detected||'')+'</textarea><button type="button" class="btn btn-light btn-small" data-repair-detected-save="'+Number(x.id)+'">Save repair notes</button>':'');
+    return '<article class="repair-record-row repair-record-row--'+mode+'"><div class="repair-record-main"><div class="repair-record-card-head"><strong>'+escapeHtml(x.itemName)+'</strong><span class="repair-status repair-status-'+escapeHtml(x.status)+'">'+escapeHtml(status)+'</span></div><small>Reference: '+escapeHtml(x.reference||'—')+' · Item ID: '+escapeHtml(x.itemIdentifier||'—')+'</small><small>Customer: '+escapeHtml(x.customerName)+' · '+escapeHtml(x.customerPhone||'—')+'</small><small>Problem: '+escapeHtml(x.problem||'—')+'</small>'+(x.detected?'<small>Diagnosis / work: '+escapeHtml(x.detected)+'</small>':'')+'<small>Received: '+escapeHtml(x.receivedDate?new Date(x.receivedDate).toLocaleDateString():'—')+' · Expected: '+escapeHtml(x.expectedPickDate?new Date(x.expectedPickDate).toLocaleDateString():'—')+'</small></div><div class="repair-record-tools">'+tools+'</div></article>';
+  }
   async function loadShopRepairs(){
-    const target=$('repair-records-list');if(!target)return;
-    target.innerHTML='<p class="muted small">Loading repair register…</p>';
+    const ready=$('repair-ready-list'),service=$('repair-service-list'),collected=$('repair-collected-list');
+    if(!ready||!service||!collected)return;
+    [ready,service,collected].forEach(el=>el.innerHTML='<p class="muted small">Loading repair records…</p>');
     try{
       const data=await request('/api/v1/repairs');
-      const rows=data.repairs||[];
-      const statusLabel={received:'Received',diagnosing:'Diagnosing',in_repair:'In repair',ready:'Ready for pick-up',collected:'Collected',cancelled:'Cancelled'};
-      target.innerHTML=rows.length?rows.map(x=>'<article class="repair-record-row"><div class="repair-record-main"><strong>'+escapeHtml(x.itemName)+'</strong><small>Item ID: '+escapeHtml(x.itemIdentifier||'—')+' · Customer: '+escapeHtml(x.customerName)+' · Phone: '+escapeHtml(x.customerPhone||'—')+' · Ref: '+escapeHtml(x.reference||'—')+'</small><small>Condition: '+escapeHtml(x.condition)+'</small>'+(x.accessories?'<small>Accessories: '+escapeHtml(x.accessories)+'</small>':'')+'<small>Logged by: '+escapeHtml(x.receivedByName||'Shop team')+'</small><small>Problem: '+escapeHtml(x.problem)+'</small>'+(x.detected?'<small>Detected: '+escapeHtml(x.detected)+'</small>':'')+'<small>Received: '+escapeHtml(x.receivedDate?new Date(x.receivedDate).toLocaleDateString():'—')+' · Expected pick-up: '+escapeHtml(x.expectedPickDate?new Date(x.expectedPickDate).toLocaleDateString():'—')+'</small></div><div class="repair-record-tools"><span class="repair-status repair-status-'+escapeHtml(x.status)+'">'+escapeHtml(statusLabel[x.status]||x.status)+'</span><select aria-label="Update repair status" data-repair-status-id="'+Number(x.id)+'" data-previous-status="'+escapeHtml(x.status)+'"><option value="received" '+(x.status==='received'?'selected':'')+'>Received</option><option value="diagnosing" '+(x.status==='diagnosing'?'selected':'')+'>Diagnosing</option><option value="in_repair" '+(x.status==='in_repair'?'selected':'')+'>In repair</option><option value="ready" '+(x.status==='ready'?'selected':'')+'>Ready for pick-up</option><option value="collected" '+(x.status==='collected'?'selected':'')+'>Collected</option><option value="cancelled" '+(x.status==='cancelled'?'selected':'')+'>Cancelled</option></select><textarea rows="2" maxlength="2000" aria-label="Technician diagnosis" data-repair-detected-id="'+Number(x.id)+'" placeholder="Technician diagnosis / detected problem">'+escapeHtml(x.detected||'')+'</textarea><button type="button" class="btn btn-light btn-small" data-repair-detected-save="'+Number(x.id)+'">Save diagnosis</button></div></article>').join(''):'<p class="muted small">No goods have been recorded for repair yet.</p>';
-    }catch(error){target.innerHTML='<p class="error">'+escapeHtml(error.message||'Could not load the repair register.')+'</p>';}
+      const rows=Array.isArray(data.repairs)?data.repairs:[];
+      const readyRows=rows.filter(x=>x.status==='ready');
+      const serviceRows=rows.filter(x=>['received','diagnosing','in_repair'].includes(x.status));
+      const collectedRows=rows.filter(x=>x.status==='collected');
+      ready.innerHTML=readyRows.length?readyRows.map(x=>renderRepairStageRow(x,'ready')).join(''):'<p class="repair-stage-empty">No goods are currently waiting for collection.</p>';
+      service.innerHTML=serviceRows.length?serviceRows.map(x=>renderRepairStageRow(x,'service')).join(''):'<p class="repair-stage-empty">No active repairs. Newly received goods will appear here.</p>';
+      collected.innerHTML=collectedRows.length?collectedRows.map(x=>renderRepairStageRow(x,'issue')).join(''):'<p class="repair-stage-empty">No goods have been handed back to customers yet.</p>';
+      const msg=$('repair-records-message');if(msg)msg.textContent=rows.length+' repair record(s) across all stages.';
+    }catch(error){
+      [ready,service,collected].forEach(el=>el.innerHTML='<p class="error">'+escapeHtml(error.message||'Could not load repair records.')+'</p>');
+    }
   }
-  const repairForm=$('shop-repair-form');
+  function setRepairStage(stage){
+    if(!['receive','ready','service','issue'].includes(stage))stage='receive';
+    document.querySelectorAll('#repair-stage-tabs [data-repair-stage]').forEach(button=>{
+      const active=button.dataset.repairStage===stage;
+      button.classList.toggle('is-active',active);button.setAttribute('aria-selected',String(active));
+      button.tabIndex=active?0:-1;
+    });
+    document.querySelectorAll('#repair-stage-panels [data-repair-panel]').forEach(panel=>{
+      const active=panel.dataset.repairPanel===stage;
+      panel.classList.toggle('is-active',active);panel.hidden=!active;
+    });
+  }
+  $('repair-stage-tabs')?.addEventListener('click',event=>{
+    const button=event.target.closest('[data-repair-stage]');if(!button)return;
+    setRepairStage(button.dataset.repairStage);
+    if(button.dataset.repairStage!=='receive')void loadShopRepairs();
+  });
+    const repairForm=$('shop-repair-form');
   const repairToday=new Date();const repairTodayValue=repairToday.getFullYear()+'-'+String(repairToday.getMonth()+1).padStart(2,'0')+'-'+String(repairToday.getDate()).padStart(2,'0');
   if($('repair-received-date'))$('repair-received-date').value=repairTodayValue;
   if($('repair-pick-date'))$('repair-pick-date').min=repairTodayValue;
@@ -2500,15 +2537,15 @@
     }catch(error){message.textContent=error.message||'Could not save the repair record.';}
     finally{button.disabled=false;}
   });
-  $('repair-records-list')?.addEventListener('click',async e=>{
+  $('repair-stage-panels')?.addEventListener('click',async e=>{
     const button=e.target.closest('[data-repair-detected-save]');if(!button)return;
-    const id=button.dataset.repairDetectedSave,field=$('repair-records-list').querySelector('[data-repair-detected-id="'+id+'"]');
+    const id=button.dataset.repairDetectedSave,field=$('repair-stage-panels').querySelector('[data-repair-detected-id="'+id+'"]');
     button.disabled=true;
     try{await request('/api/v1/repairs/'+encodeURIComponent(id),{method:'PATCH',body:JSON.stringify({detected:field?.value||''})});showNotice('Technician diagnosis saved.');await loadShopRepairs();}
     catch(error){showNotice(error.message||'Could not save the diagnosis.',true);}
     finally{button.disabled=false;}
   });
-  $('repair-records-list')?.addEventListener('change',async e=>{
+  $('repair-stage-panels')?.addEventListener('change',async e=>{
     const select=e.target.closest('[data-repair-status-id]');if(!select)return;
     const id=select.dataset.repairStatusId,previous=select.dataset.previousStatus||'received';
     select.disabled=true;
