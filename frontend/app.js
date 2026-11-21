@@ -2391,7 +2391,7 @@
     const button=$('aurora-loan-submit'),message=$('aurora-loan-form-message');
     button.disabled=true;button.textContent='Sending offer…';message.textContent='Checking the recipient account and recording the offer…';
     try{
-      const payload={borrowerPhone:$('loan-recipient-phone').value.trim(),itemName:$('aurora-loan-item-name').value.trim(),quantity:Number($('aurora-loan-quantity').value),valueKes:Number($('aurora-loan-value').value),expectedReturnDate:$('aurora-loan-due-date').value,imei:$('aurora-loan-imei').value.trim(),serialNumber:$('aurora-loan-serial').value.trim(),conditionOut:$('aurora-loan-condition').value.trim(),sellingAllowed:$('aurora-loan-selling-allowed').checked};
+      const payload={borrowerPhone:$('loan-recipient-phone').value.trim(),itemName:$('aurora-loan-item-name').value.trim(),quantity:Number($('aurora-loan-quantity').value),valueKes:Number($('aurora-loan-value').value),expectedReturnDate:$('aurora-loan-due-date').value,imei:$('aurora-loan-imei').value.trim(),serialNumber:$('aurora-loan-serial').value.trim(),conditionOut:$('aurora-loan-condition').value.trim(),sellingAllowed:$('aurora-loan-selling-allowed').checked,ownershipConfirmed:$('aurora-loan-ownership-confirmed').checked};
       const result=await request('/api/v1/loan-items/offers',{method:'POST',body:JSON.stringify(payload)});
       message.textContent='Offer '+result.loan.reference+' sent. The recipient must accept it before the loan-day counter starts.';
       $('aurora-loan-offer-form').reset();$('aurora-loan-quantity').value='1';$('aurora-loan-value').value='0';
