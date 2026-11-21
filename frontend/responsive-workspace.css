@@ -1439,3 +1439,94 @@ html body.platform-admin-workspace #platform-referral-admin .platform-admin-tabs
     white-space: normal !important;
   }
 }
+
+
+/* AURORA loan cards: clear visual distinction between items lent and borrowed. */
+.loans-create-card,
+.loans-list-section {
+  border: 1px solid #dbe6f0;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(25, 55, 90, .07);
+  overflow: hidden;
+}
+.loans-create-card { border-top: 4px solid #0e7490; }
+.loans-create-card > summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  cursor: pointer;
+  list-style: none;
+}
+.loans-create-card > summary::before {
+  content: "＋";
+  display: grid;
+  place-items: center;
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+  color: #fff;
+  background: #0e7490;
+  font-size: 25px;
+  font-weight: 700;
+}
+.loans-create-card > summary::-webkit-details-marker { display:none; }
+.loans-create-card > summary strong { display:block; color:#155e75; font-size:16px; }
+.loans-create-card > summary small { display:block; margin-top:4px; color:#64748b; }
+.loans-list-section { margin-top:18px; padding:15px; }
+.loans-list-section[aria-labelledby="loans-lent-title"] {
+  border-top: 4px solid #2563eb;
+  background: linear-gradient(150deg,#eff6ff 0%,#fff 62%);
+}
+.loans-list-section[aria-labelledby="loans-borrowed-title"] {
+  border-top: 4px solid #7c3aed;
+  background: linear-gradient(150deg,#f5f3ff 0%,#fff 62%);
+}
+.loans-list-section[aria-labelledby="loans-lent-title"] .loans-section-heading h2 { color:#1d4ed8; }
+.loans-list-section[aria-labelledby="loans-borrowed-title"] .loans-section-heading h2 { color:#6d28d9; }
+.loans-section-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.loans-count { display:grid; place-items:center; min-width:34px; height:34px; padding:0 9px; border-radius:50px; font-weight:800; background:#dbeafe; color:#1d4ed8; }
+.loans-list-section[aria-labelledby="loans-borrowed-title"] .loans-count { background:#ede9fe; color:#6d28d9; }
+.loan-record-card {
+  margin-top:12px;
+  padding:15px;
+  border:1px solid #dbe4ee;
+  border-radius:16px;
+  background:#fff;
+  box-shadow:0 5px 16px rgba(15,23,42,.06);
+}
+.loan-record-card--lent { border-left:5px solid #3b82f6; }
+.loan-record-card--borrowed { border-left:5px solid #8b5cf6; }
+.loan-record-title-wrap { display:flex; align-items:center; gap:11px; min-width:0; }
+.loan-record-symbol {
+  display:grid;
+  place-items:center;
+  flex:0 0 42px;
+  width:42px;
+  height:42px;
+  border-radius:13px;
+  font-size:23px;
+  font-weight:800;
+}
+.loan-record-card--lent .loan-record-symbol { color:#1d4ed8; background:#dbeafe; }
+.loan-record-card--borrowed .loan-record-symbol { color:#6d28d9; background:#ede9fe; }
+.loan-record-card--lent .loan-status { color:#1d4ed8; background:#eff6ff; }
+.loan-record-card--borrowed .loan-status { color:#6d28d9; background:#f5f3ff; }
+.loan-record-card.is-overdue { border-color:#fca5a5; border-left-color:#dc2626; background:#fffafa; }
+.loan-record-card .loan-record-top { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.loan-record-card .loan-record-top h3 { margin:3px 0 0; overflow-wrap:anywhere; }
+.loan-record-card .loan-status { display:inline-flex; align-items:center; justify-content:center; padding:6px 10px; border-radius:30px; font-size:12px; font-weight:800; text-align:center; }
+.loan-record-facts { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:12px 0; }
+.loan-record-facts > span { padding:9px; border-radius:11px; background:#f1f5f9; color:#475569; font-size:12px; }
+.loan-record-facts strong { display:block; margin-top:3px; color:#0f172a; font-size:14px; overflow-wrap:anywhere; }
+.loan-record-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+@media (max-width:480px) {
+  .loans-list-section { padding:12px; }
+  .loan-record-card { padding:12px; }
+  .loan-record-facts { gap:5px; }
+  .loan-record-facts > span { padding:7px 5px; font-size:11px; }
+  .loan-record-facts strong { font-size:13px; }
+  .loan-record-symbol { flex-basis:36px; width:36px; height:36px; }
+}
