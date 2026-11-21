@@ -549,6 +549,7 @@
     if(!goBackWorkspace()){showWorkspaceScreen('dashboard',{fromBack:true});}syncGlobalBackButton();
   });
   document.querySelectorAll('[data-freelancer-screen]').forEach(button=>button.addEventListener('click',()=>showWorkspaceScreen(button.dataset.freelancerScreen)));
+  document.querySelectorAll('[data-open-loans]').forEach(button=>button.addEventListener('click',()=>showWorkspaceScreen('loans')));
   function showWorkspaceScreen(screen,options={}){
     if(!state.token){showLogin();return;}
     if(state.role==='super_admin'){try{sessionStorage.setItem('aurora-admin-token',state.token);}catch{}window.location.replace('./admin.html');return;}
@@ -686,7 +687,7 @@
       if(!['owner','freelancer','customer'].includes(state.role)){showNotice('Loans are available to shop owners, freelancers and customers.',true);showWorkspaceScreen('dashboard',{fromBack:true});return;}
       $('loans-home')?.classList.remove('hidden');
       void loadLoansWorkspace();
-}else if(screen==='profile'){
+    }else if(screen==='profile'){
       renderAccountProfile();
       if(['owner','manager','vendor','freelancer'].includes(state.role)){
         dashboardBusinessCard?.classList.add('hidden');
