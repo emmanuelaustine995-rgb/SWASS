@@ -2551,7 +2551,11 @@
       b.setAttribute('aria-selected',String(b.dataset.shopTab===tab));
     });
     if(tab==='profile'){void loadBusinessProfile().catch(e=>showNotice('Shop profile could not be loaded. '+(e.message||''),true));const staffCard=shop?.querySelector('#owner-staff-area');const ownerCanInvite=state.role==='owner';if(staffCard){staffCard.classList.toggle('hidden',!ownerCanInvite);staffCard.toggleAttribute('hidden',!ownerCanInvite);staffCard.style.setProperty('display',ownerCanInvite?'':'none','important');}if(ownerCanInvite)void loadStaffInvitations();}
-    // Repair records load only after the repair card is opened.
+    // Selecting Goods on Repair should open the workspace immediately. It was
+    // previously only made visible as a collapsed <details> card, which made
+    // the feature appear empty until users tapped a second time.
+    const repairsCard=shop?.querySelector('#shop-goods-on-repair-card');
+    if(repairsCard)repairsCard.open=tab==='repairs';
   }
   document.querySelectorAll('[data-shop-tab]').forEach(b=>b.addEventListener('click',()=>setShopTab(b.dataset.shopTab)));
   let lostAlarmAudio=null;
