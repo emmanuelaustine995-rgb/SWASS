@@ -1,4 +1,4 @@
-import { BadRequestException, Controller, Get, Post, Patch, Param, Body, Req, UseGuards, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
+import { BadRequestException, Controller, Get, Post, Patch, Param, Body, Req, Res, UseGuards, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
 import { createCipheriv, createDecipheriv, createHash, randomBytes, randomUUID } from 'node:crypto';
 import PDFDocument from 'pdfkit';
 import { AuthGuard, Roles, RolesGuard } from '../auth/auth';
@@ -132,6 +132,7 @@ export class RepairsController {
   @Get('mine')
   @Roles('customer')
   async mine(@Req() req: any) {
+    await this.db.ensureRepairSchema();
     const account = await this.db.pool.query('SELECT phone FROM customer_accounts WHERE id=$1 AND is_active=true LIMIT 1', [req.user.sub]);
     if (!account.rows[0]) throw new NotFoundException('Customer account not found.');
     const digits = String(account.rows[0].phone || '').replace(/\D/g, '');
@@ -182,8 +183,10 @@ export class RepairsController {
     const paymentMethod = String(body?.paymentMethod || '').trim();
     if (!Number.isSafeInteger(amountKes) || amountKes < 1 || amountKes > 100000000) throw new BadRequestException('Enter the full repair charge as a positive whole-KSh amount.');
     if (!['cash','mpesa','card'].includes(paymentMethod)) throw new BadRequestException('Choose cash, M-Pesa or card.');
+    const paymentReference = String(body?.paymentReference || '').trim().toUpperCase();
+    if (paymentMethod === 'mpesa' && !/^[A-Z0-9]{8,16}$/.test(paymentReference)) throw new BadRequestException('Enter the M-Pesa transaction code and confirm it in the customer's payment message before issuing the receipt.');
     const found = await this.db.pool.query(
-      'SELECT id,reference,item_name AS "itemName",customer_name AS "customerName",customer_phone AS "customerPhone",customer_email AS "customerEmail",customer_id AS "customerId",status,payment_client_uuid AS "paymentClientUuid",payment_total_kes AS "paymentTotalKes",payment_method AS "paymentMethod",payment_receipt_id AS "paymentReceiptId" FROM shop_repair_jobs WHERE id=$1 AND tenant_id=$2 AND store_id=$3 LIMIT 1',
+      'SELECT id,reference,item_name AS "itemName",customer_name AS "customerName",customer_phone AS "customerPhone",customer_email AS "customerEmail",customer_id AS "customerId",status,payment_client_uuid AS "paymentClientUuid",payment_total_kes AS "paymentTotalKes",payment_method AS "paymentMethod",payment_reference AS "paymentReference",payment_receipt_id AS "paymentReceiptId" FROM shop_repair_jobs WHERE id=$1 AND tenant_id=$2 AND store_id=$3 LIMIT 1',
       [id,user.tenantId,user.storeId],
     );
     const repair = found.rows[0];
@@ -195,10 +198,16 @@ export class RepairsController {
       return { repair, paymentReceipt: { ...receipt, verificationUrl: (process.env.PUBLIC_APP_URL || 'https://swass-web.onrender.com').replace(/\/$/,'')+'/verify.html?token='+encodeURIComponent(receipt.qrToken), alreadyIssued: true } };
     }
     if (repair.status !== 'ready') throw new BadRequestException('Only goods marked Ready for collection can be issued to the customer.');
-    if (repair.paymentClientUuid && (Number(repair.paymentTotalKes) !== amountKes || repair.paymentMethod !== paymentMethod)) throw new BadRequestException('A receipt attempt already exists for a different amount or payment method. Retry with the same details to avoid duplicate receipts.');
-    const clientUuid = repair.paymentClientUuid || randomUUID();
+    if (repair.paymentClientUuid && (Number(repair.paymentTotalKes) !== amountKes || repair.paymentMethod !== paymentMethod || (repair.paymentReference || '') !== paymentReference)) throw new BadRequestException('A receipt attempt already exists for a different amount or payment method. Retry with the same details to avoid duplicate receipts.');
+    let clientUuid = repair.paymentClientUuid || randomUUID();
     if (!repair.paymentClientUuid) {
-      await this.db.pool.query("UPDATE shop_repair_jobs SET payment_client_uuid=$1,payment_total_kes=$2,payment_method=$3 WHERE id=$4 AND tenant_id=$5 AND store_id=$6 AND status='ready' AND payment_client_uuid IS NULL",[clientUuid,amountKes,paymentMethod,id,user.tenantId,user.storeId]);
+      const attempt = await this.db.pool.query("UPDATE shop_repair_jobs SET payment_client_uuid=$1,payment_total_kes=$2,payment_method=$3,payment_reference=$4 WHERE id=$5 AND tenant_id=$6 AND store_id=$7 AND status='ready' AND payment_client_uuid IS NULL RETURNING payment_client_uuid AS \\\"paymentClientUuid\\\"",[clientUuid,amountKes,paymentMethod,paymentReference || null,id,user.tenantId,user.storeId]);
+      if (!attempt.rows[0]) {
+        const current = await this.db.pool.query('SELECT payment_client_uuid AS "paymentClientUuid",payment_total_kes AS "paymentTotalKes",payment_method AS "paymentMethod",payment_reference AS "paymentReference" FROM shop_repair_jobs WHERE id=$1 AND tenant_id=$2 AND store_id=$3',[id,user.tenantId,user.storeId]);
+        const savedAttempt = current.rows[0];
+        if (!savedAttempt?.paymentClientUuid || Number(savedAttempt.paymentTotalKes)!==amountKes || savedAttempt.paymentMethod!==paymentMethod || (savedAttempt.paymentReference||'')!==paymentReference) throw new BadRequestException('Another collection attempt is already being processed. Refresh this repair before continuing.');
+        clientUuid = savedAttempt.paymentClientUuid;
+      }
     }
     const nationalId = this.decryptCustomerId(repair.customerId);
     const receipt = await this.receipts.create(user, {
@@ -209,12 +218,12 @@ export class RepairsController {
       customer: { fullName: repair.customerName, phone: repair.customerPhone, email: repair.customerEmail || undefined, nationalId: nationalId === 'Unavailable' ? undefined : nationalId },
     });
     const updated = await this.db.pool.query(
-      "UPDATE shop_repair_jobs SET status='collected',payment_receipt_id=$1,payment_receipt_no=$2,payment_total_kes=$3,payment_method=$4,collected_at=now(),updated_at=now() WHERE id=$5 AND tenant_id=$6 AND store_id=$7 AND status='ready' RETURNING id,reference,item_name AS \"itemName\",customer_name AS \"customerName\",customer_phone AS \"customerPhone\",status,payment_receipt_no AS \"paymentReceiptNo\",payment_total_kes AS \"paymentTotalKes\",payment_method AS \"paymentMethod\",collected_at AS \"collectedAt\"",
-      [receipt.id,receipt.receiptNo,receipt.totalKes,paymentMethod,id,user.tenantId,user.storeId],
+      "UPDATE shop_repair_jobs SET status='collected',payment_receipt_id=$1,payment_receipt_no=$2,payment_total_kes=$3,payment_method=$4,payment_reference=$5,collected_at=now(),updated_at=now() WHERE id=$5 AND tenant_id=$6 AND store_id=$7 AND status='ready' RETURNING id,reference,item_name AS \"itemName\",customer_name AS \"customerName\",customer_phone AS \"customerPhone\",status,payment_receipt_no AS \"paymentReceiptNo\",payment_total_kes AS \"paymentTotalKes\",payment_method AS \"paymentMethod\",collected_at AS \"collectedAt\"",
+      [receipt.id,receipt.receiptNo,receipt.totalKes,paymentMethod,paymentReference || null,id,user.tenantId,user.storeId],
     );
     const finalRepair = updated.rows[0] || (await this.db.pool.query('SELECT id,reference,item_name AS "itemName",customer_name AS "customerName",customer_phone AS "customerPhone",status,payment_receipt_no AS "paymentReceiptNo",payment_total_kes AS "paymentTotalKes",payment_method AS "paymentMethod",collected_at AS "collectedAt" FROM shop_repair_jobs WHERE id=$1 AND tenant_id=$2 AND store_id=$3',[id,user.tenantId,user.storeId])).rows[0];
     if (!finalRepair || finalRepair.status !== 'collected') throw new BadRequestException('Payment receipt was created, but the repair could not be marked collected. Refresh the repair record before retrying.');
-    await this.db.pool.query('INSERT INTO shop_repair_events(repair_id,tenant_id,store_id,actor_user_id,actor_name,event_type,details) VALUES($1,$2,$3,$4,$5,$6,$7)',[id,user.tenantId,user.storeId,user.sub,user.fullName||'Shop team','collected',JSON.stringify({receiptNo:receipt.receiptNo,totalKes:receipt.totalKes,paymentMethod})]);
+    await this.db.pool.query('INSERT INTO shop_repair_events(repair_id,tenant_id,store_id,actor_user_id,actor_name,event_type,details) VALUES($1,$2,$3,$4,$5,$6,$7)',[id,user.tenantId,user.storeId,user.sub,user.fullName||'Shop team','collected',JSON.stringify({receiptNo:receipt.receiptNo,totalKes:receipt.totalKes,paymentMethod,paymentReference:paymentReference || null})]);
     return { repair: finalRepair, paymentReceipt: { id:receipt.id,receiptNo:receipt.receiptNo,totalKes:receipt.totalKes,qrToken:receipt.qrToken,verificationUrl:(process.env.PUBLIC_APP_URL || 'https://swass-web.onrender.com').replace(/\/$/,'')+'/verify.html?token='+encodeURIComponent(receipt.qrToken),emailDelivery:receipt.emailDelivery,whatsappDelivery:receipt.whatsappDelivery } };
   }
 
