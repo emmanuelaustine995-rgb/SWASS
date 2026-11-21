@@ -188,6 +188,13 @@ export class RepairsController {
       const shop = shopResult.rows[0] || {}, owner = ownerResult.rows[0] || {};
       const pdf = await this.makePdf(repair, shop);
       ownerDelivery = await this.notifyOwner({ owner, shop, repair, pdf, stage: 'ready' });
+      const customerText = 'AURORA repair update: ' + repair.reference + ' for ' + repair.itemName + ' is ready for collection at ' + (shop.name || 'the shop') + '. Please present your repair reference when collecting.';
+      const customerDelivery = {
+        email: repair.customerEmail ? await this.safeDelivery(() => this.deliverEmail(repair.customerEmail,'Your item is ready for collection · '+repair.reference,'<p>Hello '+repair.customerName+', your item is ready for collection. Please present repair reference <b>'+repair.reference+'</b> at '+(shop.name||'the shop')+'.</p>',pdf,repair.reference+'-ready.pdf')) : { sent: false, reason: 'Customer email was not provided' },
+        whatsapp: await this.safeDelivery(() => this.whatsapp.sendText({ to: repair.customerPhone, text: customerText })),
+      };
+      await this.db.pool.query('INSERT INTO shop_repair_events(repair_id,tenant_id,store_id,actor_user_id,actor_name,event_type,details) VALUES($1,$2,$3,$4,$5,$6,$7)', [id,user.tenantId,user.storeId,user.sub,user.fullName||'Shop team','ready_notification',JSON.stringify({ownerDelivery,customerDelivery})]);
+      return { repair, ownerDelivery, customerDelivery, message: 'Repair marked ready. Owner and customer notification attempts completed.' };
     }
     return { repair, ownerDelivery, message: 'Repair record updated.' };
   }
