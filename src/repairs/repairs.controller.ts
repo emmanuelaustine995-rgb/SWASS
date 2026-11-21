@@ -160,7 +160,7 @@ export class RepairsController {
               j.expected_pick_date AS "expectedPickDate", j.status,
               j.repair_cost_kes AS "repairCostKes", j.payment_receipt_no AS "paymentReceiptNo",
               j.payment_total_kes AS "paymentTotalKes", j.payment_method AS "paymentMethod",
-              j.payment_reference AS "paymentReference", pay.qr_token AS "paymentReceiptToken",
+              j.payment_reference AS "paymentReference", j.payment_receipt_id AS "paymentReceiptId", pay.qr_token AS "paymentReceiptToken",
               j.created_at AS "createdAt", j.updated_at AS "updatedAt"
          FROM shop_repair_jobs j
          LEFT JOIN receipts pay ON pay.id=j.payment_receipt_id
