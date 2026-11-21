@@ -684,7 +684,7 @@
       // Keep workspace navigation stable; do not force-scroll the whole page when opening Customers.
       window.dispatchEvent(new Event('swass:dashboard-open'));
     }else if(screen==='loans'){
-      if(!['owner','freelancer','customer'].includes(state.role)){showNotice('Loans are available to shop owners, freelancers and customers.',true);showWorkspaceScreen('dashboard',{fromBack:true});return;}
+      if(!['owner','freelancer','vendor','customer'].includes(state.role)){showNotice('Loans are available to shop owners, freelancers and customers.',true);showWorkspaceScreen('dashboard',{fromBack:true});return;}
       $('loans-home')?.classList.remove('hidden');
       void loadLoansWorkspace();
     }else if(screen==='profile'){
