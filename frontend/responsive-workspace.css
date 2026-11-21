@@ -1173,3 +1173,164 @@ html body.platform-admin-workspace #platform-referral-admin .platform-admin-tabs
     display: none !important;
   }
 }
+
+
+/* DESKTOP FINAL FIX — readable content, complete cards, no clipped fields.
+   The 14 cm frame is retained. This block intentionally wins over older
+   desktop rules above it; mobile/tablet breakpoints are not changed. */
+@media (min-width: 1024px) {
+  html body.workspace-active main.shell {
+    width: 14cm !important;
+    max-width: calc(100vw - 32px) !important;
+    min-width: 0 !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    padding: 16px 16px 112px !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    scrollbar-gutter: stable;
+  }
+
+  /* Let every active section grow to its real content height. */
+  html body.workspace-active main.shell > :not(#workspace-nav) {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    box-sizing: border-box !important;
+  }
+
+  html body.workspace-active main.shell > section:not(.hidden),
+  html body.workspace-active main.shell > main:not(.hidden),
+  html body.workspace-active main.shell > article:not(.hidden),
+  html body.workspace-active main.shell > .panel:not(.hidden),
+  html body.workspace-active main.shell > [data-workspace-page]:not(.hidden) {
+    display: block !important;
+    position: relative !important;
+    flex: none !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    transform: none !important;
+  }
+
+  /* Never allow desktop text to fall below a comfortable reading size. */
+  html body.workspace-active main.shell :is(
+    p, span, a, label, legend, li, summary, small, strong, b, em, i,
+    td, th, caption, figcaption, dt, dd, output, time, blockquote,
+    .muted, .helper-text, .form-hint, .field-hint, .eyebrow,
+    .subtitle, .description, .card-description, .stat-label, .metric-label
+  ) {
+    font-size: max(14px, 1em) !important;
+    line-height: 1.45 !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  html body.workspace-active main.shell :is(h1, h2, h3, h4, h5, h6) {
+    line-height: 1.25 !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  html body.workspace-active main.shell :is(input, select, textarea, button, .btn) {
+    font-size: max(14px, 1em) !important;
+    line-height: 1.35 !important;
+    box-sizing: border-box !important;
+    max-width: 100% !important;
+  }
+
+  html body.workspace-active main.shell :is(input, select, textarea) {
+    min-height: 44px !important;
+    padding: 10px 12px !important;
+  }
+
+  html body.workspace-active main.shell :is(button, .btn) {
+    min-height: 42px !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  /* Cards expand naturally; no fixed heights or hidden overflow. */
+  html body.workspace-active main.shell :is(
+    .card, .panel, .metric, .stat-card, .profile-card, .shop-card,
+    .receipt-card, .content-card, .form-card, .staff-team-card,
+    .repair-card, .loan-card, details, fieldset
+  ) {
+    box-sizing: border-box !important;
+    width: 100%;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    padding: 14px !important;
+    overflow: visible !important;
+  }
+
+  html body.workspace-active main.shell :is(
+    .grid, .card-grid, .metric-grid, .headline-metrics, .owner-stats,
+    .channel-grid, .content-grid, .shop-grid, .profile-grid,
+    .form-grid, .stats-grid
+  ) {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr)) !important;
+    gap: 12px !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  html body.workspace-active main.shell :is(
+    .row, .flex-row, .form-row, .panel-heading, .card-heading, .page-heading
+  ) {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+  }
+
+  html body.workspace-active main.shell :is(
+    .table-scroll, .table-wrap, .table-responsive, .history-table-wrap,
+    .data-table-wrap, .table-overflow
+  ) {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+  }
+
+  html body.workspace-active main.shell table {
+    max-width: none !important;
+    width: 100% !important;
+  }
+
+  html body.workspace-active main.shell :is(
+    .qr-code, .qrcode, #invite-qr, #staff-invite-qr,
+    .invite-qr img, .qr-container img
+  ) {
+    width: auto !important;
+    height: auto !important;
+    max-width: 148px !important;
+    max-height: 148px !important;
+    object-fit: contain !important;
+  }
+
+  html body.workspace-active main.shell > #workspace-nav:not(.hidden) {
+    width: calc(14cm - 32px) !important;
+    max-width: calc(100vw - 48px) !important;
+    min-height: 54px !important;
+    max-height: 76px !important;
+    padding: 7px 9px !important;
+    gap: 6px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+  }
+
+  html body.workspace-active main.shell > #workspace-nav:not(.hidden) > button {
+    min-width: 0 !important;
+    min-height: 44px !important;
+    padding: 6px 5px !important;
+    font-size: 12px !important;
+    line-height: 1.2 !important;
+  }
+}
