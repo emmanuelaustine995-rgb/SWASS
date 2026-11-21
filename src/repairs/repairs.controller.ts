@@ -152,17 +152,21 @@ export class RepairsController {
     const user = this.requireShop(req);
     await this.db.ensureRepairSchema();
     const result = await this.db.pool.query(
-      `SELECT id, reference, item_name AS "itemName", item_identifier AS "itemIdentifier",
-              customer_name AS "customerName", customer_phone AS "customerPhone",
-              customer_email AS "customerEmail", customer_id AS "customerId",
-              item_condition AS "condition", problem, detected, accessories,
-              received_by_name AS "receivedByName",
-              received_date AS "receivedDate", expected_pick_date AS "expectedPickDate",
-              status, created_at AS "createdAt", updated_at AS "updatedAt"
-         FROM shop_repair_jobs
-        WHERE tenant_id=$1 AND store_id=$2
-        ORDER BY CASE WHEN status IN ('collected','cancelled') THEN 1 ELSE 0 END,
-                 expected_pick_date ASC, created_at DESC LIMIT 300`,
+      `SELECT j.id, j.reference, j.item_name AS "itemName", j.item_identifier AS "itemIdentifier",
+              j.customer_name AS "customerName", j.customer_phone AS "customerPhone",
+              j.customer_email AS "customerEmail", j.customer_id AS "customerId",
+              j.item_condition AS "condition", j.problem, j.detected, j.accessories,
+              j.received_by_name AS "receivedByName", j.received_date AS "receivedDate",
+              j.expected_pick_date AS "expectedPickDate", j.status,
+              j.repair_cost_kes AS "repairCostKes", j.payment_receipt_no AS "paymentReceiptNo",
+              j.payment_total_kes AS "paymentTotalKes", j.payment_method AS "paymentMethod",
+              j.payment_reference AS "paymentReference", pay.qr_token AS "paymentReceiptToken",
+              j.created_at AS "createdAt", j.updated_at AS "updatedAt"
+         FROM shop_repair_jobs j
+         LEFT JOIN receipts pay ON pay.id=j.payment_receipt_id
+        WHERE j.tenant_id=$1 AND j.store_id=$2
+        ORDER BY CASE WHEN j.status IN ('collected','cancelled') THEN 1 ELSE 0 END,
+                 j.expected_pick_date ASC, j.created_at DESC LIMIT 300`,
       [user.tenantId, user.storeId],
     );
     return { repairs: result.rows.map(row => ({ ...row, customerId: this.decryptCustomerId(row.customerId) })) };
