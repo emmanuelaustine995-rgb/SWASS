@@ -3,6 +3,7 @@ ALTER TABLE shop_repair_jobs ADD COLUMN IF NOT EXISTS repair_cost_kes BIGINT NOT
 ALTER TABLE shop_repair_jobs ADD COLUMN IF NOT EXISTS payment_client_uuid UUID;
 ALTER TABLE shop_repair_jobs ADD COLUMN IF NOT EXISTS payment_total_kes BIGINT;
 ALTER TABLE shop_repair_jobs ADD COLUMN IF NOT EXISTS payment_method VARCHAR(16);
+ALTER TABLE shop_repair_jobs ADD COLUMN IF NOT EXISTS payment_reference VARCHAR(24);
 ALTER TABLE shop_repair_jobs ADD COLUMN IF NOT EXISTS payment_receipt_id BIGINT REFERENCES receipts(id);
 ALTER TABLE shop_repair_jobs ADD COLUMN IF NOT EXISTS payment_receipt_no VARCHAR(80);
 ALTER TABLE shop_repair_jobs ADD COLUMN IF NOT EXISTS collected_at TIMESTAMPTZ;
