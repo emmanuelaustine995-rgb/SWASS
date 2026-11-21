@@ -403,13 +403,13 @@ html body:not(.workspace-active):not(.platform-admin-login) main.shell {
 /* FINAL AUTH BACKDROP LAYER
    Paint the coastal landscape on the root element, not on body. This avoids
    body stacking/background rules covering a negative-z body pseudo-element. */
-html {
+html:has(> body:not(.workspace-active):not(.platform-admin-login)) {
   position: relative !important;
   isolation: isolate !important;
   min-height: 100% !important;
   background: #263d55 !important;
 }
-html::before {
+html:has(> body:not(.workspace-active):not(.platform-admin-login))::before {
   content: "" !important;
   position: fixed !important;
   inset: -2% !important;
@@ -435,5 +435,5 @@ html body:not(.workspace-active):not(.platform-admin-login) {
   to { transform: scale(1.055) translate3d(.25%,.15%,0); }
 }
 @media (prefers-reduced-motion: reduce) {
-  html::before { animation: none !important; }
+  html:has(> body:not(.workspace-active):not(.platform-admin-login))::before { animation: none !important; }
 }
