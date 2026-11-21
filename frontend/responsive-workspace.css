@@ -955,3 +955,39 @@ html body.platform-admin-workspace #platform-referral-admin .platform-admin-tabs
     min-height: 38px !important;
   }
 }
+
+
+/* Desktop-only fixed-width workspace.
+   Keep the existing mobile/tablet layout and outer page background untouched.
+   On desktop the complete app frame remains centred at approximately 14 cm,
+   regardless of how wide the browser window becomes. */
+@media (min-width: 1024px) {
+  html body.workspace-active main.shell,
+  html body.workspace-active .shell {
+    left: 50% !important;
+    right: auto !important;
+    width: 14cm !important;
+    min-width: 0 !important;
+    max-width: calc(100vw - 32px) !important;
+    margin: 0 !important;
+    padding: 16px 14px 96px !important;
+    transform: translateX(-50%) !important;
+    overflow-x: hidden !important;
+  }
+
+  html body.workspace-active main.shell > :not(#workspace-nav),
+  html body.workspace-active main.shell > :not(#workspace-nav) * {
+    box-sizing: border-box !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  html body.workspace-active main.shell > #workspace-nav:not(.hidden) {
+    left: 50% !important;
+    right: auto !important;
+    width: calc(14cm - 28px) !important;
+    max-width: calc(100vw - 60px) !important;
+    min-width: 0 !important;
+    transform: translateX(-50%) !important;
+  }
+}
