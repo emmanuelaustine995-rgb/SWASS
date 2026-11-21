@@ -62,3 +62,14 @@ CREATE TABLE IF NOT EXISTS aurora_loan_activity (
 );
 CREATE INDEX IF NOT EXISTS aurora_loan_activity_loan_idx
   ON aurora_loan_activity(loan_id, created_at ASC);
+
+CREATE OR REPLACE FUNCTION aurora_prevent_loan_activity_mutation()
+RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  RAISE EXCEPTION 'AURORA loan activity is append-only';
+END;
+$$;
+DROP TRIGGER IF EXISTS aurora_loan_activity_append_only ON aurora_loan_activity;
+CREATE TRIGGER aurora_loan_activity_append_only
+  BEFORE UPDATE OR DELETE ON aurora_loan_activity
+  FOR EACH ROW EXECUTE FUNCTION aurora_prevent_loan_activity_mutation();
