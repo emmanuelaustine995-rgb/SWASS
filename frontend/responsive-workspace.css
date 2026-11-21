@@ -822,3 +822,36 @@ html body.platform-admin-workspace #platform-referral-admin .platform-admin-tabs
   top: 0;
   z-index: 5;
 }
+
+
+/* Desktop workspace is intentionally a fixed quarter-screen column.
+   Keep the app frame at exactly 25vw on PC; inner pages cannot widen it.
+   Tablet and phone layouts remain governed by the existing breakpoints. */
+@media (min-width: 761px) {
+  html body.workspace-active main.shell,
+  html body.workspace-active .shell {
+    left: 50% !important;
+    right: auto !important;
+    width: 25vw !important;
+    min-width: 25vw !important;
+    max-width: 25vw !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    transform: translateX(-50%) !important;
+    overflow-x: hidden !important;
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+
+  html body.workspace-active main.shell > :not(#workspace-nav),
+  html body.workspace-active main.shell > :not(#workspace-nav) * {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  html body.workspace-active main.shell > #workspace-nav:not(.hidden) {
+    width: min(calc(25vw - 20px), 860px) !important;
+    max-width: calc(25vw - 20px) !important;
+  }
+}
