@@ -192,3 +192,55 @@ body.registration-open .login-card{
   50%  { transform: translate3d(0.5%, 1.2%, 0); background-position: 55% 52%; }
   100% { transform: translate3d(2%, 0, 0); background-position: 100% 48%; }
 }
+
+
+/* Final layout guard: the desktop authentication workspace is a centred
+   14 cm column. Do not use a flex row here: legacy auth children can otherwise
+   push the login card or welcome copy sideways. Phone layout remains untouched. */
+@media (min-width: 1024px) {
+  html body:not(.workspace-active):not(.platform-admin-login) main.shell {
+    display: block !important;
+    box-sizing: border-box !important;
+    width: 14cm !important;
+    min-width: 0 !important;
+    max-width: calc(100vw - 32px) !important;
+    margin: 0 auto !important;
+    padding: 18px 14px 28px !important;
+    transform: none !important;
+  }
+  html body:not(.workspace-active):not(.platform-admin-login) #login-view {
+    display: flex !important;
+    box-sizing: border-box !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: calc(100vh - 104px) !important;
+    margin: 0 auto !important;
+    padding: 16px 0 !important;
+  }
+  html body:not(.workspace-active):not(.platform-admin-login) #login-view > .login-card {
+    display: block !important;
+    flex: 0 1 auto !important;
+    width: min(100%, 470px) !important;
+    max-width: 470px !important;
+    margin: 0 auto !important;
+  }
+  html body:not(.workspace-active):not(.platform-admin-login) #login-view > .aurora-auth-welcome {
+    display: none !important;
+  }
+}
+
+/* Goods on Repair is a real Shop section, not a hidden disclosure left
+   behind by legacy card styling. The tab controller owns its visibility. */
+body.workspace-active #shop-home #shop-goods-on-repair-card:not(.hidden):not([hidden]) {
+  display: block !important;
+  width: 100% !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+body.workspace-active #shop-home #shop-goods-on-repair-card.hidden,
+body.workspace-active #shop-home #shop-goods-on-repair-card[hidden] {
+  display: none !important;
+}
