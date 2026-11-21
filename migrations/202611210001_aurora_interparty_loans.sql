@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS aurora_loans (
   condition_out TEXT NOT NULL,
   expected_return_date DATE NOT NULL,
   selling_allowed BOOLEAN NOT NULL DEFAULT false,
+  lender_authorised BOOLEAN NOT NULL DEFAULT false,
   status TEXT NOT NULL DEFAULT 'offered'
     CHECK (status IN ('offered','active','sale_pending','return_pending','sold','returned','declined','cancelled')),
   accepted_at TIMESTAMPTZ NULL,
