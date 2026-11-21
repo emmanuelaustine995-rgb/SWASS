@@ -50,15 +50,7 @@ body:not(.workspace-active):not(.platform-admin-login) .aurora-tagline {
   color: #294d7b !important;
 }
 @media (min-width:1024px) {
-  /* Desktop login: use a real Icelandic black-sand / glacial-coast photograph. */
-  body:not(.workspace-active):not(.platform-admin-login)::before {
-    background-image:
-      linear-gradient(180deg, rgba(210,222,232,.10) 0%, rgba(75,91,105,.04) 48%, rgba(4,12,19,.18) 100%),
-      url("https://bulgarianonthego.blog/wp-content/uploads/2022/05/iceland-black-sand-beach-3-min-1440x810.jpg");
-    background-size: cover, cover;
-    background-position: center center, center center;
-    background-repeat: no-repeat;
-  }
+  /* Keep the requested centred desktop login workspace; background photo is shared above. */
   body:not(.workspace-active):not(.platform-admin-login) main.shell {
     width: 14cm !important;
     max-width: calc(100vw - 32px) !important;
