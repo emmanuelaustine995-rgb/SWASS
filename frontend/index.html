@@ -212,21 +212,7 @@
         </form>
         <section id="shop-product-results" class="shop-product-results hidden" aria-live="polite"></section>
       </details>
-      <details class="loan-items-card">
-        <summary><strong>Loan an Item</strong><small>Record goods issued temporarily and track returns</small></summary>
-        <div class="loan-card-body">
-          <form id="loan-item-form" class="loan-item-form">
-            <div class="form-two"><label>Item name<input id="loan-item-name" required maxlength="160"></label><label>Borrower / customer name<input id="loan-borrower-name" required maxlength="160"></label></div>
-            <div class="form-two"><label>Phone number<input id="loan-phone" required inputmode="tel"></label><label>ID / Passport number<input id="loan-id" required maxlength="50"></label></div>
-            <label>Borrower email<input id="loan-email" type="email" required></label>
-            <div class="form-two"><label>IMEI number (optional)<input id="loan-imei" maxlength="50"></label><label>Serial number (optional)<input id="loan-serial" maxlength="100"></label></div>
-            <label>Date out / loan date<input id="loan-date" type="date" required></label>
-            <label>Condition out<textarea id="loan-condition-out" rows="2" required maxlength="1000"></textarea></label>
-            <div class="form-two"><label>Deposit / value amount (KSh)<input id="loan-amount" type="number" min="0" step="1" required value="0"></label><label>Processed by<input id="loan-processed-by" maxlength="160" placeholder="Staff name"></label></div>
-            <button class="btn btn-primary" id="loan-issue-button" type="submit">LOAN</button><p id="loan-message" role="status" class="muted small"></p>
-          </form>
-        </div>
-      </details>
+      
       <details id="shop-goods-on-repair-card" class="shop-goods-on-repair-card hidden" aria-label="Goods on Repair">
         <summary class="repair-card-summary"><span><strong>Goods on Repair</strong><small>Record items received for repair and track collection dates.</small></span><span class="repair-gold-mark" aria-hidden="true">⚒</span></summary>
         <div class="repair-card-content">
