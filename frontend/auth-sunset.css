@@ -4,17 +4,24 @@ html {
   min-height: 100%;
   background: #182b3d;
 }
-html:has(> body:not(.workspace-active):not(.platform-admin-login)) {
+body:not(.workspace-active):not(.platform-admin-login) {
+  position: relative !important;
+  isolation: isolate !important;
+  min-height: 100vh !important;
+  background: transparent !important;
+  background-color: transparent !important;
+}
+body:not(.workspace-active):not(.platform-admin-login) {
   position: relative !important;
   isolation: isolate !important;
   min-height: 100% !important;
   background: #263d52 !important;
 }
-html:has(> body:not(.workspace-active):not(.platform-admin-login))::before {
+body:not(.workspace-active):not(.platform-admin-login)::before {
   content: "";
   position: fixed;
   inset: 0;
-  z-index: 0;
+  z-index: -1;
   pointer-events: none;
   background-color: #71869a;
   background-image:
@@ -26,22 +33,21 @@ html:has(> body:not(.workspace-active):not(.platform-admin-login))::before {
   transform: scale(1.015);
   animation: aurora-coast-slow-drift 80s ease-in-out infinite alternate;
 }
-html:has(> body:not(.workspace-active):not(.platform-admin-login)) > body {
+body:not(.workspace-active):not(.platform-admin-login) {
   position: relative !important;
-  z-index: 1 !important;
   min-height: 100vh !important;
   background: transparent !important;
   background-color: transparent !important;
 }
-html:has(> body:not(.workspace-active):not(.platform-admin-login)) .topbar {
+body:not(.workspace-active):not(.platform-admin-login) .topbar {
   background: rgba(226,236,246,.2) !important;
   border-bottom: 1px solid rgba(255,255,255,.25) !important;
   backdrop-filter: blur(14px);
 }
-html:has(> body:not(.workspace-active):not(.platform-admin-login)) .topbar .brand {
+body:not(.workspace-active):not(.platform-admin-login) .topbar .brand {
   color: #102e4d !important;
 }
-html:has(> body:not(.workspace-active):not(.platform-admin-login)) .login-card {
+body:not(.workspace-active):not(.platform-admin-login) .login-card {
   width: min(100%,416px) !important;
   max-width: 416px !important;
   border: 1px solid rgba(255,255,255,.9) !important;
@@ -50,16 +56,16 @@ html:has(> body:not(.workspace-active):not(.platform-admin-login)) .login-card {
   box-shadow: 0 24px 70px rgba(5,22,42,.3) !important;
   backdrop-filter: blur(16px);
 }
-html:has(> body:not(.workspace-active):not(.platform-admin-login)) .aurora-tagline {
+body:not(.workspace-active):not(.platform-admin-login) .aurora-tagline {
   color: #294d7b !important;
 }
 @media (min-width:1024px) {
-  html:has(> body:not(.workspace-active):not(.platform-admin-login)) main.shell {
+  body:not(.workspace-active):not(.platform-admin-login) main.shell {
     width: 14cm !important;
     max-width: calc(100vw - 32px) !important;
     margin: 0 auto !important;
   }
-  html:has(> body:not(.workspace-active):not(.platform-admin-login)) #login-view {
+  body:not(.workspace-active):not(.platform-admin-login) #login-view {
     min-height: calc(100svh - 68px) !important;
     padding: 20px 0 !important;
   }
@@ -69,12 +75,12 @@ html:has(> body:not(.workspace-active):not(.platform-admin-login)) .aurora-tagli
   to { transform: scale(1.045) translate3d(.2%,.12%,0); }
 }
 @media (max-width:600px) {
-  html:has(> body:not(.workspace-active):not(.platform-admin-login))::before {
+  body:not(.workspace-active):not(.platform-admin-login)::before {
     background-position: center center, 55% center;
   }
 }
 @media (prefers-reduced-motion:reduce) {
-  html:has(> body:not(.workspace-active):not(.platform-admin-login))::before {
+  body:not(.workspace-active):not(.platform-admin-login)::before {
     animation: none !important;
   }
 }
