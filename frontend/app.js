@@ -419,6 +419,18 @@
     }
   });
 
+  async function loadCustomerRepairs(){
+    const target=$('customer-repairs-list');
+    if(!target||state.role!=='customer')return;
+    target.innerHTML='<p class="muted small">Loading your repair records…</p>';
+    try{
+      const data=await request('/api/v1/repairs/mine');
+      const labels={received:'Received',diagnosing:'Under inspection',in_repair:'Repair in progress',ready:'Ready for collection',collected:'Collected',cancelled:'Cancelled'};
+      const rows=data.repairs||[];
+      target.innerHTML=rows.length?rows.map(x=>'<article class="customer-repair-row"><div><strong>'+escapeHtml(x.itemName)+'</strong><small>Reference: '+escapeHtml(x.reference||'—')+' · '+escapeHtml(x.itemIdentifier||'No serial recorded')+'</small><small>Reported issue: '+escapeHtml(x.problem||'—')+'</small><small>Expected collection: '+escapeHtml(x.expectedPickDate?new Date(x.expectedPickDate).toLocaleDateString():'To be confirmed')+'</small></div><span class="repair-status repair-status-'+escapeHtml(x.status)+'">'+escapeHtml(labels[x.status]||x.status)+'</span></article>').join(''):'<p class="muted small">No repairs are linked to this phone number yet. Ask the shop to record your correct customer phone number when receiving your item.</p>';
+    }catch(error){target.innerHTML='<p class="error">'+escapeHtml(error.message||'Your repair records could not be loaded.')+'</p>';}
+  }
+
   async function loadCustomerReferralSummary(){
     const message=$('customer-home-message'),qr=$('customer-referral-qr');
     if(!message||state.role!=='customer')return;
@@ -599,6 +611,7 @@
         dashboardBusinessCard?.classList.add('hidden');customerHome?.classList.remove('hidden');
         if($('customer-home-name'))$('customer-home-name').textContent=state.userName||'Welcome';
         void loadCustomerReferralSummary();
+        void loadCustomerRepairs();
       }else if(state.role==='owner')dashboardBusinessCard?.classList.remove('hidden');
       else dashboardBusinessCard?.classList.add('hidden');
       if(state.role==='super_admin'){
@@ -2457,7 +2470,7 @@
       const data=await request('/api/v1/repairs');
       const rows=data.repairs||[];
       const statusLabel={received:'Received',diagnosing:'Diagnosing',in_repair:'In repair',ready:'Ready for pick-up',collected:'Collected',cancelled:'Cancelled'};
-      target.innerHTML=rows.length?rows.map(x=>'<article class="repair-record-row"><div class="repair-record-main"><strong>'+escapeHtml(x.itemName)+'</strong><small>Item ID: '+escapeHtml(x.itemIdentifier||'—')+' · Customer: '+escapeHtml(x.customerName)+' · ID: '+escapeHtml(x.customerId)+'</small><small>Condition: '+escapeHtml(x.condition)+'</small><small>Problem: '+escapeHtml(x.problem)+'</small>'+(x.detected?'<small>Detected: '+escapeHtml(x.detected)+'</small>':'')+'<small>Received: '+escapeHtml(x.receivedDate?new Date(x.receivedDate).toLocaleDateString():'—')+' · Expected pick-up: '+escapeHtml(x.expectedPickDate?new Date(x.expectedPickDate).toLocaleDateString():'—')+'</small></div><div class="repair-record-tools"><span class="repair-status repair-status-'+escapeHtml(x.status)+'">'+escapeHtml(statusLabel[x.status]||x.status)+'</span><select aria-label="Update repair status" data-repair-status-id="'+Number(x.id)+'" data-previous-status="'+escapeHtml(x.status)+'"><option value="received" '+(x.status==='received'?'selected':'')+'>Received</option><option value="diagnosing" '+(x.status==='diagnosing'?'selected':'')+'>Diagnosing</option><option value="in_repair" '+(x.status==='in_repair'?'selected':'')+'>In repair</option><option value="ready" '+(x.status==='ready'?'selected':'')+'>Ready for pick-up</option><option value="collected" '+(x.status==='collected'?'selected':'')+'>Collected</option><option value="cancelled" '+(x.status==='cancelled'?'selected':'')+'>Cancelled</option></select><textarea rows="2" maxlength="2000" aria-label="Technician diagnosis" data-repair-detected-id="'+Number(x.id)+'" placeholder="Technician diagnosis / detected problem">'+escapeHtml(x.detected||'')+'</textarea><button type="button" class="btn btn-light btn-small" data-repair-detected-save="'+Number(x.id)+'">Save diagnosis</button></div></article>').join(''):'<p class="muted small">No goods have been recorded for repair yet.</p>';
+      target.innerHTML=rows.length?rows.map(x=>'<article class="repair-record-row"><div class="repair-record-main"><strong>'+escapeHtml(x.itemName)+'</strong><small>Item ID: '+escapeHtml(x.itemIdentifier||'—')+' · Customer: '+escapeHtml(x.customerName)+' · Phone: '+escapeHtml(x.customerPhone||'—')+' · Ref: '+escapeHtml(x.reference||'—')+'</small><small>Condition: '+escapeHtml(x.condition)+'</small>'+(x.accessories?'<small>Accessories: '+escapeHtml(x.accessories)+'</small>':'')+'<small>Logged by: '+escapeHtml(x.receivedByName||'Shop team')+'</small><small>Problem: '+escapeHtml(x.problem)+'</small>'+(x.detected?'<small>Detected: '+escapeHtml(x.detected)+'</small>':'')+'<small>Received: '+escapeHtml(x.receivedDate?new Date(x.receivedDate).toLocaleDateString():'—')+' · Expected pick-up: '+escapeHtml(x.expectedPickDate?new Date(x.expectedPickDate).toLocaleDateString():'—')+'</small></div><div class="repair-record-tools"><span class="repair-status repair-status-'+escapeHtml(x.status)+'">'+escapeHtml(statusLabel[x.status]||x.status)+'</span><select aria-label="Update repair status" data-repair-status-id="'+Number(x.id)+'" data-previous-status="'+escapeHtml(x.status)+'"><option value="received" '+(x.status==='received'?'selected':'')+'>Received</option><option value="diagnosing" '+(x.status==='diagnosing'?'selected':'')+'>Diagnosing</option><option value="in_repair" '+(x.status==='in_repair'?'selected':'')+'>In repair</option><option value="ready" '+(x.status==='ready'?'selected':'')+'>Ready for pick-up</option><option value="collected" '+(x.status==='collected'?'selected':'')+'>Collected</option><option value="cancelled" '+(x.status==='cancelled'?'selected':'')+'>Cancelled</option></select><textarea rows="2" maxlength="2000" aria-label="Technician diagnosis" data-repair-detected-id="'+Number(x.id)+'" placeholder="Technician diagnosis / detected problem">'+escapeHtml(x.detected||'')+'</textarea><button type="button" class="btn btn-light btn-small" data-repair-detected-save="'+Number(x.id)+'">Save diagnosis</button></div></article>').join(''):'<p class="muted small">No goods have been recorded for repair yet.</p>';
     }catch(error){target.innerHTML='<p class="error">'+escapeHtml(error.message||'Could not load the repair register.')+'</p>';}
   }
   const repairForm=$('shop-repair-form');
@@ -2470,13 +2483,15 @@
     if(expectedPickDate<receivedDate){message.textContent='Expected pick-up date cannot be earlier than the date received.';return;}
     button.disabled=true;message.textContent='Saving repair record…';
     try{
-      await request('/api/v1/repairs',{method:'POST',body:JSON.stringify({
+      const saved=await request('/api/v1/repairs',{method:'POST',body:JSON.stringify({
         itemName:$('repair-item-name').value.trim(),itemIdentifier:$('repair-item-identifier').value.trim(),
-        customerName:$('repair-customer-name').value.trim(),customerId:$('repair-customer-id').value.trim(),
-        condition:$('repair-condition').value.trim(),problem:$('repair-problem').value.trim(),
+        customerName:$('repair-customer-name').value.trim(),customerId:$('repair-customer-id').value.trim(),customerPhone:$('repair-customer-phone').value.trim(),customerEmail:$('repair-customer-email').value.trim(),
+        condition:$('repair-condition').value.trim(),accessories:$('repair-accessories').value.trim(),problem:$('repair-problem').value.trim(),
         detected:$('repair-detected').value.trim(),receivedDate,expectedPickDate
       })});
-      message.textContent='Goods on Repair record saved successfully.';
+      if(saved.pdfBase64){const link=document.createElement('a');link.href='data:application/pdf;base64,'+saved.pdfBase64;link.download=(saved.repair?.reference||'AURORA-repair-intake')+'.pdf';link.click();}
+      const delivery=saved.ownerDelivery||{};const delivered=(x)=>x?.sent?'sent':(x?.reason||'not configured');
+      message.textContent='Repair '+(saved.repair?.reference||'record')+' saved. Intake PDF downloaded. Owner alerts — SMS: '+delivered(delivery.sms)+'; email: '+delivered(delivery.email)+'; WhatsApp: '+delivered(delivery.whatsapp)+'.';
       repairForm.reset();$('repair-received-date').value=repairTodayValue;$('repair-pick-date').min=repairTodayValue;
       await loadShopRepairs();
     }catch(error){message.textContent=error.message||'Could not save the repair record.';}
@@ -2494,7 +2509,7 @@
     const select=e.target.closest('[data-repair-status-id]');if(!select)return;
     const id=select.dataset.repairStatusId,previous=select.dataset.previousStatus||'received';
     select.disabled=true;
-    try{await request('/api/v1/repairs/'+encodeURIComponent(id),{method:'PATCH',body:JSON.stringify({status:select.value})});select.dataset.previousStatus=select.value;await loadShopRepairs();}
+    try{const result=await request('/api/v1/repairs/'+encodeURIComponent(id),{method:'PATCH',body:JSON.stringify({status:select.value})});select.dataset.previousStatus=select.value;if(select.value==='ready'){const d=result.ownerDelivery||{},sent=x=>x?.sent?'sent':(x?.reason||'not configured');showNotice('Repair marked ready. Owner email: '+sent(d.email)+'; owner WhatsApp: '+sent(d.whatsapp)+'. Customer email: '+sent(result.customerDelivery?.email)+'; customer WhatsApp: '+sent(result.customerDelivery?.whatsapp)+'.');}await loadShopRepairs();}
     catch(error){select.value=previous;showNotice(error.message||'Could not update repair status.',true);}
     finally{select.disabled=false;}
   });
