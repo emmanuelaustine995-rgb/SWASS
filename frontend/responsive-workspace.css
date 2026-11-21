@@ -1598,3 +1598,13 @@ html body.platform-admin-workspace #platform-referral-admin .platform-admin-tabs
   .repair-stage-icon { flex-basis:30px !important; width:30px !important; height:30px !important; }
   .repair-stage-tab strong { font-size:11px !important; }
 }
+
+/* Repair pricing, collection and customer receipt controls. */
+.repair-inline-field { display:grid !important; gap:5px !important; color:#475569 !important; font-size:12px !important; font-weight:650 !important; }
+.repair-inline-field input,.repair-inline-field select { width:100% !important; min-width:0 !important; padding:9px 10px !important; border:1px solid #d7e1eb !important; border-radius:9px !important; background:#fff !important; color:#172b45 !important; }
+.repair-payment-hint { color:#64748b !important; font-size:11px !important; line-height:1.4 !important; }
+.repair-payment-receipt-no { color:#9a5a12 !important; overflow-wrap:anywhere !important; }
+.repair-subheading { margin:14px 0 7px !important; color:#9a5a12 !important; font-size:13px !important; }
+.customer-repair-payment { display:block !important; color:#087443 !important; font-weight:700 !important; }
+.repair-record-row--issue-ready { border-left-color:#ea8a21 !important; }
+.repair-mpesa-reference[hidden] { display:none !important; }
