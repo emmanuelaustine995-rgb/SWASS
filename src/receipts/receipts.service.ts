@@ -115,7 +115,7 @@ export class ReceiptsService {
       recoveryUrl:appBase+'/recover.html',
       businessName:r.business_name || 'AURORA business',businessPhone:r.business_phone,businessEmail:r.business_email,
       storeName:r.store_name,storeLocation:r.store_location,logoData:r.logo_data,
-      receiptHeader:r.receipt_header,receiptFooter:r.receipt_footer,
+      receiptHeader:r.receipt_header,receiptFooter:String(r.receipt_no||'').startsWith('AUR-RP-') ? 'Thank you for trusting ' + (r.business_name || 'our shop') + '. Welcome back again.' : r.receipt_footer,
       customerName:r.customer_name,customerPhone:r.customer_phone,customerEmail:r.customer_email,
       cashierName:r.cashier_name || 'Staff',cashierPhone:r.cashier_phone,
       paymentMethod:r.payment_method,subtotalKes:Number(r.subtotal_kes),discountKes:Number(r.discount_kes),
