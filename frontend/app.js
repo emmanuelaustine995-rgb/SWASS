@@ -2029,6 +2029,49 @@
     finally{btn.disabled=false;btn.textContent='＋ Add Product';}
   });
 
+  // Shop Products dashboard cards: reuse the existing directory and inventory APIs.
+  let shopInventoryLowOnly = false;
+  async function loadShopInventory(lowOnly=shopInventoryLowOnly){
+    shopInventoryLowOnly=!!lowOnly;
+    const list=$('shop-stock-list'),count=$('shop-stock-count'),title=$('shop-stock-title');
+    if(!list)return;
+    if(title)title.textContent=shopInventoryLowOnly?'Low Stock Alerts':'My Products & Stock';
+    if(count)count.textContent='Loading your shop inventory…';
+    list.innerHTML='<p class="empty">Loading products…</p>';
+    try{
+      const data=await request('/api/v1/products'+(shopInventoryLowOnly?'?lowStock=true':''));
+      const products=data.products||[];
+      if(count)count.textContent=products.length+' '+(products.length===1?'product':'products')+(shopInventoryLowOnly?' needing attention':' registered in this shop');
+      if(!products.length){list.innerHTML='<p class="empty">'+(shopInventoryLowOnly?'No low-stock products. Your current stock levels look good.':'No products registered yet. Use Register New Product to add your first item.')+'</p>';return;}
+      list.innerHTML=products.map(p=>{
+        const qty=Number(p.stockQty)||0,level=Number(p.reorderLevel)||0;
+        const low=qty<=level,stockClass=qty===0?'is-out':low?'is-low':'is-healthy';
+        return '<article class="shop-stock-item '+stockClass+'"><div class="shop-stock-item-main"><strong>'+escapeHtml(p.name)+'</strong><small>'+(p.sku?'SKU: '+escapeHtml(p.sku)+' · ':'')+'Selling price: '+money(p.priceKes)+'</small></div><span class="shop-stock-quantity">'+qty+' <small>in stock</small></span><div class="shop-stock-adjust"><label>Stock change<input type="number" step="1" min="-1000000" max="1000000" inputmode="numeric" data-stock-change="'+escapeHtml(p.id)+'" placeholder="+ / − quantity"></label><button type="button" class="btn btn-light btn-small" data-stock-save="'+escapeHtml(p.id)+'">Update stock</button></div><small class="shop-stock-status">'+(qty===0?'Out of stock':low?'Restock recommended':'Stock available')+'</small></article>';
+      }).join('');
+    }catch(err){if(count)count.textContent='Inventory unavailable';list.innerHTML='<p class="empty">'+escapeHtml(err.message||'Could not load your shop inventory.')+'</p>';}
+  }
+  document.querySelectorAll('[data-product-action]').forEach(card=>card.addEventListener('click',()=>{
+    const action=card.dataset.productAction;
+    const add=$('shop-register-product-card'),market=$('shop-find-products-card'),stock=$('shop-stock-manager-card');
+    [add,market,stock].forEach(panel=>{if(panel)panel.open=false;});
+    if(action==='add'&&add){add.open=true;add.scrollIntoView({behavior:'smooth',block:'start'});$('shop-product-name')?.focus({preventScroll:true});}
+    if(action==='market'&&market){market.open=true;market.scrollIntoView({behavior:'smooth',block:'start'});$('shop-product-search')?.focus({preventScroll:true});}
+    if((action==='inventory'||action==='low')&&stock){stock.open=true;void loadShopInventory(action==='low');stock.scrollIntoView({behavior:'smooth',block:'start'});}
+  }));
+  $('shop-stock-refresh')?.addEventListener('click',()=>void loadShopInventory());
+  $('shop-stock-list')?.addEventListener('click',async e=>{
+    const button=e.target.closest('[data-stock-save]');if(!button)return;
+    const id=button.dataset.stockSave,input=$('shop-stock-list').querySelector('[data-stock-change="'+CSS.escape(id)+'"]');
+    const changeQty=Number(input?.value);
+    if(!Number.isSafeInteger(changeQty)||changeQty===0||Math.abs(changeQty)>1000000){$('shop-stock-message').textContent='Enter a non-zero whole number, for example 5 to add stock or -2 to remove stock.';return;}
+    button.disabled=true;button.textContent='Saving…';
+    try{
+      await request('/api/v1/products/'+encodeURIComponent(id)+'/stock-adjustments',{method:'POST',body:JSON.stringify({changeQty,note:'Updated from Shop Products inventory'})});
+      $('shop-stock-message').textContent='Stock updated successfully.';
+      await loadShopInventory();
+    }catch(err){$('shop-stock-message').textContent=err.message||'Could not update stock.';button.disabled=false;button.textContent='Update stock';}
+  });
+
   // Second-hand product seller declaration workspace.
   const secondhandPadState = { 'sh-signature': false, 'sh-thumbprint': false };
   function setupSecondhandPad(id) {
@@ -2596,6 +2639,7 @@
     const visibility=[
       ['#shop-register-product-card','products','owner'],
       ['#shop-find-products-card','products',null],
+      ['#shop-stock-manager-card','products',null],
       ['#shop-home > .loan-items-card','products','owner'],
       ['#shop-goods-on-repair-card','repairs',null],
       ['#shop-home > .shop-business-details-card','profile',null],
