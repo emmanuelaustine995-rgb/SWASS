@@ -2652,3 +2652,7 @@ body.platform-admin-login:not(.workspace-active) #login-view .login-card{max-wid
 .platform-admin-return a{color:#4a168e;font-weight:700;text-decoration:none}
 
 body.platform-admin-login:not(.workspace-active) .aurora-auth-welcome{display:none!important}
+
+/* Customer repair tracking */
+.customer-repairs-card{margin:14px 0;padding:18px;border:1px solid #d9e4ef;border-radius:16px;background:#fff;box-shadow:0 8px 24px rgba(24,55,86,.06)}
+.customer-repairs-card h2{margin:2px 0 5px;color:#183b5c}.customer-repair-row{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:12px 0;border-top:1px solid #e7edf3}.customer-repair-row>div{display:grid;gap:5px;min-width:0}.customer-repair-row strong{color:#203247}.customer-repair-row small{font-size:12px;line-height:1.45;color:#64748b;overflow-wrap:anywhere}.customer-repair-row .repair-status{flex:0 0 auto}@media(max-width:560px){.customer-repair-row{flex-direction:column;align-items:flex-start}}
