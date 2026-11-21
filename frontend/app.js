@@ -2646,6 +2646,8 @@
       ['#shop-home > #owner-staff-area','profile','owner'],
       ['#shop-home > .profile-account-summary','profile',null]
     ];
+    // Product-only introduction and action cards are a separate page panel.
+    // Hiding these with the other panels prevents them remaining above Repairs/Profile.
     visibility.forEach(([selector,ownerTab,requiredRole])=>{
       const el=shop?.querySelector(selector);
       if(!el)return;
@@ -2657,6 +2659,14 @@
       el.style.setProperty('display',visible?'block':'none','important');
       el.setAttribute('aria-hidden',String(!visible));
     });
+    // Close inactive disclosures so returning to a section starts cleanly.
+    if(tab!=='products'){
+      ['shop-register-product-card','shop-find-products-card','shop-stock-manager-card'].forEach(id=>{const el=$(id);if(el)el.open=false;});
+    }
+    if(tab!=='repairs'){
+      const repairs=shop?.querySelector('#shop-goods-on-repair-card');
+      if(repairs)repairs.open=false;
+    }
     const businessCard=shop?.querySelector(':scope > .shop-business-details-card');
     // Keep Shop Details collapsed until the user taps its card.
     shop?.querySelectorAll(':scope > [data-shop-tab-panel]').forEach(el=>{
