@@ -398,3 +398,42 @@ html body:not(.workspace-active):not(.platform-admin-login) main.shell {
   html body:not(.workspace-active):not(.platform-admin-login)::before,
   html body:not(.workspace-active):not(.platform-admin-login)::after { animation: none !important; }
 }
+
+
+/* FINAL AUTH BACKDROP LAYER
+   Paint the coastal landscape on the root element, not on body. This avoids
+   body stacking/background rules covering a negative-z body pseudo-element. */
+html {
+  position: relative !important;
+  isolation: isolate !important;
+  min-height: 100% !important;
+  background: #263d55 !important;
+}
+html::before {
+  content: "" !important;
+  position: fixed !important;
+  inset: -2% !important;
+  z-index: -1 !important;
+  display: block !important;
+  pointer-events: none !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg' viewBox%3D'0 0 1600 1000'%3E%3Cdefs%3E%3ClinearGradient id%3D'sky' x2%3D'0' y2%3D'1'%3E%3Cstop stop-color%3D'%23cbd8e8'/%3E%3Cstop offset%3D'.52' stop-color%3D'%2394a9bf'/%3E%3Cstop offset%3D'1' stop-color%3D'%234d657c'/%3E%3C/linearGradient%3E%3ClinearGradient id%3D'sea' x2%3D'0' y2%3D'1'%3E%3Cstop stop-color%3D'%236d8da5'/%3E%3Cstop offset%3D'1' stop-color%3D'%231a3449'/%3E%3C/linearGradient%3E%3ClinearGradient id%3D'beach' x2%3D'0' y2%3D'1'%3E%3Cstop stop-color%3D'%233a4854'/%3E%3Cstop offset%3D'1' stop-color%3D'%230b1721'/%3E%3C/linearGradient%3E%3Cfilter id%3D'f'%3E%3CfeGaussianBlur stdDeviation%3D'28'/%3E%3C/filter%3E%3C/defs%3E%3Crect width%3D'1600' height%3D'1000' fill%3D'url(%23sky)'/%3E%3Cg fill%3D'%23eef3f7' opacity%3D'.55' filter%3D'url(%23f)'%3E%3Cellipse cx%3D'300' cy%3D'150' rx%3D'390' ry%3D'95'/%3E%3Cellipse cx%3D'920' cy%3D'180' rx%3D'500' ry%3D'110'/%3E%3Cellipse cx%3D'1450' cy%3D'270' rx%3D'300' ry%3D'95'/%3E%3C/g%3E%3Cpath d%3D'M0 525L125 430 205 455 315 290 405 405 520 335 635 445 760 260 875 415 1010 305 1120 425 1240 275 1365 410 1480 330 1600 430V670H0Z' fill%3D'%23354c61'/%3E%3Cpath d%3D'M0 525L125 430 205 455 315 290 405 405 520 335 635 445 760 260 875 415 1010 305 1120 425 1240 275 1365 410 1480 330 1600 430L1600 470 1480 380 1365 460 1240 330 1120 480 1010 360 875 455 760 315 635 485 520 385 405 445 315 345 205 490 125 465 0 565Z' fill%3D'%23e8eef4' opacity%3D'.92'/%3E%3Cpath d%3D'M0 565Q400 530 800 570T1600 550V760H0Z' fill%3D'url(%23sea)'/%3E%3Cpath d%3D'M0 620Q300 600 600 620T1200 615T1600 625' fill%3D'none' stroke%3D'%23d5e1e9' stroke-width%3D'8' opacity%3D'.3'/%3E%3Cpath d%3D'M0 700Q400 665 800 710T1600 690V1000H0Z' fill%3D'url(%23beach)'/%3E%3Cpath d%3D'M0 780Q420 735 820 785T1600 770' fill%3D'none' stroke%3D'%2392a0aa' stroke-width%3D'5' opacity%3D'.2'/%3E%3Cpath d%3D'M55 710L120 615 240 635 315 735 250 790 115 780Z' fill%3D'%23d9e9f3' stroke%3D'%23f4f9fc' stroke-width%3D'7' opacity%3D'.95'/%3E%3Cg fill%3D'%23081420' opacity%3D'.9'%3E%3Cellipse cx%3D'80' cy%3D'865' rx%3D'48' ry%3D'19'/%3E%3Cellipse cx%3D'230' cy%3D'920' rx%3D'42' ry%3D'17'/%3E%3Cellipse cx%3D'430' cy%3D'860' rx%3D'34' ry%3D'14'/%3E%3Cellipse cx%3D'660' cy%3D'950' rx%3D'52' ry%3D'20'/%3E%3Cellipse cx%3D'930' cy%3D'875' rx%3D'42' ry%3D'17'/%3E%3Cellipse cx%3D'1190' cy%3D'930' rx%3D'54' ry%3D'20'/%3E%3Cellipse cx%3D'1480' cy%3D'860' rx%3D'43' ry%3D'17'/%3E%3C/g%3E%3Cpath d%3D'M0 520Q350 490 700 525T1600 510' fill%3D'none' stroke%3D'%23f1f5f8' stroke-width%3D'65' opacity%3D'.22' filter%3D'url(%23f)'/%3E%3C/svg%3E") !important;
+  background-size: cover !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+  transform: scale(1.02);
+  animation: aurora-coastal-root-drift 72s ease-in-out infinite alternate;
+}
+html body:not(.workspace-active):not(.platform-admin-login) {
+  position: relative !important;
+  z-index: 0 !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  min-height: 100vh !important;
+}
+@keyframes aurora-coastal-root-drift {
+  from { transform: scale(1.02) translate3d(-.25%,0,0); }
+  to { transform: scale(1.055) translate3d(.25%,.15%,0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  html::before { animation: none !important; }
+}
