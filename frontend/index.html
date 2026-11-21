@@ -192,8 +192,15 @@
     <nav id="workspace-nav" class="bottom-nav hidden" aria-label="Main navigation"><button type="button" data-workspace="dashboard" class="nav-dashboard"><span class="nav-icon" aria-hidden="true">⌂</span><span>Home</span></button><button type="button" data-workspace="receipts" class="receipt-nav"><span class="nav-icon" aria-hidden="true">▤</span><span>Receipt</span></button><button type="button" data-workspace="shop" class="nav-shop"><span class="nav-icon" aria-hidden="true">◇</span><span>Shop</span></button><button type="button" data-workspace="lost-goods" class="nav-lost-goods"><span class="nav-icon flagged-alarm-icon" aria-hidden="true">🚨</span><span>Flagged Items</span></button><button type="button" data-workspace="loans" class="nav-loans"><span class="nav-icon" aria-hidden="true">⇄</span><span>Loans</span></button></nav>
     <section id="shop-home" class="shop-home hidden" aria-label="Shop">
       <nav class="shop-section-tabs" aria-label="Shop sections"><button type="button" class="active" data-shop-tab="products">Products</button><button type="button" data-shop-tab="repairs">Goods on Repair</button><button type="button" data-shop-tab="profile">Profile</button></nav>
+      <header class="shop-products-intro"><span class="shop-products-kicker">SHOP CATALOGUE</span><h2>Products</h2><p>Register your goods, keep stock up to date and help customers discover your shop across AURORA.</p></header>
+      <nav class="shop-product-action-grid" aria-label="Product actions">
+        <button type="button" class="shop-product-action shop-product-action--add" data-product-action="add"><span class="shop-product-action-icon" aria-hidden="true">＋</span><span class="shop-product-action-copy"><strong>Register New Product</strong><small>Add a product, selling price and available quantity</small></span><span class="shop-product-action-arrow" aria-hidden="true">›</span></button>
+        <button type="button" class="shop-product-action shop-product-action--inventory" data-product-action="inventory"><span class="shop-product-action-icon" aria-hidden="true">▦</span><span class="shop-product-action-copy"><strong>My Products &amp; Stock</strong><small>View your shop's registered goods and quantities</small></span><span class="shop-product-action-arrow" aria-hidden="true">›</span></button>
+        <button type="button" class="shop-product-action shop-product-action--low" data-product-action="low"><span class="shop-product-action-icon" aria-hidden="true">⚑</span><span class="shop-product-action-copy"><strong>Low Stock Alerts</strong><small>Find products that need restocking</small></span><span class="shop-product-action-arrow" aria-hidden="true">›</span></button>
+        <button type="button" class="shop-product-action shop-product-action--market" data-product-action="market"><span class="shop-product-action-icon" aria-hidden="true">⌕</span><span class="shop-product-action-copy"><strong>Search AURORA Marketplace</strong><small>Discover goods listed by shops across AURORA</small></span><span class="shop-product-action-arrow" aria-hidden="true">›</span></button>
+      </nav>
       <details id="shop-register-product-card" class="shop-register-product-card">
-        <summary><strong>Add Product</strong><small>Register goods in your shop so customers can find them.</small></summary>
+        <summary><strong>Register a product</strong><small>Enter the goods you want customers to find.</small></summary>
         <div class="shop-register-product-body">
           <form id="shop-add-products" class="shop-add-products-form">
             <label>Product name<input id="shop-product-name" required maxlength="160" placeholder="Enter product name"></label>
@@ -213,6 +220,14 @@
           <button class="btn btn-primary full" type="submit">Find Shops</button>
         </form>
         <section id="shop-product-results" class="shop-product-results hidden" aria-live="polite"></section>
+      </details>
+      <details id="shop-stock-manager-card" class="shop-stock-manager-card">
+        <summary><strong id="shop-stock-title">My Products &amp; Stock</strong><small>Review registered products and record stock adjustments.</small></summary>
+        <div class="shop-stock-manager-body">
+          <div class="shop-stock-toolbar"><span id="shop-stock-count" class="muted small">Your shop inventory</span><button type="button" id="shop-stock-refresh" class="btn btn-light btn-small">Refresh</button></div>
+          <section id="shop-stock-list" class="shop-stock-list" aria-live="polite"><p class="empty">Open this section to load your shop's products.</p></section>
+          <p id="shop-stock-message" class="muted small" role="status"></p>
+        </div>
       </details>
       
       <details id="shop-goods-on-repair-card" class="shop-goods-on-repair-card hidden" aria-label="Goods on Repair">
@@ -512,7 +527,7 @@
   <footer class="aurora-copyright" aria-label="Copyright">copyright@auroraskyholdings2026</footer>
   <script src="./config.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script src="./app.js?v=repair-receipt-details-thankyou-20261121"></script>
+  <script src="./app.js?v=shop-products-colour-cards-20261121"></script>
   <script src="./dashboard.js?v=all-accounts-login-landing-20261117"></script>
 
 <script>
