@@ -285,6 +285,7 @@
       <div class="form-two"><label>Agreed item value (KSh)<input id="aurora-loan-value" type="number" min="0" step="1" value="0" required></label><label>Expected return date<input id="aurora-loan-due-date" type="date" required></label></div>
       <div class="form-two"><label>IMEI (optional)<input id="aurora-loan-imei" maxlength="50"></label><label>Serial number (optional)<input id="aurora-loan-serial" maxlength="100"></label></div>
       <label>Condition at handover<textarea id="aurora-loan-condition" rows="2" maxlength="1000" required placeholder="Describe the item's condition"></textarea></label>
+      <label class="loans-permission-check"><input id="aurora-loan-ownership-confirmed" type="checkbox" required><span>I confirm that I own or am authorised to lend this item</span></label>
       <label class="loans-permission-check"><input id="aurora-loan-selling-allowed" type="checkbox"><span>Allow the borrower to sell this item, subject to my approval</span></label>
       <p class="muted small">The recipient must accept the offer before the loan-day counter starts. Selling is disabled unless you grant this permission.</p>
       <button class="btn btn-primary full" id="aurora-loan-submit" type="submit">Send loan offer</button><p id="aurora-loan-form-message" class="muted small" role="status" aria-live="polite"></p>
