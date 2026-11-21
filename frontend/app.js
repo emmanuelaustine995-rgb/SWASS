@@ -427,7 +427,7 @@
       const data=await request('/api/v1/repairs/mine');
       const labels={received:'Received',diagnosing:'Under inspection',in_repair:'Repair in progress',ready:'Ready for collection',collected:'Collected',cancelled:'Cancelled'};
       const rows=data.repairs||[];
-      target.innerHTML=rows.length?rows.map(x=>'<article class="customer-repair-row"><div><strong>'+escapeHtml(x.itemName)+'</strong><small>Reference: '+escapeHtml(x.reference||'—')+' · '+escapeHtml(x.itemIdentifier||'No serial recorded')+'</small><small>Reported issue: '+escapeHtml(x.problem||'—')+'</small><small>Expected collection: '+escapeHtml(x.expectedPickDate?new Date(x.expectedPickDate).toLocaleDateString():'To be confirmed')+'</small></div><span class="repair-status repair-status-'+escapeHtml(x.status)+'">'+escapeHtml(labels[x.status]||x.status)+'</span></article>').join(''):'<p class="muted small">No repairs are linked to this phone number yet. Ask the shop to record your correct customer phone number when receiving your item.</p>';
+      target.innerHTML=rows.length?rows.map(x=>'<article class="customer-repair-row"><div><strong>'+escapeHtml(x.itemName)+'</strong><small>Reference: '+escapeHtml(x.reference||'—')+' · '+escapeHtml(x.itemIdentifier||'No serial recorded')+'</small><small>Reported issue: '+escapeHtml(x.problem||'—')+'</small><small>Expected collection: '+escapeHtml(x.expectedPickDate?new Date(x.expectedPickDate).toLocaleDateString():'To be confirmed')+'</small>'+(x.paymentReceiptNo?'<small class="customer-repair-payment">Payment receipt: '+escapeHtml(x.paymentReceiptNo)+' · KSh '+Number(x.paymentTotalKes||0).toLocaleString('en-KE')+'</small><button type="button" class="btn btn-light btn-small" data-customer-repair-pdf="'+escapeHtml(x.reference||'')+'">Open payment receipt PDF</button>':'')+'</div><span class="repair-status repair-status-'+escapeHtml(x.status)+'">'+escapeHtml(labels[x.status]||x.status)+'</span></article>').join(''):'<p class="muted small">No repairs are linked to this phone number yet. Ask the shop to record your correct customer phone number when receiving your item.</p>';
     }catch(error){target.innerHTML='<p class="error">'+escapeHtml(error.message||'Your repair records could not be loaded.')+'</p>';}
   }
 
@@ -2468,33 +2468,37 @@
 
   function renderRepairStageRow(x,mode){
     const labels={received:'Received',diagnosing:'Diagnosing',in_repair:'In repair',ready:'Ready for collection',collected:'Collected',cancelled:'Cancelled'};
-    const status=labels[x.status]||x.status||'Received';
-    const statusOptions=mode==='ready'
-      ? '<option value="ready" '+(x.status==='ready'?'selected':'')+'>Ready for collection</option><option value="collected">Confirm collected</option>'
-      : '<option value="received" '+(x.status==='received'?'selected':'')+'>Received</option><option value="diagnosing" '+(x.status==='diagnosing'?'selected':'')+'>Diagnosing</option><option value="in_repair" '+(x.status==='in_repair'?'selected':'')+'>In repair</option><option value="ready">Mark ready for collection</option><option value="cancelled" '+(x.status==='cancelled'?'selected':'')+'>Cancelled</option>';
-    const tools=mode==='issue'
-      ? '<p class="repair-payment-pending">Handover recorded. Check the payment record before closing this job.</p>'
-      : '<select aria-label="Update repair status" data-repair-status-id="'+Number(x.id)+'" data-previous-status="'+escapeHtml(x.status)+'">'+statusOptions+'</select>'+
-        (mode==='service'?'<textarea rows="2" maxlength="2000" aria-label="Technician diagnosis" data-repair-detected-id="'+Number(x.id)+'" placeholder="Technician diagnosis / work performed">'+escapeHtml(x.detected||'')+'</textarea><button type="button" class="btn btn-light btn-small" data-repair-detected-save="'+Number(x.id)+'">Save repair notes</button>':'');
+    const status=labels[x.status]||x.status||'Received';let tools='';
+    if(mode==='ready'){
+      tools='<button type="button" class="btn btn-light btn-small" data-repair-proceed-id="'+Number(x.id)+'">Proceed to issue goods →</button>';
+    }else if(mode==='service'){
+      tools='<select aria-label="Update repair status" data-repair-status-id="'+Number(x.id)+'" data-previous-status="'+escapeHtml(x.status)+'"><option value="received" '+(x.status==='received'?'selected':'')+'>Received</option><option value="diagnosing" '+(x.status==='diagnosing'?'selected':'')+'>Diagnosing</option><option value="in_repair" '+(x.status==='in_repair'?'selected':'')+'>In repair</option><option value="ready">Mark ready for collection</option><option value="cancelled" '+(x.status==='cancelled'?'selected':'')+'>Cancelled</option></select>'+
+        '<label class="repair-inline-field">Repair charge (KSh)<input type="number" min="0" max="100000000" step="1" value="'+Number(x.repairCostKes||0)+'" data-repair-charge-id="'+Number(x.id)+'" inputmode="numeric"></label>'+
+        '<textarea rows="2" maxlength="2000" aria-label="Technician diagnosis" data-repair-detected-id="'+Number(x.id)+'" placeholder="Technician diagnosis / work performed">'+escapeHtml(x.detected||'')+'</textarea><button type="button" class="btn btn-light btn-small" data-repair-detected-save="'+Number(x.id)+'">Save repair notes &amp; charge</button>';
+    }else if(mode==='issue-ready'){
+      tools='<label class="repair-inline-field">Amount received (KSh)<input type="number" min="1" max="100000000" step="1" value="'+(Number(x.repairCostKes||0)||'')+'" data-repair-amount-id="'+Number(x.id)+'" inputmode="numeric" required></label>'+
+        '<label class="repair-inline-field">Payment method<select data-repair-method-id="'+Number(x.id)+'"><option value="cash">Cash</option><option value="mpesa">M-Pesa</option><option value="card">Card</option></select></label>'+
+        '<label class="repair-inline-field repair-mpesa-reference" data-repair-mpesa-wrap="'+Number(x.id)+'" hidden>M-Pesa transaction code<input type="text" maxlength="16" data-repair-reference-id="'+Number(x.id)+'" placeholder="e.g. QAB12CDE34" autocapitalize="characters"></label>'+
+        '<small class="repair-payment-hint">Confirm full payment before handing over the item. For M-Pesa, verify the transaction code against the customer payment message.</small>'+
+        '<button type="button" class="btn full" data-repair-collect-id="'+Number(x.id)+'">Issue goods &amp; create payment receipt</button>';
+    }else if(mode==='issue'){
+      tools='<strong class="repair-payment-receipt-no">Receipt: '+escapeHtml(x.paymentReceiptNo||'—')+'</strong><strong>KSh '+Number(x.paymentTotalKes||0).toLocaleString('en-KE')+'</strong><small>Paid by '+escapeHtml(String(x.paymentMethod||'').toUpperCase())+(x.paymentReference?' · '+escapeHtml(x.paymentReference):'')+'</small><button type="button" class="btn btn-light btn-small" data-customer-repair-pdf="'+escapeHtml(x.reference||'')+'">Open payment receipt PDF</button>';
+    }
     return '<article class="repair-record-row repair-record-row--'+mode+'"><div class="repair-record-main"><div class="repair-record-card-head"><strong>'+escapeHtml(x.itemName)+'</strong><span class="repair-status repair-status-'+escapeHtml(x.status)+'">'+escapeHtml(status)+'</span></div><small>Reference: '+escapeHtml(x.reference||'—')+' · Item ID: '+escapeHtml(x.itemIdentifier||'—')+'</small><small>Customer: '+escapeHtml(x.customerName)+' · '+escapeHtml(x.customerPhone||'—')+'</small><small>Problem: '+escapeHtml(x.problem||'—')+'</small>'+(x.detected?'<small>Diagnosis / work: '+escapeHtml(x.detected)+'</small>':'')+'<small>Received: '+escapeHtml(x.receivedDate?new Date(x.receivedDate).toLocaleDateString():'—')+' · Expected: '+escapeHtml(x.expectedPickDate?new Date(x.expectedPickDate).toLocaleDateString():'—')+'</small></div><div class="repair-record-tools">'+tools+'</div></article>';
   }
   async function loadShopRepairs(){
-    const ready=$('repair-ready-list'),service=$('repair-service-list'),collected=$('repair-collected-list');
-    if(!ready||!service||!collected)return;
-    [ready,service,collected].forEach(el=>el.innerHTML='<p class="muted small">Loading repair records…</p>');
+    const ready=$('repair-ready-list'),service=$('repair-service-list'),issueReady=$('repair-issue-ready-list'),collected=$('repair-collected-list');
+    if(!ready||!service||!issueReady||!collected)return;
+    [ready,service,issueReady,collected].forEach(el=>el.innerHTML='<p class="muted small">Loading repair records…</p>');
     try{
-      const data=await request('/api/v1/repairs');
-      const rows=Array.isArray(data.repairs)?data.repairs:[];
-      const readyRows=rows.filter(x=>x.status==='ready');
-      const serviceRows=rows.filter(x=>['received','diagnosing','in_repair'].includes(x.status));
-      const collectedRows=rows.filter(x=>x.status==='collected');
+      const data=await request('/api/v1/repairs'),rows=Array.isArray(data.repairs)?data.repairs:[];
+      const readyRows=rows.filter(x=>x.status==='ready'),serviceRows=rows.filter(x=>['received','diagnosing','in_repair'].includes(x.status)),collectedRows=rows.filter(x=>x.status==='collected');
       ready.innerHTML=readyRows.length?readyRows.map(x=>renderRepairStageRow(x,'ready')).join(''):'<p class="repair-stage-empty">No goods are currently waiting for collection.</p>';
       service.innerHTML=serviceRows.length?serviceRows.map(x=>renderRepairStageRow(x,'service')).join(''):'<p class="repair-stage-empty">No active repairs. Newly received goods will appear here.</p>';
+      issueReady.innerHTML=readyRows.length?readyRows.map(x=>renderRepairStageRow(x,'issue-ready')).join(''):'<p class="repair-stage-empty">No ready goods are awaiting customer handover.</p>';
       collected.innerHTML=collectedRows.length?collectedRows.map(x=>renderRepairStageRow(x,'issue')).join(''):'<p class="repair-stage-empty">No goods have been handed back to customers yet.</p>';
       const msg=$('repair-records-message');if(msg)msg.textContent=rows.length+' repair record(s) across all stages.';
-    }catch(error){
-      [ready,service,collected].forEach(el=>el.innerHTML='<p class="error">'+escapeHtml(error.message||'Could not load repair records.')+'</p>');
-    }
+    }catch(error){[ready,service,issueReady,collected].forEach(el=>el.innerHTML='<p class="error">'+escapeHtml(error.message||'Could not load repair records.')+'</p>');}
   }
   function setRepairStage(stage){
     if(!['receive','ready','service','issue'].includes(stage))stage='receive';
@@ -2538,20 +2542,47 @@
     finally{button.disabled=false;}
   });
   $('repair-stage-panels')?.addEventListener('click',async e=>{
+    const proceed=e.target.closest('[data-repair-proceed-id]');if(proceed){setRepairStage('issue');return;}
+    const collect=e.target.closest('[data-repair-collect-id]');
+    if(collect){
+      const id=collect.dataset.repairCollectId,panel=$('repair-stage-panels');
+      const amount=panel.querySelector('[data-repair-amount-id="'+id+'"]'),method=panel.querySelector('[data-repair-method-id="'+id+'"]'),reference=panel.querySelector('[data-repair-reference-id="'+id+'"]');
+      collect.disabled=true;collect.textContent='Issuing payment receipt…';
+      try{
+        const result=await request('/api/v1/repairs/'+encodeURIComponent(id)+'/collect',{method:'POST',body:JSON.stringify({amountKes:Number(amount?.value),paymentMethod:method?.value,paymentReference:reference?.value||''})});
+        const receipt=result.paymentReceipt||{};
+        showNotice('Goods issued. SWASS payment receipt '+(receipt.receiptNo||'')+' created for KSh '+Number(receipt.totalKes||0).toLocaleString('en-KE')+'. Customer email: '+(receipt.emailDelivery?.sent?'sent':receipt.emailDelivery?.message||'not sent')+'. WhatsApp: '+(receipt.whatsappDelivery?.sent?'sent':receipt.whatsappDelivery?.message||'not sent')+'.');
+        if(receipt.verificationUrl)window.open(receipt.verificationUrl,'_blank','noopener');await loadShopRepairs();
+      }catch(error){showNotice(error.message||'Could not issue the payment receipt.',true);collect.disabled=false;collect.textContent='Issue goods & create payment receipt';}
+      return;
+    }
+    const pdf=e.target.closest('[data-customer-repair-pdf]');if(pdf&&state.role!=='customer'){
+      const reference=pdf.dataset.customerRepairPdf;pdf.disabled=true;const tab=window.open('about:blank','_blank');
+      try{const response=await fetch(API+'/api/v1/repairs/mine/'+encodeURIComponent(reference)+'/receipt.pdf',{headers:{Authorization:'Bearer '+state.token},cache:'no-store'});if(!response.ok){const body=await response.json().catch(()=>({}));throw new Error(body.message||'Could not open payment receipt.');}const blob=await response.blob();if(tab)tab.location.href=URL.createObjectURL(blob);else showNotice('Allow pop-ups to open the receipt PDF.',true);}
+      catch(error){tab?.close();showNotice(error.message||'Could not open payment receipt.',true);}finally{pdf.disabled=false;}
+      return;
+    }
     const button=e.target.closest('[data-repair-detected-save]');if(!button)return;
-    const id=button.dataset.repairDetectedSave,field=$('repair-stage-panels').querySelector('[data-repair-detected-id="'+id+'"]');
+    const id=button.dataset.repairDetectedSave,panel=$('repair-stage-panels'),field=panel.querySelector('[data-repair-detected-id="'+id+'"]'),charge=panel.querySelector('[data-repair-charge-id="'+id+'"]');
     button.disabled=true;
-    try{await request('/api/v1/repairs/'+encodeURIComponent(id),{method:'PATCH',body:JSON.stringify({detected:field?.value||''})});showNotice('Technician diagnosis saved.');await loadShopRepairs();}
-    catch(error){showNotice(error.message||'Could not save the diagnosis.',true);}
-    finally{button.disabled=false;}
+    try{await request('/api/v1/repairs/'+encodeURIComponent(id),{method:'PATCH',body:JSON.stringify({detected:field?.value||'',repairCostKes:Number(charge?.value||0)})});showNotice('Technician notes and repair charge saved.');await loadShopRepairs();}
+    catch(error){showNotice(error.message||'Could not save the repair details.',true);}finally{button.disabled=false;}
   });
   $('repair-stage-panels')?.addEventListener('change',async e=>{
+    const method=e.target.closest('[data-repair-method-id]');
+    if(method){const id=method.dataset.repairMethodId,wrap=$('repair-stage-panels').querySelector('[data-repair-mpesa-wrap="'+id+'"]');if(wrap)wrap.hidden=method.value!=='mpesa';return;}
     const select=e.target.closest('[data-repair-status-id]');if(!select)return;
-    const id=select.dataset.repairStatusId,previous=select.dataset.previousStatus||'received';
-    select.disabled=true;
-    try{const result=await request('/api/v1/repairs/'+encodeURIComponent(id),{method:'PATCH',body:JSON.stringify({status:select.value})});select.dataset.previousStatus=select.value;if(select.value==='ready'){const d=result.ownerDelivery||{},sent=x=>x?.sent?'sent':(x?.reason||'not configured');showNotice('Repair marked ready. Owner email: '+sent(d.email)+'; owner WhatsApp: '+sent(d.whatsapp)+'. Customer email: '+sent(result.customerDelivery?.email)+'; customer WhatsApp: '+sent(result.customerDelivery?.whatsapp)+'.');}await loadShopRepairs();}
-    catch(error){select.value=previous;showNotice(error.message||'Could not update repair status.',true);}
-    finally{select.disabled=false;}
+    const id=select.dataset.repairStatusId,previous=select.dataset.previousStatus||'received';select.disabled=true;
+    try{const result=await request('/api/v1/repairs/'+encodeURIComponent(id),{method:'PATCH',body:JSON.stringify({status:select.value})});select.dataset.previousStatus=select.value;
+      if(select.value==='ready'){const d=result.ownerDelivery||{},sent=x=>x?.sent?'sent':(x?.reason||'not configured');showNotice('Repair marked ready. Owner email: '+sent(d.email)+'; owner WhatsApp: '+sent(d.whatsapp)+'. Customer email: '+sent(result.customerDelivery?.email)+'; customer WhatsApp: '+sent(result.customerDelivery?.whatsapp)+'.');}
+      await loadShopRepairs();
+    }catch(error){select.value=previous;showNotice(error.message||'Could not update repair status.',true);}finally{select.disabled=false;}
+  });
+  $('customer-repairs-list')?.addEventListener('click',async e=>{
+    const pdf=e.target.closest('[data-customer-repair-pdf]');if(!pdf)return;
+    const reference=pdf.dataset.customerRepairPdf;pdf.disabled=true;const tab=window.open('about:blank','_blank');
+    try{const response=await fetch(API+'/api/v1/repairs/mine/'+encodeURIComponent(reference)+'/receipt.pdf',{headers:{Authorization:'Bearer '+state.token},cache:'no-store'});if(!response.ok){const body=await response.json().catch(()=>({}));throw new Error(body.message||'Could not open payment receipt.');}const blob=await response.blob();if(tab)tab.location.href=URL.createObjectURL(blob);else showNotice('Allow pop-ups to open the receipt PDF.',true);}
+    catch(error){tab?.close();showNotice(error.message||'Could not open payment receipt.',true);}finally{pdf.disabled=false;}
   });
   $('repair-refresh')?.addEventListener('click',()=>void loadShopRepairs());
   $('shop-goods-on-repair-card')?.addEventListener('toggle',event=>{if(event.currentTarget.open)void loadShopRepairs();});
