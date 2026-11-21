@@ -140,3 +140,55 @@ body.registration-open .login-card{
 @media(prefers-reduced-motion:reduce){
   body:not(.workspace-active):not(.platform-admin-login)::before{animation:none!important}
 }
+
+
+/* DESKTOP AUTH FRAME — keep login/create-account centred in the same
+   fixed 14cm workspace as the signed-in desktop app. The surrounding
+   animated sunset sky remains visible; phone styling above is unchanged. */
+@media (min-width: 1024px) {
+  html body:not(.workspace-active):not(.platform-admin-login) .shell {
+    box-sizing: border-box !important;
+    position: relative !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: center !important;
+    width: 14cm !important;
+    min-width: 0 !important;
+    max-width: calc(100vw - 32px) !important;
+    min-height: calc(100vh - 68px) !important;
+    margin: 0 auto !important;
+    padding: 18px 14px 28px !important;
+    transform: none !important;
+    overflow: visible !important;
+  }
+
+  html body:not(.workspace-active):not(.platform-admin-login) #login-view,
+  html body:not(.workspace-active):not(.platform-admin-login) .login-wrap {
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: calc(100vh - 104px) !important;
+    margin: 0 auto !important;
+    padding: 16px 0 !important;
+  }
+
+  html body:not(.workspace-active):not(.platform-admin-login) .login-card {
+    flex: 0 0 auto !important;
+    width: min(100%, 470px) !important;
+    max-width: 470px !important;
+    margin: 0 auto !important;
+  }
+}
+
+/* Slow continuous cloud drift and gentle sky-light movement; no snow or
+   frozen ground imagery. Keep the effect lightweight and non-blocking. */
+@keyframes aurora-sunset-clouds {
+  0%   { transform: translate3d(-2%, 0, 0); background-position: 0% 48%; }
+  50%  { transform: translate3d(0.5%, 1.2%, 0); background-position: 55% 52%; }
+  100% { transform: translate3d(2%, 0, 0); background-position: 100% 48%; }
+}
