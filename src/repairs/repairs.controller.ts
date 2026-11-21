@@ -34,6 +34,13 @@ export class RepairsController {
     } catch { return 'Unavailable'; }
   }
 
+  private normalizeCustomerPhone(value: string): string {
+    const digits = String(value || '').replace(/\D/g, '');
+    const national = digits.startsWith('254') ? digits.slice(3) : digits.startsWith('0') ? digits.slice(1) : digits;
+    if (!/^[17]\d{8}$/.test(national)) throw new BadRequestException('Enter a valid Kenyan customer phone number.');
+    return '254' + national;
+  }
+
   private requireShop(req: any) {
     if (!req.user?.tenantId || !req.user?.storeId) throw new BadRequestException('A registered shop is required.');
     return req.user;
@@ -41,7 +48,7 @@ export class RepairsController {
 
   private async makePdf(repair: any, shop: any): Promise<Buffer> {
     return new Promise((resolve, reject) => {
-      const doc = new PDFDocument({ size: 'A6', margin: 24, info: { Title: 'AURORA Repair Intake ' + repair.reference, Author: shop.name || 'AURORA E-RECEIPT' } });
+      const doc = new PDFDocument({ size: [420, 595], margin: 24, info: { Title: 'AURORA Repair Intake ' + repair.reference, Author: shop.name || 'AURORA E-RECEIPT' } });
       const chunks: Buffer[] = [];
       doc.on('data', (chunk: Buffer) => chunks.push(chunk));
       doc.on('end', () => resolve(Buffer.concat(chunks)));
@@ -213,7 +220,7 @@ export class RepairsController {
     const itemIdentifier = clean(body?.itemIdentifier, 'Item ID / serial number', 100, false);
     const customerName = clean(body?.customerName, 'Customer name', 160);
     const customerId = clean(body?.customerId, 'Customer ID number', 50);
-    const customerPhone = clean(body?.customerPhone, 'Customer phone number', 30);
+    const customerPhone = this.normalizeCustomerPhone(clean(body?.customerPhone, 'Customer phone number', 30));
     const customerEmail = clean(body?.customerEmail, 'Customer email', 254, false).toLowerCase();
     const condition = clean(body?.condition, 'Condition', 1000);
     const problem = clean(body?.problem, 'Problem reported', 2000);
