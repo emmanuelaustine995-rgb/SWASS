@@ -11,6 +11,175 @@ import { hashNationalId } from '../receipts/receipts.service';
 export class LoanItemsController {
   constructor(private db: DbService, private email: EmailVerificationService, private whatsapp: WhatsAppReceiptService) {}
   private scope(user:any){if(!user.tenantId||!user.storeId)throw new BadRequestException('Shop details are unavailable');return [user.tenantId,user.storeId];}
+  private partyRole(user:any):'owner'|'freelancer'|'customer' {
+    if(user?.role==='customer')return 'customer';
+    if(user?.role==='freelancer'||user?.role==='vendor')return 'freelancer';
+    if(user?.role==='owner')return 'owner';
+    throw new BadRequestException('This account cannot create or manage loans');
+  }
+  private async partyDetails(role:'owner'|'freelancer'|'customer',id:string){
+    if(role==='customer'){
+      const q=await this.db.pool.query('SELECT id,full_name AS name,phone FROM customer_accounts WHERE id=$1 AND is_active=true',[id]);
+      return q.rows[0]||null;
+    }
+    const q=await this.db.pool.query("SELECT id,full_name AS name,phone,tenant_id AS \"tenantId\",store_id AS \"storeId\" FROM users WHERE id=$1 AND is_active=true AND role=ANY($2::text[])",[id,role==='freelancer'?['freelancer','vendor']:['owner']]);
+    return q.rows[0]||null;
+  }
+  private async findPartyByPhone(phone:string){
+    const digits=String(phone||'').replace(/\\D/g,'');
+    if(digits.length<9)throw new BadRequestException('Enter the borrower account phone number');
+    const q=await this.db.pool.query(
+      `SELECT id,role,full_name AS name,phone FROM users
+        WHERE is_active=true AND role IN ('owner','freelancer','vendor')
+          AND regexp_replace(phone,'\\D','','g')=$1
+       UNION ALL
+       SELECT id,'customer' AS role,full_name AS name,phone FROM customer_accounts
+        WHERE is_active=true AND regexp_replace(phone,'\\D','','g')=$1`,
+      [digits],
+    );
+    if(q.rows.length===0)throw new BadRequestException('No active AURORA account was found for that phone number');
+    if(q.rows.length>1)throw new BadRequestException('More than one account uses that phone number. Contact the recipient to confirm their registered account.');
+    const row=q.rows[0];
+    const role=row.role==='vendor'?'freelancer':row.role;
+    return {id:row.id,role,name:row.name,phone:row.phone};
+  }
+  private async activity(loanId:string,actorRole:string,actorId:string|null,eventType:string,details:any={}){
+    await this.db.pool.query(
+      'INSERT INTO aurora_loan_activity(loan_id,actor_role,actor_id,event_type,details) VALUES($1,$2,$3,$4,$5::jsonb)',
+      [loanId,actorRole,actorId,eventType,JSON.stringify(details)],
+    );
+  }
+
+  // Shared account workspace: every supported party sees both loans they
+  // issued and offers/items they received, without exposing other accounts.
+  @Get('workspace') @Roles('owner','freelancer','customer')
+  async workspace(@Req() req:any){
+    const role=this.partyRole(req.user),id=req.user.sub;
+    const {rows}=await this.db.pool.query(
+      `SELECT l.*,
+        (l.status IN ('active','sale_pending','return_pending') AND l.expected_return_date<CURRENT_DATE) AS overdue,
+        CASE WHEN l.accepted_at IS NULL THEN 0 ELSE GREATEST(0,CURRENT_DATE-l.accepted_at::date) END AS "daysOnLoan",
+        (l.lender_role=$1 AND l.lender_id=$2) AS "isLender"
+       FROM aurora_loans l
+       WHERE (l.lender_role=$1 AND l.lender_id=$2)
+          OR (l.borrower_role=$1 AND l.borrower_id=$2)
+       ORDER BY l.created_at DESC LIMIT 200`,
+      [role,id],
+    );
+    return {loans:rows};
+  }
+
+  @Post('offers') @Roles('owner','freelancer','customer')
+  async createOffer(@Req() req:any,@Body() b:any){
+    const role=this.partyRole(req.user),lender=await this.partyDetails(role,req.user.sub);
+    if(!lender)throw new BadRequestException('Your active account could not be verified');
+    const itemName=String(b?.itemName||'').trim();
+    const borrowerPhone=String(b?.borrowerPhone||'').trim();
+    const conditionOut=String(b?.conditionOut||'').trim();
+    const due=String(b?.expectedReturnDate||'').trim();
+    const quantity=Number(b?.quantity||1),value=Number(b?.valueKes||0);
+    if(!itemName||itemName.length>160)throw new BadRequestException('Enter a valid item name');
+    if(!conditionOut||conditionOut.length>1000)throw new BadRequestException('Describe the item condition');
+    if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(due)||Number.isNaN(Date.parse(due))||due<new Date().toISOString().slice(0,10))throw new BadRequestException('Choose a valid return date');
+    if(!Number.isSafeInteger(quantity)||quantity<1||quantity>10000)throw new BadRequestException('Enter a valid quantity');
+    if(!Number.isSafeInteger(value)||value<0||value>1000000000)throw new BadRequestException('Enter a valid item value');
+    const borrower=await this.findPartyByPhone(borrowerPhone);
+    if(borrower.role===role&&borrower.id===req.user.sub)throw new BadRequestException('You cannot lend an item to your own account');
+    const reference='AUR-LN-'+Date.now().toString(36).toUpperCase()+'-'+Math.random().toString(36).slice(2,6).toUpperCase();
+    const params=[reference,role,req.user.sub,lender.name,lender.phone,lender.tenantId||null,lender.storeId||null,borrower.role,borrower.id,borrower.name,borrower.phone,itemName,quantity,value,String(b?.imei||'').trim()||null,String(b?.serialNumber||'').trim()||null,conditionOut,due,b?.sellingAllowed===true];
+    try{
+      const q=await this.db.pool.query(
+        `INSERT INTO aurora_loans(reference,lender_role,lender_id,lender_name,lender_phone,lender_tenant_id,lender_store_id,borrower_role,borrower_id,borrower_name,borrower_phone,item_name,quantity,value_kes,imei,serial_number,condition_out,expected_return_date,selling_allowed)
+         VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18::date,$19)
+         RETURNING id,reference,status,created_at AS "createdAt",expected_return_date AS "expectedReturnDate"`,
+        params,
+      );
+      await this.activity(q.rows[0].id,role,req.user.sub,'offer_created',{borrowerRole:borrower.role,borrowerName:borrower.name,itemName,quantity,sellingAllowed:b?.sellingAllowed===true});
+      return {loan:q.rows[0],message:'Loan offer sent. The recipient must accept it before the loan period starts.'};
+    }catch(error:any){
+      if(error?.code==='23505')throw new BadRequestException('This IMEI or serial number is already part of an open loan');
+      throw error;
+    }
+  }
+
+  @Patch(':id/accept') @Roles('owner','freelancer','customer')
+  async acceptOffer(@Req() req:any,@Param('id') id:string){
+    const role=this.partyRole(req.user);
+    const q=await this.db.pool.query(
+      `UPDATE aurora_loans SET status='active',accepted_at=now(),updated_at=now()
+       WHERE id=$1 AND borrower_role=$2 AND borrower_id=$3 AND status='offered'
+       RETURNING id,reference,status,accepted_at AS "acceptedAt",expected_return_date AS "expectedReturnDate"`,
+      [id,role,req.user.sub],
+    );
+    if(!q.rows[0])throw new BadRequestException('Offer not found, already handled, or not addressed to your account');
+    await this.activity(id,role,req.user.sub,'offer_accepted',{});
+    return {loan:q.rows[0],message:'Item accepted. Your loan-day counter has started.'};
+  }
+
+  @Patch(':id/decline') @Roles('owner','freelancer','customer')
+  async declineOffer(@Req() req:any,@Param('id') id:string,@Body() b:any){
+    const role=this.partyRole(req.user),reason=String(b?.reason||'').trim().slice(0,500);
+    const q=await this.db.pool.query(
+      `UPDATE aurora_loans SET status='declined',closed_at=now(),updated_at=now(),last_decision_reason=$4
+       WHERE id=$1 AND borrower_role=$2 AND borrower_id=$3 AND status='offered'
+       RETURNING id,reference,status`,
+      [id,role,req.user.sub,reason||'Offer declined by recipient'],
+    );
+    if(!q.rows[0])throw new BadRequestException('Offer not found or already handled');
+    await this.activity(id,role,req.user.sub,'offer_declined',{reason});
+    return {loan:q.rows[0]};
+  }
+
+  @Post(':id/sale-report') @Roles('owner','freelancer','customer')
+  async reportSale(@Req() req:any,@Param('id') id:string,@Body() b:any){
+    const role=this.partyRole(req.user);
+    const salePrice=Number(b?.salePriceKes),saleDate=String(b?.saleDate||'').trim();
+    if(!Number.isSafeInteger(salePrice)||salePrice<0||salePrice>1000000000)throw new BadRequestException('Enter a valid sale price');
+    if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(saleDate))throw new BadRequestException('Enter the sale date');
+    const report={salePriceKes:salePrice,saleDate,buyerName:String(b?.buyerName||'').trim().slice(0,160),receiptReference:String(b?.receiptReference||'').trim().slice(0,120),notes:String(b?.notes||'').trim().slice(0,1000)};
+    const q=await this.db.pool.query(
+      `UPDATE aurora_loans SET status='sale_pending',sale_report=$4::jsonb,updated_at=now()
+       WHERE id=$1 AND borrower_role=$2 AND borrower_id=$3 AND status='active' AND selling_allowed=true
+       RETURNING id,reference,status`,
+      [id,role,req.user.sub,JSON.stringify(report)],
+    );
+    if(!q.rows[0])throw new BadRequestException('Selling is not permitted for this loan, or the loan is not active');
+    await this.activity(id,role,req.user.sub,'sale_reported',report);
+    return {loan:q.rows[0],message:'Sale report sent to the lender for approval. Ownership has not transferred.'};
+  }
+
+  @Post(':id/return-request') @Roles('owner','freelancer','customer')
+  async requestReturn(@Req() req:any,@Param('id') id:string,@Body() b:any){
+    const role=this.partyRole(req.user),report={conditionIn:String(b?.conditionIn||'').trim().slice(0,1000),notes:String(b?.notes||'').trim().slice(0,1000)};
+    const q=await this.db.pool.query(
+      `UPDATE aurora_loans SET status='return_pending',return_report=$4::jsonb,updated_at=now()
+       WHERE id=$1 AND borrower_role=$2 AND borrower_id=$3 AND status='active'
+       RETURNING id,reference,status`,
+      [id,role,req.user.sub,JSON.stringify(report)],
+    );
+    if(!q.rows[0])throw new BadRequestException('This loan is not active or does not belong to your account');
+    await this.activity(id,role,req.user.sub,'return_requested',report);
+    return {loan:q.rows[0],message:'Return request sent. The lender must confirm physical receipt.'};
+  }
+
+  @Patch(':id/decision') @Roles('owner','freelancer','customer')
+  async decideRequest(@Req() req:any,@Param('id') id:string,@Body() b:any){
+    const role=this.partyRole(req.user),action=String(b?.action||''),reason=String(b?.reason||'').trim().slice(0,500);
+    let nextStatus:string,expected:string,event:string;
+    if(action==='approve_sale'){nextStatus='sold';expected='sale_pending';event='sale_approved';}
+    else if(action==='approve_return'){nextStatus='returned';expected='return_pending';event='return_approved';}
+    else if(action==='reject'){nextStatus='active';expected=['sale_pending','return_pending'] as any;event='request_rejected';if(!reason)throw new BadRequestException('Give a reason for rejecting the request');}
+    else throw new BadRequestException('Choose approve_sale, approve_return or reject');
+    const q=action==='reject'
+      ? await this.db.pool.query(`UPDATE aurora_loans SET status='active',last_decision_reason=$4,updated_at=now()
+          WHERE id=$1 AND lender_role=$2 AND lender_id=$3 AND status IN ('sale_pending','return_pending') RETURNING id,reference,status`,[id,role,req.user.sub,reason])
+      : await this.db.pool.query(`UPDATE aurora_loans SET status=$4,closed_at=now(),updated_at=now()
+          WHERE id=$1 AND lender_role=$2 AND lender_id=$3 AND status=$5 RETURNING id,reference,status`,[id,role,req.user.sub,nextStatus,expected]);
+    if(!q.rows[0])throw new BadRequestException('Request not found, already handled, or not addressed to your account');
+    await this.activity(id,role,req.user.sub,event,{action,reason});
+    return {loan:q.rows[0],message:action==='reject'?'Request rejected. The loan remains active.':'Request approved and the loan is now closed.'};
+  }
+
   @Get() @Roles('owner')
   async list(@Req() req:any){const [t,s]=this.scope(req.user);const {rows}=await this.db.pool.query(`SELECT id,reference,item_name AS "itemName",borrower_name AS "borrowerName",phone,id_number AS "idNumber",borrower_email AS "borrowerEmail",imei,serial_number AS "serialNumber",loan_date AS "loanDate",condition_out AS "conditionOut",condition_in AS "conditionIn",amount_kes AS "amountKes",processed_by AS "processedBy",returned,sold,created_at AS "createdAt" FROM loan_items WHERE tenant_id=$1 AND store_id=$2 ORDER BY created_at DESC LIMIT 100`,[t,s]);return {items:rows};}
   @Post() @Roles('owner')
