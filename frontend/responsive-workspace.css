@@ -991,3 +991,65 @@ html body.platform-admin-workspace #platform-referral-admin .platform-admin-tabs
     transform: translateX(-50%) !important;
   }
 }
+
+
+/* DESKTOP CORRECTION — centred full-height workspace, normal page flow.
+   Desktop gets a fixed 14cm width from the very top to the very bottom.
+   Content keeps its natural sizing and order; the page scrolls normally
+   inside the frame. The phone/tablet rules above are deliberately untouched. */
+@media (min-width: 1024px) {
+  html body.workspace-active main.shell,
+  html body.workspace-active .shell {
+    position: fixed !important;
+    inset: 0 auto 0 50% !important;
+    display: block !important;
+    box-sizing: border-box !important;
+    width: 14cm !important;
+    min-width: 0 !important;
+    max-width: calc(100vw - 32px) !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    min-height: 100vh !important;
+    max-height: 100dvh !important;
+    margin: 0 !important;
+    padding: 0 14px 104px !important;
+    transform: translateX(-50%) !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior-y: contain !important;
+    scrollbar-width: thin;
+  }
+
+  html body.workspace-active main.shell > section:not(.hidden),
+  html body.workspace-active main.shell > main:not(.hidden),
+  html body.workspace-active main.shell > article:not(.hidden),
+  html body.workspace-active main.shell > .panel:not(.hidden),
+  html body.workspace-active main.shell > [data-workspace-page]:not(.hidden) {
+    display: block !important;
+    position: relative !important;
+    flex: none !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+    margin-top: initial !important;
+    overflow: visible !important;
+    transform: none !important;
+  }
+
+  html body.workspace-active main.shell > #workspace-nav:not(.hidden) {
+    position: fixed !important;
+    left: 50% !important;
+    right: auto !important;
+    top: auto !important;
+    bottom: 8px !important;
+    width: calc(14cm - 28px) !important;
+    max-width: calc(100vw - 60px) !important;
+    min-width: 0 !important;
+    height: auto !important;
+    max-height: 76px !important;
+    transform: translateX(-50%) !important;
+    z-index: 2147482000 !important;
+  }
+}
