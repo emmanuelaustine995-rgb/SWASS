@@ -244,3 +244,108 @@ body.workspace-active #shop-home #shop-goods-on-repair-card.hidden,
 body.workspace-active #shop-home #shop-goods-on-repair-card[hidden] {
   display: none !important;
 }
+
+
+/* AURORA coastal login scene — the reference landscape fills the free desktop
+   space while the real, interactive authentication form stays centred. */
+html body:not(.workspace-active):not(.platform-admin-login) {
+  background: #172b40 !important;
+  background-image: none !important;
+  overflow-x: hidden;
+}
+html body:not(.workspace-active):not(.platform-admin-login)::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27 viewBox%3D%270 0 1600 1000%27%3E%3Cdefs%3E%3ClinearGradient id%3D%27sky%27 x2%3D%270%27 y2%3D%271%27%3E%3Cstop stop-color%3D%27%23c5d5ed%27%2F%3E%3Cstop offset%3D%27.42%27 stop-color%3D%27%239eb5d5%27%2F%3E%3Cstop offset%3D%27.68%27 stop-color%3D%27%23657f9f%27%2F%3E%3Cstop offset%3D%271%27 stop-color%3D%27%23263d55%27%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient id%3D%27sea%27 x2%3D%270%27 y2%3D%271%27%3E%3Cstop stop-color%3D%27%23587b9c%27%2F%3E%3Cstop offset%3D%271%27 stop-color%3D%27%23142d43%27%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient id%3D%27sand%27 x2%3D%270%27 y2%3D%271%27%3E%3Cstop stop-color%3D%27%23263746%27%2F%3E%3Cstop offset%3D%271%27 stop-color%3D%27%23091725%27%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient id%3D%27ice%27 x2%3D%271%27 y2%3D%271%27%3E%3Cstop stop-color%3D%27%23f3fbff%27 stop-opacity%3D%27.9%27%2F%3E%3Cstop offset%3D%27.5%27 stop-color%3D%27%238bbce5%27 stop-opacity%3D%27.72%27%2F%3E%3Cstop offset%3D%271%27 stop-color%3D%27%23e8f7ff%27 stop-opacity%3D%27.9%27%2F%3E%3C%2FlinearGradient%3E%3Cfilter id%3D%27blur%27%3E%3CfeGaussianBlur stdDeviation%3D%2724%27%2F%3E%3C%2Ffilter%3E%3Cfilter id%3D%27mist%27%3E%3CfeGaussianBlur stdDeviation%3D%2712%27%2F%3E%3C%2Ffilter%3E%3C%2Fdefs%3E%3Crect width%3D%271600%27 height%3D%271000%27 fill%3D%27url(%23sky)%27%2F%3E%3Cg fill%3D%27%23edf3fa%27 opacity%3D%27.62%27 filter%3D%27url(%23blur%27%3E%3Cellipse cx%3D%27220%27 cy%3D%27180%27 rx%3D%27330%27 ry%3D%2790%27%2F%3E%3Cellipse cx%3D%27780%27 cy%3D%27125%27 rx%3D%27430%27 ry%3D%27100%27%2F%3E%3Cellipse cx%3D%271370%27 cy%3D%27215%27 rx%3D%27330%27 ry%3D%27100%27%2F%3E%3C%2Fg%3E%3Cpath d%3D%27M0 470 115 385 205 412 300 295 385 390 490 315 590 420 710 285 820 400 930 330 1040 420 1165 285 1285 395 1390 330 1500 420 1600 360V620H0Z%27 fill%3D%27%2329445f%27%2F%3E%3Cpath d%3D%27m0 470 115-85 90 27 95-117 85 95 105-75 100 105 120-135 110 115 110-70 110 90 125-135 120 110 105-65 100 90v40H0Z%27 fill%3D%27%23dce7f2%27 opacity%3D%27.8%27%2F%3E%3Cpath d%3D%27m250 412 50-117 85 95-50-25-28 12-20-7zM660 420l50-135 110 115-63-37-30 14-30-8zM1110 420l55-135 120 110-70-32-32 18-30-12z%27 fill%3D%27%23f7fbff%27 opacity%3D%27.9%27%2F%3E%3Cpath d%3D%27M0 555 Q330 520 640 555T1600 540V760H0Z%27 fill%3D%27url(%23sea)%27%2F%3E%3Cpath d%3D%27M0 600 Q240 575 480 600T960 592T1600 605%27 fill%3D%27none%27 stroke%3D%27%23c4d9e9%27 stroke-width%3D%279%27 opacity%3D%27.35%27%2F%3E%3Cpath d%3D%27M0 690 Q300 660 580 690T1100 680T1600 695V1000H0Z%27 fill%3D%27url(%23sand)%27%2F%3E%3Cpath d%3D%27M0 770 Q360 720 710 770T1600 750%27 fill%3D%27none%27 stroke%3D%27%238296a7%27 stroke-width%3D%274%27 opacity%3D%27.18%27%2F%3E%3Cpath d%3D%27M65 700 135 610 240 635 325 735 250 790 120 780Z%27 fill%3D%27url(%23ice)%27 stroke%3D%27%23d9f3ff%27 stroke-width%3D%278%27 opacity%3D%27.9%27%2F%3E%3Cpath d%3D%27m135 610 45 75 60-50M135 610l15 115M180 685l95 50%27 stroke%3D%27%23fff%27 stroke-width%3D%277%27 opacity%3D%27.7%27 fill%3D%27none%27%2F%3E%3Cg fill%3D%27%23071421%27 opacity%3D%27.8%27%3E%3Cellipse cx%3D%2770%27 cy%3D%27850%27 rx%3D%2735%27 ry%3D%2716%27%2F%3E%3Cellipse cx%3D%27190%27 cy%3D%27920%27 rx%3D%2742%27 ry%3D%2720%27%2F%3E%3Cellipse cx%3D%27360%27 cy%3D%27865%27 rx%3D%2728%27 ry%3D%2713%27%2F%3E%3Cellipse cx%3D%27520%27 cy%3D%27950%27 rx%3D%2746%27 ry%3D%2718%27%2F%3E%3Cellipse cx%3D%27710%27 cy%3D%27880%27 rx%3D%2732%27 ry%3D%2715%27%2F%3E%3Cellipse cx%3D%27900%27 cy%3D%27960%27 rx%3D%2744%27 ry%3D%2718%27%2F%3E%3Cellipse cx%3D%271160%27 cy%3D%27865%27 rx%3D%2735%27 ry%3D%2716%27%2F%3E%3Cellipse cx%3D%271390%27 cy%3D%27935%27 rx%3D%2748%27 ry%3D%2719%27%2F%3E%3Cellipse cx%3D%271530%27 cy%3D%27820%27 rx%3D%2731%27 ry%3D%2714%27%2F%3E%3C%2Fg%3E%3Cg fill%3D%27%23f3f7fb%27 opacity%3D%27.3%27 filter%3D%27url(%23mist)%27%3E%3Cellipse cx%3D%27330%27 cy%3D%27525%27 rx%3D%27440%27 ry%3D%2745%27%2F%3E%3Cellipse cx%3D%271100%27 cy%3D%27530%27 rx%3D%27520%27 ry%3D%2750%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  transform: scale(1.025);
+  animation: aurora-coastal-drift 72s ease-in-out infinite alternate;
+}
+html body:not(.workspace-active):not(.platform-admin-login)::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg,rgba(221,235,250,.12) 0%,rgba(21,43,64,.04) 48%,rgba(4,15,25,.3) 100%),
+    radial-gradient(ellipse at 50% 44%,rgba(220,235,250,.08),transparent 60%);
+  animation: aurora-coastal-mist 38s ease-in-out infinite alternate;
+}
+@keyframes aurora-coastal-drift {
+  from { transform:scale(1.025) translate3d(-.35%,0,0); }
+  to { transform:scale(1.06) translate3d(.35%,.2%,0); }
+}
+@keyframes aurora-coastal-mist {
+  from { opacity:.55; background-position:0 0,42% 50%; }
+  to { opacity:.95; background-position:0 0,58% 50%; }
+}
+html body:not(.workspace-active):not(.platform-admin-login) .topbar {
+  background:rgba(232,241,252,.18)!important;
+  border-bottom:1px solid rgba(255,255,255,.28)!important;
+  box-shadow:0 8px 28px rgba(8,24,42,.12)!important;
+  backdrop-filter:blur(16px);
+}
+html body:not(.workspace-active):not(.platform-admin-login) .topbar .brand {
+  color:#092d65!important;
+}
+html body:not(.workspace-active):not(.platform-admin-login) .login-card {
+  width:min(100%,416px)!important;
+  max-width:416px!important;
+  padding:30px 22px!important;
+  border:1px solid rgba(255,255,255,.88)!important;
+  border-radius:22px!important;
+  background:rgba(250,252,255,.94)!important;
+  box-shadow:0 24px 70px rgba(5,22,42,.3),0 4px 18px rgba(255,255,255,.16)!important;
+  backdrop-filter:blur(18px);
+}
+html body:not(.workspace-active):not(.platform-admin-login) .aurora-tagline { color:#294d7b!important; }
+html body:not(.workspace-active):not(.platform-admin-login) #login-form input,
+html body:not(.workspace-active):not(.platform-admin-login) #register-form input:not([type=checkbox]),
+html body:not(.workspace-active):not(.platform-admin-login) #freelancer-register-form input:not([type=checkbox]) {
+  border-color:#cbd9ec!important;
+  background:rgba(255,255,255,.9)!important;
+}
+html body:not(.workspace-active):not(.platform-admin-login) #login-form input:focus,
+html body:not(.workspace-active):not(.platform-admin-login) #register-form input:focus,
+html body:not(.workspace-active):not(.platform-admin-login) #freelancer-register-form input:focus {
+  outline:3px solid rgba(17,102,231,.16)!important;
+  border-color:#1768e8!important;
+}
+html body:not(.workspace-active):not(.platform-admin-login) .login-role-tab,
+html body:not(.workspace-active):not(.platform-admin-login) .login-submit-compact {
+  border-radius:11px!important;
+}
+html body:not(.workspace-active):not(.platform-admin-login) .login-submit-compact {
+  background:linear-gradient(110deg,#075bea,#1269f4)!important;
+  color:#fff!important;
+  box-shadow:0 8px 18px rgba(12,89,220,.2);
+}
+@media (min-width:1024px) {
+  html body:not(.workspace-active):not(.platform-admin-login) main.shell {
+    width:14cm!important;
+    max-width:calc(100vw - 32px)!important;
+    margin:0 auto!important;
+  }
+  html body:not(.workspace-active):not(.platform-admin-login) #login-view {
+    min-height:calc(100svh - 68px)!important;
+    padding:20px 0!important;
+  }
+}
+@media (max-width:600px) {
+  html body:not(.workspace-active):not(.platform-admin-login)::before {
+    background-position:52% center;
+  }
+  html body:not(.workspace-active):not(.platform-admin-login) .login-card {
+    padding:22px 16px!important;
+  }
+}
+@media (prefers-reduced-motion:reduce) {
+  html body:not(.workspace-active):not(.platform-admin-login)::before,
+  html body:not(.workspace-active):not(.platform-admin-login)::after { animation:none!important; }
+}
