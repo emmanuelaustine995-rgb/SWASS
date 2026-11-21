@@ -251,7 +251,7 @@ export class RepairsController {
     const user = this.requireShop(req);
     await this.db.ensureRepairSchema();
     if (!/^\d{1,18}$/.test(String(id || ''))) throw new BadRequestException('A valid repair record is required.');
-    const allowed = ['received','diagnosing','in_repair','ready','collected','cancelled'];
+    const allowed = ['received','diagnosing','in_repair','ready','cancelled'];
     const status = String(body?.status || '').trim();
     const detected = body?.detected === undefined ? undefined : String(body.detected).trim();
     const repairCostKes = body?.repairCostKes === undefined ? undefined : Number(body.repairCostKes);
