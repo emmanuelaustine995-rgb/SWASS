@@ -2414,7 +2414,7 @@
         const receipt=window.prompt('Receipt reference (optional):')||'';
         await request('/api/v1/loan-items/'+encodeURIComponent(id)+'/sale-report',{method:'POST',body:JSON.stringify({salePriceKes:Number(price),saleDate:new Date().toISOString().slice(0,10),buyerName:buyer,receiptReference:receipt})});
       }else if(action==='return'){
-        const condition=window.prompt('Describe the item's condition before return:')||'';
+        const condition=window.prompt("Describe the item's condition before return:")||'';
         await request('/api/v1/loan-items/'+encodeURIComponent(id)+'/return-request',{method:'POST',body:JSON.stringify({conditionIn:condition})});
       }else if(action==='approve-sale')await request('/api/v1/loan-items/'+encodeURIComponent(id)+'/decision',{method:'PATCH',body:JSON.stringify({action:'approve_sale'})});
       else if(action==='approve-return')await request('/api/v1/loan-items/'+encodeURIComponent(id)+'/decision',{method:'PATCH',body:JSON.stringify({action:'approve_return'})});
