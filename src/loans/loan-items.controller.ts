@@ -32,10 +32,10 @@ export class LoanItemsController {
     const q=await this.db.pool.query(
       `SELECT id,role,full_name AS name,phone FROM users
         WHERE is_active=true AND role IN ('owner','freelancer','vendor')
-          AND regexp_replace(phone,'[^0-9]','','g') IN (          , '0'||right(          ,9), right(          ,9))
+          AND regexp_replace(phone,'[^0-9]','','g') IN ($1, '0'||right($1,9), right($1,9))
        UNION ALL
        SELECT id,'customer' AS role,full_name AS name,phone FROM customer_accounts
-        WHERE is_active=true AND regexp_replace(phone,'[^0-9]','','g') IN (        , '0'||right(        ,9), right(        ,9))
+        WHERE is_active=true AND regexp_replace(phone,'[^0-9]','','g') IN ($1, '0'||right($1,9), right($1,9))
       [digits],
     );
     if(q.rows.length===0)throw new BadRequestException('No active AURORA account was found for that phone number');
