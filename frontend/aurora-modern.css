@@ -1186,3 +1186,87 @@ body.aurora-home-active .aurora-home-heading{flex:0 0 42px;display:flex;align-it
 #shop-home .shop-products-intro[data-shop-tab-panel="products"] {
   min-width: 0;
 }
+
+
+/* Receipt workspace: clear action hierarchy and distinct history categories. */
+body:not(.platform-admin-workspace) .receipt-actions-grid{
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:16px;
+  align-items:stretch;
+  margin:4px 0 18px;
+}
+body:not(.platform-admin-workspace) .receipt-choice{
+  min-height:148px;
+  height:100%;
+  padding:20px;
+  border:1px solid transparent;
+  border-radius:18px;
+  color:#fff;
+  box-shadow:0 10px 24px rgba(20,39,68,.13);
+  transition:transform .18s ease,box-shadow .18s ease,filter .18s ease;
+}
+body:not(.platform-admin-workspace) .receipt-choice:hover{
+  transform:translateY(-2px);
+  box-shadow:0 14px 28px rgba(20,39,68,.18);
+  filter:saturate(1.06);
+}
+body:not(.platform-admin-workspace) .receipt-choice:focus-visible{
+  outline:3px solid #93c5fd;
+  outline-offset:3px;
+}
+body:not(.platform-admin-workspace) #open-issue-receipt{
+  background:linear-gradient(135deg,#173b67 0%,#285f91 100%);
+}
+body:not(.platform-admin-workspace) #open-recover-receipt{
+  background:linear-gradient(135deg,#087b83 0%,#119b91 100%);
+}
+body:not(.platform-admin-workspace) .declaration-card>.declaration-choice{
+  background:linear-gradient(135deg,#96500e 0%,#d18a25 100%);
+}
+body:not(.platform-admin-workspace) .receipt-choice>span{
+  width:42px;height:42px;border-radius:13px;
+  background:rgba(255,255,255,.17);color:#fff;font-size:21px;
+}
+body:not(.platform-admin-workspace) .receipt-choice strong{font-size:16px;letter-spacing:.01em}
+body:not(.platform-admin-workspace) .receipt-choice small{color:rgba(255,255,255,.88);font-size:12px;line-height:1.5}
+body:not(.platform-admin-workspace) .shop-receipt-history-card{
+  margin-top:16px;border:1px solid #dce5f0;border-radius:19px;
+  box-shadow:0 8px 24px rgba(25,48,79,.06);overflow:hidden;
+}
+body:not(.platform-admin-workspace) .shop-receipt-history-card .profile-card-body{padding:0}
+body:not(.platform-admin-workspace) .receipt-history-panel{
+  margin:0;padding:20px;border:0;border-radius:0;background:linear-gradient(135deg,#fff 0%,#f4f8fc 100%);
+}
+body:not(.platform-admin-workspace) .receipt-history-panel h3{font-size:18px;color:#173b67}
+body:not(.platform-admin-workspace) .receipt-history-toggle{
+  padding:12px 18px;border:0;border-radius:12px;
+  background:linear-gradient(135deg,#173b67,#285f91);color:#fff;
+  box-shadow:0 5px 14px rgba(23,59,103,.16);
+}
+body:not(.platform-admin-workspace) .receipt-history-tabs{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;
+  margin:4px 0 16px;padding:5px;border:1px solid #dce5ef;
+  border-radius:14px;background:#edf3f8;
+}
+body:not(.platform-admin-workspace) .receipt-history-tab{
+  min-height:46px;padding:10px 14px;border:1px solid transparent;
+  border-radius:10px;background:transparent;color:#52647a;
+  font-size:13px;font-weight:800;line-height:1.35;
+}
+body:not(.platform-admin-workspace) .receipt-history-tab.active,
+body:not(.platform-admin-workspace) .receipt-history-tab[aria-selected="true"]{
+  border-color:#d6e2ef;background:#fff;color:#173b67;
+  box-shadow:0 3px 10px rgba(25,48,79,.08);
+}
+body:not(.platform-admin-workspace) .receipt-history-tab:focus-visible{
+  outline:3px solid #93c5fd;outline-offset:2px;
+}
+@media(max-width:900px){
+  body:not(.platform-admin-workspace) .receipt-actions-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:480px){
+  body:not(.platform-admin-workspace) .receipt-actions-grid{grid-template-columns:minmax(0,1fr)}
+  body:not(.platform-admin-workspace) .receipt-choice{min-height:118px;padding:17px}
+  body:not(.platform-admin-workspace) .receipt-history-panel{padding:15px}
+  body:not(.platform-admin-workspace) .receipt-history-tabs{grid-template-columns:minmax(0,1fr)}
+}
