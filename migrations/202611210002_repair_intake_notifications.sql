@@ -1,3 +1,24 @@
+-- Create the original register here as well as extending it so a fresh
+-- database can apply migrations before the API's lazy schema initializer runs.
+CREATE TABLE IF NOT EXISTS shop_repair_jobs (
+  id BIGSERIAL PRIMARY KEY,
+  tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+  store_id UUID NOT NULL REFERENCES stores(id) ON DELETE CASCADE,
+  received_by UUID NULL REFERENCES users(id) ON DELETE SET NULL,
+  item_name VARCHAR(160) NOT NULL,
+  item_identifier VARCHAR(100) NOT NULL DEFAULT '',
+  customer_name VARCHAR(160) NOT NULL,
+  customer_id TEXT NOT NULL,
+  item_condition VARCHAR(1000) NOT NULL,
+  problem VARCHAR(2000) NOT NULL,
+  detected VARCHAR(2000) NOT NULL DEFAULT '',
+  received_date DATE NOT NULL DEFAULT CURRENT_DATE,
+  expected_pick_date DATE NOT NULL,
+  status VARCHAR(24) NOT NULL DEFAULT 'received' CHECK (status IN ('received','diagnosing','in_repair','ready','collected','cancelled')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 -- Extend the existing Shop Goods > Repair register with intake references,
 -- contact details, owner notification context and an immutable activity trail.
 ALTER TABLE shop_repair_jobs
