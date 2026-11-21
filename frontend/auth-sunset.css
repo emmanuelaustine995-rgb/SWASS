@@ -2,14 +2,14 @@
 html,body{min-height:100%;}
 
 /* Keep the sky behind the page without downloading large images or blocking auth. */
-body:not(.workspace-active){
+body:not(.workspace-active):not(.platform-admin-login){
   position:relative;
   isolation:isolate;
   background:linear-gradient(145deg,#f7a46f 0%,#f5a16e 24%,#b8759e 58%,#596e9c 100%)!important;
   background-attachment:fixed!important;
 }
-body:not(.workspace-active)::before,
-body:not(.workspace-active)::after{
+body:not(.workspace-active):not(.platform-admin-login)::before,
+body:not(.workspace-active):not(.platform-admin-login)::after{
   content:"";
   position:fixed;
   inset:-18%;
@@ -17,7 +17,7 @@ body:not(.workspace-active)::after{
   pointer-events:none;
   will-change:transform,background-position;
 }
-body:not(.workspace-active)::before{
+body:not(.workspace-active):not(.platform-admin-login)::before{
   background:
     radial-gradient(ellipse 19% 7% at 12% 27%,rgba(255,244,224,.64) 0 48%,transparent 72%),
     radial-gradient(ellipse 25% 9% at 30% 33%,rgba(255,232,211,.48) 0 46%,transparent 73%),
@@ -28,7 +28,7 @@ body:not(.workspace-active)::before{
   background-size:150% 100%;
   animation:aurora-sunset-clouds 58s ease-in-out infinite alternate;
 }
-body:not(.workspace-active)::after{
+body:not(.workspace-active):not(.platform-admin-login)::after{
   inset:0;
   background:linear-gradient(180deg,rgba(255,242,222,.04),rgba(42,55,94,.12));
 }
@@ -38,24 +38,24 @@ body:not(.workspace-active)::after{
 }
 
 /* The login and registration surface stays white and legible. */
-body:not(.workspace-active) .topbar{
+body:not(.workspace-active):not(.platform-admin-login) .topbar{
   background:rgba(255,255,255,.84)!important;
   border-bottom:1px solid rgba(255,255,255,.62)!important;
   box-shadow:0 4px 18px rgba(55,47,77,.07);
   backdrop-filter:blur(12px);
 }
-body:not(.workspace-active) .topbar .brand{color:#38245e!important}
-body:not(.workspace-active) .shell{
+body:not(.workspace-active):not(.platform-admin-login) .topbar .brand{color:#38245e!important}
+body:not(.workspace-active):not(.platform-admin-login) .shell{
   position:relative;
   z-index:1;
 }
-body:not(.workspace-active) #login-view,
-body:not(.workspace-active) .login-wrap{
+body:not(.workspace-active):not(.platform-admin-login) #login-view,
+body:not(.workspace-active):not(.platform-admin-login) .login-wrap{
   min-height:calc(100svh - 68px);
   align-items:center;
   justify-content:center;
 }
-body:not(.workspace-active) .login-card{
+body:not(.workspace-active):not(.platform-admin-login) .login-card{
   width:min(100%,470px)!important;
   max-width:470px!important;
   margin:22px auto!important;
@@ -66,58 +66,58 @@ body:not(.workspace-active) .login-card{
   border-radius:22px!important;
   box-shadow:0 22px 65px rgba(44,36,75,.22),0 3px 12px rgba(44,36,75,.08)!important;
 }
-body:not(.workspace-active) .aurora-auth-welcome,
-body:not(.workspace-active) footer.aurora-copyright{
+body:not(.workspace-active):not(.platform-admin-login) .aurora-auth-welcome,
+body:not(.workspace-active):not(.platform-admin-login) footer.aurora-copyright{
   display:none!important;
 }
-body:not(.workspace-active) .aurora-brand-lockup{
+body:not(.workspace-active):not(.platform-admin-login) .aurora-brand-lockup{
   margin:0 auto 18px!important;
   text-align:center;
 }
-body:not(.workspace-active) .aurora-login-logo{
+body:not(.workspace-active):not(.platform-admin-login) .aurora-login-logo{
   width:min(100%,250px)!important;
   max-height:100px;
   margin:0 auto;
 }
-body:not(.workspace-active) .aurora-tagline{
+body:not(.workspace-active):not(.platform-admin-login) .aurora-tagline{
   margin:4px auto 0!important;
   color:#6a6076!important;
   font-size:12px!important;
 }
-body:not(.workspace-active) #login-form,
-body:not(.workspace-active) #register-form,
-body:not(.workspace-active) #freelancer-register-form,
-body:not(.workspace-active) #password-reset-form,
-body:not(.workspace-active) #first-password-form{
+body:not(.workspace-active):not(.platform-admin-login) #login-form,
+body:not(.workspace-active):not(.platform-admin-login) #register-form,
+body:not(.workspace-active):not(.platform-admin-login) #freelancer-register-form,
+body:not(.workspace-active):not(.platform-admin-login) #password-reset-form,
+body:not(.workspace-active):not(.platform-admin-login) #first-password-form{
   color:#253044;
 }
-body:not(.workspace-active) #login-form label,
-body:not(.workspace-active) #register-form label,
-body:not(.workspace-active) #freelancer-register-form label{
+body:not(.workspace-active):not(.platform-admin-login) #login-form label,
+body:not(.workspace-active):not(.platform-admin-login) #register-form label,
+body:not(.workspace-active):not(.platform-admin-login) #freelancer-register-form label{
   color:#344054;
 }
-body:not(.workspace-active) #login-form input,
-body:not(.workspace-active) #register-form input:not([type=checkbox]),
-body:not(.workspace-active) #freelancer-register-form input:not([type=checkbox]){
+body:not(.workspace-active):not(.platform-admin-login) #login-form input,
+body:not(.workspace-active):not(.platform-admin-login) #register-form input:not([type=checkbox]),
+body:not(.workspace-active):not(.platform-admin-login) #freelancer-register-form input:not([type=checkbox]){
   background:#fff;
   border:1px solid #d8dee8;
   border-radius:11px;
 }
-body:not(.workspace-active) #login-form input:focus,
-body:not(.workspace-active) #register-form input:focus,
-body:not(.workspace-active) #freelancer-register-form input:focus{
+body:not(.workspace-active):not(.platform-admin-login) #login-form input:focus,
+body:not(.workspace-active):not(.platform-admin-login) #register-form input:focus,
+body:not(.workspace-active):not(.platform-admin-login) #freelancer-register-form input:focus{
   outline:3px solid rgba(112,79,170,.14);
   border-color:#8060b2;
 }
-body:not(.workspace-active) .login-role-tabs{
+body:not(.workspace-active):not(.platform-admin-login) .login-role-tabs{
   gap:6px;
   margin-bottom:18px;
 }
-body:not(.workspace-active) .login-role-tab{
+body:not(.workspace-active):not(.platform-admin-login) .login-role-tab{
   min-height:42px;
   border-radius:10px;
 }
-body:not(.workspace-active) .login-submit-compact{
+body:not(.workspace-active):not(.platform-admin-login) .login-submit-compact{
   min-height:48px;
   border-radius:11px;
   letter-spacing:.04em;
@@ -127,10 +127,10 @@ body.registration-open .login-card{
   border-top:4px solid #8a67b4!important;
 }
 @media(max-width:600px){
-  body:not(.workspace-active) .shell{padding:12px 12px 24px!important}
-  body:not(.workspace-active) #login-view,
-  body:not(.workspace-active) .login-wrap{min-height:calc(100svh - 56px);padding:8px 0!important}
-  body:not(.workspace-active) .login-card{
+  body:not(.workspace-active):not(.platform-admin-login) .shell{padding:12px 12px 24px!important}
+  body:not(.workspace-active):not(.platform-admin-login) #login-view,
+  body:not(.workspace-active):not(.platform-admin-login) .login-wrap{min-height:calc(100svh - 56px);padding:8px 0!important}
+  body:not(.workspace-active):not(.platform-admin-login) .login-card{
     width:100%!important;
     margin:12px auto!important;
     padding:20px 16px!important;
@@ -138,5 +138,5 @@ body.registration-open .login-card{
   }
 }
 @media(prefers-reduced-motion:reduce){
-  body:not(.workspace-active)::before{animation:none!important}
+  body:not(.workspace-active):not(.platform-admin-login)::before{animation:none!important}
 }
