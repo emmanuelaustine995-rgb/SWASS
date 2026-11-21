@@ -84,7 +84,7 @@
     // A signed-out visitor must see only the login/registration area.
     document.body.classList.remove('customer-account-active');
     const protectedScreens=[
-      'welcome-back-banner','pos-view','customer-home','owner-home','receipts-home','shop-home','owner-dashboard-view',
+      'welcome-back-banner','pos-view','customer-home','owner-home','receipts-home','shop-home','owner-dashboard-view','loans-home',
       'staff-profile-panel','profile-panel','history-panel','owner-customers-section',
       'account-profile-menu','receipt-modal','receipt-recovery-modal','workspace-nav'
     ];
@@ -707,6 +707,7 @@
         document.getElementById('staff-profile-panel')?.classList.remove('hidden');
       }
     }
+    document.querySelectorAll('#workspace-nav [data-workspace="loans"]').forEach(el=>{const allowed=['owner','freelancer','vendor','customer'].includes(state.role);el.hidden=!allowed;el.classList.toggle('hidden',!allowed);el.style.setProperty('display',allowed?'':'none','important');el.setAttribute('aria-hidden',allowed?'false':'true');});
     document.querySelectorAll('#workspace-nav button').forEach(b=>b.classList.toggle('active',b.dataset.workspace===screen));
     // Re-apply the customer dock after workspace visibility and active-tab updates.
     if(state.role==='customer')enforceCustomerReceiptActions();
