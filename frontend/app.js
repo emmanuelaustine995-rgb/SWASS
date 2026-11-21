@@ -765,32 +765,51 @@
       pdfWindow.location.href=URL.createObjectURL(blob);
     }catch(error){pdfWindow.close();showNotice(error.message||'Could not open the receipt PDF.',true);}
   }
+  let activeReceiptHistoryType='ordinary';
   async function loadReceiptHistory(){
-    $('history-error').textContent='';$('history-list').innerHTML='<div class="empty">Loading ordinary and second-hand receipts…</div>';
-    const p=new URLSearchParams();const q=$('history-search').value.trim();const from=$('history-from').value;const to=$('history-to').value;
+    $('history-error').textContent='';
+    const historyType=activeReceiptHistoryType;
+    const isDeclaration=historyType==='declaration';
+    $('history-list').innerHTML='<div class="empty">Loading '+(isDeclaration?'sales declaration':'ordinary receipt')+' history…</div>';
+    const p=new URLSearchParams();
+    const q=$('history-search').value.trim();
+    const from=$('history-from').value;
+    const to=$('history-to').value;
     if(q)p.set('q',q);if(from)p.set('from',from);if(to)p.set('to',to);p.set('limit','50');
     try{
-      const [ordinary,secondhand]=await Promise.all([
-        request('/api/v1/receipts?'+p.toString()),
-        ['owner','freelancer'].includes(state.role)?request('/api/v1/second-hand-phone-declarations'):Promise.resolve({declarations:[]})
-      ]);
-      const rows=(ordinary.receipts||[]).map(r=>({kind:'ordinary',data:r}));
-      const needle=q.toLowerCase();
-      const special=(secondhand.declarations||[]).filter(d=>{
-        const date=d.createdAt?new Date(d.createdAt):null;
-        if(from&&date&&date<new Date(from+'T00:00:00'))return false;
-        if(to&&date&&date>new Date(to+'T23:59:59'))return false;
-        if(!needle)return true;
-        return [d.sellerName,d.buyerName,d.sellerPhone,d.buyerPhone,d.nationalId,d.phoneMakeModel,d.imei1,d.imei2,d.serialNumber,d.declarationRef]
-          .some(v=>String(v||'').toLowerCase().includes(needle));
-      }).map(d=>({kind:'secondhand',data:d}));
-      const combined=[...rows,...special].sort((a,b)=>new Date(b.data.issuedAt||b.data.createdAt||0)-new Date(a.data.issuedAt||a.data.createdAt||0));
-      if(!combined.length){$('history-list').innerHTML='<div class="empty">No ordinary or second-hand receipts match your search.</div>';return;}
-      $('history-list').innerHTML=combined.map(({kind,data:r})=>{
-        if(kind==='secondhand')return '<article class="history-row secondhand-pdf-history-row"><div class="history-row-top"><strong>SECOND-HAND SALE · '+escapeHtml(r.declarationRef)+'</strong><strong>'+money(r.purchasePriceKes)+'</strong></div><div class="history-row-meta">'+escapeHtml(new Date(r.createdAt).toLocaleString('en-KE'))+' · Sales Declaration PDF</div><div class="history-row-meta">Seller: '+escapeHtml(r.sellerName)+' · '+escapeHtml(r.sellerPhone||'')+'</div><div class="history-row-meta">Buyer: '+escapeHtml(r.buyerName||'')+' · '+escapeHtml(r.buyerPhone||'')+'</div><div class="history-row-items">'+escapeHtml(r.phoneMakeModel||'Product')+' · IMEI: '+escapeHtml(r.imei1||'Not provided')+'</div><button type="button" class="btn btn-primary btn-small" data-view-secondhand-pdf="'+escapeHtml(r.id)+'">View / print full Second-Hand PDF</button></article>';
-        return '<article class="history-row"><div class="history-row-top"><strong>'+escapeHtml(r.receiptNo)+'</strong><strong>'+money(r.totalKes)+'</strong></div><div class="history-row-meta">'+escapeHtml(new Date(r.issuedAt).toLocaleString('en-KE'))+' · '+escapeHtml(r.status)+' · '+escapeHtml(String(r.paymentMethod||'').toUpperCase())+'</div><div class="history-row-meta">Sales agent: '+escapeHtml(r.cashier?.name||'Staff')+'</div><div class="history-row-meta">PDF delivery · Email: '+escapeHtml(r.delivery?.email||'not requested')+' · WhatsApp: '+escapeHtml(r.delivery?.whatsapp||'not requested')+'</div><div class="history-row-meta">'+(r.customer?escapeHtml(r.customer.fullName)+' · '+escapeHtml(r.customer.phone)+(r.customer.nationalIdLast4?' · ID ending '+escapeHtml(r.customer.nationalIdLast4):''):'Walk-in customer')+'</div><div class="history-row-items">'+(r.items||[]).map(i=>escapeHtml(i.name)+' × '+Number(i.qty)+(i.serialNo?' · IMEI: '+escapeHtml(i.serialNo):'')).join(' · ')+'</div><button type="button" class="btn btn-light btn-small" data-view-pdf="'+escapeHtml(r.id)+'">View / print original PDF</button></article>';
-      }).join('');
-    }catch(e){$('history-list').innerHTML='';$('history-error').textContent=e.message||'Could not load receipt history.';}
+      if(isDeclaration){
+        if(!['owner','freelancer'].includes(state.role)){
+          $('history-list').innerHTML='<div class="empty">Sales Declaration Receipt History is available to shop owners and freelancers.</div>';
+          return;
+        }
+        const secondhand=await request('/api/v1/second-hand-phone-declarations');
+        const needle=q.toLowerCase();
+        const declarations=(secondhand.declarations||[]).filter(d=>{
+          const date=d.createdAt?new Date(d.createdAt):null;
+          if(from&&date&&date<new Date(from+'T00:00:00'))return false;
+          if(to&&date&&date>new Date(to+'T23:59:59'))return false;
+          if(!needle)return true;
+          return [d.sellerName,d.buyerName,d.sellerPhone,d.buyerPhone,d.nationalId,d.phoneMakeModel,d.imei1,d.imei2,d.serialNumber,d.declarationRef]
+            .some(v=>String(v||'').toLowerCase().includes(needle));
+        }).sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
+        if(!declarations.length){
+          $('history-list').innerHTML='<div class="empty">No Sales Declaration receipts match your search or date range.</div>';
+          return;
+        }
+        $('history-list').innerHTML=declarations.map(r=>'<article class="history-row secondhand-pdf-history-row"><div class="history-row-top"><strong>SALES DECLARATION · '+escapeHtml(r.declarationRef)+'</strong><strong>'+money(r.purchasePriceKes)+'</strong></div><div class="history-row-meta">'+escapeHtml(new Date(r.createdAt).toLocaleString('en-KE'))+' · Sales Declaration PDF</div><div class="history-row-meta">Seller: '+escapeHtml(r.sellerName)+' · '+escapeHtml(r.sellerPhone||'')+'</div><div class="history-row-meta">Buyer: '+escapeHtml(r.buyerName||'')+' · '+escapeHtml(r.buyerPhone||'')+'</div><div class="history-row-items">'+escapeHtml(r.phoneMakeModel||'Product')+' · IMEI: '+escapeHtml(r.imei1||'Not provided')+'</div><button type="button" class="btn btn-primary btn-small" data-view-secondhand-pdf="'+escapeHtml(r.id)+'">View / print full Sales Declaration PDF</button></article>').join('');
+        return;
+      }
+      const ordinary=await request('/api/v1/receipts?'+p.toString());
+      const receipts=(ordinary.receipts||[]);
+      if(!receipts.length){
+        $('history-list').innerHTML='<div class="empty">No ordinary receipts match your search or date range.</div>';
+        return;
+      }
+      $('history-list').innerHTML=receipts.map(r=>'<article class="history-row"><div class="history-row-top"><strong>'+escapeHtml(r.receiptNo)+'</strong><strong>'+money(r.totalKes)+'</strong></div><div class="history-row-meta">'+escapeHtml(new Date(r.issuedAt).toLocaleString('en-KE'))+' · '+escapeHtml(r.status)+' · '+escapeHtml(String(r.paymentMethod||'').toUpperCase())+'</div><div class="history-row-meta">Sales agent: '+escapeHtml(r.cashier?.name||'Staff')+'</div><div class="history-row-meta">PDF delivery · Email: '+escapeHtml(r.delivery?.email||'not requested')+' · WhatsApp: '+escapeHtml(r.delivery?.whatsapp||'not requested')+'</div><div class="history-row-meta">'+(r.customer?escapeHtml(r.customer.fullName)+' · '+escapeHtml(r.customer.phone)+(r.customer.nationalIdLast4?' · ID ending '+escapeHtml(r.customer.nationalIdLast4):''):'Walk-in customer')+'</div><div class="history-row-items">'+(r.items||[]).map(item=>escapeHtml(item.name)+' × '+Number(item.qty)+(item.serialNo?' · IMEI: '+escapeHtml(item.serialNo):'')).join(' · ')+'</div><button type="button" class="btn btn-light btn-small" data-view-pdf="'+escapeHtml(r.id)+'">View / print original PDF</button></article>').join('');
+    }catch(e){
+      $('history-list').innerHTML='';
+      $('history-error').textContent=e.message||'Could not load receipt history.';
+    }
   }
   function renderFreelancerHomeShop(){if(state.role!=='freelancer')return;const p=state.businessProfile||{};const name=String(p.businessName||'').trim();const store=String(p.storeName||'').trim();const location=String(p.storeLocation||'').trim();const title=$('freelancer-shop-name');const details=$('freelancer-shop-details');const message=$('freelancer-home-message');if(title)title.textContent=name||store||'Shop details unavailable';if(details)details.textContent=[store&&store!==name?store:'',location].filter(Boolean).join(' · ');if(message)message.textContent=name?'You are connected to this shop. Your work is linked to its registered business account.':'Your account is signed in, but its shop details could not be confirmed. Please contact support.';}
   async function loadBusinessProfile(){const d=await request('/api/v1/business/profile');const p=d.profile||{};state.businessProfile=p;renderFreelancerHomeShop();state.shopInsidePhotoDraft=undefined;state.shopOutsidePhotoDraft=undefined;if(!state.userName){state.userName=p.ownerFullName||p.ownerName||p.fullName||p.name||'';if(state.userName)saveSession();}$('profile-business-name').value=p.businessName||'';$('profile-business-phone').value=p.businessPhone||'';$('profile-business-email').value=p.businessEmail||'';$('profile-store-name').value=p.storeName||'';$('profile-store-location').value=p.storeLocation||'';$('profile-legal-name').value=p.legalName||'';$('profile-house-name').value=p.houseName||'';$('profile-floor').value=p.floor||'';$('profile-house-number').value=p.houseNumber||'';$('profile-website').value=p.websiteUrl||'';$('profile-kra-pin').value=p.kraPin||'';$('profile-registration-code').value=p.registrationCode||'';$('profile-outlet-id').value=p.outletId||'';$('profile-terminal-number').value=p.terminalNumber||'';$('profile-receipt-header').value=p.receiptHeader||'';$('profile-receipt-footer').value=p.receiptFooter||'';state.profileLogoData=p.logoData||undefined;const img=$('logo-preview');if(state.profileLogoData){img.src=state.profileLogoData;img.classList.remove('hidden');}else{img.removeAttribute('src');img.classList.add('hidden');}const inside=$('profile-shop-inside-preview'),outside=$('profile-shop-outside-preview');if(inside){if(p.shopInsidePhotoData){inside.src=p.shopInsidePhotoData;inside.classList.remove('hidden');}else{inside.removeAttribute('src');inside.classList.add('hidden');}}if(outside){if(p.shopOutsidePhotoData){outside.src=p.shopOutsidePhotoData;outside.classList.remove('hidden');}else{outside.removeAttribute('src');outside.classList.add('hidden');}}renderDashboardBusinessProfile();}
@@ -1915,7 +1934,8 @@
     $('history-panel')?.scrollIntoView({behavior:'smooth',block:'start'});
   });
   document.querySelector('.dashboard-sidebar')?.addEventListener('click',e=>{const link=e.target.closest('.sidebar-link');if(!link)return;const screen=link.dataset.screen||(link.getAttribute('href')==='#owner-customers-section'?'customers':link.getAttribute('href')==='#owner-reports-section'?'reports':link.getAttribute('href')==='#owner-payments-section'?'payments':'overview');e.preventDefault();showWorkspaceScreen(screen);});
-  $('history-toggle').addEventListener('click',async()=>{const box=$('history-content');const opening=box.classList.contains('hidden');box.classList.toggle('hidden');$('history-toggle').textContent=opening?'Close receipt history':'My receipt history';$('history-toggle').setAttribute('aria-expanded',String(opening));if(opening)await loadReceiptHistory();});
+  $('history-toggle').addEventListener('click',async()=>{const box=$('history-content');const opening=box.classList.contains('hidden');box.classList.toggle('hidden');$('history-toggle').textContent=opening?'Close receipt history':'My receipt history';$('history-toggle').setAttribute('aria-expanded',String(opening));$('history-declaration-tab')?.classList.toggle('hidden',!['owner','freelancer'].includes(state.role));if(opening)await loadReceiptHistory();});
+  document.querySelectorAll('[data-history-type]').forEach(tab=>tab.addEventListener('click',()=>{activeReceiptHistoryType=tab.dataset.historyType;document.querySelectorAll('[data-history-type]').forEach(item=>{const active=item===tab;item.classList.toggle('active',active);item.setAttribute('aria-selected',String(active));});void loadReceiptHistory();}));
   $('history-search-btn').addEventListener('click',loadReceiptHistory);
   $('history-list').addEventListener('click',e=>{const b=e.target.closest('[data-view-pdf]');if(b)openReceiptPdf(b.dataset.viewPdf);});
   $('history-list').addEventListener('click',async e=>{
