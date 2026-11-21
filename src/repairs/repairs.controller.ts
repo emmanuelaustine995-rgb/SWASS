@@ -48,7 +48,7 @@ export class RepairsController {
 
   private async makePdf(repair: any, shop: any): Promise<Buffer> {
     return new Promise((resolve, reject) => {
-      const doc = new PDFDocument({ size: [420, 595], margin: 24, info: { Title: 'AURORA Repair Intake ' + repair.reference, Author: shop.name || 'AURORA E-RECEIPT' } });
+      const doc = new PDFDocument({ size: [320, 520], margin: 20, info: { Title: 'AURORA Repair Intake ' + repair.reference, Author: shop.name || 'AURORA E-RECEIPT' } });
       const chunks: Buffer[] = [];
       doc.on('data', (chunk: Buffer) => chunks.push(chunk));
       doc.on('end', () => resolve(Buffer.concat(chunks)));
@@ -56,13 +56,13 @@ export class RepairsController {
       const ink = '#203247', muted = '#64748b', blue = '#145b91', line = '#d8e2ec';
       doc.fillColor(blue).font('Helvetica-Bold').fontSize(15).text(shop.name || 'AURORA E-RECEIPT', { align: 'center' });
       doc.fillColor(muted).font('Helvetica').fontSize(8).text([shop.store_name, shop.location, shop.phone].filter(Boolean).join(' · '), { align: 'center' });
-      doc.moveDown(0.6).moveTo(24, doc.y).lineTo(396, doc.y).strokeColor(line).stroke();
+      doc.moveDown(0.6).moveTo(24, doc.y).lineTo(300, doc.y).strokeColor(line).stroke();
       doc.moveDown(0.7).fillColor(blue).font('Helvetica-Bold').fontSize(12).text('REPAIR INTAKE RECEIPT', { align: 'center' });
       doc.moveDown(0.4).fillColor(ink).fontSize(10).text('Reference: ' + repair.reference);
       doc.font('Helvetica').fontSize(8).fillColor(muted).text('Received: ' + repair.receivedDate + '     Expected collection: ' + repair.expectedPickDate);
       const field = (label: string, value: any) => {
         doc.moveDown(0.65).fillColor(muted).font('Helvetica-Bold').fontSize(7).text(label.toUpperCase());
-        doc.moveDown(0.15).fillColor(ink).font('Helvetica').fontSize(9).text(String(value || '—'), { width: 370 });
+        doc.moveDown(0.15).fillColor(ink).font('Helvetica').fontSize(9).text(String(value || '—'), { width: 280 });
       };
       field('Customer', repair.customerName);
       field('Customer phone', repair.customerPhone);
@@ -73,7 +73,7 @@ export class RepairsController {
       field('Accessories received', repair.accessories);
       field('Logged by', repair.receivedByName);
       doc.moveDown(1).moveTo(24, doc.y).lineTo(396, doc.y).strokeColor(line).stroke();
-      doc.moveDown(0.7).fillColor(muted).font('Helvetica').fontSize(7).text('This confirms that the item was received for inspection/repair. It is not a payment receipt. Keep this reference for collection and tracking.', { align: 'center', width: 370 });
+      doc.moveDown(0.7).fillColor(muted).font('Helvetica').fontSize(7).text('This confirms that the item was received for inspection/repair. It is not a payment receipt. Keep this reference for collection and tracking.', { align: 'center', width: 280 });
       doc.moveDown(0.6).fillColor(blue).font('Helvetica-Bold').fontSize(8).text('AURORA E-RECEIPT · BY E-TECH', { align: 'center' });
       doc.end();
     });
@@ -112,10 +112,14 @@ export class RepairsController {
     try { return await fn(); } catch (error) { return { sent: false, reason: error instanceof Error ? error.message : 'Delivery failed' }; }
   }
 
+  private escapeHtml(value: unknown): string {
+    return String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]!));
+  }
+
   private async notifyOwner(input: { owner: any; shop: any; repair: any; pdf: Buffer; stage: 'received' | 'ready' }) {
     const title = input.stage === 'received' ? 'New repair received' : 'Repair ready for collection';
     const text = 'AURORA ' + title + ': ' + input.repair.reference + ' · ' + input.repair.itemName + ' · Customer ' + input.repair.customerName + '. Logged by ' + input.repair.receivedByName + '.';
-    const html = '<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#203247"><h2>' + title + '</h2><p><b>Repair reference:</b> ' + input.repair.reference + '</p><p><b>Customer:</b> ' + input.repair.customerName + ' · ' + input.repair.customerPhone + '</p><p><b>Item:</b> ' + input.repair.itemName + '</p><p><b>Reported problem:</b> ' + input.repair.problem + '</p><p><b>Status:</b> ' + (input.stage === 'ready' ? 'Ready for collection' : 'Received') + '</p><p><b>Recorded by:</b> ' + input.repair.receivedByName + '</p><p>The repair intake/update PDF is attached.</p></div>';
+    const html = '<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#203247"><h2>' + title + '</h2><p><b>Repair reference:</b> ' + this.escapeHtml(input.repair.reference) + '</p><p><b>Customer:</b> ' + this.escapeHtml(input.repair.customerName) + ' · ' + this.escapeHtml(input.repair.customerPhone) + '</p><p><b>Item:</b> ' + this.escapeHtml(input.repair.itemName) + '</p><p><b>Reported problem:</b> ' + this.escapeHtml(input.repair.problem) + '</p><p><b>Status:</b> ' + (input.stage === 'ready' ? 'Ready for collection' : 'Received') + '</p><p><b>Recorded by:</b> ' + this.escapeHtml(input.repair.receivedByName) + '</p><p>The repair intake/update PDF is attached.</p></div>';
     const [email, whatsapp, sms] = await Promise.all([
       this.safeDelivery(() => this.deliverEmail(input.owner.email, 'AURORA · ' + title + ' · ' + input.repair.reference, html, input.pdf, input.repair.reference + '.pdf')),
       this.safeDelivery(() => this.whatsapp.sendPdf({ to: input.owner.phone, receiptNo: input.repair.reference, businessName: input.shop.name || 'AURORA', pdf: input.pdf })),
@@ -197,7 +201,7 @@ export class RepairsController {
       ownerDelivery = await this.notifyOwner({ owner, shop, repair, pdf, stage: 'ready' });
       const customerText = 'AURORA repair update: ' + repair.reference + ' for ' + repair.itemName + ' is ready for collection at ' + (shop.name || 'the shop') + '. Please present your repair reference when collecting.';
       const customerDelivery = {
-        email: repair.customerEmail ? await this.safeDelivery(() => this.deliverEmail(repair.customerEmail,'Your item is ready for collection · '+repair.reference,'<p>Hello '+repair.customerName+', your item is ready for collection. Please present repair reference <b>'+repair.reference+'</b> at '+(shop.name||'the shop')+'.</p>',pdf,repair.reference+'-ready.pdf')) : { sent: false, reason: 'Customer email was not provided' },
+        email: repair.customerEmail ? await this.safeDelivery(() => this.deliverEmail(repair.customerEmail,'Your item is ready for collection · '+repair.reference,'<p>Hello '+this.escapeHtml(repair.customerName)+', your item is ready for collection. Please present repair reference <b>'+this.escapeHtml(repair.reference)+'</b> at '+this.escapeHtml(shop.name||'the shop')+'.</p>',pdf,repair.reference+'-ready.pdf')) : { sent: false, reason: 'Customer email was not provided' },
         whatsapp: await this.safeDelivery(() => this.whatsapp.sendText({ to: repair.customerPhone, text: customerText })),
       };
       await this.db.pool.query('INSERT INTO shop_repair_events(repair_id,tenant_id,store_id,actor_user_id,actor_name,event_type,details) VALUES($1,$2,$3,$4,$5,$6,$7)', [id,user.tenantId,user.storeId,user.sub,user.fullName||'Shop team','ready_notification',JSON.stringify({ownerDelivery,customerDelivery})]);
@@ -255,7 +259,7 @@ export class RepairsController {
     await this.db.pool.query('INSERT INTO shop_repair_events(repair_id,tenant_id,store_id,actor_user_id,actor_name,event_type,details) VALUES($1,$2,$3,$4,$5,$6,$7)',[repair.id,user.tenantId,user.storeId,user.sub,user.fullName||'Shop team','received','Item received and intake receipt generated.']);
     const ownerDelivery = await this.notifyOwner({ owner, shop, repair, pdf, stage: 'received' });
     const customerDelivery = {
-      email: customerEmail ? await this.safeDelivery(() => this.deliverEmail(customerEmail,'Your AURORA repair intake receipt · '+repair.reference,'<p>Hello '+repair.customerName+', your item has been received by '+(shop.name||'the shop')+'. Keep repair reference <b>'+repair.reference+'</b> for tracking and collection.</p>',pdf,repair.reference+'.pdf')) : { sent: false, reason: 'Customer email was not provided' },
+      email: customerEmail ? await this.safeDelivery(() => this.deliverEmail(customerEmail,'Your AURORA repair intake receipt · '+repair.reference,'<p>Hello '+this.escapeHtml(repair.customerName)+', your item has been received by '+this.escapeHtml(shop.name||'the shop')+'. Keep repair reference <b>'+this.escapeHtml(repair.reference)+'</b> for tracking and collection.</p>',pdf,repair.reference+'.pdf')) : { sent: false, reason: 'Customer email was not provided' },
       whatsapp: await this.safeDelivery(() => this.whatsapp.sendPdf({ to: customerPhone, receiptNo: repair.reference, businessName: shop.name || 'AURORA', pdf })),
     };
     return { repair, pdfBase64: pdf.toString('base64'), ownerDelivery, customerDelivery, message: 'Repair saved. The intake PDF has been generated and notification attempts recorded.' };
