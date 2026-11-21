@@ -886,8 +886,9 @@ html body.platform-admin-workspace #platform-referral-admin .platform-admin-tabs
   html body.workspace-active main.shell > #workspace-nav:not(.hidden) {
     left: 50% !important;
     right: auto !important;
-    width: min(calc(100vw - 32px), 860px) !important;
-    max-width: min(calc(100vw - 32px), 860px) !important;
+    width: calc(25vw - 28px) !important;
+    max-width: calc(25vw - 28px) !important;
+    min-width: 0 !important;
     transform: translateX(-50%) !important;
     z-index: 2147482000 !important;
   }
