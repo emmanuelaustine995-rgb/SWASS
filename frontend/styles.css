@@ -2656,3 +2656,33 @@ body.platform-admin-login:not(.workspace-active) .aurora-auth-welcome{display:no
 /* Customer repair tracking */
 .customer-repairs-card{margin:14px 0;padding:18px;border:1px solid #d9e4ef;border-radius:16px;background:#fff;box-shadow:0 8px 24px rgba(24,55,86,.06)}
 .customer-repairs-card h2{margin:2px 0 5px;color:#183b5c}.customer-repair-row{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:12px 0;border-top:1px solid #e7edf3}.customer-repair-row>div{display:grid;gap:5px;min-width:0}.customer-repair-row strong{color:#203247}.customer-repair-row small{font-size:12px;line-height:1.45;color:#64748b;overflow-wrap:anywhere}.customer-repair-row .repair-status{flex:0 0 auto}@media(max-width:560px){.customer-repair-row{flex-direction:column;align-items:flex-start}}
+
+
+/* Flagged Items — calm four-action card design.
+   Keep the cards in one vertical column on desktop and mobile. */
+#shop-lost-items-panel .lost-items-intro{display:block!important;padding:15px 17px!important;border:1px solid #e7edf3!important;border-radius:16px!important;background:#fff!important;box-shadow:0 5px 18px rgba(28,49,71,.045)!important}
+#shop-lost-items-panel .lost-items-intro .eyebrow{margin:0 0 5px;color:#7b8794;font-size:10px;font-weight:800;letter-spacing:.12em}
+#shop-lost-items-panel .lost-items-intro h2{margin:0 0 5px!important;color:#26384b;font-size:21px}
+#shop-lost-items-panel .lost-items-intro p:last-child{margin:0;line-height:1.5}
+#shop-lost-items-panel .lost-goods-cards{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:11px!important;width:100%;margin:0 0 14px!important}
+#shop-lost-items-panel .lost-goods-card{display:grid!important;grid-template-columns:44px minmax(0,1fr) 18px!important;align-items:center!important;column-gap:13px!important;min-width:0!important;min-height:88px!important;padding:14px 16px!important;border:1px solid transparent!important;border-radius:16px!important;text-align:left!important;box-shadow:0 5px 15px rgba(28,49,71,.055)!important;transition:transform .16s ease,box-shadow .16s ease!important}
+#shop-lost-items-panel .lost-goods-card:hover{transform:translateY(-1px);box-shadow:0 8px 19px rgba(28,49,71,.09)!important}
+#shop-lost-items-panel .lost-card-icon{display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:rgba(255,255,255,.78);font-size:23px;font-weight:800;line-height:1}
+#shop-lost-items-panel .lost-card-copy{display:grid;gap:4px;min-width:0}
+#shop-lost-items-panel .lost-goods-card strong{color:#29394a!important;font-size:15px!important;line-height:1.25}
+#shop-lost-items-panel .lost-goods-card small{color:#5d6d7c!important;font-size:12px!important;line-height:1.4!important}
+#shop-lost-items-panel .lost-card-arrow{color:#68798a;font-size:25px;font-weight:400;text-align:right}
+#shop-lost-items-panel .lost-card-register{background:#fce5e5!important;border-color:#f2caca!important}
+#shop-lost-items-panel .lost-card-register .lost-card-icon{color:#a83240}
+#shop-lost-items-panel .lost-card-found{background:#e3f2e9!important;border-color:#c9e6d5!important}
+#shop-lost-items-panel .lost-card-found .lost-card-icon{color:#26734d}
+#shop-lost-items-panel .lost-card-check{background:#fff1d9!important;border-color:#f1dfb9!important}
+#shop-lost-items-panel .lost-card-check .lost-card-icon{color:#96600d}
+#shop-lost-items-panel .lost-card-active{background:#e3f0fa!important;border-color:#c9dfef!important}
+#shop-lost-items-panel .lost-card-active .lost-card-icon{color:#28628d}
+#shop-lost-items-panel .lost-goods-card:focus-visible{outline:3px solid #527da5!important;outline-offset:3px}
+@media(max-width:620px){
+  #shop-lost-items-panel .lost-goods-cards{grid-template-columns:minmax(0,1fr)!important;gap:9px!important}
+  #shop-lost-items-panel .lost-goods-card{min-height:0!important;padding:12px 13px!important;grid-template-columns:40px minmax(0,1fr) 16px!important;column-gap:11px!important}
+  #shop-lost-items-panel .lost-card-icon{width:38px;height:38px;border-radius:12px;font-size:21px}
+}
