@@ -244,3 +244,31 @@ body.workspace-active #shop-home #shop-goods-on-repair-card.hidden,
 body.workspace-active #shop-home #shop-goods-on-repair-card[hidden] {
   display: none !important;
 }
+
+/* Final desktop authentication frame: one centred 14 cm column for both
+   sign-in and account creation. The form must never sit beside welcome copy. */
+@media (min-width:1024px){
+  html body:not(.workspace-active):not(.platform-admin-login) main.shell{
+    display:block!important;box-sizing:border-box!important;width:14cm!important;
+    min-width:0!important;max-width:calc(100vw - 32px)!important;
+    margin:0 auto!important;padding:18px 14px 28px!important;
+    height:auto!important;min-height:calc(100vh - 68px)!important;
+    overflow:visible!important;transform:none!important;
+  }
+  html body:not(.workspace-active):not(.platform-admin-login) #login-view,
+  html body:not(.workspace-active):not(.platform-admin-login) .login-wrap{
+    display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+    place-items:center!important;align-content:center!important;
+    box-sizing:border-box!important;width:100%!important;max-width:100%!important;
+    min-width:0!important;min-height:calc(100vh - 112px)!important;
+    margin:0!important;padding:16px 0!important;gap:0!important;
+  }
+  html body:not(.workspace-active):not(.platform-admin-login) #login-view>.login-card{
+    display:block!important;box-sizing:border-box!important;
+    width:min(100%,500px)!important;max-width:500px!important;
+    min-width:0!important;margin:0 auto!important;
+  }
+  html body.registration-open:not(.workspace-active) #login-view>.login-card{
+    width:100%!important;max-width:100%!important;
+  }
+}
