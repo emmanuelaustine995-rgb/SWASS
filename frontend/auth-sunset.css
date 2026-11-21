@@ -56,6 +56,11 @@ body:not(.workspace-active):not(.platform-admin-login) .login-card {
   box-shadow: 0 24px 70px rgba(5,22,42,.3) !important;
   backdrop-filter: blur(16px);
 }
+/* Keep the previously removed lower welcome/brand panel and copyright hidden on auth screens. */
+body:not(.workspace-active):not(.platform-admin-login) .aurora-auth-welcome,
+body:not(.workspace-active):not(.platform-admin-login) footer.aurora-copyright {
+  display: none !important;
+}
 body:not(.workspace-active):not(.platform-admin-login) .aurora-tagline {
   color: #294d7b !important;
 }
