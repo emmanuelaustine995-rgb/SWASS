@@ -2656,3 +2656,51 @@ body.platform-admin-login:not(.workspace-active) .aurora-auth-welcome{display:no
 /* Customer repair tracking */
 .customer-repairs-card{margin:14px 0;padding:18px;border:1px solid #d9e4ef;border-radius:16px;background:#fff;box-shadow:0 8px 24px rgba(24,55,86,.06)}
 .customer-repairs-card h2{margin:2px 0 5px;color:#183b5c}.customer-repair-row{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:12px 0;border-top:1px solid #e7edf3}.customer-repair-row>div{display:grid;gap:5px;min-width:0}.customer-repair-row strong{color:#203247}.customer-repair-row small{font-size:12px;line-height:1.45;color:#64748b;overflow-wrap:anywhere}.customer-repair-row .repair-status{flex:0 0 auto}@media(max-width:560px){.customer-repair-row{flex-direction:column;align-items:flex-start}}
+
+/* AURORA repair desk — structured intake and live workshop board */
+#shop-home .repair-card-content{gap:18px!important;padding:clamp(12px,2vw,20px)!important}
+#shop-home .repair-overview{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:2px 0 18px}
+#shop-home .repair-overview-card{display:grid;gap:5px;min-width:0;padding:13px;border:1px solid #e8d9ad;border-radius:14px;background:rgba(255,255,255,.84)}
+#shop-home .repair-overview-card span{font-size:10px;line-height:1.3;font-weight:800;color:#806326}
+#shop-home .repair-overview-card strong{font-size:26px;line-height:1;color:#49350e;font-variant-numeric:tabular-nums}
+#shop-home .repair-overview-card small{font-size:10px;color:#8b7851}
+#shop-home .repair-intake-intro{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:15px;border:1px solid #ead9a8;border-radius:15px;background:linear-gradient(110deg,#fffefa,#fff5d9)}
+#shop-home .repair-intake-intro h3{margin:4px 0;color:#523b0d;font-size:18px}
+#shop-home .repair-intake-intro p,#shop-home .repair-records-heading p{margin:3px 0 0;color:#806d43;font-size:12px;line-height:1.45}
+#shop-home .repair-section-kicker{font-size:9px;letter-spacing:.13em;font-weight:900;color:#a07820}
+#shop-home .repair-intake-step{flex:0 0 auto;padding:7px 9px;border-radius:9px;background:#f5e8c4;color:#795715;font-size:9px;font-weight:900;letter-spacing:.06em}
+#shop-home .repair-records-heading{align-items:center;margin-top:24px}
+#shop-home .repair-records-heading h3{margin:3px 0 0}
+#shop-home .repair-record-filters{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(170px,.6fr);gap:10px;margin:0 0 12px}
+#shop-home .repair-record-filters label,#shop-home .repair-record-detail-body label{display:grid;gap:6px;color:#725a27;font-size:11px;font-weight:800}
+#shop-home .repair-record-filters input,#shop-home .repair-record-filters select{box-sizing:border-box;width:100%;min-width:0;min-height:42px;padding:9px 11px;border:1px solid #dfcc94;border-radius:10px;background:#fffefa;color:#473613;font:inherit;font-size:13px}
+#shop-home .repair-record-row{display:block;padding:14px;border-color:#e5d6ae;background:rgba(255,255,255,.9)}
+#shop-home .repair-record-title{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+#shop-home .repair-record-title>div{display:grid;gap:4px;min-width:0}
+#shop-home .repair-record-title small{color:#8a7445;font-size:11px}
+#shop-home .repair-record-facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:12px 0}
+#shop-home .repair-record-facts span{display:grid;gap:3px;min-width:0;color:#493b20;font-size:11px;overflow-wrap:anywhere}
+#shop-home .repair-record-facts b{font-size:9px;color:#947a43;text-transform:uppercase;letter-spacing:.04em}
+#shop-home .repair-record-details{border-top:1px solid #eee2c4;padding-top:9px}
+#shop-home .repair-record-details>summary{cursor:pointer;color:#785813;font-size:11px;font-weight:850;list-style:none}
+#shop-home .repair-record-details>summary:after{content:'＋';float:right}
+#shop-home .repair-record-details[open]>summary:after{content:'−'}
+#shop-home .repair-record-detail-body{display:grid;gap:8px;padding-top:10px}
+#shop-home .repair-record-detail-body p{margin:0;color:#5f5031;font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+#shop-home .repair-record-detail-body textarea{box-sizing:border-box;width:100%;min-width:0;padding:10px;border:1px solid #dfcc94;border-radius:9px;background:#fffefa;color:#473613;font:inherit;font-size:12px}
+#shop-home .repair-record-tools{grid-template-columns:minmax(0,1fr) auto;align-items:end}
+#shop-home .repair-record-tools label{display:grid;gap:6px;color:#725a27;font-size:11px;font-weight:800}
+#shop-home .repair-record-tools select{min-height:40px}
+#shop-home .repair-empty-state{padding:24px 16px;text-align:center;border:1px dashed #d9c58f;border-radius:14px;background:#fffdf7}
+#shop-home .repair-empty-state strong{color:#604812}
+#shop-home .repair-empty-state p{margin:6px 0 0;color:#8b7851;font-size:12px}
+@media(max-width:700px){#shop-home .repair-overview{grid-template-columns:repeat(2,minmax(0,1fr))}#shop-home .repair-record-facts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){#shop-home .repair-record-filters{grid-template-columns:1fr}#shop-home .repair-intake-intro{align-items:flex-start}#shop-home .repair-record-title{flex-direction:column;align-items:flex-start}#shop-home .repair-record-tools{grid-template-columns:1fr}}
+
+#shop-home .repair-event-history{display:grid;gap:7px;margin-top:10px;padding:11px;border:1px solid #e8dfc8;border-radius:10px;background:#fffdf7}
+#shop-home .repair-event-history>strong{font-size:11px;color:#624b1b}
+#shop-home .repair-event-history>p{margin:0;color:#8b7851;font-size:11px}
+#shop-home .repair-event-row{display:grid;gap:3px;padding:7px 0;border-top:1px solid #eee5d2}
+#shop-home .repair-event-row>span{font-size:11px;font-weight:850;color:#5b4518;text-transform:capitalize}
+#shop-home .repair-event-row>small{font-size:10px;color:#8a7958}
+#shop-home .repair-event-row>p{margin:0;color:#685a3c;font-size:11px;overflow-wrap:anywhere}

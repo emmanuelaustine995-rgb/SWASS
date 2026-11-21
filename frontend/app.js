@@ -2463,16 +2463,33 @@
   });
 
 
+  let shopRepairRows=[];
+  function renderShopRepairRows(){
+    const target=$('repair-records-list');if(!target)return;
+    const query=String($('repair-search')?.value||'').trim().toLowerCase();
+    const statusFilter=$('repair-status-filter')?.value||'all';
+    const rows=shopRepairRows.filter(x=>{
+      const haystack=[x.reference,x.itemName,x.itemIdentifier,x.customerName,x.customerPhone,x.problem,x.receivedByName].join(' ').toLowerCase();
+      return (!query||haystack.includes(query))&&(statusFilter==='all'||x.status===statusFilter);
+    });
+    const statusLabel={received:'Received',diagnosing:'Under inspection',in_repair:'Repair in progress',ready:'Ready for collection',collected:'Collected',cancelled:'Cancelled'};
+    target.innerHTML=rows.length?rows.map(x=>'<article class="repair-record-row"><div class="repair-record-main"><div class="repair-record-title"><div><strong>'+escapeHtml(x.itemName)+'</strong><small>'+escapeHtml(x.reference||'—')+' · '+escapeHtml(x.customerName||'Customer')+'</small></div><span class="repair-status repair-status-'+escapeHtml(x.status)+'">'+escapeHtml(statusLabel[x.status]||x.status)+'</span></div><div class="repair-record-facts"><span><b>Customer phone</b>'+escapeHtml(x.customerPhone||'—')+'</span><span><b>IMEI / Serial</b>'+escapeHtml(x.itemIdentifier||'Not supplied')+'</span><span><b>Expected collection</b>'+escapeHtml(x.expectedPickDate?new Date(x.expectedPickDate).toLocaleDateString('en-KE'):'—')+'</span><span><b>Received by</b>'+escapeHtml(x.receivedByName||'Shop team')+'</span></div><details class="repair-record-details"><summary>View item details and update progress</summary><div class="repair-record-detail-body"><p><b>Reported problem:</b> '+escapeHtml(x.problem||'—')+'</p><p><b>Condition received:</b> '+escapeHtml(x.condition||'—')+'</p>'+(x.accessories?'<p><b>Accessories:</b> '+escapeHtml(x.accessories)+'</p>':'')+'<p><b>Received:</b> '+escapeHtml(x.receivedDate?new Date(x.receivedDate).toLocaleDateString('en-KE'):'—')+'</p><label>Repair diagnosis / technician notes<textarea rows="2" maxlength="2000" aria-label="Technician diagnosis" data-repair-detected-id="'+Number(x.id)+'" placeholder="Add inspection findings or repair notes">'+escapeHtml(x.detected||'')+'</textarea></label><div class="repair-record-tools"><label>Update repair stage<select aria-label="Update repair status" data-repair-status-id="'+Number(x.id)+'" data-previous-status="'+escapeHtml(x.status)+'"><option value="received" '+(x.status==='received'?'selected':'')+'>Received</option><option value="diagnosing" '+(x.status==='diagnosing'?'selected':'')+'>Under inspection</option><option value="in_repair" '+(x.status==='in_repair'?'selected':'')+'>Repair in progress</option><option value="ready" '+(x.status==='ready'?'selected':'')+'>Ready for collection</option><option value="collected" '+(x.status==='collected'?'selected':'')+'>Collected</option><option value="cancelled" '+(x.status==='cancelled'?'selected':'')+'>Cancelled</option></select></label><button type="button" class="btn btn-light btn-small" data-repair-detected-save="'+Number(x.id)+'">Save notes</button></div><section class="repair-event-history" data-repair-events-id="'+Number(x.id)+'"><strong>Activity and notification history</strong><p>Open this record to load its history.</p></section></div></details></div></article>').join(''):'<div class="repair-empty-state"><strong>No matching repair records</strong><p>'+(shopRepairRows.length?'Try another search or status filter.':'New items you receive will appear here after you record them.')+'</p></div>';
+  }
   async function loadShopRepairs(){
     const target=$('repair-records-list');if(!target)return;
     target.innerHTML='<p class="muted small">Loading repair register…</p>';
     try{
-      const data=await request('/api/v1/repairs');
-      const rows=data.repairs||[];
-      const statusLabel={received:'Received',diagnosing:'Diagnosing',in_repair:'In repair',ready:'Ready for pick-up',collected:'Collected',cancelled:'Cancelled'};
-      target.innerHTML=rows.length?rows.map(x=>'<article class="repair-record-row"><div class="repair-record-main"><strong>'+escapeHtml(x.itemName)+'</strong><small>Item ID: '+escapeHtml(x.itemIdentifier||'—')+' · Customer: '+escapeHtml(x.customerName)+' · Phone: '+escapeHtml(x.customerPhone||'—')+' · Ref: '+escapeHtml(x.reference||'—')+'</small><small>Condition: '+escapeHtml(x.condition)+'</small>'+(x.accessories?'<small>Accessories: '+escapeHtml(x.accessories)+'</small>':'')+'<small>Logged by: '+escapeHtml(x.receivedByName||'Shop team')+'</small><small>Problem: '+escapeHtml(x.problem)+'</small>'+(x.detected?'<small>Detected: '+escapeHtml(x.detected)+'</small>':'')+'<small>Received: '+escapeHtml(x.receivedDate?new Date(x.receivedDate).toLocaleDateString():'—')+' · Expected pick-up: '+escapeHtml(x.expectedPickDate?new Date(x.expectedPickDate).toLocaleDateString():'—')+'</small></div><div class="repair-record-tools"><span class="repair-status repair-status-'+escapeHtml(x.status)+'">'+escapeHtml(statusLabel[x.status]||x.status)+'</span><select aria-label="Update repair status" data-repair-status-id="'+Number(x.id)+'" data-previous-status="'+escapeHtml(x.status)+'"><option value="received" '+(x.status==='received'?'selected':'')+'>Received</option><option value="diagnosing" '+(x.status==='diagnosing'?'selected':'')+'>Diagnosing</option><option value="in_repair" '+(x.status==='in_repair'?'selected':'')+'>In repair</option><option value="ready" '+(x.status==='ready'?'selected':'')+'>Ready for pick-up</option><option value="collected" '+(x.status==='collected'?'selected':'')+'>Collected</option><option value="cancelled" '+(x.status==='cancelled'?'selected':'')+'>Cancelled</option></select><textarea rows="2" maxlength="2000" aria-label="Technician diagnosis" data-repair-detected-id="'+Number(x.id)+'" placeholder="Technician diagnosis / detected problem">'+escapeHtml(x.detected||'')+'</textarea><button type="button" class="btn btn-light btn-small" data-repair-detected-save="'+Number(x.id)+'">Save diagnosis</button></div></article>').join(''):'<p class="muted small">No goods have been recorded for repair yet.</p>';
+      const data=await request('/api/v1/repairs');shopRepairRows=data.repairs||[];
+      const count=(statuses)=>shopRepairRows.filter(x=>statuses.includes(x.status)).length;
+      $('repair-count-total').textContent=String(shopRepairRows.length);
+      $('repair-count-progress').textContent=String(count(['diagnosing','in_repair']));
+      $('repair-count-ready').textContent=String(count(['ready']));
+      $('repair-count-collected').textContent=String(count(['collected']));
+      renderShopRepairRows();
     }catch(error){target.innerHTML='<p class="error">'+escapeHtml(error.message||'Could not load the repair register.')+'</p>';}
   }
+  $('repair-search')?.addEventListener('input',renderShopRepairRows);
+  $('repair-status-filter')?.addEventListener('change',renderShopRepairRows);
   const repairForm=$('shop-repair-form');
   const repairToday=new Date();const repairTodayValue=repairToday.getFullYear()+'-'+String(repairToday.getMonth()+1).padStart(2,'0')+'-'+String(repairToday.getDate()).padStart(2,'0');
   if($('repair-received-date'))$('repair-received-date').value=repairTodayValue;
@@ -2497,6 +2514,18 @@
     }catch(error){message.textContent=error.message||'Could not save the repair record.';}
     finally{button.disabled=false;}
   });
+  $('repair-records-list')?.addEventListener('toggle',async e=>{
+    const details=e.target.closest?.('.repair-record-details');if(!details||!details.open)return;
+    const box=details.querySelector('[data-repair-events-id]');if(!box||box.dataset.loaded==='true'||box.dataset.loading==='true')return;
+    box.dataset.loading='true';box.querySelector('p').textContent='Loading activity history…';
+    try{
+      const data=await request('/api/v1/repairs/'+encodeURIComponent(box.dataset.repairEventsId)+'/events');
+      const events=data.events||[];
+      box.innerHTML='<strong>Activity and notification history</strong>'+(events.length?events.map(item=>'<div class="repair-event-row"><span>'+escapeHtml(item.eventType||'Update').replace(/_/g,' ')+'</span><small>'+escapeHtml(item.actorName||'Shop team')+' · '+escapeHtml(new Date(item.createdAt).toLocaleString('en-KE'))+'</small>'+(item.details?'<p>'+escapeHtml(item.details)+'</p>':'')+'</div>').join(''):'<p>No activity has been recorded yet.</p>');
+      box.dataset.loaded='true';
+    }catch(error){box.querySelector('p').textContent=error.message||'Could not load activity history.';}
+    finally{box.dataset.loading='false';}
+  },true);
   $('repair-records-list')?.addEventListener('click',async e=>{
     const button=e.target.closest('[data-repair-detected-save]');if(!button)return;
     const id=button.dataset.repairDetectedSave,field=$('repair-records-list').querySelector('[data-repair-detected-id="'+id+'"]');

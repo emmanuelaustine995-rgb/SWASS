@@ -218,6 +218,13 @@
         <summary class="repair-card-summary"><span><strong>Goods on Repair</strong><small>Record items received for repair and track collection dates.</small></span><span class="repair-gold-mark" aria-hidden="true">⚒</span></summary>
         <div class="repair-card-content">
         <header class="repair-card-heading"><div><span class="repair-card-kicker">SHOP SERVICE DESK</span><h2>Repair Register</h2><p>Record items received for repair and track their expected collection dates.</p></div></header>
+        <section class="repair-overview" aria-label="Repair overview">
+          <div class="repair-overview-card"><span>Total received</span><strong id="repair-count-total">0</strong><small>All repair records</small></div>
+          <div class="repair-overview-card"><span>In progress</span><strong id="repair-count-progress">0</strong><small>Inspection and repair</small></div>
+          <div class="repair-overview-card"><span>Ready for collection</span><strong id="repair-count-ready">0</strong><small>Awaiting customer</small></div>
+          <div class="repair-overview-card"><span>Collected</span><strong id="repair-count-collected">0</strong><small>Completed handovers</small></div>
+        </section>
+        <div class="repair-intake-intro"><div><span class="repair-section-kicker">NEW SERVICE REQUEST</span><h3>Receive an item</h3><p>Capture the customer's details and the condition of the item before work begins.</p></div><span class="repair-intake-step">01 / INTAKE</span></div>
         <form id="shop-repair-form" class="shop-repair-form">
           <div class="form-two"><label>Goods / item name<input id="repair-item-name" maxlength="160" required placeholder="e.g. Samsung Galaxy A15"></label><label>Item ID / serial number<input id="repair-item-identifier" maxlength="100" required placeholder="Serial number or IMEI"></label></div>
           <div class="form-two"><label>Customer name<input id="repair-customer-name" maxlength="160" required></label><label>Customer ID number<input id="repair-customer-id" maxlength="50" required></label></div><div class="form-two"><label>Customer phone number<input id="repair-customer-phone" type="tel" inputmode="tel" maxlength="30" required placeholder="07XX XXX XXX"></label><label>Customer email (optional)<input id="repair-customer-email" type="email" maxlength="254" placeholder="customer@example.com"></label></div>
@@ -228,7 +235,8 @@
           <button id="repair-submit" class="btn full" type="submit">＋ Record Goods on Repair</button>
           <p id="repair-message" class="muted small" role="status"></p>
         </form>
-        <div class="repair-records-heading"><h3>Repair Register</h3><button id="repair-refresh" class="btn btn-light btn-small" type="button">Refresh</button></div>
+        <div class="repair-records-heading"><div><span class="repair-section-kicker">LIVE WORKSHOP BOARD</span><h3>Repair activity</h3><p>Track every item from intake through collection.</p></div><button id="repair-refresh" class="btn btn-light btn-small" type="button">↻ Refresh</button></div>
+        <div class="repair-record-filters"><label>Search repairs<input id="repair-search" type="search" placeholder="Reference, customer, phone or device…" autocomplete="off"></label><label>Filter by status<select id="repair-status-filter"><option value="all">All statuses</option><option value="received">Received</option><option value="diagnosing">Under inspection</option><option value="in_repair">Repair in progress</option><option value="ready">Ready for collection</option><option value="collected">Collected</option><option value="cancelled">Cancelled</option></select></label></div>
         <div id="repair-records-list" class="repair-records-list" aria-live="polite"><p class="muted small">Open Goods on Repair to load the repair register.</p></div>
         </div>
       </details>

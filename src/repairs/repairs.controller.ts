@@ -166,6 +166,27 @@ export class RepairsController {
     return { repairs: result.rows.map(row => ({ ...row, customerId: this.decryptCustomerId(row.customerId) })) };
   }
 
+  @Get(':id/events')
+  async events(@Req() req: any, @Param('id') id: string) {
+    const user = this.requireShop(req);
+    await this.db.ensureRepairSchema();
+    if (!/^\d{1,18}$/.test(String(id || ''))) throw new BadRequestException('A valid repair record is required.');
+    const repair = await this.db.pool.query(
+      'SELECT id FROM shop_repair_jobs WHERE id=$1 AND tenant_id=$2 AND store_id=$3 LIMIT 1',
+      [id, user.tenantId, user.storeId],
+    );
+    if (!repair.rowCount) throw new NotFoundException('Repair record not found.');
+    const result = await this.db.pool.query(
+      `SELECT actor_name AS "actorName", event_type AS "eventType",
+              details, created_at AS "createdAt"
+         FROM shop_repair_events
+        WHERE repair_id=$1 AND tenant_id=$2 AND store_id=$3
+        ORDER BY created_at DESC LIMIT 100`,
+      [id, user.tenantId, user.storeId],
+    );
+    return { events: result.rows };
+  }
+
   @Patch(':id')
   async update(@Req() req: any, @Param('id') id: string, @Body() body: any) {
     const user = this.requireShop(req);
