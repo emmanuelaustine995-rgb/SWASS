@@ -26,8 +26,9 @@ export class LoanItemsController {
     return q.rows[0]||null;
   }
   private async findPartyByPhone(phone:string){
-    const digits=String(phone||'').replace(/\\D/g,'');
-    if(digits.length<9)throw new BadRequestException('Enter the borrower account phone number');
+    const rawDigits=String(phone||'').replace(/\\D/g,'');
+    const digits=rawDigits.startsWith('254')?rawDigits:rawDigits.startsWith('0')?'254'+rawDigits.slice(1):rawDigits.length===9?'254'+rawDigits:rawDigits;
+    if(digits.length!==12)throw new BadRequestException('Enter a valid Kenyan borrower phone number');
     const q=await this.db.pool.query(
       `SELECT id,role,full_name AS name,phone FROM users
         WHERE is_active=true AND role IN ('owner','freelancer','vendor')
