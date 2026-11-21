@@ -106,7 +106,7 @@
         customerNav.style.setProperty('background-color','#050505','important');
         customerNav.style.setProperty('border-color','#222','important');
         customerNav.style.setProperty('display','grid','important');
-        customerNav.style.setProperty('grid-template-columns','repeat(3,minmax(0,1fr))','important');
+        customerNav.style.setProperty('grid-template-columns','repeat(4,minmax(0,1fr))','important');
         customerNav.style.setProperty('height','39px','important');
         customerNav.style.setProperty('min-height','39px','important');
         customerNav.style.setProperty('padding','2px 5px','important');
@@ -558,7 +558,7 @@
     document.body.classList.add('workspace-active');
     $('login-view')?.classList.add('hidden');
     $('back-to-login-btn')?.classList.remove('hidden');
-    if(!['dashboard','receipts','profile','shop','subscription','lost-goods'].includes(screen))screen='dashboard';
+    if(!['dashboard','receipts','profile','shop','subscription','lost-goods','loans'].includes(screen))screen='dashboard';
     const previous=state.currentWorkspace;
     if(!options.fromBack&&previous&&previous!==screen){state.workspaceHistory.push(previous);if(state.workspaceHistory.length>30)state.workspaceHistory.shift();}
     state.currentWorkspace=screen;
@@ -575,7 +575,7 @@
     const customerHome=$('customer-home');
     // Hide every workspace root before opening exactly one destination.
     // This also prevents content retained by a previous tab from remaining visible.
-    [dashboardBusinessCard,ownerHome,customerHome,receiptHome,pos,owner,$('platform-referral-admin'),$('shop-home'),$('shop-lost-items-panel'),subscriptionHome,staffSummary,$('staff-profile-panel'),$('account-profile-menu')].forEach(el=>el?.classList.add('hidden'));
+    [dashboardBusinessCard,ownerHome,customerHome,$('loans-home'),receiptHome,pos,owner,$('platform-referral-admin'),$('shop-home'),$('shop-lost-items-panel'),subscriptionHome,staffSummary,$('staff-profile-panel'),$('account-profile-menu')].forEach(el=>el?.classList.add('hidden'));
     dashboardBusinessCard?.classList.add('hidden');
     pos?.classList.remove('profile-workspace-mode');
     owner?.classList.remove('profile-workspace-mode');
@@ -682,7 +682,11 @@
       $('owner-dashboard-view')?.classList.add('hidden');
       // Keep workspace navigation stable; do not force-scroll the whole page when opening Customers.
       window.dispatchEvent(new Event('swass:dashboard-open'));
-    }else if(screen==='profile'){
+    }else if(screen==='loans'){
+      if(!['owner','freelancer','customer'].includes(state.role)){showNotice('Loans are available to shop owners, freelancers and customers.',true);showWorkspaceScreen('dashboard',{fromBack:true});return;}
+      $('loans-home')?.classList.remove('hidden');
+      void loadLoansWorkspace();
+}else if(screen==='profile'){
       renderAccountProfile();
       if(['owner','manager','vendor','freelancer'].includes(state.role)){
         dashboardBusinessCard?.classList.add('hidden');
@@ -2335,6 +2339,91 @@
   });
 
 
+
+  function loanStatusLabel(loan){
+    if(loan.overdue)return 'OVERDUE';
+    return ({offered:'AWAITING ACCEPTANCE',active:'ACTIVE',sale_pending:'SALE AWAITING APPROVAL',return_pending:'RETURN AWAITING APPROVAL',sold:'SOLD · APPROVED',returned:'RETURNED · RECEIVED',declined:'DECLINED',cancelled:'CANCELLED'})[loan.status]||String(loan.status||'').toUpperCase();
+  }
+  function renderLoanCard(loan,isLender){
+    const status=loanStatusLabel(loan),due=loan.expected_return_date?new Date(loan.expected_return_date).toLocaleDateString('en-KE'):'—';
+    const otherParty=isLender?loan.borrower_name:loan.lender_name;
+    const otherRole=isLender?loan.borrower_role:loan.lender_role;
+    const value=money(loan.value_kes||0);
+    let actions='';
+    if(!isLender&&loan.status==='offered'){
+      actions='<button class="btn btn-primary btn-small" data-loan-action="accept" data-loan-id="'+escapeHtml(loan.id)+'">Accept item</button><button class="btn btn-light btn-small" data-loan-action="decline" data-loan-id="'+escapeHtml(loan.id)+'">Decline</button>';
+    }else if(!isLender&&loan.status==='active'){
+      if(loan.selling_allowed)actions+='<button class="btn btn-primary btn-small" data-loan-action="sale" data-loan-id="'+escapeHtml(loan.id)+'">Report sold</button>';
+      actions+='<button class="btn btn-light btn-small" data-loan-action="return" data-loan-id="'+escapeHtml(loan.id)+'">Request return</button>';
+    }else if(isLender&&loan.status==='sale_pending'){
+      actions='<button class="btn btn-primary btn-small" data-loan-action="approve-sale" data-loan-id="'+escapeHtml(loan.id)+'">Approve sale</button><button class="btn btn-light btn-small" data-loan-action="reject" data-loan-id="'+escapeHtml(loan.id)+'">Reject / request details</button>';
+    }else if(isLender&&loan.status==='return_pending'){
+      actions='<button class="btn btn-primary btn-small" data-loan-action="approve-return" data-loan-id="'+escapeHtml(loan.id)+'">Returned and received</button><button class="btn btn-light btn-small" data-loan-action="reject" data-loan-id="'+escapeHtml(loan.id)+'">Reject / request details</button>';
+    }
+    const permission=loan.selling_allowed?'Selling permitted · lender approval required':'Selling not permitted';
+    const duration=loan.accepted_at?' · '+Number(loan.daysOnLoan||0)+' day(s) elapsed':' · Counter starts after acceptance';
+    return '<article class="loan-record-card '+(loan.overdue?'is-overdue':'')+'"><div class="loan-record-top"><div><p class="eyebrow">'+escapeHtml(loan.reference)+'</p><h3>'+escapeHtml(loan.item_name)+'</h3></div><span class="loan-status">'+escapeHtml(status)+'</span></div><p class="loan-party-line">'+(isLender?'Borrowed by ':'Lent by ')+escapeHtml(otherParty||'AURORA user')+' <span>· '+escapeHtml(otherRole||'account')+'</span></p><div class="loan-record-facts"><span>Quantity <strong>'+Number(loan.quantity||1)+'</strong></span><span>Value <strong>'+escapeHtml(value)+'</strong></span><span>Due <strong>'+escapeHtml(due)+'</strong></span></div><p class="loan-record-meta">'+escapeHtml(permission)+escapeHtml(duration)+'</p>'+(loan.imei?'<p class="loan-record-meta">IMEI: '+escapeHtml(loan.imei)+'</p>':'')+(loan.serial_number?'<p class="loan-record-meta">Serial: '+escapeHtml(loan.serial_number)+'</p>':'')+(loan.sale_report?'<p class="loan-record-meta">Sale reported: '+escapeHtml(loan.sale_report.saleDate||'')+' · '+escapeHtml(money(loan.sale_report.salePriceKes||0))+'</p>':'')+(loan.return_report?'<p class="loan-record-meta">Return condition: '+escapeHtml(loan.return_report.conditionIn||'Not provided')+'</p>':'')+(loan.last_decision_reason?'<p class="loan-record-meta">Last decision: '+escapeHtml(loan.last_decision_reason)+'</p>':'')+(actions?'<div class="loan-record-actions">'+actions+'</div>':'')+'</article>';
+  }
+  async function loadLoansWorkspace(){
+    const lent=$('loans-lent-list'),borrowed=$('loans-borrowed-list'),message=$('aurora-loans-message');
+    if(!lent||!borrowed)return;
+    lent.innerHTML='<p class="muted small">Loading outgoing loans…</p>';
+    borrowed.innerHTML='<p class="muted small">Loading incoming loans…</p>';
+    try{
+      const data=await request('/api/v1/loan-items/workspace');
+      const loans=Array.isArray(data.loans)?data.loans:[];
+      const outgoing=loans.filter(x=>x.isLender===true),incoming=loans.filter(x=>x.isLender!==true);
+      $('loans-lent-count').textContent=String(outgoing.length);
+      $('loans-borrowed-count').textContent=String(incoming.length);
+      lent.innerHTML=outgoing.length?outgoing.map(x=>renderLoanCard(x,true)).join(''):'<p class="loans-empty">You have not lent any items yet.</p>';
+      borrowed.innerHTML=incoming.length?incoming.map(x=>renderLoanCard(x,false)).join(''):'<p class="loans-empty">No loan offers or borrowed items yet.</p>';
+      if(message)message.textContent=loans.length+' loan record(s) connected to your account.';
+    }catch(error){
+      lent.innerHTML='<p class="loans-empty">Could not load outgoing loans.</p>';
+      borrowed.innerHTML='<p class="loans-empty">Could not load incoming loans.</p>';
+      if(message)message.textContent=error.message||'Your loan records could not be loaded.';
+    }
+  }
+  $('aurora-loan-offer-form')?.addEventListener('submit',async e=>{
+    e.preventDefault();
+    const button=$('aurora-loan-submit'),message=$('aurora-loan-form-message');
+    button.disabled=true;button.textContent='Sending offer…';message.textContent='Checking the recipient account and recording the offer…';
+    try{
+      const payload={borrowerPhone:$('loan-recipient-phone').value.trim(),itemName:$('aurora-loan-item-name').value.trim(),quantity:Number($('aurora-loan-quantity').value),valueKes:Number($('aurora-loan-value').value),expectedReturnDate:$('aurora-loan-due-date').value,imei:$('aurora-loan-imei').value.trim(),serialNumber:$('aurora-loan-serial').value.trim(),conditionOut:$('aurora-loan-condition').value.trim(),sellingAllowed:$('aurora-loan-selling-allowed').checked};
+      const result=await request('/api/v1/loan-items/offers',{method:'POST',body:JSON.stringify(payload)});
+      message.textContent='Offer '+result.loan.reference+' sent. The recipient must accept it before the loan-day counter starts.';
+      $('aurora-loan-offer-form').reset();$('aurora-loan-quantity').value='1';$('aurora-loan-value').value='0';
+      await loadLoansWorkspace();
+    }catch(error){message.textContent=error.message||'Could not send the loan offer.';}
+    finally{button.disabled=false;button.textContent='Send loan offer';}
+  });
+  $('loans-home')?.addEventListener('click',async e=>{
+    const button=e.target.closest('button[data-loan-action]');if(!button)return;
+    const id=button.dataset.loanId,action=button.dataset.loanAction;
+    button.disabled=true;
+    try{
+      if(action==='accept')await request('/api/v1/loan-items/'+encodeURIComponent(id)+'/accept',{method:'PATCH',body:'{}'});
+      else if(action==='decline'){
+        const reason=window.prompt('Optional reason for declining this offer:')||'';
+        await request('/api/v1/loan-items/'+encodeURIComponent(id)+'/decline',{method:'PATCH',body:JSON.stringify({reason})});
+      }else if(action==='sale'){
+        const price=window.prompt('Enter the actual sale price in KSh:');if(price===null) return;
+        const buyer=window.prompt('Buyer name (optional):')||'';
+        const receipt=window.prompt('Receipt reference (optional):')||'';
+        await request('/api/v1/loan-items/'+encodeURIComponent(id)+'/sale-report',{method:'POST',body:JSON.stringify({salePriceKes:Number(price),saleDate:new Date().toISOString().slice(0,10),buyerName:buyer,receiptReference:receipt})});
+      }else if(action==='return'){
+        const condition=window.prompt('Describe the item's condition before return:')||'';
+        await request('/api/v1/loan-items/'+encodeURIComponent(id)+'/return-request',{method:'POST',body:JSON.stringify({conditionIn:condition})});
+      }else if(action==='approve-sale')await request('/api/v1/loan-items/'+encodeURIComponent(id)+'/decision',{method:'PATCH',body:JSON.stringify({action:'approve_sale'})});
+      else if(action==='approve-return')await request('/api/v1/loan-items/'+encodeURIComponent(id)+'/decision',{method:'PATCH',body:JSON.stringify({action:'approve_return'})});
+      else if(action==='reject'){
+        const reason=window.prompt('Reason for rejecting this request (required):');if(!reason)return;
+        await request('/api/v1/loan-items/'+encodeURIComponent(id)+'/decision',{method:'PATCH',body:JSON.stringify({action:'reject',reason})});
+      }
+      await loadLoansWorkspace();
+    }catch(error){const message=$('aurora-loans-message');if(message)message.textContent=error.message||'The loan action could not be completed.';}
+    finally{button.disabled=false;}
+  });
 
   $('loan-item-form')?.addEventListener('submit',async e=>{e.preventDefault();const btn=$('loan-issue-button'),msg=$('loan-message');btn.disabled=true;btn.textContent='Saving loan note…';msg.textContent='Saving the loan record and sending the customer loan receipt and shop copy…';try{const payload={itemName:$('loan-item-name').value.trim(),borrowerName:$('loan-borrower-name').value.trim(),phone:$('loan-phone').value.trim(),idNumber:$('loan-id').value.trim(),borrowerEmail:$('loan-email').value.trim(),imei:$('loan-imei').value.trim(),serialNumber:$('loan-serial').value.trim(),loanDate:$('loan-date').value,conditionOut:$('loan-condition-out').value.trim(),amountKes:Number($('loan-amount').value),processedBy:$('loan-processed-by').value.trim()};const result=await request('/api/v1/loan-items',{method:'POST',body:JSON.stringify(payload)});const link=document.createElement('a');link.href='data:application/pdf;base64,'+result.pdfBase64;link.download='AURORA-'+result.item.reference+'.pdf';link.click();msg.textContent='Professional loan receipt created. Customer email: '+(result.customerDelivery.email.sent?'sent':result.customerDelivery.email.reason||'not sent')+'; customer WhatsApp: '+(result.customerDelivery.whatsapp.sent?'sent':result.customerDelivery.whatsapp.reason||'not sent')+'. Shop email: '+(result.ownerDelivery.email.sent?'sent':result.ownerDelivery.email.reason||'not sent')+'; shop WhatsApp: '+(result.ownerDelivery.whatsapp.sent?'sent':result.ownerDelivery.whatsapp.reason||'not sent')+'.';$('loan-item-form').reset();}catch(err){msg.textContent=err.message||'Could not issue loan note.';}finally{btn.disabled=false;btn.textContent='LOAN';}});
   $('shop-product-search-form')?.addEventListener('submit',async e=>{
