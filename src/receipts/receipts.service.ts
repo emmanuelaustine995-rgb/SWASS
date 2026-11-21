@@ -139,12 +139,12 @@ export class ReceiptsService {
         const productName=String(line.name||'').toLowerCase();
         const isIdentifierTrackedProduct=/\b(phone|mobile|smartphone|iphone|ipad|tablet|laptop|notebook|computer|desktop|television|tv|camera|watch|console|electronics?)\b/.test(productName);
         const requiresIdentifier=!!line.requiresBuyerId||(!!line.productId&&protectedIds.has(line.productId))||isIdentifierTrackedProduct;
-        const identifier=String(line.serialNo||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
-        if(requiresIdentifier&&(identifier.length<6||line.qty!==1)){
-          throw new BadRequestException('AURORA lost-item protection: enter a separate IMEI / serial number for every protected phone or electronic item before issuing the receipt.');
+        const identifiers=String(line.serialNo||'').split('|').map(value=>value.toUpperCase().replace(/[^A-Z0-9]/g,'')).filter(value=>value.length>=6);
+        if(requiresIdentifier&&(!identifiers.length||line.qty!==1)){
+          throw new BadRequestException('AURORA lost-item protection: enter at least one valid IMEI / serial number for each physical phone or electronic item before issuing the receipt.');
         }
       }
-      const ids=[...new Set((dto.items||[]).map(i=>String(i.serialNo||'').toUpperCase().replace(/[^A-Z0-9]/g,'')).filter(v=>v.length>=6))];
+      const ids=[...new Set((dto.items||[]).flatMap(i=>String(i.serialNo||'').split('|').map(value=>value.toUpperCase().replace(/[^A-Z0-9]/g,'')).filter(value=>value.length>=6)))];
       if(ids.length){
         const match=await this.db.pool.query(`SELECT li.item_code AS "itemCode",li.item_name AS "itemName",u.full_name AS "registeredByName",u.email AS "registeredByEmail",u.phone AS "registeredByPhone",t.id AS "registeredTenantId",t.name AS "registeredShop",s.name AS "registeredBranch",s.location AS "registeredLocation",candidate.identifier AS "matchedIdentifier",checking_tenant.name AS "checkingShop",checking_tenant.phone AS "checkingShopPhone",checking_tenant.email AS "checkingShopEmail",checking_store.name AS "checkingBranch",checking_store.location AS "checkingLocation"
           FROM lost_items li
