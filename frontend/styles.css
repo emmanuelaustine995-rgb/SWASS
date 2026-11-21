@@ -2696,3 +2696,11 @@ body.platform-admin-login:not(.workspace-active) .aurora-auth-welcome{display:no
 #shop-home .repair-empty-state p{margin:6px 0 0;color:#8b7851;font-size:12px}
 @media(max-width:700px){#shop-home .repair-overview{grid-template-columns:repeat(2,minmax(0,1fr))}#shop-home .repair-record-facts{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){#shop-home .repair-record-filters{grid-template-columns:1fr}#shop-home .repair-intake-intro{align-items:flex-start}#shop-home .repair-record-title{flex-direction:column;align-items:flex-start}#shop-home .repair-record-tools{grid-template-columns:1fr}}
+
+#shop-home .repair-event-history{display:grid;gap:7px;margin-top:10px;padding:11px;border:1px solid #e8dfc8;border-radius:10px;background:#fffdf7}
+#shop-home .repair-event-history>strong{font-size:11px;color:#624b1b}
+#shop-home .repair-event-history>p{margin:0;color:#8b7851;font-size:11px}
+#shop-home .repair-event-row{display:grid;gap:3px;padding:7px 0;border-top:1px solid #eee5d2}
+#shop-home .repair-event-row>span{font-size:11px;font-weight:850;color:#5b4518;text-transform:capitalize}
+#shop-home .repair-event-row>small{font-size:10px;color:#8a7958}
+#shop-home .repair-event-row>p{margin:0;color:#685a3c;font-size:11px;overflow-wrap:anywhere}
