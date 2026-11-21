@@ -60,7 +60,7 @@ export class LoanItemsController {
     const {rows}=await this.db.pool.query(
       `SELECT l.*,
         (l.status IN ('active','sale_pending','return_pending') AND l.expected_return_date<CURRENT_DATE) AS overdue,
-        CASE WHEN l.accepted_at IS NULL THEN 0 ELSE GREATEST(0,CURRENT_DATE-l.accepted_at::date) END AS "daysOnLoan",
+        CASE WHEN l.accepted_at IS NULL THEN 0 ELSE GREATEST(1,CURRENT_DATE-l.accepted_at::date+1) END AS "daysOnLoan",
         (l.lender_role=$1 AND l.lender_id=$2) AS "isLender"
        FROM aurora_loans l
        WHERE (l.lender_role=$1 AND l.lender_id=$2)
