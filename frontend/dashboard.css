@@ -4005,3 +4005,78 @@ html body.workspace-active #platform-security-panel:not(.hidden){
   #platform-security-panel .maintenance-submit-row{flex-direction:column}
   #platform-security-panel .maintenance-submit-row .btn{width:100%}
 }
+
+
+/* Keep the Home invite QR compact so it never pushes the subscription bar or workspace tabs down. */
+@media (min-width: 1024px){
+  body.workspace-active #owner-home .referral-invite-card{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    grid-template-rows:auto auto!important;
+    align-content:start!important;
+    gap:5px!important;
+    height:104px!important;
+    min-height:104px!important;
+    max-height:104px!important;
+    box-sizing:border-box!important;
+    padding:7px 9px!important;
+    overflow:hidden!important;
+  }
+  body.workspace-active #owner-home .referral-invite-head{
+    min-height:54px!important;
+    max-height:54px!important;
+    align-items:center!important;
+    gap:6px!important;
+    overflow:hidden!important;
+  }
+  body.workspace-active #owner-home .referral-invite-head h2{
+    margin:0!important;
+    font-size:13px!important;
+    line-height:1.15!important;
+  }
+  body.workspace-active #owner-home .referral-qr{
+    flex:0 0 52px!important;
+    width:52px!important;
+    height:52px!important;
+    min-width:52px!important;
+    max-width:52px!important;
+    min-height:52px!important;
+    max-height:52px!important;
+    padding:3px!important;
+    box-sizing:border-box!important;
+    overflow:hidden!important;
+  }
+  body.workspace-active #owner-home .referral-qr img,
+  body.workspace-active #owner-home .referral-qr canvas{
+    width:46px!important;
+    height:46px!important;
+    max-width:46px!important;
+    max-height:46px!important;
+    object-fit:contain!important;
+  }
+  body.workspace-active #owner-home .referral-share-row{
+    display:flex!important;
+    align-items:center!important;
+    gap:5px!important;
+    min-height:27px!important;
+    max-height:27px!important;
+    margin:0!important;
+    overflow:hidden!important;
+  }
+  body.workspace-active #owner-home .referral-share-row input{
+    min-width:0!important;
+    height:27px!important;
+    min-height:27px!important;
+    padding:4px 6px!important;
+    font-size:9px!important;
+  }
+  body.workspace-active #owner-home .referral-share-row button{
+    flex:0 0 auto!important;
+    width:auto!important;
+    min-height:27px!important;
+    height:27px!important;
+    padding:4px 7px!important;
+    font-size:9px!important;
+    line-height:1!important;
+  }
+}
