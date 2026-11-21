@@ -1,43 +1,28 @@
-/* AURORA authentication background — clean replacement.
-   The old sunset/stacking implementation has been removed entirely. */
-html {
-  min-height: 100%;
-  background: #182b3d;
-}
+/* AURORA authentication background — photographic Icelandic black-sand coast.
+   Keep the existing login branding, card, and hidden welcome/footer unchanged. */
+html { min-height:100%; background:#273746; }
 body:not(.workspace-active):not(.platform-admin-login) {
-  position: relative !important;
-  isolation: isolate !important;
-  min-height: 100vh !important;
-  background: transparent !important;
-  background-color: transparent !important;
-}
-body:not(.workspace-active):not(.platform-admin-login) {
-  position: relative !important;
-  isolation: isolate !important;
-  min-height: 100% !important;
-  background: #263d52 !important;
+  position:relative!important;
+  isolation:isolate!important;
+  min-height:100vh!important;
+  background:transparent!important;
+  background-color:transparent!important;
 }
 body:not(.workspace-active):not(.platform-admin-login)::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background-color: #71869a;
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:-1;
+  pointer-events:none;
+  background-color:#596b79;
   background-image:
-    linear-gradient(180deg, rgba(221,232,242,.18) 0%, rgba(92,117,139,.05) 42%, rgba(5,17,28,.12) 100%),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1800 1100' preserveAspectRatio='xMidYMid slice'%3E%3Cdefs%3E%3ClinearGradient id='sky' x2='0' y2='1'%3E%3Cstop stop-color='%23cbd7e2'/%3E%3Cstop offset='.62' stop-color='%238da1b2'/%3E%3Cstop offset='1' stop-color='%23627689'/%3E%3C/linearGradient%3E%3ClinearGradient id='water' x2='0' y2='1'%3E%3Cstop stop-color='%237d9bad'/%3E%3Cstop offset='1' stop-color='%23253d50'/%3E%3C/linearGradient%3E%3ClinearGradient id='shore' x2='0' y2='1'%3E%3Cstop stop-color='%233b4a56'/%3E%3Cstop offset='1' stop-color='%230b141d'/%3E%3C/linearGradient%3E%3Cfilter id='soft'%3E%3CfeGaussianBlur stdDeviation='26'/%3E%3C/filter%3E%3C/defs%3E%3Crect width='1800' height='1100' fill='url(%23sky)'/%3E%3Cg fill='%23f1f4f6' opacity='.52' filter='url(%23soft)'%3E%3Cellipse cx='250' cy='160' rx='430' ry='100'/%3E%3Cellipse cx='900' cy='185' rx='540' ry='115'/%3E%3Cellipse cx='1530' cy='250' rx='360' ry='95'/%3E%3C/g%3E%3Cpath d='M0 545 130 455 225 470 345 300 445 420 560 345 690 465 830 275 955 430 1080 320 1210 455 1350 290 1480 435 1620 345 1800 455V700H0Z' fill='%23394f62'/%3E%3Cpath d='M0 545 130 455 225 470 345 300 445 420 560 345 690 465 830 275 955 430 1080 320 1210 455 1350 290 1480 435 1620 345 1800 455L1800 490 1620 390 1480 470 1350 340 1210 500 1080 370 955 475 830 330 690 505 560 395 445 465 345 355 225 505 130 490 0 590Z' fill='%23e6edf2' opacity='.92'/%3E%3Cpath d='M0 590Q350 555 700 590T1400 580T1800 590V790H0Z' fill='url(%23water)'/%3E%3Cpath d='M0 655Q380 625 760 655T1520 650T1800 660M0 720Q350 695 700 720T1400 715T1800 725' fill='none' stroke='%23d9e5ec' stroke-width='7' opacity='.22'/%3E%3Cpath d='M0 735Q380 700 760 740T1500 725T1800 740V1100H0Z' fill='url(%23shore)'/%3E%3Cpath d='M0 790Q380 755 760 795T1500 780T1800 795' fill='none' stroke='%2395a4ae' stroke-width='5' opacity='.22'/%3E%3Cpath d='M55 735 125 620 260 645 345 760 270 820 125 805Z' fill='%23d9e8f0' stroke='%23f4f8fb' stroke-width='8' opacity='.96'/%3E%3Cpath d='M125 620 175 700 260 645M175 700 165 790' fill='none' stroke='%23fff' stroke-width='7' opacity='.7'/%3E%3Cg fill='%23071119' opacity='.9'%3E%3Cellipse cx='75' cy='920' rx='52' ry='20'/%3E%3Cellipse cx='245' cy='1000' rx='48' ry='19'/%3E%3Cellipse cx='470' cy='925' rx='38' ry='15'/%3E%3Cellipse cx='720' cy='1030' rx='58' ry='22'/%3E%3Cellipse cx='1010' cy='935' rx='46' ry='18'/%3E%3Cellipse cx='1280' cy='1010' rx='58' ry='22'/%3E%3Cellipse cx='1550' cy='930' rx='46' ry='18'/%3E%3Cellipse cx='1730' cy='1040' rx='55' ry='20'/%3E%3C/g%3E%3Cpath d='M0 555Q450 520 900 555T1800 545' fill='none' stroke='%23eef3f6' stroke-width='70' opacity='.19' filter='url(%23soft)'/%3E%3C/svg%3E");
-  background-size: cover, cover;
-  background-position: center center, center center;
-  background-repeat: no-repeat;
-  transform: scale(1.015);
-  animation: aurora-coast-slow-drift 80s ease-in-out infinite alternate;
-}
-body:not(.workspace-active):not(.platform-admin-login) {
-  position: relative !important;
-  min-height: 100vh !important;
-  background: transparent !important;
-  background-color: transparent !important;
+    linear-gradient(180deg,rgba(220,230,238,.20) 0%,rgba(125,145,160,.08) 42%,rgba(5,13,20,.30) 100%),
+    url("https://images.pexels.com/photos/4087258/pexels-photo-4087258.jpeg?auto=compress&cs=tinysrgb&w=2560");
+  background-size:cover,cover;
+  background-position:center center,center 54%;
+  background-repeat:no-repeat;
+  transform:scale(1.015);
+  animation:aurora-coast-slow-drift 90s ease-in-out infinite alternate;
 }
 body:not(.workspace-active):not(.platform-admin-login) .topbar {
   background: rgba(226,236,246,.2) !important;
