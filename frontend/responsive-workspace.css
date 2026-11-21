@@ -855,3 +855,102 @@ html body.platform-admin-workspace #platform-referral-admin .platform-admin-tabs
     max-width: calc(25vw - 20px) !important;
   }
 }
+
+
+/* Final cross-device workspace sizing and navigation visibility.
+   Phones and tablets use the full available viewport. Only true desktop
+   widths use the narrow 25vw workspace. The navigation dock stays visible
+   and spans a usable width independently of the narrow desktop content. */
+@media (min-width: 1024px) {
+  html body.workspace-active main.shell,
+  html body.workspace-active .shell {
+    left: 50% !important;
+    right: auto !important;
+    width: 25vw !important;
+    min-width: 25vw !important;
+    max-width: 25vw !important;
+    margin: 0 !important;
+    transform: translateX(-50%) !important;
+    overflow-x: hidden !important;
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+
+  html body.workspace-active main.shell > :not(#workspace-nav),
+  html body.workspace-active main.shell > :not(#workspace-nav) * {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  html body.workspace-active main.shell > #workspace-nav:not(.hidden) {
+    left: 50% !important;
+    right: auto !important;
+    width: min(calc(100vw - 32px), 860px) !important;
+    max-width: min(calc(100vw - 32px), 860px) !important;
+    transform: translateX(-50%) !important;
+    z-index: 2147482000 !important;
+  }
+}
+
+/* All phone sizes, portrait/landscape phones and tablets below desktop width. */
+@media (max-width: 1023px) {
+  html body.workspace-active main.shell,
+  html body.workspace-active .shell {
+    left: 0 !important;
+    right: 0 !important;
+    width: 100vw !important;
+    min-width: 0 !important;
+    max-width: 100vw !important;
+    margin: 0 !important;
+    transform: none !important;
+    overflow-x: hidden !important;
+    padding-left: max(9px, env(safe-area-inset-left, 0px)) !important;
+    padding-right: max(9px, env(safe-area-inset-right, 0px)) !important;
+  }
+
+  html body.workspace-active main.shell > :not(#workspace-nav),
+  html body.workspace-active main.shell > :not(#workspace-nav) * {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  html body.workspace-active main.shell > #workspace-nav:not(.hidden) {
+    left: 50% !important;
+    right: auto !important;
+    width: calc(100vw - 16px) !important;
+    max-width: calc(100vw - 16px) !important;
+    transform: translateX(-50%) !important;
+    z-index: 2147482000 !important;
+  }
+}
+
+/* Very narrow devices: keep all nav destinations tappable without clipping. */
+@media (max-width: 360px) {
+  html body.workspace-active main.shell > #workspace-nav:not(.hidden) {
+    width: calc(100vw - 10px) !important;
+    max-width: calc(100vw - 10px) !important;
+    gap: 1px !important;
+    padding-left: 3px !important;
+    padding-right: 3px !important;
+  }
+  html body.workspace-active main.shell > #workspace-nav:not(.hidden) > button {
+    min-width: 0 !important;
+    padding-left: 1px !important;
+    padding-right: 1px !important;
+    font-size: clamp(9px, 2.7vw, 11px) !important;
+  }
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+  html body.workspace-active main.shell > #workspace-nav:not(.hidden) {
+    bottom: max(4px, env(safe-area-inset-bottom, 0px)) !important;
+    max-height: 58px !important;
+    padding-top: 3px !important;
+    padding-bottom: 3px !important;
+  }
+  html body.workspace-active main.shell > #workspace-nav:not(.hidden) > button {
+    min-height: 38px !important;
+  }
+}
