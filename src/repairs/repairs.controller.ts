@@ -201,7 +201,7 @@ export class RepairsController {
     if (repair.paymentClientUuid && (Number(repair.paymentTotalKes) !== amountKes || repair.paymentMethod !== paymentMethod || (repair.paymentReference || '') !== paymentReference)) throw new BadRequestException('A receipt attempt already exists for a different amount or payment method. Retry with the same details to avoid duplicate receipts.');
     let clientUuid = repair.paymentClientUuid || randomUUID();
     if (!repair.paymentClientUuid) {
-      const attempt = await this.db.pool.query("UPDATE shop_repair_jobs SET payment_client_uuid=$1,payment_total_kes=$2,payment_method=$3,payment_reference=$4 WHERE id=$5 AND tenant_id=$6 AND store_id=$7 AND status='ready' AND payment_client_uuid IS NULL RETURNING payment_client_uuid AS "paymentClientUuid"",[clientUuid,amountKes,paymentMethod,paymentReference || null,id,user.tenantId,user.storeId]);
+      const attempt = await this.db.pool.query(`UPDATE shop_repair_jobs SET payment_client_uuid=$1,payment_total_kes=$2,payment_method=$3,payment_reference=$4 WHERE id=$5 AND tenant_id=$6 AND store_id=$7 AND status='ready' AND payment_client_uuid IS NULL RETURNING payment_client_uuid AS "paymentClientUuid"`,[clientUuid,amountKes,paymentMethod,paymentReference || null,id,user.tenantId,user.storeId]);
       if (!attempt.rows[0]) {
         const current = await this.db.pool.query('SELECT payment_client_uuid AS "paymentClientUuid",payment_total_kes AS "paymentTotalKes",payment_method AS "paymentMethod",payment_reference AS "paymentReference" FROM shop_repair_jobs WHERE id=$1 AND tenant_id=$2 AND store_id=$3',[id,user.tenantId,user.storeId]);
         const savedAttempt = current.rows[0];
