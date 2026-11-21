@@ -869,7 +869,7 @@
     $('receipt-add-product-toggle')?.classList.remove('hidden');$('receipt-add-product-toggle').textContent=rows.length?'＋ Add another product':'＋ Add product';
     $('cart-list').innerHTML=rows.length?rows.map(([id,r])=>{
       const serials=Array.isArray(r.serials)?r.serials:[r.imei||''];
-      return `<div class="cart-row simple-cart-row"><div><div class="cart-row-name">${escapeHtml(r.product.name)}</div><label class="cart-unit-price">Price (KSh)<input type="number" min="1" max="100000000000" step="1" inputmode="numeric" data-price="${id}" value="${Number(r.unitPriceKes??r.product.priceKes)}" required></label><div class="cart-row-sub cart-line-total">Line total: ${money(Number(r.unitPriceKes??r.product.priceKes)*r.qty)}</div><div class="simple-cart-serial"><input type="text" maxlength="80" data-serial-index="${id}" data-index="0" value="${escapeHtml(serials[0]||'')}" placeholder="IMEI / serial (optional)"><button type="button" class="btn btn-light btn-small" data-scan-serial="${id}" data-index="0">Scan</button></div></div></div>`;
+      return `<div class="cart-row simple-cart-row"><div><div class="cart-row-name">${escapeHtml(r.product.name)}</div><label class="cart-unit-price">Price (KSh)<input type="number" min="1" max="100000000000" step="1" inputmode="numeric" data-price="${id}" value="${Number(r.unitPriceKes??r.product.priceKes)}" required></label><div class="cart-row-sub cart-line-total">Line total: ${money(Number(r.unitPriceKes??r.product.priceKes)*r.qty)}</div>${[0,1].map(slot=>`<div class="simple-cart-serial"><input type="text" maxlength="80" data-serial-index="${id}" data-index="${slot}" value="${escapeHtml(serials[slot]||'')}" placeholder="IMEI ${slot+1} / serial (optional)"><button type="button" class="btn btn-light btn-small" data-scan-serial="${id}" data-index="${slot}">Scan</button></div>`).join('')}</div></div>`;
     }).join(''):'<div class="empty">Your sale is empty. Add the first item to begin.</div>';
     const t=totals(); $('subtotal').textContent=money(t.subtotal);$('total').textContent=money(t.total);$('checkout-open').disabled=!rows.length||t.total<0;$('checkout-open').textContent='2 · Issue Receipt →';const checkoutBusy=(!$('checkout-modal')?.classList.contains('hidden')||!$('receipt-modal')?.classList.contains('hidden'));$('checkout-open').classList.toggle('hidden',checkoutBusy);
   }
@@ -1096,7 +1096,7 @@
     const row=state.cart.get(imeiScannerTarget);
     if(!row){$('imei-scanner-message').textContent='This sale item is no longer in the cart.';return;}
     row.serials=Array.isArray(row.serials)?row.serials:['','',''];
-    const slot=Number(window.auroraSerialIndex)||row.serials.findIndex(v=>!String(v||'').trim());
+    const requestedSlot=Number(window.auroraSerialIndex);const slot=Number.isInteger(requestedSlot)?requestedSlot:row.serials.findIndex(v=>!String(v||'').trim());
     row.serials[Math.max(0,Math.min(2,slot<0?0:slot))]=code;
     row.imei=row.serials[0]||'';
     const field=$('cart-list').querySelector('[data-serial-index="'+CSS.escape(imeiScannerTarget)+'"][data-index="'+Math.max(0,Math.min(2,slot<0?0:slot))+'"]');
@@ -1153,10 +1153,11 @@
     e.preventDefault(); $('product-error').textContent='';
     const btn=$('product-form').querySelector('button[type="submit"]'); btn.disabled=true; btn.textContent='Adding item…';
     const serialValue=$('product-serial-1').value.trim();
+    const serialValue2=$('product-serial-2').value.trim();
     const productName=$('product-name').value.trim();
     const requiresIdentifier=/\b(phone|mobile|smartphone|iphone|ipad|tablet|laptop|notebook|computer|desktop|television|tv|camera|watch|console|electronics?)\b/i.test(productName);
     if(requiresIdentifier&&serialValue.replace(/[^A-Za-z0-9]/g,'').length<6){$('product-error').textContent='This phone or electronic item needs its IMEI / serial number. Enter it or scan the code before adding the product.';$('product-serial-1').focus();btn.disabled=false;btn.textContent='＋ Add product';return;}
-    const serials=serialValue?[serialValue]:[];
+    const serials=[serialValue,serialValue2].filter(Boolean);
     const qty=1,price=Number($('product-price').value);
     if(!Number.isSafeInteger(price)||price<1){$('product-error').textContent='Enter a valid selling price.';btn.disabled=false;btn.textContent='＋ Add product';return;}
     const id='direct-'+uuid(),product={id,name:productName,priceKes:price,costKes:0,stockQty:qty,reorderLevel:0,requiresBuyerId:$('product-buyer-id').checked||requiresIdentifier};
@@ -1936,7 +1937,7 @@
   $('back-to-login-btn')?.addEventListener('click',returnToAuroraLogin);$('customer-back-to-login')?.addEventListener('click',returnToAuroraLogin);
   $('dashboard-back-to-login')?.addEventListener('click',returnToAuroraLogin);
   // No saved shop products are available in the receipt workflow.
-  $('cart-list').addEventListener('click',e=>{const scan=e.target.closest('[data-scan-serial]');if(scan){imeiScannerTarget=scan.dataset.scanSerial;window.auroraSerialIndex=0;openImeiScanner(scan.dataset.scanSerial);}});
+  $('cart-list').addEventListener('click',e=>{const scan=e.target.closest('[data-scan-serial]');if(scan){imeiScannerTarget=scan.dataset.scanSerial;window.auroraSerialIndex=Number(scan.dataset.index)||0;openImeiScanner(scan.dataset.scanSerial);}});
   $('cart-list').addEventListener('input',e=>{const price=e.target.closest('[data-price]');if(price){const row=state.cart.get(price.dataset.price);const value=Number(price.value);if(!row||!Number.isSafeInteger(value)||value<1||value>100000000000){$('checkout-open').disabled=true;return;}if(row&&Number.isSafeInteger(value)&&value>=1&&value<=100000000000){row.unitPriceKes=value;const line=price.closest('.cart-row')?.querySelector('.cart-line-total');if(line)line.textContent='Line subtotal: '+money(value*row.qty);const t=totals();$('subtotal').textContent=money(t.subtotal);$('total').textContent=money(t.total);$('checkout-open').disabled=!state.cart.size||t.total<0||[...$('cart-list').querySelectorAll('[data-price]')].some(input=>!Number.isSafeInteger(Number(input.value))||Number(input.value)<1||Number(input.value)>100000000000);}return;}const field=e.target.closest('[data-serial-index]');if(field){const row=state.cart.get(field.dataset.serialIndex);if(row){row.serials=Array.isArray(row.serials)?row.serials:['','',''];row.serials[Number(field.dataset.index)||0]=field.value;row.imei=row.serials[0]||'';}}});
   let productSearchTimer;
   // Sales are manual-entry only. No product catalogue is loaded or searched.
