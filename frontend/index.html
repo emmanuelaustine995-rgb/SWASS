@@ -31,7 +31,7 @@
   <link rel="stylesheet" href="./dashboard.css?v=invite-qr-fixed-size-20261121">
   <link rel="stylesheet" href="./registration-layout.css?v=aurora-purple-auth-20261117">
   <link rel="stylesheet" href="./responsive-auth.css?v=shop-card-disclosure-fix-20261119">
-  <link rel="stylesheet" href="./responsive-workspace.css?v=loan-card-colours-icons-20261121">
+  <link rel="stylesheet" href="./responsive-workspace.css?v=repair-workflow-four-tabs-20261121">
   <link rel="stylesheet" href="./auth-sunset.css?v=diamond-beach-photo-fix-20261121">
 </head>
 <body>
@@ -218,20 +218,45 @@
       <details id="shop-goods-on-repair-card" class="shop-goods-on-repair-card hidden" aria-label="Goods on Repair">
         <summary class="repair-card-summary"><span><strong>Goods on Repair</strong><small>Record items received for repair and track collection dates.</small></span><span class="repair-gold-mark" aria-hidden="true">⚒</span></summary>
         <div class="repair-card-content">
-        <header class="repair-card-heading"><div><span class="repair-card-kicker">SHOP SERVICE DESK</span><h2>Repair Register</h2><p>Record items received for repair and track their expected collection dates.</p></div></header>
-        <form id="shop-repair-form" class="shop-repair-form">
-          <div class="form-two"><label>Goods / item name<input id="repair-item-name" maxlength="160" required placeholder="e.g. Samsung Galaxy A15"></label><label>Item ID / serial number<input id="repair-item-identifier" maxlength="100" required placeholder="Serial number or IMEI"></label></div>
-          <div class="form-two"><label>Customer name<input id="repair-customer-name" maxlength="160" required></label><label>Customer ID number<input id="repair-customer-id" maxlength="50" required></label></div><div class="form-two"><label>Customer phone number<input id="repair-customer-phone" type="tel" inputmode="tel" maxlength="30" required placeholder="07XX XXX XXX"></label><label>Customer email (optional)<input id="repair-customer-email" type="email" maxlength="254" placeholder="customer@example.com"></label></div>
-          <label>Condition when received<textarea id="repair-condition" rows="2" maxlength="1000" required placeholder="Describe visible condition, scratches, cracks or missing parts"></textarea></label><label>Accessories received (optional)<input id="repair-accessories" maxlength="500" placeholder="e.g. charger, case, SIM tray"></label>
-          <label>Problem reported<textarea id="repair-problem" rows="2" maxlength="2000" required placeholder="What problem did the customer report?"></textarea></label>
-          <label>Problem detected / diagnosis<textarea id="repair-detected" rows="2" maxlength="2000" placeholder="Technician's findings (can be updated after diagnosis)"></textarea></label>
-          <div class="form-two"><label>Date received<input id="repair-received-date" type="date" required></label><label>Expected pick-up date<input id="repair-pick-date" type="date" required></label></div>
-          <button id="repair-submit" class="btn full" type="submit">＋ Record Goods on Repair</button>
-          <p id="repair-message" class="muted small" role="status"></p>
-        </form>
-        <div class="repair-records-heading"><h3>Repair Register</h3><button id="repair-refresh" class="btn btn-light btn-small" type="button">Refresh</button></div>
-        <div id="repair-records-list" class="repair-records-list" aria-live="polite"><p class="muted small">Open Goods on Repair to load the repair register.</p></div>
+        <header class="repair-card-heading"><div><span class="repair-card-kicker">SHOP SERVICE DESK</span><h2>Goods on Repair</h2><p>Follow every item from receiving to repair, collection and final handover.</p></div></header>
+        <nav class="repair-stage-tabs" id="repair-stage-tabs" aria-label="Goods on Repair stages" role="tablist">
+          <button type="button" class="repair-stage-tab is-active" data-repair-stage="receive" role="tab" aria-selected="true" aria-controls="repair-stage-receive"><span class="repair-stage-icon" aria-hidden="true">📥</span><span><strong>Receive Goods</strong><small>Register item</small></span></button>
+          <button type="button" class="repair-stage-tab" data-repair-stage="ready" role="tab" aria-selected="false" aria-controls="repair-stage-ready"><span class="repair-stage-icon" aria-hidden="true">📦</span><span><strong>Ready to Collect</strong><small>Customer notified</small></span></button>
+          <button type="button" class="repair-stage-tab" data-repair-stage="service" role="tab" aria-selected="false" aria-controls="repair-stage-service"><span class="repair-stage-icon" aria-hidden="true">🛠️</span><span><strong>Repair &amp; Service</strong><small>Work in progress</small></span></button>
+          <button type="button" class="repair-stage-tab" data-repair-stage="issue" role="tab" aria-selected="false" aria-controls="repair-stage-issue"><span class="repair-stage-icon" aria-hidden="true">🧾</span><span><strong>Issue Goods &amp; Receipt</strong><small>Collection record</small></span></button>
+        </nav>
+        <div class="repair-stage-panels" id="repair-stage-panels">
+          <section class="repair-stage-panel is-active" id="repair-stage-receive" data-repair-panel="receive" role="tabpanel">
+            <div class="repair-stage-intro repair-stage-intro--receive"><span class="repair-stage-large-icon" aria-hidden="true">📥</span><div><h3>Receive goods</h3><p>Capture the customer's details, item condition and reported problem before accepting the item.</p></div></div>
+            <form id="shop-repair-form" class="shop-repair-form">
+              <div class="form-two"><label>Goods / item name<input id="repair-item-name" maxlength="160" required placeholder="e.g. Samsung Galaxy A15"></label><label>Item ID / serial number<input id="repair-item-identifier" maxlength="100" required placeholder="Serial number or IMEI"></label></div>
+              <div class="form-two"><label>Customer name<input id="repair-customer-name" maxlength="160" required></label><label>Customer ID number<input id="repair-customer-id" maxlength="50" required></label></div>
+              <div class="form-two"><label>Customer phone number<input id="repair-customer-phone" type="tel" inputmode="tel" maxlength="30" required placeholder="07XX XXX XXX"></label><label>Customer email (optional)<input id="repair-customer-email" type="email" maxlength="254" placeholder="customer@example.com"></label></div>
+              <label>Condition when received<textarea id="repair-condition" rows="2" maxlength="1000" required placeholder="Describe visible condition, scratches, cracks or missing parts"></textarea></label>
+              <label>Accessories received (optional)<input id="repair-accessories" maxlength="500" placeholder="e.g. charger, case, SIM tray"></label>
+              <label>Problem reported<textarea id="repair-problem" rows="2" maxlength="2000" required placeholder="What problem did the customer report?"></textarea></label>
+              <label>Initial diagnosis (optional)<textarea id="repair-detected" rows="2" maxlength="2000" placeholder="Technician findings can be updated in Repair &amp; Service"></textarea></label>
+              <div class="form-two"><label>Date received<input id="repair-received-date" type="date" required></label><label>Expected pick-up date<input id="repair-pick-date" type="date" required></label></div>
+              <button id="repair-submit" class="btn full" type="submit">＋ Record Goods on Repair</button>
+              <p id="repair-message" class="muted small" role="status"></p>
+            </form>
+          </section>
+          <section class="repair-stage-panel" id="repair-stage-ready" data-repair-panel="ready" role="tabpanel" hidden>
+            <div class="repair-stage-intro repair-stage-intro--ready"><span class="repair-stage-large-icon" aria-hidden="true">📦</span><div><h3>Ready for collection</h3><p>Repairs marked ready appear here. Confirm customer collection when the item is handed over.</p></div></div>
+            <div id="repair-ready-list" class="repair-records-list" aria-live="polite"><p class="muted small">Ready items will appear here.</p></div>
+          </section>
+          <section class="repair-stage-panel" id="repair-stage-service" data-repair-panel="service" role="tabpanel" hidden>
+            <div class="repair-stage-intro repair-stage-intro--service"><span class="repair-stage-large-icon" aria-hidden="true">🛠️</span><div><h3>Repair &amp; service</h3><p>Review received items, record technician diagnosis and update repair progress.</p></div></div>
+            <div id="repair-service-list" class="repair-records-list" aria-live="polite"><p class="muted small">Active repairs will appear here.</p></div>
+          </section>
+          <section class="repair-stage-panel" id="repair-stage-issue" data-repair-panel="issue" role="tabpanel" hidden>
+            <div class="repair-stage-intro repair-stage-intro--issue"><span class="repair-stage-large-icon" aria-hidden="true">🧾</span><div><h3>Issue goods &amp; payment receipt</h3><p>Collected items are recorded here so the shop can verify the handover and find the customer's repair record.</p></div></div>
+            <div class="repair-payment-notice"><strong>Payment receipt step</strong><span>Final repair-payment receipt generation and saving to the customer's account must be connected to the repair payment service before this step can be completed. This screen will not mark an unpaid item as paid.</span></div>
+            <div id="repair-collected-list" class="repair-records-list" aria-live="polite"><p class="muted small">Collected items will appear here.</p></div>
+          </section>
         </div>
+        <div class="repair-register-footer"><span class="repair-register-mark" aria-hidden="true">↻</span><div><strong>Repair history stays connected</strong><small>Use the same repair reference across every stage. Refresh the records after a status update.</small></div><button id="repair-refresh" class="btn btn-light btn-small" type="button">Refresh</button></div>
+        <p id="repair-records-message" class="muted small" role="status" aria-live="polite"></p>        </div>
       </details>
       <details class="profile-shop-card profile-card panel shop-business-details-card hidden"><summary class="profile-card-summary"><span><strong>Shop Details</strong><small>Business information, branding and shop photos</small></span><span class="profile-card-chevron" aria-hidden="true">⌄</span></summary><div class="profile-card-body"><p id="profile-readonly-note" class="profile-readonly-note hidden">Viewing mode · Shop owners can edit these details. Vendors and freelancers can view them only.</p><form id="profile-form">
 <div class="profile-logo-row"><img id="logo-preview" alt="Business logo preview" class="logo-preview hidden"><label>Business logo (optional)<input id="business-logo" type="file" accept="image/png,image/jpeg,image/webp"></label></div>
@@ -484,7 +509,7 @@
   <footer class="aurora-copyright" aria-label="Copyright">copyright@auroraskyholdings2026</footer>
   <script src="./config.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script src="./app.js?v=goods-repair-tab-open-20261121"></script>
+  <script src="./app.js?v=repair-workflow-four-tabs-20261121"></script>
   <script src="./dashboard.js?v=all-accounts-login-landing-20261117"></script>
 
 <script>
