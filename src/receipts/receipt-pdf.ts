@@ -9,7 +9,7 @@ export interface ReceiptPdfInput {
 }
 export async function buildReceiptPdf(input:ReceiptPdfInput):Promise<Buffer>{
  const verifyQr=input.verificationUrl?await QRCode.toBuffer(input.verificationUrl,{type:'png',width:180,margin:1}):null;
- const serialQrs=await Promise.all(input.items.map(x=>x.serialNo?QRCode.toBuffer(x.serialNo,{type:'png',width:110,margin:1}):null));
+ const serialQrs=await Promise.all(input.items.map(async item=>Promise.all(String(item.serialNo||'').split('|').map(value=>value.trim()).filter(Boolean).map(value=>QRCode.toBuffer(value,{type:'png',width:110,margin:1})))));
  return new Promise((resolve,reject)=>{
   const doc=new PDFDocument({size:[226,842],margin:14,bufferPages:true,info:{Title:`Receipt ${input.receiptNo}`,Author:input.businessName}});
   const chunks:Buffer[]=[];doc.on('data',x=>chunks.push(Buffer.from(x)));doc.on('error',reject);doc.on('end',()=>resolve(Buffer.concat(chunks)));
@@ -30,7 +30,9 @@ export async function buildReceiptPdf(input:ReceiptPdfInput):Promise<Buffer>{
    doc.font('Helvetica-Bold').fontSize(8).text(item.name,l,doc.y,{width:w});doc.moveDown(.1);
    doc.font('Helvetica').fontSize(7).text(`${item.qty} × KSh ${m(item.unitPriceKes)}`,l,doc.y,{continued:true});
    doc.text(`KSh ${m(item.lineTotalKes)}`,{align:'right'});
-   if(item.serialNo){doc.fontSize(7).text('IMEI / Serial: '+item.serialNo,l,doc.y);doc.moveDown(.2);if(serialQrs[i]){const y=doc.y;doc.image(serialQrs[i]!,l,y,{width:38,height:38});doc.y=y+40;}}
+   const serials=String(item.serialNo||'').split('|').map(value=>value.trim()).filter(Boolean);
+   serials.forEach((serial,index)=>{doc.fontSize(7).text('IMEI / Serial '+(index+1)+': '+serial,l,doc.y);doc.moveDown(.15);const qr=serialQrs[i]?.[index];if(qr){const y=doc.y;doc.image(qr,l,y,{width:38,height:38});doc.y=y+40;}});
+
    doc.moveDown(.25);rule();
   });
   row('Subtotal','KSh '+m(input.subtotalKes));row('Discount','KSh '+m(input.discountKes));
