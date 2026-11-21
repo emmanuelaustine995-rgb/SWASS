@@ -1530,3 +1530,71 @@ html body.platform-admin-workspace #platform-referral-admin .platform-admin-tabs
   .loan-record-facts strong { font-size:13px; }
   .loan-record-symbol { flex-basis:36px; width:36px; height:36px; }
 }
+
+
+/* Goods on Repair — four clear workflow cards with balanced stage colours. */
+.shop-goods-on-repair-card { border:1px solid #d8e4ee !important; border-radius:20px !important; background:#fff !important; box-shadow:0 12px 30px rgba(22,48,75,.08) !important; overflow:hidden !important; }
+.shop-goods-on-repair-card > .repair-card-summary { display:flex !important; align-items:center !important; justify-content:space-between !important; gap:14px !important; padding:17px 18px !important; cursor:pointer !important; background:linear-gradient(110deg,#f0f7ff,#fff 68%) !important; border-bottom:1px solid #e3edf5 !important; }
+.shop-goods-on-repair-card > .repair-card-summary strong { color:#153e63 !important; font-size:17px !important; }
+.shop-goods-on-repair-card > .repair-card-summary small { display:block !important; margin-top:4px !important; color:#64748b !important; }
+.repair-gold-mark { display:grid !important; place-items:center !important; flex:0 0 44px !important; width:44px !important; height:44px !important; border-radius:14px !important; color:#fff !important; background:#2563a6 !important; font-size:23px !important; }
+.repair-card-content { padding:16px !important; }
+.repair-card-heading { margin-bottom:15px !important; }
+.repair-card-heading h2 { margin:5px 0 !important; color:#153e63 !important; }
+.repair-card-heading p { margin:0 !important; color:#64748b !important; }
+.repair-stage-tabs { display:grid !important; grid-template-columns:repeat(4,minmax(0,1fr)) !important; gap:9px !important; margin:16px 0 !important; }
+.repair-stage-tab { display:flex !important; align-items:center !important; gap:9px !important; min-width:0 !important; min-height:76px !important; padding:10px !important; border:1px solid #dce5ef !important; border-radius:14px !important; background:#fff !important; color:#334155 !important; text-align:left !important; cursor:pointer !important; transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease !important; }
+.repair-stage-tab:hover { transform:translateY(-1px) !important; box-shadow:0 6px 15px rgba(15,35,60,.08) !important; }
+.repair-stage-tab > span:last-child { display:grid !important; gap:3px !important; min-width:0 !important; }
+.repair-stage-tab strong { display:block !important; font-size:13px !important; line-height:1.2 !important; overflow-wrap:anywhere !important; }
+.repair-stage-tab small { display:block !important; color:#64748b !important; font-size:11px !important; line-height:1.2 !important; }
+.repair-stage-icon { display:grid !important; place-items:center !important; flex:0 0 34px !important; width:34px !important; height:34px !important; border-radius:11px !important; font-size:18px !important; background:#f1f5f9 !important; }
+.repair-stage-tab[data-repair-stage="receive"] .repair-stage-icon { background:#dceeff !important; }
+.repair-stage-tab[data-repair-stage="ready"] .repair-stage-icon { background:#dcfce7 !important; }
+.repair-stage-tab[data-repair-stage="service"] .repair-stage-icon { background:#f0e7ff !important; }
+.repair-stage-tab[data-repair-stage="issue"] .repair-stage-icon { background:#ffedd5 !important; }
+.repair-stage-tab[data-repair-stage="receive"].is-active { border-color:#3b82f6 !important; background:#eff6ff !important; box-shadow:inset 0 0 0 1px #3b82f6 !important; }
+.repair-stage-tab[data-repair-stage="ready"].is-active { border-color:#22a06b !important; background:#ecfdf5 !important; box-shadow:inset 0 0 0 1px #22a06b !important; }
+.repair-stage-tab[data-repair-stage="service"].is-active { border-color:#8b5cf6 !important; background:#f5f3ff !important; box-shadow:inset 0 0 0 1px #8b5cf6 !important; }
+.repair-stage-tab[data-repair-stage="issue"].is-active { border-color:#ea8a21 !important; background:#fff7ed !important; box-shadow:inset 0 0 0 1px #ea8a21 !important; }
+.repair-stage-panel[hidden] { display:none !important; }
+.repair-stage-panel { padding:15px !important; border:1px solid #e3eaf2 !important; border-radius:16px !important; background:#fff !important; }
+.repair-stage-intro { display:flex !important; align-items:center !important; gap:12px !important; margin-bottom:15px !important; padding:13px !important; border-radius:13px !important; }
+.repair-stage-intro h3 { margin:0 0 3px !important; font-size:16px !important; }
+.repair-stage-intro p { margin:0 !important; color:#526277 !important; font-size:13px !important; }
+.repair-stage-large-icon { display:grid !important; place-items:center !important; flex:0 0 42px !important; width:42px !important; height:42px !important; border-radius:13px !important; font-size:22px !important; background:#fff !important; }
+.repair-stage-intro--receive { background:#eff6ff !important; color:#1d4ed8 !important; }
+.repair-stage-intro--ready { background:#ecfdf5 !important; color:#087443 !important; }
+.repair-stage-intro--service { background:#f5f3ff !important; color:#6d28d9 !important; }
+.repair-stage-intro--issue { background:#fff7ed !important; color:#a65308 !important; }
+.repair-record-row { display:grid !important; grid-template-columns:minmax(0,1.3fr) minmax(180px,.7fr) !important; gap:13px !important; margin:11px 0 !important; padding:14px !important; border:1px solid #dce5ef !important; border-left:5px solid #3b82f6 !important; border-radius:13px !important; background:#fff !important; }
+.repair-record-row--ready { border-left-color:#22a06b !important; }
+.repair-record-row--service { border-left-color:#8b5cf6 !important; }
+.repair-record-row--issue { border-left-color:#ea8a21 !important; }
+.repair-record-main { min-width:0 !important; display:grid !important; gap:5px !important; }
+.repair-record-card-head { display:flex !important; align-items:center !important; justify-content:space-between !important; gap:8px !important; }
+.repair-record-card-head > strong { color:#172b45 !important; font-size:15px !important; }
+.repair-record-main small { color:#64748b !important; font-size:12px !important; line-height:1.4 !important; overflow-wrap:anywhere !important; }
+.repair-record-tools { display:grid !important; align-content:start !important; gap:8px !important; min-width:0 !important; }
+.repair-record-tools select,.repair-record-tools textarea { width:100% !important; min-width:0 !important; border:1px solid #d7e1eb !important; border-radius:9px !important; padding:9px !important; background:#fff !important; }
+.repair-payment-notice { display:grid !important; gap:5px !important; margin-bottom:13px !important; padding:12px 14px !important; border:1px solid #f4d5a9 !important; border-radius:12px !important; background:#fff8ed !important; color:#814b12 !important; font-size:12px !important; line-height:1.45 !important; }
+.repair-payment-notice strong { font-size:13px !important; }
+.repair-payment-pending { margin:0 !important; color:#8a571a !important; font-size:12px !important; }
+.repair-stage-empty { margin:0 !important; padding:18px 12px !important; border:1px dashed #cbd5e1 !important; border-radius:12px !important; color:#64748b !important; text-align:center !important; background:#f8fafc !important; }
+.repair-register-footer { display:flex !important; align-items:center !important; gap:10px !important; margin-top:14px !important; padding:11px 12px !important; border-radius:12px !important; background:#f4f7fb !important; }
+.repair-register-footer > div { display:grid !important; flex:1 !important; gap:2px !important; }
+.repair-register-footer strong { color:#334155 !important; font-size:12px !important; }
+.repair-register-footer small { color:#64748b !important; font-size:11px !important; }
+.repair-register-mark { color:#2563a6 !important; font-size:20px !important; }
+@media(max-width:680px) {
+  .repair-stage-tabs { grid-template-columns:repeat(2,minmax(0,1fr)) !important; gap:8px !important; }
+  .repair-stage-tab { min-height:68px !important; padding:9px !important; }
+  .repair-stage-tab strong { font-size:12px !important; }
+  .repair-record-row { grid-template-columns:minmax(0,1fr) !important; }
+}
+@media(max-width:380px) {
+  .repair-card-content { padding:10px !important; }
+  .repair-stage-tab { gap:6px !important; padding:8px 6px !important; }
+  .repair-stage-icon { flex-basis:30px !important; width:30px !important; height:30px !important; }
+  .repair-stage-tab strong { font-size:11px !important; }
+}
