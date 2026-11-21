@@ -419,6 +419,18 @@
     }
   });
 
+  async function loadCustomerRepairs(){
+    const target=$('customer-repairs-list');
+    if(!target||state.role!=='customer')return;
+    target.innerHTML='<p class="muted small">Loading your repair records…</p>';
+    try{
+      const data=await request('/api/v1/repairs/mine');
+      const labels={received:'Received',diagnosing:'Under inspection',in_repair:'Repair in progress',ready:'Ready for collection',collected:'Collected',cancelled:'Cancelled'};
+      const rows=data.repairs||[];
+      target.innerHTML=rows.length?rows.map(x=>'<article class="customer-repair-row"><div><strong>'+escapeHtml(x.itemName)+'</strong><small>Reference: '+escapeHtml(x.reference||'—')+' · '+escapeHtml(x.itemIdentifier||'No serial recorded')+'</small><small>Reported issue: '+escapeHtml(x.problem||'—')+'</small><small>Expected collection: '+escapeHtml(x.expectedPickDate?new Date(x.expectedPickDate).toLocaleDateString():'To be confirmed')+'</small></div><span class="repair-status repair-status-'+escapeHtml(x.status)+'">'+escapeHtml(labels[x.status]||x.status)+'</span></article>').join(''):'<p class="muted small">No repairs are linked to this phone number yet. Ask the shop to record your correct customer phone number when receiving your item.</p>';
+    }catch(error){target.innerHTML='<p class="error">'+escapeHtml(error.message||'Your repair records could not be loaded.')+'</p>';}
+  }
+
   async function loadCustomerReferralSummary(){
     const message=$('customer-home-message'),qr=$('customer-referral-qr');
     if(!message||state.role!=='customer')return;
@@ -599,6 +611,7 @@
         dashboardBusinessCard?.classList.add('hidden');customerHome?.classList.remove('hidden');
         if($('customer-home-name'))$('customer-home-name').textContent=state.userName||'Welcome';
         void loadCustomerReferralSummary();
+        void loadCustomerRepairs();
       }else if(state.role==='owner')dashboardBusinessCard?.classList.remove('hidden');
       else dashboardBusinessCard?.classList.add('hidden');
       if(state.role==='super_admin'){
