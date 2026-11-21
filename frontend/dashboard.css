@@ -4123,3 +4123,42 @@ html body.workspace-active #platform-security-panel:not(.hidden){
 .customer-loans-card .eyebrow{margin:0;color:#66809a;font-size:10px;font-weight:800;letter-spacing:.12em}
 .customer-loans-card p{margin:0}
 @media(max-width:520px){.customer-loans-card{align-items:flex-start;flex-direction:column}.customer-loans-card .btn{width:100%}}
+
+
+/* Scan to Invite QR: keep one fixed compact footprint at every desktop
+   window size. Resizing/minimising the browser must never enlarge it. */
+html body.workspace-active #owner-home #referral-card .referral-invite-head {
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:8px!important;
+  min-width:0!important;
+}
+html body.workspace-active #owner-home #referral-card .referral-qr {
+  box-sizing:border-box!important;
+  flex:0 0 52px!important;
+  width:52px!important;
+  min-width:52px!important;
+  max-width:52px!important;
+  height:52px!important;
+  min-height:52px!important;
+  max-height:52px!important;
+  padding:3px!important;
+  overflow:hidden!important;
+}
+html body.workspace-active #owner-home #referral-card .referral-qr img,
+html body.workspace-active #owner-home #referral-card .referral-qr canvas {
+  display:block!important;
+  width:46px!important;
+  min-width:46px!important;
+  max-width:46px!important;
+  height:46px!important;
+  min-height:46px!important;
+  max-height:46px!important;
+  object-fit:contain!important;
+  image-rendering:pixelated;
+}
+html body.workspace-active #owner-home #referral-card .referral-invite-head h2 {
+  min-width:0!important;
+  overflow-wrap:anywhere;
+}
