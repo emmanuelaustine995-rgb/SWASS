@@ -349,3 +349,32 @@ html body:not(.workspace-active):not(.platform-admin-login) .login-submit-compac
   html body:not(.workspace-active):not(.platform-admin-login)::before,
   html body:not(.workspace-active):not(.platform-admin-login)::after { animation:none!important; }
 }
+
+
+/* Keep the owner signup return action compact beside the first shop details,
+   rather than reserving a full-width footer at the bottom of the form. */
+html body:not(.workspace-active):not(.platform-admin-login) .registration-compact-return {
+  display:flex;
+  justify-content:flex-end;
+  align-items:center;
+  margin:2px 0 10px;
+  min-height:0;
+}
+html body:not(.workspace-active):not(.platform-admin-login) .registration-compact-return .registration-back-button {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:auto!important;
+  min-height:26px!important;
+  padding:3px 9px!important;
+  margin:0!important;
+  border:1px solid rgba(23,104,232,.2)!important;
+  border-radius:7px!important;
+  background:rgba(23,104,232,.06)!important;
+  color:#1768e8!important;
+  font-size:11px!important;
+  line-height:1.2!important;
+  font-weight:600!important;
+  white-space:nowrap;
+  box-shadow:none!important;
+}
