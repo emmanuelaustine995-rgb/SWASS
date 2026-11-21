@@ -105,6 +105,15 @@ export class DbService implements OnModuleDestroy, OnModuleInit {
         ALTER TABLE shop_repair_jobs ADD COLUMN IF NOT EXISTS customer_email VARCHAR(254) NOT NULL DEFAULT '';
         ALTER TABLE shop_repair_jobs ADD COLUMN IF NOT EXISTS accessories VARCHAR(500) NOT NULL DEFAULT '';
         ALTER TABLE shop_repair_jobs ADD COLUMN IF NOT EXISTS received_by_name VARCHAR(160) NOT NULL DEFAULT 'Shop team';
+        ALTER TABLE shop_repair_jobs ADD COLUMN IF NOT EXISTS repair_cost_kes BIGINT NOT NULL DEFAULT 0;
+        ALTER TABLE shop_repair_jobs ADD COLUMN IF NOT EXISTS payment_client_uuid UUID;
+        ALTER TABLE shop_repair_jobs ADD COLUMN IF NOT EXISTS payment_total_kes BIGINT;
+        ALTER TABLE shop_repair_jobs ADD COLUMN IF NOT EXISTS payment_method VARCHAR(16);
+        ALTER TABLE shop_repair_jobs ADD COLUMN IF NOT EXISTS payment_receipt_id BIGINT REFERENCES receipts(id);
+        ALTER TABLE shop_repair_jobs ADD COLUMN IF NOT EXISTS payment_receipt_no VARCHAR(80);
+        ALTER TABLE shop_repair_jobs ADD COLUMN IF NOT EXISTS collected_at TIMESTAMPTZ;
+        CREATE UNIQUE INDEX IF NOT EXISTS shop_repair_jobs_payment_client_uuid_idx ON shop_repair_jobs(tenant_id,payment_client_uuid) WHERE payment_client_uuid IS NOT NULL;
+        CREATE UNIQUE INDEX IF NOT EXISTS shop_repair_jobs_payment_receipt_id_idx ON shop_repair_jobs(payment_receipt_id) WHERE payment_receipt_id IS NOT NULL;
         CREATE UNIQUE INDEX IF NOT EXISTS shop_repair_jobs_reference_idx ON shop_repair_jobs(reference) WHERE reference IS NOT NULL;
         CREATE INDEX IF NOT EXISTS shop_repair_jobs_customer_phone_idx ON shop_repair_jobs(customer_phone);
         CREATE TABLE IF NOT EXISTS shop_repair_events (
