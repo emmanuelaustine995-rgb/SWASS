@@ -139,7 +139,7 @@ export class RepairsController {
     const result = await this.db.pool.query(
       `SELECT j.reference, j.item_name AS "itemName", j.item_identifier AS "itemIdentifier",
               j.problem, j.detected, j.received_date AS "receivedDate", j.expected_pick_date AS "expectedPickDate",
-              j.status, j.payment_receipt_no AS "paymentReceiptNo", j.payment_total_kes AS "paymentTotalKes",
+              j.status, j.payment_receipt_id AS "paymentReceiptId", j.payment_receipt_no AS "paymentReceiptNo", j.payment_total_kes AS "paymentTotalKes",
               pay.qr_token AS "paymentReceiptToken", j.created_at AS "createdAt", j.updated_at AS "updatedAt"
          FROM shop_repair_jobs j LEFT JOIN receipts pay ON pay.id=j.payment_receipt_id
         WHERE regexp_replace(j.customer_phone, '\\D', '', 'g')=$1
