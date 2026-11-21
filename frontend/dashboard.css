@@ -4117,3 +4117,9 @@ html body.workspace-active #platform-security-panel:not(.hidden){
 .loan-record-actions .btn{min-height:34px}
 .loans-empty{margin:0;padding:18px;text-align:center;color:#788b9d;font-size:13px}
 @media(max-width:600px){.loans-page-heading{padding:16px;border-radius:14px}.loans-section-heading{padding:14px}.loans-list{padding:10px}.loan-record-facts{gap:5px}.loan-record-facts strong{font-size:11px}.loan-record-top{flex-wrap:wrap}}
+
+.customer-loans-card{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:14px 0;padding:18px;border:1px solid #d9e5f0;border-radius:16px;background:linear-gradient(120deg,#f5faff,#edf5fc);box-shadow:0 5px 18px rgba(24,55,84,.05)}
+.customer-loans-card h2{margin:3px 0 5px;color:#173b5d;font-size:18px}
+.customer-loans-card .eyebrow{margin:0;color:#66809a;font-size:10px;font-weight:800;letter-spacing:.12em}
+.customer-loans-card p{margin:0}
+@media(max-width:520px){.customer-loans-card{align-items:flex-start;flex-direction:column}.customer-loans-card .btn{width:100%}}
