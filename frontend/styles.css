@@ -3202,16 +3202,22 @@ body.workspace-active #workspace-nav.bottom-nav {
 }
 
 
-/* Receipt page: ensure the final Issue Receipt action clears the fixed dock. */
-body.workspace-active #receipts-home {
-  padding-bottom: max(104px, calc(82px + env(safe-area-inset-bottom))) !important;
-  scroll-padding-bottom: max(104px, calc(82px + env(safe-area-inset-bottom)));
-}
-body.workspace-active #receipts-home form,
-body.workspace-active #receipts-home .receipt-form,
-body.workspace-active #receipts-home .receipt-form-content {
-  padding-bottom: max(104px, calc(82px + env(safe-area-inset-bottom)));
-}
-body.workspace-active #receipts-home :is(button, input, select, textarea):last-child {
-  scroll-margin-bottom: 110px;
+/* Phone only: keep the final Issue Receipt action clear of the fixed
+   bottom navigation. Desktop spacing and navigation remain unchanged. */
+@media (max-width: 760px) {
+  html body.workspace-active #receipts-home {
+    padding-bottom: max(120px, calc(96px + env(safe-area-inset-bottom))) !important;
+    scroll-padding-bottom: max(120px, calc(96px + env(safe-area-inset-bottom))) !important;
+  }
+
+  html body.workspace-active #receipts-home form,
+  html body.workspace-active #receipts-home .receipt-form,
+  html body.workspace-active #receipts-home .receipt-form-content {
+    padding-bottom: max(120px, calc(96px + env(safe-area-inset-bottom))) !important;
+    scroll-padding-bottom: 120px !important;
+  }
+
+  html body.workspace-active #receipts-home button:last-of-type {
+    scroll-margin-bottom: 120px !important;
+  }
 }
