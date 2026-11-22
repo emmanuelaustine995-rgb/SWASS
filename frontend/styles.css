@@ -3079,3 +3079,48 @@ body.workspace-active #workspace-nav.bottom-nav {
     white-space: nowrap !important;
   }
 }
+
+/* Persistent desktop dock: the nav is a direct child of body, outside the
+   workspace shell and all scrolling/overflow-clipped page panels. */
+@media (min-width: 761px) {
+  html body.workspace-active > #workspace-nav.bottom-nav {
+    position: fixed !important;
+    display: grid !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    left: 50% !important;
+    right: auto !important;
+    top: auto !important;
+    bottom: max(16px, env(safe-area-inset-bottom)) !important;
+    transform: translateX(-50%) !important;
+    width: min(520px, calc(100vw - 40px)) !important;
+    max-width: 520px !important;
+    min-width: 0 !important;
+    height: 72px !important;
+    min-height: 68px !important;
+    max-height: 76px !important;
+    margin: 0 !important;
+    padding: 6px 8px !important;
+    gap: 5px !important;
+    box-sizing: border-box !important;
+    overflow: visible !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    z-index: 2147483000 !important;
+  }
+
+  html body.workspace-active > #workspace-nav.bottom-nav > button {
+    min-width: 0 !important;
+    min-height: 54px !important;
+    max-height: 62px !important;
+    margin: 0 !important;
+    padding: 6px 3px !important;
+    flex: 1 1 0 !important;
+    white-space: nowrap !important;
+  }
+
+  /* Keep the last part of each scrolling page clear of the floating dock. */
+  html body.workspace-active main.shell {
+    padding-bottom: 124px !important;
+  }
+}
