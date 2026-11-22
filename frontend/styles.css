@@ -3200,3 +3200,18 @@ body.workspace-active #workspace-nav.bottom-nav {
     height: 20px !important;
   }
 }
+
+
+/* Receipt page: ensure the final Issue Receipt action clears the fixed dock. */
+body.workspace-active #receipts-home {
+  padding-bottom: max(104px, calc(82px + env(safe-area-inset-bottom))) !important;
+  scroll-padding-bottom: max(104px, calc(82px + env(safe-area-inset-bottom)));
+}
+body.workspace-active #receipts-home form,
+body.workspace-active #receipts-home .receipt-form,
+body.workspace-active #receipts-home .receipt-form-content {
+  padding-bottom: max(104px, calc(82px + env(safe-area-inset-bottom)));
+}
+body.workspace-active #receipts-home :is(button, input, select, textarea):last-child {
+  scroll-margin-bottom: 110px;
+}
