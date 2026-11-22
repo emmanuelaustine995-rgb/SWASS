@@ -3288,3 +3288,19 @@ body.workspace-active #workspace-nav.bottom-nav {
     box-shadow: 0 -8px 18px rgba(255,255,255,.98) !important;
   }
 }
+
+
+/* Keep the phone checkout dialog closed until the app explicitly opens it.
+   The flex layout above must never override the shared .hidden state. */
+@media (max-width: 760px) {
+  html body.workspace-active #checkout-modal:not(.hidden):not([hidden]) {
+    display: flex !important;
+  }
+
+  html body.workspace-active #checkout-modal.hidden,
+  html body.workspace-active #checkout-modal[hidden] {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+}
