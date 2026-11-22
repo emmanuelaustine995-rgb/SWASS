@@ -3599,12 +3599,11 @@ html body.workspace-active #workspace-nav.bottom-nav{
 }
 
 
-/* RECEIPT WORKSPACES: restore one natural document scroll on every receipt
-   screen. This deliberately does not change scrolling on Shop, Home, Profile,
-   repairs or other workspaces. */
-html:has(body.workspace-active #receipts-home:not(.hidden)),
-html:has(body.workspace-active #pos-view:not(.hidden)),
-html:has(body:has(#request-form) #receipt-list){
+/* Natural scrolling is enabled only after opening an individual receipt page.
+   The Receipts landing cards keep their original layout and viewport behavior. */
+html:has(body.workspace-active #pos-view.workspace-issue-mode:not(.hidden)),
+html:has(body.workspace-active #receipts-home.secondhand-active),
+html:has(body.workspace-active #receipts-home #history-content:not(.hidden)){
   width:100%!important;
   height:auto!important;
   min-height:100%!important;
@@ -3612,8 +3611,9 @@ html:has(body:has(#request-form) #receipt-list){
   overflow-y:auto!important;
   overscroll-behavior-y:auto!important;
 }
-body.workspace-active:has(#receipts-home:not(.hidden)),
-body.workspace-active:has(#pos-view:not(.hidden)){
+body.workspace-active:has(#pos-view.workspace-issue-mode:not(.hidden)),
+body.workspace-active:has(#receipts-home.secondhand-active),
+body.workspace-active:has(#receipts-home #history-content:not(.hidden)){
   position:relative!important;
   inset:auto!important;
   height:auto!important;
@@ -3623,19 +3623,21 @@ body.workspace-active:has(#pos-view:not(.hidden)){
   overflow-y:visible!important;
   touch-action:pan-y!important;
   overscroll-behavior-y:auto!important;
-  padding-bottom:calc(120px + env(safe-area-inset-bottom,0px))!important;
+  padding-bottom:calc(124px + env(safe-area-inset-bottom,0px))!important;
 }
-body.workspace-active:has(#receipts-home:not(.hidden)) .shell,
-body.workspace-active:has(#pos-view:not(.hidden)) .shell{
+body.workspace-active:has(#pos-view.workspace-issue-mode:not(.hidden)) .shell,
+body.workspace-active:has(#receipts-home.secondhand-active) .shell,
+body.workspace-active:has(#receipts-home #history-content:not(.hidden)) .shell{
   display:block!important;
   height:auto!important;
   min-height:0!important;
   max-height:none!important;
   overflow:visible!important;
-  padding-bottom:calc(132px + env(safe-area-inset-bottom,0px))!important;
+  padding-bottom:calc(136px + env(safe-area-inset-bottom,0px))!important;
 }
-body.workspace-active #receipts-home:not(.hidden),
-body.workspace-active #pos-view:not(.hidden){
+/* Only the opened receipt subpage becomes a natural-flow document section.
+   Do not restyle #receipts-home on its default cards screen. */
+body.workspace-active #pos-view.workspace-issue-mode:not(.hidden){
   display:block!important;
   flex:none!important;
   height:auto!important;
@@ -3645,15 +3647,13 @@ body.workspace-active #pos-view:not(.hidden){
   overscroll-behavior:auto!important;
   padding-bottom:24px!important;
 }
-body.workspace-active #receipts-home .secondhand-panel,
-body.workspace-active #receipts-home #history-content,
-body.workspace-active #receipts-home .history-list,
-body.workspace-active #receipts-home .secondhand-form,
-body.workspace-active #pos-view .pos-grid,
-body.workspace-active #pos-view .cart-panel,
-body.workspace-active #pos-view .cart-list,
-body.workspace-active #pos-view #owner-customers-section,
-body.workspace-active #pos-view .customer-lookup-panel{
+body.workspace-active #pos-view.workspace-issue-mode .pos-grid,
+body.workspace-active #pos-view.workspace-issue-mode .cart-panel,
+body.workspace-active #pos-view.workspace-issue-mode .cart-list,
+body.workspace-active #receipts-home.secondhand-active #secondhand-panel,
+body.workspace-active #receipts-home.secondhand-active #secondhand-form,
+body.workspace-active #receipts-home #history-content:not(.hidden),
+body.workspace-active #receipts-home #history-content:not(.hidden) .history-list{
   position:static!important;
   height:auto!important;
   min-height:0!important;
@@ -3661,21 +3661,22 @@ body.workspace-active #pos-view .customer-lookup-panel{
   overflow:visible!important;
   overscroll-behavior:auto!important;
 }
-body.workspace-active #pos-view .pos-grid{
+body.workspace-active #pos-view.workspace-issue-mode .pos-grid,
+body.workspace-active #pos-view.workspace-issue-mode .cart-panel,
+body.workspace-active #pos-view.workspace-issue-mode .cart-list{
   display:block!important;
 }
-body.workspace-active #pos-view .cart-panel{
-  display:block!important;
-}
-body.workspace-active #pos-view .cart-list{
-  display:block!important;
-}
-body.workspace-active #pos-view .receipt-product-actions,
-body.workspace-active #pos-view #checkout-open{
+body.workspace-active #pos-view.workspace-issue-mode .receipt-product-actions,
+body.workspace-active #pos-view.workspace-issue-mode #checkout-open{
   position:static!important;
   inset:auto!important;
   transform:none!important;
   float:none!important;
+}
+body.workspace-active #pos-view.workspace-issue-mode #checkout-open{
+  display:flex!important;
+  width:100%!important;
+  min-height:52px!important;
 }
 body.workspace-active #workspace-nav.bottom-nav{
   position:fixed!important;
@@ -3685,8 +3686,7 @@ body.workspace-active #workspace-nav.bottom-nav{
   bottom:0!important;
   z-index:10000!important;
 }
-
-/* Standalone Verify Receipts page uses the same natural document scrolling. */
+/* Standalone Verify Receipts page also scrolls as one document. */
 html:has(body #request-form #national-id),
 body:has(#request-form #national-id){
   width:100%!important;
@@ -3707,30 +3707,23 @@ body:has(#request-form #national-id){
   touch-action:pan-y!important;
   padding-bottom:32px!important;
 }
-body:has(#request-form #national-id) .auth-shell{
-  display:block!important;
-  height:auto!important;
-  min-height:100svh!important;
-  max-height:none!important;
-  overflow:visible!important;
-  padding-bottom:32px!important;
-}
+body:has(#request-form #national-id) .auth-shell,
 body:has(#request-form #national-id) .auth-shell>.panel{
+  display:block!important;
   height:auto!important;
   min-height:0!important;
   max-height:none!important;
   overflow:visible!important;
 }
-
 @media(max-width:760px){
-  body.workspace-active:has(#receipts-home:not(.hidden)) .shell,
-  body.workspace-active:has(#pos-view:not(.hidden)) .shell{
+  body.workspace-active:has(#pos-view.workspace-issue-mode:not(.hidden)) .shell,
+  body.workspace-active:has(#receipts-home.secondhand-active) .shell,
+  body.workspace-active:has(#receipts-home #history-content:not(.hidden)) .shell{
     padding-left:10px!important;
     padding-right:10px!important;
-    padding-bottom:calc(140px + env(safe-area-inset-bottom,0px))!important;
+    padding-bottom:calc(144px + env(safe-area-inset-bottom,0px))!important;
   }
-  body.workspace-active #receipts-home:not(.hidden),
-  body.workspace-active #pos-view:not(.hidden){
+  body.workspace-active #pos-view.workspace-issue-mode:not(.hidden){
     padding-bottom:28px!important;
   }
 }
