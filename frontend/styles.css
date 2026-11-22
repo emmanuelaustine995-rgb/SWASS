@@ -3274,12 +3274,13 @@ body.workspace-active #workspace-nav.bottom-nav {
 
   html body.workspace-active #checkout-modal #complete-sale {
     position: sticky !important;
-    bottom: 0 !important;
+    bottom: 16px !important;
     flex: 0 0 auto !important;
     display: flex !important;
     width: 100% !important;
     min-height: 56px !important;
     margin-top: 12px !important;
+    margin-bottom: 16px !important;
     z-index: 5 !important;
     visibility: visible !important;
     opacity: 1 !important;
