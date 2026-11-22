@@ -3124,3 +3124,30 @@ body.workspace-active #workspace-nav.bottom-nav {
     padding-bottom: 124px !important;
   }
 }
+
+/* Workspace-aligned floating dock and true end-of-content clearance. */
+@media (min-width: 761px) {
+  html body.workspace-active > #workspace-nav.bottom-nav {
+    left: var(--workspace-dock-left, 50%) !important;
+    width: var(--workspace-dock-width, min(520px, calc(100vw - 40px))) !important;
+    max-width: var(--workspace-dock-width, 520px) !important;
+  }
+
+  /* The dock is fixed to the viewport, so each visible page's own scroll
+     container needs bottom padding. This lets the final card/form scroll
+     completely above the floating bar instead of ending behind it. */
+  html body.workspace-active main.shell > section:not(.hidden):not(#login-view),
+  html body.workspace-active main.shell > div:not(.hidden),
+  html body.workspace-active main.shell > article:not(.hidden) {
+    scroll-padding-bottom: 124px !important;
+    padding-bottom: max(124px, calc(100px + env(safe-area-inset-bottom))) !important;
+    box-sizing: border-box !important;
+  }
+
+  html body.workspace-active main.shell > #shop-home:not(.hidden),
+  html body.workspace-active main.shell > #receipts-home:not(.hidden),
+  html body.workspace-active main.shell > #shop-lost-items-panel:not(.hidden) {
+    padding-bottom: max(124px, calc(100px + env(safe-area-inset-bottom))) !important;
+    scroll-padding-bottom: 124px !important;
+  }
+}
