@@ -11,7 +11,7 @@
   const syncWorkspaceDock = () => {
     if (!workspaceNav || !workspaceShell) return;
     const rect = workspaceShell.getBoundingClientRect();
-    const width = Math.max(0, Math.min(520, rect.width - 40));
+    const width = Math.max(0, Math.min(400, rect.width - 32));
     workspaceNav.style.setProperty('--workspace-dock-left', `${rect.left + rect.width / 2}px`);
     workspaceNav.style.setProperty('--workspace-dock-width', `${width}px`);
   };
