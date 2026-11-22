@@ -659,27 +659,9 @@ body.workspace-active #workspace-nav.bottom-nav .nav-icon{font-size:19px!importa
   0%,100%{background-position:0% 50%;filter:brightness(.94);box-shadow:0 0 7px rgba(117,180,255,.13)}
   50%{background-position:100% 50%;filter:brightness(1.12);box-shadow:0 0 20px rgba(115,208,255,.38),0 0 30px rgba(173,137,255,.16)}
 }
-/* The Shop area intentionally has no controls or text yet—only its living aurora backdrop. */
-body.workspace-active #shop-home.shop-home{
-  display:block!important;
-  flex:1 1 auto!important;
-  width:100%!important;
-  min-height:min(64vh,560px)!important;
-  margin:8px 0 14px!important;
-  border:1px solid rgba(154,210,255,.48)!important;
-  border-radius:23px!important;
-  background:linear-gradient(125deg,#071d38,#075b74,#274b86,#7652a2,#087c79,#071d38)!important;
-  background-size:360% 360%!important;
-  animation:auroraShopGlow 12s ease-in-out infinite!important;
-  box-shadow:0 0 22px rgba(40,195,219,.32),0 0 48px rgba(125,91,210,.2),inset 0 0 28px rgba(255,255,255,.09)!important;
-}
-@keyframes auroraShopGlow{
-  0%,100%{background-position:0% 50%;filter:brightness(.82);box-shadow:0 0 14px rgba(40,195,219,.22),0 0 30px rgba(125,91,210,.14),inset 0 0 20px rgba(255,255,255,.06)}
-  50%{background-position:100% 50%;filter:brightness(1.22);box-shadow:0 0 30px rgba(40,235,219,.48),0 0 62px rgba(165,116,255,.32),inset 0 0 38px rgba(255,255,255,.16)}
-}
+/* Respect reduced motion for navigation without disabling Shop content. */
 @media(prefers-reduced-motion:reduce){
-  body.workspace-active #workspace-nav.bottom-nav button,
-  body.workspace-active #shop-home.shop-home{animation:none!important}
+  body.workspace-active #workspace-nav.bottom-nav button{animation:none!important}
 }
 @media(max-width:420px){
   body.workspace-active #workspace-nav.bottom-nav{gap:5px!important;padding-inline:7px!important}
@@ -2870,4 +2852,87 @@ body.workspace-active .shell{padding-bottom:88px!important;height:calc(100dvh - 
 /* Preserve the five destinations on every viewport, including desktop. */
 body.workspace-active #workspace-nav.bottom-nav {
   grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+}
+
+/* SHOP + WORKSPACE DOCK: final desktop layout correction.
+   Shop is a real content page (tabs, product actions and forms), not a backdrop.
+   Keep the dock anchored to the workspace shell rather than the browser viewport. */
+@media (min-width: 761px) {
+  html body.workspace-active main.shell {
+    position: relative !important;
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    padding-bottom: 104px !important;
+  }
+
+  html body.workspace-active main.shell > #shop-home:not(.hidden) {
+    position: relative !important;
+    inset: auto !important;
+    display: flex !important;
+    flex: 1 1 0 !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    align-self: stretch !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 0 24px !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+    box-sizing: border-box !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    animation: none !important;
+  }
+
+  html body.workspace-active #shop-home > .shop-section-tabs {
+    display: flex !important;
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    position: sticky !important;
+    top: 0 !important;
+  }
+
+  html body.workspace-active #shop-home > [data-shop-tab-panel]:not(.hidden) {
+    visibility: visible !important;
+    opacity: 1 !important;
+    flex: 0 0 auto !important;
+    min-width: 0 !important;
+  }
+
+  html body.workspace-active #shop-home > .shop-products-intro:not(.hidden) {
+    display: block !important;
+  }
+
+  html body.workspace-active #shop-home > .shop-product-action-grid:not(.hidden) {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    width: 100% !important;
+  }
+
+  /* Absolute positioning is relative to main.shell, so the dock stays inside
+     the actual workspace even when the page content scrolls. */
+  html body.workspace-active #workspace-nav.bottom-nav {
+    position: absolute !important;
+    left: 50% !important;
+    right: auto !important;
+    top: auto !important;
+    bottom: 12px !important;
+    transform: translateX(-50%) !important;
+    width: min(calc(100% - 48px), 620px) !important;
+    max-width: 620px !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    z-index: 10000 !important;
+  }
 }
