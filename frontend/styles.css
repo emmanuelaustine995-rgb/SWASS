@@ -3031,3 +3031,51 @@ body.workspace-active #workspace-nav.bottom-nav {
     box-sizing: border-box !important;
   }
 }
+
+/* FINAL DESKTOP NAV DOCK
+   Float above the bottom edge of the page at all times. The page content gets
+   its own reserved space so it can never scroll underneath or hide the dock. */
+@media (min-width: 761px) {
+  html body.workspace-active main.shell {
+    padding-bottom: 124px !important;
+    overflow-x: hidden !important;
+    overflow-y: hidden !important;
+  }
+
+  html body.workspace-active main.shell > #workspace-nav.bottom-nav {
+    position: fixed !important;
+    display: grid !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    left: 50% !important;
+    right: auto !important;
+    top: auto !important;
+    bottom: 16px !important;
+    transform: translateX(-50%) !important;
+    width: min(520px, calc(100vw - 40px)) !important;
+    max-width: 520px !important;
+    min-width: 0 !important;
+    height: auto !important;
+    min-height: 68px !important;
+    max-height: 76px !important;
+    margin: 0 !important;
+    padding: 6px 8px !important;
+    gap: 5px !important;
+    box-sizing: border-box !important;
+    overflow: visible !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    z-index: 2147483000 !important;
+  }
+
+  html body.workspace-active main.shell > #workspace-nav.bottom-nav > button,
+  html body.workspace-active main.shell > #workspace-nav.bottom-nav > button.receipt-nav {
+    min-width: 0 !important;
+    min-height: 54px !important;
+    max-height: 62px !important;
+    margin: 0 !important;
+    padding: 6px 3px !important;
+    flex: 1 1 0 !important;
+    white-space: nowrap !important;
+  }
+}
