@@ -3151,3 +3151,52 @@ body.workspace-active #workspace-nav.bottom-nav {
     scroll-padding-bottom: 124px !important;
   }
 }
+
+
+/* FINAL DESKTOP-ONLY DOCK FIT: size and centre the floating nav from the
+   measured workspace column, never from the browser viewport. */
+@media (min-width: 761px) {
+  html body.workspace-active > #workspace-nav.bottom-nav {
+    position: fixed !important;
+    left: var(--workspace-dock-left) !important;
+    right: auto !important;
+    bottom: 14px !important;
+    top: auto !important;
+    width: var(--workspace-dock-width) !important;
+    max-width: min(400px, calc(100vw - 32px)) !important;
+    min-width: 0 !important;
+    height: 64px !important;
+    min-height: 64px !important;
+    max-height: 64px !important;
+    padding: 5px 6px !important;
+    gap: 3px !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    transform: translateX(-50%) !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+  }
+
+  html body.workspace-active > #workspace-nav.bottom-nav > button,
+  html body.workspace-active > #workspace-nav.bottom-nav > button.receipt-nav {
+    min-width: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    min-height: 52px !important;
+    max-height: 54px !important;
+    padding: 4px 1px !important;
+    margin: 0 !important;
+    gap: 2px !important;
+    font-size: 9px !important;
+    white-space: nowrap !important;
+  }
+
+  html body.workspace-active > #workspace-nav.bottom-nav .nav-icon {
+    width: 22px !important;
+    height: 21px !important;
+    font-size: 19px !important;
+  }
+  html body.workspace-active > #workspace-nav.bottom-nav .nav-icon svg {
+    width: 20px !important;
+    height: 20px !important;
+  }
+}
