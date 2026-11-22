@@ -2732,3 +2732,39 @@ body.platform-admin-login:not(.workspace-active) .aurora-auth-welcome{display:no
 .shop-stock-adjust label{display:grid;gap:4px;flex:1;color:#607286;font-size:10px;font-weight:750}
 .shop-stock-adjust input{width:100%;min-width:0;min-height:36px;padding:7px 9px;border:1px solid #dce5ed;border-radius:9px;font-size:13px}
 @media(max-width:620px){.shop-product-action-grid{grid-template-columns:minmax(0,1fr);gap:9px}.shop-product-action{min-height:82px;padding:12px 13px;grid-template-columns:40px minmax(0,1fr) 15px;gap:10px}.shop-product-action-icon{width:38px;height:38px;font-size:22px}.shop-stock-adjust{align-items:stretch}.shop-stock-adjust .btn{white-space:nowrap}}
+
+
+/* AURORA main navigation: compact rounded navy plate shared by mobile and desktop. */
+body.workspace-active #workspace-nav.bottom-nav{
+  position:fixed!important;left:50%!important;right:auto!important;bottom:calc(8px + env(safe-area-inset-bottom))!important;top:auto!important;
+  z-index:10000!important;width:min(calc(100% - 24px),520px)!important;max-width:520px!important;min-height:72px!important;
+  display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;align-items:center!important;gap:4px!important;
+  box-sizing:border-box!important;padding:7px 9px!important;overflow:visible!important;transform:translateX(-50%)!important;
+  border:1px solid rgba(173,195,225,.24)!important;border-radius:22px!important;
+  background:linear-gradient(145deg,#172b45 0%,#1c3048 55%,#24364b 100%)!important;
+  box-shadow:0 10px 28px rgba(8,20,39,.32),inset 0 1px 0 rgba(255,255,255,.08)!important;
+  backdrop-filter:blur(16px)!important;-webkit-backdrop-filter:blur(16px)!important;
+}
+body.workspace-active #workspace-nav.bottom-nav button,
+body.workspace-active #workspace-nav.bottom-nav button.receipt-nav{
+  display:flex!important;flex:1 1 0!important;width:auto!important;min-width:0!important;max-width:none!important;min-height:56px!important;
+  margin:0!important;padding:5px 2px!important;gap:4px!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;
+  border:1px solid transparent!important;border-radius:15px!important;background:transparent!important;color:#c5d2e2!important;
+  box-shadow:none!important;animation:none!important;transform:none!important;filter:none!important;
+  font:650 10px/1.15 Inter,ui-sans-serif,system-ui,sans-serif!important;white-space:nowrap!important;
+}
+body.workspace-active #workspace-nav.bottom-nav .nav-icon{display:flex!important;align-items:center!important;justify-content:center!important;width:27px!important;height:25px!important;font-size:22px!important;line-height:1!important;color:inherit!important}
+body.workspace-active #workspace-nav.bottom-nav .nav-icon svg{display:block!important;width:24px!important;height:24px!important;overflow:visible!important;fill:none!important;stroke:currentColor!important;stroke-width:1.9!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+body.workspace-active #workspace-nav.bottom-nav .nav-icon svg path{fill:none!important;stroke:currentColor!important}
+body.workspace-active #workspace-nav.bottom-nav button.active,
+body.workspace-active #workspace-nav.bottom-nav button.receipt-nav.active{
+  color:#fff!important;background:linear-gradient(145deg,#31577f,#29496d)!important;border-color:rgba(174,207,244,.28)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 3px 10px rgba(3,12,26,.22)!important;
+}
+body.workspace-active #workspace-nav.bottom-nav button.nav-lost-goods{color:#ffb1b1!important;background:transparent!important;border:1px solid transparent!important;box-shadow:none!important}
+body.workspace-active #workspace-nav.bottom-nav button.nav-lost-goods .nav-icon{font-size:21px!important;filter:none!important}
+body.workspace-active #workspace-nav.bottom-nav button.nav-lost-goods.active{background:rgba(145,35,45,.32)!important;border-color:rgba(255,130,130,.25)!important;color:#ffd5d5!important}
+body.workspace-active .shell{padding-bottom:88px!important;height:calc(100dvh - 72px - 8px - env(safe-area-inset-bottom))!important}
+@media(min-width:761px){body.workspace-active #workspace-nav.bottom-nav{width:min(calc(100% - 40px),520px)!important}}
+@media(max-width:520px){body.workspace-active #workspace-nav.bottom-nav{width:calc(100% - 20px)!important;min-height:68px!important;bottom:calc(6px + env(safe-area-inset-bottom))!important;padding:6px 7px!important;gap:2px!important}body.workspace-active #workspace-nav.bottom-nav button,body.workspace-active #workspace-nav.bottom-nav button.receipt-nav{min-height:54px!important;font-size:9px!important}body.workspace-active #workspace-nav.bottom-nav .nav-icon{width:25px!important;height:24px!important;font-size:21px!important}body.workspace-active .shell{padding-bottom:82px!important}}
+@media(prefers-reduced-motion:reduce){body.workspace-active #workspace-nav.bottom-nav button{transition:none!important}}
