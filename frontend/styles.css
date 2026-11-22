@@ -3354,3 +3354,36 @@ body.workspace-active #workspace-nav.bottom-nav {
     z-index: auto !important;
   }
 }
+
+
+/* PHONE ISSUE RECEIPT: place the final action after the amount summary,
+   not above it or in a fixed empty area. Keep it in the natural page flow. */
+@media (max-width: 760px) {
+  html body.workspace-active #pos-view.workspace-issue-mode .receipt-product-actions {
+    position: static !important;
+    display: block !important;
+    width: 100% !important;
+    margin: 10px 0 14px !important;
+    padding: 0 !important;
+    inset: auto !important;
+    transform: none !important;
+    box-shadow: none !important;
+  }
+  html body.workspace-active #pos-view.workspace-issue-mode #checkout-open {
+    position: static !important;
+    inset: auto !important;
+    display: flex !important;
+    width: 100% !important;
+    min-height: 50px !important;
+    margin: 0 !important;
+    transform: none !important;
+    box-shadow: none !important;
+  }
+  html body.workspace-active #pos-view.workspace-issue-mode .totals {
+    margin-bottom: 8px !important;
+  }
+  html body.workspace-active #pos-view.workspace-issue-mode .cart-panel {
+    justify-content: flex-start !important;
+    padding-bottom: 6px !important;
+  }
+}
