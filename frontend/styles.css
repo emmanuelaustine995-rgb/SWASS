@@ -3304,3 +3304,53 @@ body.workspace-active #workspace-nav.bottom-nav {
     pointer-events: none !important;
   }
 }
+
+
+/* PHONE ISSUE RECEIPT PAGE: make the whole page scroll naturally.
+   The product list, cart and checkout action stay in normal document flow;
+   only a small gap remains after the Issue Receipt button. */
+@media (max-width: 760px) {
+  html body.workspace-active main.shell > #pos-view.workspace-issue-mode:not(.hidden) {
+    display: block !important;
+    flex: 1 1 auto !important;
+    width: 100% !important;
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior-y: contain !important;
+    padding: 8px 12px 16px !important;
+    box-sizing: border-box !important;
+  }
+
+  html body.workspace-active #pos-view.workspace-issue-mode .pos-grid,
+  html body.workspace-active #pos-view.workspace-issue-mode .cart-panel {
+    display: block !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    padding-bottom: 12px !important;
+  }
+
+  html body.workspace-active #pos-view.workspace-issue-mode .cart-list {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  html body.workspace-active #pos-view.workspace-issue-mode #checkout-open {
+    position: static !important;
+    inset: auto !important;
+    display: flex !important;
+    width: 100% !important;
+    min-height: 54px !important;
+    margin: 12px 0 14px !important;
+    transform: none !important;
+    box-shadow: none !important;
+    z-index: auto !important;
+  }
+}
