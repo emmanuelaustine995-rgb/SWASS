@@ -2936,3 +2936,98 @@ body.workspace-active #workspace-nav.bottom-nav {
     z-index: 10000 !important;
   }
 }
+
+/* DESKTOP ONLY — Shop must render as a real page and the dock must stay
+   within the same centered workspace column. Keep mobile and other screens intact. */
+@media (min-width: 761px) {
+  html body.workspace-active main.shell {
+    position: relative !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    width: min(100%, 1240px) !important;
+    max-width: 1240px !important;
+    min-width: 0 !important;
+    height: calc(100dvh - 66px - env(safe-area-inset-bottom)) !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    margin: 0 auto !important;
+    padding: 8px 20px 100px !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Show Shop's actual selected content; do not let the old background-only
+     display rule or fixed-height panel styles collapse its children. */
+  html body.workspace-active main.shell > #shop-home.shop-home:not(.hidden) {
+    position: relative !important;
+    inset: auto !important;
+    display: flex !important;
+    flex: 1 1 0 !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 0 20px !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    box-sizing: border-box !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    animation: none !important;
+  }
+
+  html body.workspace-active #shop-home > .shop-section-tabs {
+    display: flex !important;
+    flex: 0 0 auto !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 5 !important;
+    width: 100% !important;
+  }
+
+  html body.workspace-active #shop-home > .shop-products-intro:not(.hidden):not([hidden]) {
+    display: block !important;
+    flex: 0 0 auto !important;
+    width: 100% !important;
+  }
+
+  html body.workspace-active #shop-home > .shop-product-action-grid:not(.hidden):not([hidden]) {
+    display: grid !important;
+    flex: 0 0 auto !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    width: 100% !important;
+  }
+
+  html body.workspace-active #shop-home > details:not(.hidden):not([hidden]) {
+    display: block !important;
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* The nav is a child of main.shell. Absolute positioning makes its width
+     resolve against the workspace, not the full browser window. */
+  html body.workspace-active main.shell > #workspace-nav.bottom-nav:not(.hidden) {
+    position: absolute !important;
+    left: 50% !important;
+    right: auto !important;
+    top: auto !important;
+    bottom: 12px !important;
+    transform: translateX(-50%) !important;
+    width: min(calc(100% - 40px), 520px) !important;
+    max-width: 520px !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    z-index: 10000 !important;
+    box-sizing: border-box !important;
+  }
+}
