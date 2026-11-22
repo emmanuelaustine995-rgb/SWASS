@@ -3417,49 +3417,6 @@ body.workspace-active #receipts-home .shop-receipt-history-card .muted{
 }
 
 
-/* Standalone Verify Receipts page also scrolls as one document. */
-html:has(body #request-form #national-id),
-body:has(#request-form #national-id){
-  width:100%!important;
-  height:auto!important;
-  min-height:100%!important;
-  overflow-x:hidden!important;
-  overflow-y:auto!important;
-  overscroll-behavior-y:auto!important;
-}
-body:has(#request-form #national-id){
-  position:relative!important;
-  inset:auto!important;
-  height:auto!important;
-  min-height:100svh!important;
-  max-height:none!important;
-  overflow-x:hidden!important;
-  overflow-y:visible!important;
-  touch-action:pan-y!important;
-  padding-bottom:32px!important;
-}
-body:has(#request-form #national-id) .auth-shell,
-body:has(#request-form #national-id) .auth-shell>.panel{
-  display:block!important;
-  height:auto!important;
-  min-height:0!important;
-  max-height:none!important;
-  overflow:visible!important;
-}
-@media(max-width:760px){
-  body.workspace-active:has(#pos-view.workspace-issue-mode:not(.hidden)) .shell,
-  body.workspace-active:has(#receipts-home.secondhand-active) .shell,
-  body.workspace-active:has(#receipts-home #history-content:not(.hidden)) .shell{
-    padding-left:10px!important;
-    padding-right:10px!important;
-    padding-bottom:calc(144px + env(safe-area-inset-bottom,0px))!important;
-  }
-  body.workspace-active #pos-view.workspace-issue-mode:not(.hidden){
-    padding-bottom:28px!important;
-  }
-}
-
-
 /* RECEIPT PAGES — one natural document scroll, scoped to opened receipt screens.
    The default Receipts card landing page and every non-receipt workspace keep
    their existing fixed-shell layout. */
