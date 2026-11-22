@@ -3306,89 +3306,6 @@ body.workspace-active #workspace-nav.bottom-nav {
 }
 
 
-/* PHONE ISSUE RECEIPT PAGE: make the whole page scroll naturally.
-   The product list, cart and checkout action stay in normal document flow;
-   only a small gap remains after the Issue Receipt button. */
-@media (max-width: 760px) {
-  html body.workspace-active main.shell > #pos-view.workspace-issue-mode:not(.hidden) {
-    display: block !important;
-    flex: 1 1 auto !important;
-    width: 100% !important;
-    min-height: 0 !important;
-    height: auto !important;
-    max-height: none !important;
-    overflow-x: hidden !important;
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-    overscroll-behavior-y: contain !important;
-    padding: 8px 12px 16px !important;
-    box-sizing: border-box !important;
-  }
-
-  html body.workspace-active #pos-view.workspace-issue-mode .pos-grid,
-  html body.workspace-active #pos-view.workspace-issue-mode .cart-panel {
-    display: block !important;
-    height: auto !important;
-    min-height: 0 !important;
-    max-height: none !important;
-    overflow: visible !important;
-    padding-bottom: 12px !important;
-  }
-
-  html body.workspace-active #pos-view.workspace-issue-mode .cart-list {
-    height: auto !important;
-    min-height: 0 !important;
-    max-height: none !important;
-    overflow: visible !important;
-  }
-
-  html body.workspace-active #pos-view.workspace-issue-mode #checkout-open {
-    position: static !important;
-    inset: auto !important;
-    display: flex !important;
-    width: 100% !important;
-    min-height: 54px !important;
-    margin: 12px 0 14px !important;
-    transform: none !important;
-    box-shadow: none !important;
-    z-index: auto !important;
-  }
-}
-
-
-/* PHONE ISSUE RECEIPT: place the final action after the amount summary,
-   not above it or in a fixed empty area. Keep it in the natural page flow. */
-@media (max-width: 760px) {
-  html body.workspace-active #pos-view.workspace-issue-mode .receipt-product-actions {
-    position: static !important;
-    display: block !important;
-    width: 100% !important;
-    margin: 10px 0 14px !important;
-    padding: 0 !important;
-    inset: auto !important;
-    transform: none !important;
-    box-shadow: none !important;
-  }
-  html body.workspace-active #pos-view.workspace-issue-mode #checkout-open {
-    position: static !important;
-    inset: auto !important;
-    display: flex !important;
-    width: 100% !important;
-    min-height: 50px !important;
-    margin: 0 !important;
-    transform: none !important;
-    box-shadow: none !important;
-  }
-  html body.workspace-active #pos-view.workspace-issue-mode .totals {
-    margin-bottom: 8px !important;
-  }
-  html body.workspace-active #pos-view.workspace-issue-mode .cart-panel {
-    justify-content: flex-start !important;
-    padding-bottom: 6px !important;
-  }
-}
-
-
 /* Receipts home: clear, colourful action cards with permanently visible labels. */
 body.workspace-active #receipts-home .receipt-actions-grid{
   display:grid!important;
@@ -3500,152 +3417,34 @@ body.workspace-active #receipts-home .shop-receipt-history-card .muted{
 }
 
 
-/* ISSUE RECEIPT: use one natural document scroll, never nested panel scrolling.
-   The bottom workspace navigation remains fixed, with clearance below the
-   final content so it cannot cover the checkout action or customer fields. */
-html:has(body.workspace-active #pos-view.workspace-issue-mode:not(.hidden)){
-  height:auto!important;
-  min-height:100%!important;
-  overflow-x:hidden!important;
-  overflow-y:auto!important;
-}
-body.workspace-active:has(#pos-view.workspace-issue-mode:not(.hidden)){
-  position:relative!important;
-  inset:auto!important;
-  width:100%!important;
-  height:auto!important;
-  min-height:100svh!important;
-  max-height:none!important;
-  overflow-x:hidden!important;
-  overflow-y:visible!important;
-  overscroll-behavior-y:auto!important;
-  touch-action:pan-y!important;
-  padding-bottom:calc(116px + env(safe-area-inset-bottom,0px))!important;
-}
-body.workspace-active:has(#pos-view.workspace-issue-mode:not(.hidden)) .shell{
-  width:100%!important;
-  height:auto!important;
-  min-height:calc(100svh - 72px)!important;
-  max-height:none!important;
-  margin:0 auto!important;
-  padding:10px 16px calc(124px + env(safe-area-inset-bottom,0px))!important;
-  display:block!important;
-  overflow:visible!important;
-}
-html body.workspace-active #pos-view.workspace-issue-mode:not(.hidden){
-  display:block!important;
-  position:relative!important;
-  flex:none!important;
-  width:100%!important;
-  height:auto!important;
-  min-height:0!important;
-  max-height:none!important;
-  overflow:visible!important;
-  overscroll-behavior:auto!important;
-  padding:8px 0 20px!important;
-}
-html body.workspace-active #pos-view.workspace-issue-mode .pos-grid,
-html body.workspace-active #pos-view.workspace-issue-mode .cart-panel,
-html body.workspace-active #pos-view.workspace-issue-mode .cart-list{
-  display:block!important;
-  position:static!important;
-  height:auto!important;
-  min-height:0!important;
-  max-height:none!important;
-  overflow:visible!important;
-  overscroll-behavior:auto!important;
-}
-html body.workspace-active #pos-view.workspace-issue-mode .cart-panel{
-  padding:16px!important;
-}
-html body.workspace-active #pos-view.workspace-issue-mode .receipt-product-actions,
-html body.workspace-active #pos-view.workspace-issue-mode #checkout-open{
-  position:static!important;
-  inset:auto!important;
-  transform:none!important;
-  float:none!important;
-}
-html body.workspace-active #pos-view.workspace-issue-mode #checkout-open{
-  display:flex!important;
-  width:100%!important;
-  min-height:52px!important;
-  margin:0!important;
-}
-html body.workspace-active #pos-view.workspace-issue-mode .receipt-product-actions{
-  display:block!important;
-  width:100%!important;
-  margin:12px 0 18px!important;
-  padding:0!important;
-  box-shadow:none!important;
-}
-html body.workspace-active #workspace-nav.bottom-nav{
-  position:fixed!important;
-  left:0!important;
-  right:0!important;
-  bottom:0!important;
-  top:auto!important;
-  z-index:10000!important;
-}
-@media(max-width:760px){
-  body.workspace-active:has(#pos-view.workspace-issue-mode:not(.hidden)) .shell{
-    padding:8px 10px calc(132px + env(safe-area-inset-bottom,0px))!important;
-  }
-  html body.workspace-active #pos-view.workspace-issue-mode:not(.hidden){
-    padding:6px 0 20px!important;
-  }
-  html body.workspace-active #pos-view.workspace-issue-mode .cart-panel{
-    padding:13px!important;
-  }
-}
-
-
-/* Natural scrolling is enabled only after opening an individual receipt page.
-   The Receipts landing cards keep their original layout and viewport behavior. */
+/* RECEIPT PAGES — one natural document scroll, scoped to opened receipt screens.
+   The default Receipts card landing page and every non-receipt workspace keep
+   their existing fixed-shell layout. */
 html:has(body.workspace-active #pos-view.workspace-issue-mode:not(.hidden)),
 html:has(body.workspace-active #receipts-home.secondhand-active),
 html:has(body.workspace-active #receipts-home #history-content:not(.hidden)){
-  width:100%!important;
-  height:auto!important;
-  min-height:100%!important;
-  overflow-x:hidden!important;
-  overflow-y:auto!important;
-  overscroll-behavior-y:auto!important;
+  height:auto!important;min-height:100%!important;overflow-x:hidden!important;overflow-y:auto!important;
 }
 body.workspace-active:has(#pos-view.workspace-issue-mode:not(.hidden)),
 body.workspace-active:has(#receipts-home.secondhand-active),
 body.workspace-active:has(#receipts-home #history-content:not(.hidden)){
-  position:relative!important;
-  inset:auto!important;
-  height:auto!important;
-  min-height:100svh!important;
-  max-height:none!important;
-  overflow-x:hidden!important;
-  overflow-y:visible!important;
-  touch-action:pan-y!important;
-  overscroll-behavior-y:auto!important;
-  padding-bottom:calc(124px + env(safe-area-inset-bottom,0px))!important;
+  position:relative!important;inset:auto!important;width:100%!important;height:auto!important;
+  min-height:100svh!important;max-height:none!important;overflow-x:hidden!important;overflow-y:visible!important;
+  touch-action:pan-y!important;overscroll-behavior-y:auto!important;
+  padding:0 0 calc(132px + env(safe-area-inset-bottom,0px))!important;
 }
-body.workspace-active:has(#pos-view.workspace-issue-mode:not(.hidden)) .shell,
-body.workspace-active:has(#receipts-home.secondhand-active) .shell,
-body.workspace-active:has(#receipts-home #history-content:not(.hidden)) .shell{
-  display:block!important;
-  height:auto!important;
-  min-height:0!important;
-  max-height:none!important;
-  overflow:visible!important;
-  padding-bottom:calc(136px + env(safe-area-inset-bottom,0px))!important;
+body.workspace-active:has(#pos-view.workspace-issue-mode:not(.hidden)) main.shell,
+body.workspace-active:has(#receipts-home.secondhand-active) main.shell,
+body.workspace-active:has(#receipts-home #history-content:not(.hidden)) main.shell{
+  display:block!important;position:relative!important;width:100%!important;max-width:1240px!important;
+  height:auto!important;min-height:calc(100svh - 72px)!important;max-height:none!important;
+  margin:0 auto!important;padding:12px 16px calc(148px + env(safe-area-inset-bottom,0px))!important;
+  overflow:visible!important;box-sizing:border-box!important;
 }
-/* Only the opened receipt subpage becomes a natural-flow document section.
-   Do not restyle #receipts-home on its default cards screen. */
 body.workspace-active #pos-view.workspace-issue-mode:not(.hidden){
-  display:block!important;
-  flex:none!important;
-  height:auto!important;
-  min-height:0!important;
-  max-height:none!important;
-  overflow:visible!important;
-  overscroll-behavior:auto!important;
-  padding-bottom:24px!important;
+  display:block!important;position:relative!important;flex:none!important;width:100%!important;
+  height:auto!important;min-height:0!important;max-height:none!important;margin:0!important;
+  padding:8px 0 24px!important;overflow:visible!important;overscroll-behavior:auto!important;
 }
 body.workspace-active #pos-view.workspace-issue-mode .pos-grid,
 body.workspace-active #pos-view.workspace-issue-mode .cart-panel,
@@ -3654,76 +3453,43 @@ body.workspace-active #receipts-home.secondhand-active #secondhand-panel,
 body.workspace-active #receipts-home.secondhand-active #secondhand-form,
 body.workspace-active #receipts-home #history-content:not(.hidden),
 body.workspace-active #receipts-home #history-content:not(.hidden) .history-list{
-  position:static!important;
-  height:auto!important;
-  min-height:0!important;
-  max-height:none!important;
-  overflow:visible!important;
-  overscroll-behavior:auto!important;
+  position:static!important;display:block!important;width:100%!important;height:auto!important;
+  min-height:0!important;max-height:none!important;overflow:visible!important;overscroll-behavior:auto!important;
 }
-body.workspace-active #pos-view.workspace-issue-mode .pos-grid,
-body.workspace-active #pos-view.workspace-issue-mode .cart-panel,
-body.workspace-active #pos-view.workspace-issue-mode .cart-list{
-  display:block!important;
-}
-body.workspace-active #pos-view.workspace-issue-mode .receipt-product-actions,
-body.workspace-active #pos-view.workspace-issue-mode #checkout-open{
-  position:static!important;
-  inset:auto!important;
-  transform:none!important;
-  float:none!important;
+body.workspace-active #pos-view.workspace-issue-mode .cart-panel{padding:16px!important}
+body.workspace-active #pos-view.workspace-issue-mode .receipt-product-actions{
+  position:static!important;display:block!important;width:100%!important;margin:12px 0 18px!important;
+  padding:0!important;inset:auto!important;transform:none!important;box-shadow:none!important;
 }
 body.workspace-active #pos-view.workspace-issue-mode #checkout-open{
-  display:flex!important;
-  width:100%!important;
-  min-height:52px!important;
+  position:static!important;display:flex!important;width:100%!important;min-height:52px!important;margin:0!important;
+  inset:auto!important;transform:none!important;float:none!important;box-shadow:none!important;
 }
 body.workspace-active #workspace-nav.bottom-nav{
-  position:fixed!important;
-  left:0!important;
-  right:0!important;
-  top:auto!important;
-  bottom:0!important;
-  z-index:10000!important;
+  position:fixed!important;left:50%!important;right:auto!important;top:auto!important;
+  bottom:calc(8px + env(safe-area-inset-bottom,0px))!important;z-index:2147483000!important;
+  transform:translateX(-50%)!important;
 }
-/* Standalone Verify Receipts page also scrolls as one document. */
-html:has(body #request-form #national-id),
-body:has(#request-form #national-id){
-  width:100%!important;
-  height:auto!important;
-  min-height:100%!important;
-  overflow-x:hidden!important;
-  overflow-y:auto!important;
-  overscroll-behavior-y:auto!important;
+@media(max-width:760px){
+  body.workspace-active:has(#pos-view.workspace-issue-mode:not(.hidden)) main.shell,
+  body.workspace-active:has(#receipts-home.secondhand-active) main.shell,
+  body.workspace-active:has(#receipts-home #history-content:not(.hidden)) main.shell{
+    padding-left:10px!important;padding-right:10px!important;
+    padding-bottom:calc(148px + env(safe-area-inset-bottom,0px))!important;
+  }
+  body.workspace-active #pos-view.workspace-issue-mode .cart-panel{padding:13px!important}
+}
+/* Standalone Verify Receipts form: natural page scrolling without affecting app shell pages. */
+html:has(body #request-form #national-id),body:has(#request-form #national-id){
+  width:100%!important;height:auto!important;min-height:100%!important;
+  overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior-y:auto!important;
 }
 body:has(#request-form #national-id){
-  position:relative!important;
-  inset:auto!important;
-  height:auto!important;
-  min-height:100svh!important;
-  max-height:none!important;
-  overflow-x:hidden!important;
-  overflow-y:visible!important;
-  touch-action:pan-y!important;
-  padding-bottom:32px!important;
+  position:relative!important;inset:auto!important;height:auto!important;min-height:100svh!important;
+  max-height:none!important;overflow-x:hidden!important;overflow-y:visible!important;
+  touch-action:pan-y!important;padding-bottom:32px!important;
 }
 body:has(#request-form #national-id) .auth-shell,
 body:has(#request-form #national-id) .auth-shell>.panel{
-  display:block!important;
-  height:auto!important;
-  min-height:0!important;
-  max-height:none!important;
-  overflow:visible!important;
-}
-@media(max-width:760px){
-  body.workspace-active:has(#pos-view.workspace-issue-mode:not(.hidden)) .shell,
-  body.workspace-active:has(#receipts-home.secondhand-active) .shell,
-  body.workspace-active:has(#receipts-home #history-content:not(.hidden)) .shell{
-    padding-left:10px!important;
-    padding-right:10px!important;
-    padding-bottom:calc(144px + env(safe-area-inset-bottom,0px))!important;
-  }
-  body.workspace-active #pos-view.workspace-issue-mode:not(.hidden){
-    padding-bottom:28px!important;
-  }
+  display:block!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;
 }
