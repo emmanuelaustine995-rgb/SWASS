@@ -1608,3 +1608,46 @@ html body.platform-admin-workspace #platform-referral-admin .platform-admin-tabs
 .customer-repair-payment { display:block !important; color:#087443 !important; font-weight:700 !important; }
 .repair-record-row--issue-ready { border-left-color:#ea8a21 !important; }
 .repair-mpesa-reference[hidden] { display:none !important; }
+
+
+/* Desktop navigation: keep the complete five-button dock inside the
+   agreed 14 cm workspace. Compact width is capped at 400px and centred
+   on the same viewport axis as the fixed desktop workspace. */
+@media (min-width: 1024px) {
+  html body.workspace-active main.shell > #workspace-nav:not(.hidden) {
+    position: fixed !important;
+    left: 50% !important;
+    right: auto !important;
+    bottom: 10px !important;
+    transform: translateX(-50%) !important;
+    box-sizing: border-box !important;
+    width: min(400px, calc(14cm - 32px)) !important;
+    max-width: min(400px, calc(100vw - 64px)) !important;
+    min-width: 0 !important;
+    padding: 6px 8px !important;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    justify-content: space-between !important;
+    align-items: stretch !important;
+    gap: 4px !important;
+    overflow: hidden !important;
+  }
+
+  html body.workspace-active main.shell > #workspace-nav:not(.hidden) > button {
+    box-sizing: border-box !important;
+    flex: 1 1 0 !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    min-height: 46px !important;
+    padding: 5px 2px !important;
+    font-size: 12px !important;
+    line-height: 1.15 !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  html body.workspace-active main.shell > #workspace-nav:not(.hidden) > button .nav-icon {
+    flex: 0 0 auto !important;
+  }
+}
