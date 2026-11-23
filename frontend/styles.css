@@ -3493,3 +3493,20 @@ body:has(#request-form #national-id) .auth-shell,
 body:has(#request-form #national-id) .auth-shell>.panel{
   display:block!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;
 }
+
+
+/* AURORA declaration workspace — independent page navigation */
+.aurora-declaration-workspace:not(.hidden){
+  display:block!important;position:relative;width:100%;max-width:1080px;margin:0 auto 28px;padding:clamp(16px,3vw,30px);
+  border:1px solid #dbe3ed;border-radius:20px;background:#fff;box-shadow:0 12px 34px rgba(24,39,65,.09);box-sizing:border-box;
+}
+.aurora-declaration-workspace .secondhand-panel-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-bottom:18px;border-bottom:1px solid #e5eaf1}
+.aurora-declaration-workspace .secondhand-panel-heading h2{margin:5px 0 8px;color:#17243a;font-size:clamp(23px,3vw,32px);font-weight:850;line-height:1.15}
+.aurora-declaration-workspace .secondhand-warning{margin:18px 0;padding:14px 16px;border:1px solid #ead7aa;border-left:4px solid #c58b2c;border-radius:12px;background:#fff9ed;color:#5c481f;line-height:1.5}
+.aurora-declaration-workspace .secondhand-receipt-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:20px 0}
+.aurora-declaration-workspace .secondhand-receipt-option{min-height:76px;border:1px solid #d5deea;border-radius:13px;background:#f7f9fc;color:#24334b;font-weight:850;letter-spacing:.04em}
+.aurora-declaration-workspace .secondhand-receipt-option.selected{border-color:#087fb5;background:#eaf6fc;color:#075c85;box-shadow:0 0 0 2px rgba(8,127,181,.10)}
+.aurora-declaration-workspace #secondhand-form:not(.hidden){display:grid!important;gap:16px;margin-top:18px}
+.aurora-declaration-workspace #secondhand-form fieldset{min-width:0;margin:0;padding:18px;border:1px solid #e0e6ee;border-radius:14px;background:#fbfcfe}
+.aurora-declaration-workspace #secondhand-form legend{padding:0 8px;color:#174e70;font-weight:850}
+@media(max-width:620px){.aurora-declaration-workspace:not(.hidden){padding:14px;border-radius:15px}.aurora-declaration-workspace .secondhand-receipt-options{grid-template-columns:1fr}.aurora-declaration-workspace #secondhand-form fieldset{padding:13px}}
