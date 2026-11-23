@@ -3421,10 +3421,12 @@ body.workspace-active #receipts-home .shop-receipt-history-card .muted{
    The default Receipts card landing page and every non-receipt workspace keep
    their existing fixed-shell layout. */
 html:has(body.workspace-active #pos-view.workspace-issue-mode:not(.hidden)),
+html:has(body.workspace-active #receipts-home.secondhand-active),
 html:has(body.workspace-active #receipts-home #history-content:not(.hidden)){
   height:auto!important;min-height:100%!important;overflow-x:hidden!important;overflow-y:auto!important;
 }
 body.workspace-active:has(#pos-view.workspace-issue-mode:not(.hidden)),
+body.workspace-active:has(#receipts-home.secondhand-active),
 body.workspace-active:has(#receipts-home #history-content:not(.hidden)){
   position:relative!important;inset:auto!important;width:100%!important;height:auto!important;
   min-height:100svh!important;max-height:none!important;overflow-x:hidden!important;overflow-y:visible!important;
@@ -3432,6 +3434,7 @@ body.workspace-active:has(#receipts-home #history-content:not(.hidden)){
   padding:0 0 calc(132px + env(safe-area-inset-bottom,0px))!important;
 }
 body.workspace-active:has(#pos-view.workspace-issue-mode:not(.hidden)) main.shell,
+body.workspace-active:has(#receipts-home.secondhand-active) main.shell,
 body.workspace-active:has(#receipts-home #history-content:not(.hidden)) main.shell{
   display:block!important;position:relative!important;width:100%!important;max-width:1240px!important;
   height:auto!important;min-height:calc(100svh - 72px)!important;max-height:none!important;
@@ -3446,6 +3449,8 @@ body.workspace-active #pos-view.workspace-issue-mode:not(.hidden){
 body.workspace-active #pos-view.workspace-issue-mode .pos-grid,
 body.workspace-active #pos-view.workspace-issue-mode .cart-panel,
 body.workspace-active #pos-view.workspace-issue-mode .cart-list,
+body.workspace-active #receipts-home.secondhand-active #secondhand-panel,
+body.workspace-active #receipts-home.secondhand-active #secondhand-form,
 body.workspace-active #receipts-home #history-content:not(.hidden),
 body.workspace-active #receipts-home #history-content:not(.hidden) .history-list{
   position:static!important;display:block!important;width:100%!important;height:auto!important;
@@ -3467,6 +3472,7 @@ body.workspace-active #workspace-nav.bottom-nav{
 }
 @media(max-width:760px){
   body.workspace-active:has(#pos-view.workspace-issue-mode:not(.hidden)) main.shell,
+  body.workspace-active:has(#receipts-home.secondhand-active) main.shell,
   body.workspace-active:has(#receipts-home #history-content:not(.hidden)) main.shell{
     padding-left:10px!important;padding-right:10px!important;
     padding-bottom:calc(148px + env(safe-area-inset-bottom,0px))!important;
@@ -3486,30 +3492,4 @@ body:has(#request-form #national-id){
 body:has(#request-form #national-id) .auth-shell,
 body:has(#request-form #national-id) .auth-shell>.panel{
   display:block!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;
-}
-
-
-/* Restore the opened Sales Declaration workspace without changing Issue Receipt. */
-body.workspace-active #receipts-home.secondhand-active:not(.hidden) {
-  display: block !important;
-  position: relative !important;
-  flex: 1 1 auto !important;
-  min-height: 0 !important;
-  max-height: none !important;
-  height: auto !important;
-  overflow-x: hidden !important;
-  overflow-y: auto !important;
-  overscroll-behavior-y: contain !important;
-  visibility: visible !important;
-}
-body.workspace-active #receipts-home.secondhand-active #secondhand-panel:not(.hidden) {
-  display: block !important;
-  position: relative !important;
-  height: auto !important;
-  min-height: 0 !important;
-  max-height: none !important;
-  overflow: visible !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  margin: 10px 0 18px !important;
 }
