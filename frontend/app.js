@@ -480,7 +480,7 @@
       const day=byDay.get(key);if(day)day.amount+=Math.max(0,Number(receipt.totalKes??receipt.total??0)||0);
     });
     const total=days.reduce((sum,d)=>sum+d.amount,0);
-    const tones=['#0066FF','#FC7584','#474329','#F0E5DB','#0066FF','#FC7584','#474329'];
+    const tones=['#0066FF','#FC7584','#474329','#F7F5F0','#0066FF','#FC7584','#474329'];
     let offset=0;
     const slices=days.map((day,i)=>{const pct=total>0?day.amount/total*100:0;const from=offset;offset+=pct;return {...day,pct,from,to:offset,color:tones[i]};});
     chart.replaceChildren();legend.replaceChildren();
@@ -777,13 +777,13 @@
       if(width>maxSide||height>maxSide){const scale=Math.min(maxSide/width,maxSide/height);width=Math.max(1,Math.round(width*scale));height=Math.max(1,Math.round(height*scale));}
       const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
       const ctx=canvas.getContext('2d');if(!ctx)throw new Error('Your browser could not prepare the logo.');
-      ctx.fillStyle='#ffffff';ctx.fillRect(0,0,width,height);ctx.drawImage(bitmap,0,0,width,height);
+      ctx.fillStyle='#F7F5F0';ctx.fillRect(0,0,width,height);ctx.drawImage(bitmap,0,0,width,height);
       let blob=null;
       for(let pass=0;pass<7;pass++){
         const quality=[0.82,0.72,0.62,0.52,0.42,0.32,0.25][pass];
         blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',quality));
         if(blob&&blob.size<=45000)break;
-        if(pass===2){canvas.width=Math.max(1,Math.round(canvas.width*0.8));canvas.height=Math.max(1,Math.round(canvas.height*0.8));ctx.fillStyle='#ffffff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);}
+        if(pass===2){canvas.width=Math.max(1,Math.round(canvas.width*0.8));canvas.height=Math.max(1,Math.round(canvas.height*0.8));ctx.fillStyle='#F7F5F0';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);}
       }
       if(!blob||blob.size>45000)throw new Error('This logo is too detailed to reduce. Please choose a simpler image.');
       return await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(new Error('Could not prepare the logo.'));reader.readAsDataURL(blob);});
@@ -1375,7 +1375,7 @@
       canvas.height=Math.max(1,Math.round(bitmap.height*scale));
       const ctx=canvas.getContext('2d');
       if(!ctx)throw new Error('Your phone could not prepare the '+label+'. Please try another photo.');
-      ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.fillStyle='#F7F5F0';ctx.fillRect(0,0,canvas.width,canvas.height);
       ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
       const targetBytes=maxBytes;
       let blob=null;
@@ -1390,7 +1390,7 @@
           const temp=document.createElement('canvas');temp.width=nextWidth;temp.height=nextHeight;
           const tempCtx=temp.getContext('2d');
           if(!tempCtx)break;
-          tempCtx.fillStyle='#fff';tempCtx.fillRect(0,0,nextWidth,nextHeight);
+          tempCtx.fillStyle='#F7F5F0';tempCtx.fillRect(0,0,nextWidth,nextHeight);
           tempCtx.drawImage(canvas,0,0,nextWidth,nextHeight);
           canvas.width=nextWidth;canvas.height=nextHeight;
           const resizedCtx=canvas.getContext('2d');
@@ -1548,7 +1548,7 @@
       const canvas=document.createElement('canvas');
       canvas.width=Math.max(1,Math.round(bitmap.width*scale));canvas.height=Math.max(1,Math.round(bitmap.height*scale));
       const ctx=canvas.getContext('2d');if(!ctx)throw new Error('Your device could not prepare this photo. Please try another image.');
-      ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
+      ctx.fillStyle='#F7F5F0';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
       let blob=null;
       for(let attempt=0;attempt<9;attempt++){
         const quality=[0.9,0.84,0.78,0.72,0.66,0.6,0.56,0.52,0.48][attempt];
@@ -1558,7 +1558,7 @@
           const factor=0.86,nextWidth=Math.max(600,Math.round(canvas.width*factor)),nextHeight=Math.max(600,Math.round(canvas.height*factor));
           const resized=document.createElement('canvas');resized.width=nextWidth;resized.height=nextHeight;
           const resizedCtx=resized.getContext('2d');if(!resizedCtx)break;
-          resizedCtx.fillStyle='#fff';resizedCtx.fillRect(0,0,nextWidth,nextHeight);resizedCtx.drawImage(canvas,0,0,nextWidth,nextHeight);
+          resizedCtx.fillStyle='#F7F5F0';resizedCtx.fillRect(0,0,nextWidth,nextHeight);resizedCtx.drawImage(canvas,0,0,nextWidth,nextHeight);
           canvas.width=nextWidth;canvas.height=nextHeight;const nextCtx=canvas.getContext('2d');
           if(!nextCtx)break;nextCtx.drawImage(resized,0,0,nextWidth,nextHeight);
         }
@@ -1974,8 +1974,8 @@
       const result=await request('/api/v1/products/directory',{method:'POST',body:JSON.stringify(payload)});
       $('shop-add-products').reset();$('shop-product-quantity').value='1';
       message.textContent=(result.product?.name||payload.name)+' has been listed for customers across AURORA.';
-      message.style.color='#176b52';
-    }catch(err){message.textContent=err.message||'Could not add this product.';message.style.color='#a12b22';}
+      message.style.color='#0066FF';
+    }catch(err){message.textContent=err.message||'Could not add this product.';message.style.color='#FC7584';}
     finally{btn.disabled=false;btn.textContent='＋ Add Product';}
   });
 
@@ -2028,7 +2028,7 @@
     const canvas = $(id); if (!canvas || canvas.dataset.ready === '1') return;
     canvas.dataset.ready = '1';
     const ctx = canvas.getContext('2d');
-    ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#172b45';
+    ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#474329';
     let drawing = false;
     const point = ev => { const r=canvas.getBoundingClientRect(); return {x:(ev.clientX-r.left)*canvas.width/r.width,y:(ev.clientY-r.top)*canvas.height/r.height}; };
     canvas.addEventListener('pointerdown',ev=>{ev.preventDefault();drawing=true;canvas.setPointerCapture?.(ev.pointerId);const p=point(ev);ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p.x+.1,p.y+.1);ctx.stroke();secondhandPadState[id]=true;});
@@ -2165,7 +2165,7 @@
       canvas.height=Math.max(1,Math.round(bitmap.height*scale));
       const ctx=canvas.getContext('2d');
       if(!ctx)throw new Error('This browser could not prepare the '+label+'. Please try another photo.');
-      ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.fillStyle='#F7F5F0';ctx.fillRect(0,0,canvas.width,canvas.height);
       ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
       let data='';
       for(let attempt=0;attempt<8;attempt++){
@@ -2177,7 +2177,7 @@
         const nextHeight=Math.max(180,Math.round(canvas.height*factor));
         if(nextWidth===canvas.width&&nextHeight===canvas.height)break;
         canvas.width=nextWidth;canvas.height=nextHeight;
-        ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle='#F7F5F0';ctx.fillRect(0,0,canvas.width,canvas.height);
         ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
       }
       if(!data||data.length>82000)throw new Error('The '+label+' could not be compressed enough. Retake it with the document or person filling most of the frame.');
@@ -2331,9 +2331,9 @@
     ev.preventDefault();
     const message=$('secondhand-message'),button=$('secondhand-submit'),isCustomer=state.role==='customer';
     const selectedSaleType=$('sh-sale-type').value;
-    if(!secondhandPadState['sh-signature']||(selectedSaleType==='without_receipt'&&!secondhandPadState['sh-thumbprint'])){message.textContent=selectedSaleType==='without_receipt'?'The seller must complete both the signature and thumbprint mark on the screen.':'The seller must complete the electronic signature.';message.style.color='#a12b22';return;}
-    if(!$('sh-declaration-accepted').checked){message.textContent='The seller must confirm the declaration before submission.';message.style.color='#a12b22';return;}
-    if(!isCustomer&&!$('sh-shop-acknowledged').checked){message.textContent='The shop representative must confirm that the seller and product details were checked.';message.style.color='#a12b22';return;}
+    if(!secondhandPadState['sh-signature']||(selectedSaleType==='without_receipt'&&!secondhandPadState['sh-thumbprint'])){message.textContent=selectedSaleType==='without_receipt'?'The seller must complete both the signature and thumbprint mark on the screen.':'The seller must complete the electronic signature.';message.style.color='#FC7584';return;}
+    if(!$('sh-declaration-accepted').checked){message.textContent='The seller must confirm the declaration before submission.';message.style.color='#FC7584';return;}
+    if(!isCustomer&&!$('sh-shop-acknowledged').checked){message.textContent='The shop representative must confirm that the seller and product details were checked.';message.style.color='#FC7584';return;}
     button.disabled=true;button.textContent=isCustomer?'Submitting declaration…':'Saving protected declaration…';message.textContent='Preparing evidence and securely saving the declaration…';message.style.color='';
     try{
       const saleType=$('sh-sale-type').value;
@@ -2345,20 +2345,20 @@
         const status=(party,channel)=>delivery[party]?.[channel]?.sent?'Sent':'Not sent'+(delivery[party]?.[channel]?.reason?': '+delivery[party][channel].reason:'');
         const allDelivered=['seller','buyer'].every(p=>delivery[p]?.email?.sent&&delivery[p]?.whatsapp?.sent);
         message.textContent='Complete Sales Declaration PDF created · '+(submission.declarationRef||'saved')+'. Seller — email: '+status('seller','email')+'; WhatsApp: '+status('seller','whatsapp')+'. Buyer — email: '+status('buyer','email')+'; WhatsApp: '+status('buyer','whatsapp')+'. Full PDF copy is available below. Status: PENDING SHOP REVIEW — not an approved shop receipt.';
-        message.style.color=allDelivered?'#176b52':'#9a5b00';
+        message.style.color=allDelivered?'#0066FF':'#FC7584';
         $('secondhand-saved-record').innerHTML='<div class="secondhand-record-print"><h2>DECLARATION SUBMITTED</h2><p><strong>Reference:</strong> '+escapeHtml(submission.declarationRef||'—')+'</p><p><strong>Status:</strong> Pending shop review</p><p>The complete PDF, including the filled-in details and submitted evidence, was sent separately to the seller and buyer through the available email and WhatsApp channels. Delivery results are shown above.</p></div>'+(result.pdfBase64?'<a class="btn btn-primary full secondhand-download-pdf" download="AURORA-Sales-Declaration-'+encodeURIComponent(submission.declarationRef||'copy')+'.pdf" href="data:application/pdf;base64,'+result.pdfBase64+'">Download complete declaration PDF</a>':'');
         $('secondhand-saved-record').classList.remove('hidden');
       }else{
         const result=await request('/api/v1/second-hand-phone-declarations',{method:'POST',body:JSON.stringify(payload)});
         const delivery=result.delivery||{},status=(party,channel)=>delivery[party]?.[channel]?.sent?'Sent':'Not sent'+(delivery[party]?.[channel]?.reason?': '+delivery[party][channel].reason:'');
         message.textContent='Sales Declaration PDF created · '+(result.declaration?.declarationRef||'saved')+'. Seller — email: '+status('seller','email')+', WhatsApp: '+status('seller','whatsapp')+'. Buyer — email: '+status('buyer','email')+', WhatsApp: '+status('buyer','whatsapp')+'. Download the PDF below if any delivery failed.';
-        message.style.color=(delivery.seller?.email?.sent&&delivery.seller?.whatsapp?.sent&&delivery.buyer?.email?.sent&&delivery.buyer?.whatsapp?.sent)?'#176b52':'#9a5b00';
+        message.style.color=(delivery.seller?.email?.sent&&delivery.seller?.whatsapp?.sent&&delivery.buyer?.email?.sent&&delivery.buyer?.whatsapp?.sent)?'#0066FF':'#FC7584';
         renderSecondhandRecord({...result.declaration,pdfBase64:result.pdfBase64,delivery:result.delivery});
       }
       $('secondhand-form').reset();$('sh-sale-type').value='';$('secondhand-form').classList.add('hidden');document.querySelectorAll('[data-secondhand-mode]').forEach(el=>el.classList.remove('selected'));['sh-signature','sh-thumbprint'].forEach(clearSecondhandPad);
       ['sh-id-preview','sh-seller-preview','sh-phone-preview','sh-receipt-preview'].forEach(id=>$(id)?.classList.add('hidden'));
       $('secondhand-history')?.classList.add('hidden');
-    }catch(err){message.textContent=err.message||'Could not save the declaration. Please check the details and try again.';message.style.color='#a12b22';}
+    }catch(err){message.textContent=err.message||'Could not save the declaration. Please check the details and try again.';message.style.color='#FC7584';}
     finally{button.disabled=false;button.textContent=isCustomer?'Submit Sales Declaration for Review':'Issue Sales Declaration PDF & Send to Both Parties';}
   });
   $('secondhand-clear')?.addEventListener('click',()=>{
