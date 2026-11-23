@@ -487,9 +487,55 @@
     }catch(error){$('referral-message').textContent=error.message||'Could not redeem referral rewards.';}
     finally{button.disabled=false;}
   });
+  function renderHomeDailySales(receipts){
+    receipts=Array.isArray(receipts)?receipts:[];
+    const chart=$('home-sales-chart'),status=$('home-sales-status');
+    if(!chart||!status)return;
+    const now=new Date(),today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+    const days=Array.from({length:7},(_,i)=>{const d=new Date(today);d.setDate(today.getDate()-(6-i));return {date:d,key:d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'),label:d.toLocaleDateString('en-KE',{weekday:'short'}),amount:0};});
+    const byDay=new Map(days.map(d=>[d.key,d]));
+    (Array.isArray(receipts)?receipts:[]).forEach(receipt=>{
+      const raw=receipt.issuedAt||receipt.createdAt||receipt.date;
+      if(!raw)return;
+      const date=new Date(raw);if(Number.isNaN(date.getTime()))return;
+      const key=date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');
+      const day=byDay.get(key);if(day)day.amount+=Math.max(0,Number(receipt.totalKes??receipt.total??0)||0);
+    });
+    const todayAmount=days[6].amount,yesterdayAmount=days[5].amount;
+    const change=yesterdayAmount>0?((todayAmount-yesterdayAmount)/yesterdayAmount)*100:null;
+    const weekTotal=days.reduce((sum,d)=>sum+d.amount,0);
+    const previousTotal=receipts.reduce((sum,r)=>{const raw=r.issuedAt||r.createdAt||r.date;if(!raw)return sum;const date=new Date(raw);if(Number.isNaN(date.getTime()))return sum;const diff=Math.floor((today-new Date(date.getFullYear(),date.getMonth(),date.getDate()))/86400000);return diff>=7&&diff<14?sum+Math.max(0,Number(r.totalKes??r.total??0)||0):sum;},0);
+    const weekChange=previousTotal>0?((weekTotal-previousTotal)/previousTotal)*100:(weekTotal>0?100:0);
+    $('home-sales-today').textContent=money(todayAmount);
+    $('home-sales-today-change').textContent=change===null?(todayAmount>0?'No sales yesterday to calculate a percentage':'No sales recorded today'):(change>0?'↑ ':change<0?'↓ ':'')+Math.abs(change).toFixed(1)+'% '+(change>=0?'up':'down')+' vs yesterday';
+    $('home-sales-today-change').className='home-sales-change '+(change>0?'positive':change<0?'negative':'neutral');
+    $('home-sales-week-total').textContent=money(weekTotal);
+    $('home-sales-week-change').textContent=previousTotal>0?(weekChange>=0?'↑ ':'↓ ')+Math.abs(weekChange).toFixed(1)+'% vs previous 7 days':'Previous 7-day comparison unavailable';
+    $('home-sales-week-change').className='home-sales-change '+(weekChange>0?'positive':weekChange<0?'negative':'neutral');
+    const max=Math.max(1,...days.map(d=>d.amount));
+    chart.replaceChildren();
+    days.forEach((day,index)=>{
+      const column=document.createElement('div');column.className='home-sales-day'+(index===6?' is-today':'');
+      const amount=document.createElement('strong');amount.className='home-sales-bar-value';amount.textContent=day.amount?money(day.amount):'—';
+      const track=document.createElement('div');track.className='home-sales-bar-track';
+      const bar=document.createElement('span');bar.className='home-sales-bar bar-tone-'+(index%7);bar.style.height=Math.max(day.amount?5:2,day.amount/max*100)+'%';bar.title=day.label+': '+money(day.amount);track.append(bar);
+      const label=document.createElement('small');label.textContent=day.label;
+      column.append(amount,track,label);chart.append(column);
+    });
+    status.textContent='Based on '+receipts.length+' recent receipt record(s). Percentages compare completed receipt totals; no sales are estimated.';
+  }
+  async function loadHomeDailySales(){
+    if(!['owner','manager','vendor','freelancer'].includes(state.role))return;
+    const status=$('home-sales-status');if(!status)return;
+    status.textContent='Loading your sales snapshot…';
+    try{const result=await request('/api/v1/receipts?limit=100');renderHomeDailySales(result.receipts||[]);}
+    catch(error){status.textContent=error.message||'Daily sales snapshot could not be loaded.';$('home-sales-chart').innerHTML='<p class="muted small">Sales chart is temporarily unavailable.</p>';}
+  }
+
   async function loadOwnerHomeSummary(){
     if(!['owner','manager','vendor','freelancer'].includes(state.role))return;
     void loadOwnerReferralSummary();
+    void loadHomeDailySales();
     void loadSubscriptionBalance();
     $('owner-home-title').textContent=state.businessProfile?.businessName||'Business overview';
     $('owner-home-subtitle').textContent=state.businessProfile?.storeName||'Your business workspace at a glance.';
