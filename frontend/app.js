@@ -69,7 +69,7 @@
     return data;
   }
   function publishWorkspaceSession(){saveSession();window.dispatchEvent(new CustomEvent('swass:login',{detail:{token:state.token,role:state.role}}));}
-  function showNotice(message, error = false) { const el=$('notice'); el.textContent=message; el.classList.remove('hidden'); el.style.background=error?'#fff0ef':'#fff5e8'; el.style.color=error?'#a12b22':'#8a4b08'; }
+  function showNotice(message, error = false) { const el=$('notice'); el.textContent=message; el.dataset.tone=error?'error':'warning'; el.classList.remove('hidden'); el.style.removeProperty('background'); el.style.removeProperty('color'); }
   function hideNotice(){ $('notice').classList.add('hidden'); }
   function showLogin(){
     clearSession();
