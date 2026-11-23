@@ -11,8 +11,8 @@ body,body.registration-open,.shell,.app,.wrap,.auth-shell,.login-screen{backgrou
 body::before,body::after{display:none!important;background-image:none!important}
 *,*::before,*::after{box-shadow:none!important;text-shadow:none!important}
 body *:not(.home-sales-pie):not(.product-pie){background-image:none!important}
-body *{color:var(--aurora-mocha)!important;border-color:var(--aurora-mocha)!important}
-body *::before,body *::after{background-image:none!important}
+body *{color:var(--aurora-mocha)!important;border-color:var(--aurora-mocha)!important;background-color:transparent!important}
+body *::before,body *::after{background-image:none!important;background-color:transparent!important}
 body a,body a:visited{color:var(--aurora-electric)!important}
 body a:hover,body a:focus-visible{color:var(--aurora-mocha)!important}
 body [class*="card"],body [class*="panel"],body [class*="tile"],body [class*="banner"],body [class*="workspace"],body section,body article,body aside,body .hero,body .login-screen,body .login-card,body .modal-card,body .account-profile-menu,body .bottom-nav,body .topbar,body .workspace-nav,body #workspace-nav,body .command-bar{background-color:var(--aurora-sand)!important;color:var(--aurora-mocha)!important}
