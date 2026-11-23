@@ -4108,3 +4108,84 @@ html body.workspace-active #workspace-nav.bottom-nav {
     height: 20px !important;
   }
 }
+
+
+
+/* AURORA normal document scrolling — one scroll surface on phone and desktop. */
+/* Remove the legacy fixed-viewport and nested-panel scroll locks. The browser
+   document becomes the single vertical scroll surface for every workspace. */
+html:has(body.workspace-active) {
+  height: auto !important;
+  min-height: 100% !important;
+  max-height: none !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior-y: auto !important;
+  scroll-behavior: auto !important;
+}
+html body.workspace-active {
+  position: relative !important;
+  inset: auto !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 100svh !important;
+  max-height: none !important;
+  overflow-x: hidden !important;
+  overflow-y: visible !important;
+  overscroll-behavior: auto !important;
+  touch-action: auto !important;
+  padding: 0 0 calc(18px + env(safe-area-inset-bottom, 0px)) !important;
+}
+html body.workspace-active main.shell {
+  position: relative !important;
+  display: block !important;
+  flex: none !important;
+  inset: auto !important;
+  width: min(100%, 1240px) !important;
+  max-width: 1240px !important;
+  min-width: 0 !important;
+  height: auto !important;
+  min-height: calc(100svh - 72px) !important;
+  max-height: none !important;
+  margin: 0 auto !important;
+  padding: 12px 20px calc(136px + env(safe-area-inset-bottom, 0px)) !important;
+  gap: normal !important;
+  overflow: visible !important;
+  overscroll-behavior: auto !important;
+  touch-action: auto !important;
+  -webkit-overflow-scrolling: auto !important;
+  box-sizing: border-box !important;
+}
+/* Every visible top-level workspace page grows naturally with its content.
+   No page gets its own scrolling viewport or a clipped fixed height. */
+html body.workspace-active main.shell > :not(.hidden):not(.modal):not(#welcome-back-banner) {
+  position: relative !important;
+  inset: auto !important;
+  flex: none !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  overscroll-behavior: auto !important;
+  touch-action: auto !important;
+}
+/* Let scroll gestures and mouse-wheel input pass through page content normally. */
+html body.workspace-active main.shell,
+html body.workspace-active main.shell *:not(input):not(textarea):not(select):not(.modal):not(.modal-card) {
+  overscroll-behavior-y: auto !important;
+}
+@media (max-width: 760px) {
+  html body.workspace-active main.shell {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 10px 12px calc(142px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
+/* The dock remains fixed while the document itself scrolls. */
+html body.workspace-active > #workspace-nav.bottom-nav:not(.hidden) {
+  position: fixed !important;
+  top: auto !important;
+  bottom: max(8px, env(safe-area-inset-bottom, 0px)) !important;
+  z-index: 2147483000 !important;
+}
