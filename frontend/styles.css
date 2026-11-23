@@ -3644,3 +3644,138 @@ body.workspace-active main.shell .panel [class$="-card"] {
     background: #ffffff !important;
   }
 }
+
+
+/* AURORA professional card palette — distinct soft tints from Home through Loans.
+   White remains the workspace canvas; cards use subtle individual colour washes.
+   Decorative treatment only: no layout, sizing, visibility or interaction changes. */
+body.workspace-active main.shell .owner-home-card{
+  background:linear-gradient(135deg,#f1f5ff 0%,#f9fbff 100%)!important;
+  border-color:#d9e3f5!important;border-left:4px solid #7189c7!important;
+}
+body.workspace-active main.shell .subscription-expiry-countdown{
+  background:linear-gradient(135deg,#edf8f3 0%,#f8fcfa 100%)!important;
+  border:1px solid #d6eadf!important;border-left:4px solid #65a889!important;
+  border-radius:11px!important;
+}
+body.workspace-active main.shell .referral-invite-card{
+  background:linear-gradient(135deg,#f4efff 0%,#fbf9ff 100%)!important;
+  border-color:#e4d9f5!important;border-left:4px solid #9b7acb!important;
+}
+body.workspace-active main.shell .owner-subscription-bar{
+  background:linear-gradient(135deg,#fff4e9 0%,#fffbf6 100%)!important;
+  border-color:#f0dfcc!important;border-left:4px solid #d49a61!important;
+}
+body.workspace-active main.shell #home-daily-sales{
+  background:linear-gradient(135deg,#eef8fb 0%,#f9fcfd 100%)!important;
+  border-color:#d5e9ef!important;border-left:4px solid #68a8ba!important;
+}
+
+/* Receipts: each action has its own coordinated, low-saturation colour. */
+body.workspace-active main.shell #receipts-home #open-issue-receipt{
+  background:linear-gradient(135deg,#edf3ff,#f8faff)!important;border-color:#d7e2f8!important;border-left:4px solid #6d8fd0!important;
+}
+body.workspace-active main.shell #receipts-home #open-recover-receipt{
+  background:linear-gradient(135deg,#eaf7f0,#f8fcf9)!important;border-color:#d3eadc!important;border-left:4px solid #69a987!important;
+}
+body.workspace-active main.shell #receipts-home #secondhand-open-card{
+  background:linear-gradient(135deg,#fff4e8,#fffbf6)!important;border-color:#f1e0ca!important;border-left:4px solid #d39b5e!important;
+}
+body.workspace-active main.shell #receipts-home #open-receipt-history{
+  background:linear-gradient(135deg,#edf7fa,#f8fcfd)!important;border-color:#d5e9ef!important;border-left:4px solid #65a7b8!important;
+}
+body.workspace-active main.shell #receipts-home #open-declaration-history{
+  background:linear-gradient(135deg,#f4effb,#fcfaff)!important;border-color:#e4d9f2!important;border-left:4px solid #987ac0!important;
+}
+
+/* Shop action cards: blue, teal, amber and violet in a consistent family. */
+body.workspace-active main.shell #shop-home .shop-product-action--add{
+  background:linear-gradient(135deg,#edf3ff,#f9fbff)!important;border-color:#d8e3f7!important;border-left:4px solid #6e8fd0!important;
+}
+body.workspace-active main.shell #shop-home .shop-product-action--inventory{
+  background:linear-gradient(135deg,#eaf7f4,#f8fcfb)!important;border-color:#d3eae4!important;border-left:4px solid #5ca99a!important;
+}
+body.workspace-active main.shell #shop-home .shop-product-action--low{
+  background:linear-gradient(135deg,#fff5e9,#fffcf7)!important;border-color:#f0e1ca!important;border-left:4px solid #d29a58!important;
+}
+body.workspace-active main.shell #shop-home .shop-product-action--market{
+  background:linear-gradient(135deg,#f2effb,#fbfaff)!important;border-color:#e1daf1!important;border-left:4px solid #9279bd!important;
+}
+body.workspace-active main.shell #shop-home details.shop-register-product-card{
+  background:linear-gradient(135deg,#edf5ff,#fbfdff)!important;border-color:#d9e6f5!important;
+}
+body.workspace-active main.shell #shop-home details.shop-search-directory-card{
+  background:linear-gradient(135deg,#eef8f6,#fbfdfc)!important;border-color:#d8ebe6!important;
+}
+body.workspace-active main.shell #shop-home details.shop-stock-manager-card{
+  background:linear-gradient(135deg,#fff6eb,#fffdf9)!important;border-color:#f0e3d1!important;
+}
+body.workspace-active main.shell #shop-home details.shop-goods-on-repair-card{
+  background:linear-gradient(135deg,#f3f0fb,#fcfbff)!important;border-color:#e2daf2!important;
+}
+body.workspace-active main.shell #shop-home .staff-team-card{
+  background:linear-gradient(135deg,#eef7fb,#fbfdfe)!important;border-color:#d8e9f0!important;
+}
+
+/* Customer area: welcoming blue, repair teal, loans amber, referrals violet. */
+body.workspace-active main.shell .customer-welcome-card{
+  background:linear-gradient(135deg,#edf4ff,#f9fbff)!important;border:1px solid #d8e4f6!important;border-left:4px solid #7394d2!important;
+}
+body.workspace-active main.shell .customer-repairs-card{
+  background:linear-gradient(135deg,#eaf7f4,#f9fcfb)!important;border-color:#d5ebe5!important;border-left:4px solid #63a997!important;
+}
+body.workspace-active main.shell .customer-loans-card{
+  background:linear-gradient(135deg,#fff5e9,#fffdf8)!important;border:1px solid #f0e1ce!important;border-left:4px solid #d19b60!important;
+}
+body.workspace-active main.shell .customer-referral-card{
+  background:linear-gradient(135deg,#f4effb,#fcfaff)!important;border:1px solid #e4daf2!important;border-left:4px solid #9a7cc3!important;
+}
+
+/* Loans workspace: warm cream offer card, cool blue and mint record sections. */
+body.workspace-active main.shell #loans-home .loans-create-card{
+  background:linear-gradient(135deg,#fff5e9,#fffdf8)!important;border:1px solid #f0e1ce!important;border-left:4px solid #d19b60!important;
+}
+body.workspace-active main.shell #loans-home .loans-list-section{
+  background:linear-gradient(135deg,#edf4ff,#f9fbff)!important;border:1px solid #d9e4f5!important;border-left:4px solid #7895cb!important;
+}
+body.workspace-active main.shell #loans-home .loans-list-section[aria-labelledby="loans-borrowed-title"]{
+  background:linear-gradient(135deg,#eaf7f2,#f9fcfa)!important;border-color:#d6eadf!important;border-left-color:#68a987!important;
+}
+
+/* Shared polish: consistent restrained radius and soft depth, without nested card stacks. */
+body.workspace-active main.shell .owner-home-card,
+body.workspace-active main.shell .referral-invite-card,
+body.workspace-active main.shell .owner-subscription-bar,
+body.workspace-active main.shell #home-daily-sales,
+body.workspace-active main.shell #shop-home .shop-product-action,
+body.workspace-active main.shell #shop-home details.shop-register-product-card,
+body.workspace-active main.shell #shop-home details.shop-search-directory-card,
+body.workspace-active main.shell #shop-home details.shop-stock-manager-card,
+body.workspace-active main.shell #shop-home details.shop-goods-on-repair-card,
+body.workspace-active main.shell .customer-welcome-card,
+body.workspace-active main.shell .customer-repairs-card,
+body.workspace-active main.shell .customer-loans-card,
+body.workspace-active main.shell .customer-referral-card,
+body.workspace-active main.shell #loans-home .loans-create-card,
+body.workspace-active main.shell #loans-home .loans-list-section{
+  border-radius:12px!important;
+  box-shadow:0 2px 7px rgba(31,45,65,.055)!important;
+}
+body.workspace-active main.shell .shop-product-action-icon{
+  border-radius:10px!important;
+}
+body.workspace-active main.shell .shop-product-action-copy strong,
+body.workspace-active main.shell .shop-product-action-copy small{
+  color:#344256!important;
+}
+@media(hover:hover){
+  body.workspace-active main.shell #receipts-home .receipt-choice,
+  body.workspace-active main.shell #shop-home .shop-product-action{
+    transition:transform .16s ease,box-shadow .16s ease!important;
+  }
+  body.workspace-active main.shell #receipts-home .receipt-choice:hover,
+  body.workspace-active main.shell #shop-home .shop-product-action:hover{
+    transform:translateY(-2px)!important;
+    box-shadow:0 5px 13px rgba(31,45,65,.10)!important;
+  }
+}
