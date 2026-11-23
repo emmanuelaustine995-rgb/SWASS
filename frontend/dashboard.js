@@ -99,7 +99,7 @@
     try{return await state.dashboardRequest;}finally{state.dashboardRequest=null;}
   }
   function renderProductMix(rows){
-    const colors=['#2676b8','#16a36a','#e6a23c','#8b65c8','#e16b75','#36a6a6','#65758b','#c27b42','#789b42','#b05c9d','#4b83a8','#9a8c73'];
+    const colors=['#0066FF','#FC7584','#474329','#F0E5DB'];
     const valid=rows.filter(row=>Number(row.salesKes)>0);
     const total=valid.reduce((sum,row)=>sum+Number(row.salesKes),0);
     if(!valid.length||!total){
