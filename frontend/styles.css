@@ -3905,3 +3905,86 @@ body.workspace-active main.shell #shop-lost-items-panel .lost-card-active small{
     box-shadow:0 7px 16px rgba(45,77,105,.11)!important;
   }
 }
+
+
+/* AURORA workspace consistency: one white canvas, italic supporting descriptions,
+   and clean typography in the Flagged Items workspace. */
+body.workspace-active main.shell #receipts-home:not(.hidden),
+body.workspace-active main.shell #shop-lost-items-panel:not(.hidden) {
+  background:#fff!important;
+  background-color:#fff!important;
+  background-image:none!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  outline:0!important;
+  filter:none!important;
+  padding:0!important;
+}
+
+/* The workspace is the canvas; its action cards are the first surfaced elements. */
+body.workspace-active main.shell #receipts-home .section-head,
+body.workspace-active main.shell #shop-lost-items-panel > .lost-items-intro {
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+body.workspace-active main.shell #receipts-home .receipt-actions-grid {
+  margin-top:12px!important;
+}
+
+/* Supporting explanations directly beneath page/section headings use italic text. */
+body.workspace-active main.shell .page-heading > div > p,
+body.workspace-active main.shell .section-head > div > p,
+body.workspace-active main.shell .panel-heading > div > p,
+body.workspace-active main.shell .analytics-intro p,
+body.workspace-active main.shell .shop-products-intro p,
+body.workspace-active main.shell .lost-items-intro p:last-child,
+body.workspace-active main.shell .receipt-choice small,
+body.workspace-active main.shell .lost-goods-card small {
+  font-style:italic!important;
+}
+
+/* Flagged Items: remove legacy pulsing/fading text treatments and restore the
+   same steady, crisp typography used by the other workspaces. */
+body.workspace-active main.shell #shop-lost-items-panel,
+body.workspace-active main.shell #shop-lost-items-panel .lost-items-intro,
+body.workspace-active main.shell #shop-lost-items-panel .lost-goods-card,
+body.workspace-active main.shell #shop-lost-items-panel .lost-card-copy,
+body.workspace-active main.shell #shop-lost-items-panel .lost-card-copy strong,
+body.workspace-active main.shell #shop-lost-items-panel .lost-card-copy small {
+  animation:none!important;
+  text-shadow:none!important;
+  -webkit-text-stroke:0!important;
+  filter:none!important;
+  transform:none;
+  opacity:1!important;
+}
+body.workspace-active main.shell #shop-lost-items-panel .lost-items-intro {
+  background:#fff!important;
+  color:#26384b!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  padding:8px 0 12px!important;
+}
+body.workspace-active main.shell #shop-lost-items-panel .lost-items-intro .eyebrow {
+  color:#7b8794!important;
+}
+body.workspace-active main.shell #shop-lost-items-panel .lost-items-intro h2 {
+  color:#26384b!important;
+}
+body.workspace-active main.shell #shop-lost-items-panel .lost-items-intro .muted {
+  color:#64748b!important;
+}
+body.workspace-active main.shell #shop-lost-items-panel .lost-goods-card strong {
+  font-style:normal!important;
+  font-weight:700!important;
+  letter-spacing:normal!important;
+}
+body.workspace-active main.shell #shop-lost-items-panel .lost-goods-card small {
+  font-style:italic!important;
+  font-weight:400!important;
+  letter-spacing:normal!important;
+  text-decoration:none!important;
+}
