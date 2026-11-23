@@ -3988,3 +3988,60 @@ body.workspace-active main.shell #shop-lost-items-panel .lost-goods-card small {
   letter-spacing:normal!important;
   text-decoration:none!important;
 }
+
+
+/* AURORA whole-workspace scrolling:
+   Scroll belongs to the workspace viewport, not to individual page panels.
+   This lets wheel/touch scrolling work wherever the pointer/finger is over
+   the workspace while keeping the navigation dock fixed in view. */
+html body.workspace-active {
+  touch-action:pan-y!important;
+}
+html body.workspace-active main.shell {
+  height:calc(100dvh - 72px)!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  overscroll-behavior-y:contain!important;
+  -webkit-overflow-scrolling:touch!important;
+  touch-action:pan-y!important;
+  padding-bottom:112px!important;
+  scroll-padding-bottom:112px!important;
+}
+html body.workspace-active main.shell > :not(#workspace-nav):not(#welcome-back-banner):not(.hidden) {
+  flex:0 0 auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  height:auto!important;
+  overflow:visible!important;
+  overscroll-behavior:auto!important;
+  touch-action:pan-y!important;
+}
+html body.workspace-active main.shell > #receipts-home:not(.hidden),
+html body.workspace-active main.shell > #shop-lost-items-panel:not(.hidden),
+html body.workspace-active main.shell > #shop-home:not(.hidden),
+html body.workspace-active main.shell > #owner-home:not(.hidden),
+html body.workspace-active main.shell > #pos-view:not(.hidden),
+html body.workspace-active main.shell > #owner-dashboard-view:not(.hidden),
+html body.workspace-active main.shell > #profile-panel:not(.hidden),
+html body.workspace-active main.shell > #staff-profile-panel:not(.hidden) {
+  flex:0 0 auto!important;
+  min-height:100%!important;
+  max-height:none!important;
+  height:auto!important;
+  overflow:visible!important;
+  overscroll-behavior:auto!important;
+}
+
+/* Keep the bottom navigation floating above the scrolling content on desktop
+   and mobile; it must not become part of the scrollable document. */
+html body.workspace-active #workspace-nav.bottom-nav {
+  position:fixed!important;
+  left:50%!important;
+  right:auto!important;
+  top:auto!important;
+  bottom:12px!important;
+  transform:translateX(-50%)!important;
+  z-index:10000!important;
+}
