@@ -533,7 +533,8 @@
 
   async function loadOwnerHomeSummary(){
     if(!['owner','manager','vendor','freelancer'].includes(state.role))return;
-    void loadOwnerReferralSummary();\n    void loadHomeDailySales();
+    void loadOwnerReferralSummary();
+    void loadHomeDailySales();
     void loadSubscriptionBalance();
     $('owner-home-title').textContent=state.businessProfile?.businessName||'Business overview';
     $('owner-home-subtitle').textContent=state.businessProfile?.storeName||'Your business workspace at a glance.';
