@@ -191,3 +191,79 @@ html body:has(#loans-home:not(.hidden)) .shell{
   #owner-dashboard-view :is(.metric-grid,.owner-stats,.channel-grid,.comparison-grid){grid-template-columns:minmax(0,1fr)!important}
   #owner-dashboard-view :is(.panel,.metric,.owner-stat),#loans-home :is(.loans-page-heading,.loans-list-section){padding:12px!important}
 }
+
+
+/* Additional Shop Owner operational workspaces (POS, receipts, shop, profile and subscription). */
+#pos-view,#receipts-home,#shop-home,#subscription-home,#profile-panel,#owner-customers-section,#owner-staff-area,
+#pos-view :is(.panel,.card,.products-panel,.cart-panel,.customer-lookup-panel,.crm-panel,.staff-team-card),
+#receipts-home :is(.panel,.card,.receipt-card,.history-card,.aurora-history-workspace),
+#shop-home :is(.panel,.card,.shop-card,.product-card),
+#subscription-home :is(.panel,.card,.subscription-card),
+#profile-panel :is(.panel,.card,.profile-shop-card,.profile-account-summary,.profile-invite-card),
+#owner-customers-section :is(.panel,.card,.customer-card,.crm-card),
+#owner-staff-area :is(.panel,.card,.staff-card,.invite-card){
+  background:var(--aurora-sand)!important;
+  background-image:none!important;
+  color:var(--aurora-mocha)!important;
+  border-color:var(--aurora-mocha)!important;
+  box-shadow:none!important;
+}
+#pos-view :is(h1,h2,h3,h4,p,span,small,strong,b,label,th,td,.muted,.eyebrow),
+#receipts-home :is(h1,h2,h3,h4,p,span,small,strong,b,label,th,td,.muted,.eyebrow),
+#shop-home :is(h1,h2,h3,h4,p,span,small,strong,b,label,th,td,.muted,.eyebrow),
+#subscription-home :is(h1,h2,h3,h4,p,span,small,strong,b,label,th,td,.muted,.eyebrow),
+#profile-panel :is(h1,h2,h3,h4,p,span,small,strong,b,label,th,td,.muted,.eyebrow),
+#owner-customers-section :is(h1,h2,h3,h4,p,span,small,strong,b,label,th,td,.muted,.eyebrow),
+#owner-staff-area :is(h1,h2,h3,h4,p,span,small,strong,b,label,th,td,.muted,.eyebrow){
+  color:var(--aurora-mocha)!important;
+}
+#pos-view :is(.badge,.pill,.tag,.chip,.count-pill,.status-badge,.stock-status),
+#receipts-home :is(.badge,.pill,.tag,.chip,.count-pill,.status-badge),
+#shop-home :is(.badge,.pill,.tag,.chip,.count-pill,.status-badge),
+#subscription-home :is(.badge,.pill,.tag,.chip,.count-pill,.status-badge),
+#profile-panel :is(.badge,.pill,.tag,.chip,.count-pill,.status-badge),
+#owner-customers-section :is(.badge,.pill,.tag,.chip,.count-pill,.status-badge),
+#owner-staff-area :is(.badge,.pill,.tag,.chip,.count-pill,.status-badge){
+  background:var(--aurora-watermelon)!important;
+  color:var(--aurora-mocha)!important;
+  border:1px solid var(--aurora-mocha)!important;
+}
+#pos-view :is(button,.btn,input[type=submit],input[type=button],[role=button]),
+#receipts-home :is(button,.btn,input[type=submit],input[type=button],[role=button]),
+#shop-home :is(button,.btn,input[type=submit],input[type=button],[role=button]),
+#subscription-home :is(button,.btn,input[type=submit],input[type=button],[role=button]),
+#profile-panel :is(button,.btn,input[type=submit],input[type=button],[role=button]),
+#owner-customers-section :is(button,.btn,input[type=submit],input[type=button],[role=button]),
+#owner-staff-area :is(button,.btn,input[type=submit],input[type=button],[role=button]){
+  background:var(--aurora-electric)!important;
+  color:var(--aurora-sand)!important;
+  border:1px solid var(--aurora-electric)!important;
+}
+#pos-view :is(.btn-light,.btn-quiet,.btn-secondary,.secondary,.icon-btn),
+#receipts-home :is(.btn-light,.btn-quiet,.btn-secondary,.secondary,.icon-btn),
+#shop-home :is(.btn-light,.btn-quiet,.btn-secondary,.secondary,.icon-btn),
+#subscription-home :is(.btn-light,.btn-quiet,.btn-secondary,.secondary,.icon-btn),
+#profile-panel :is(.btn-light,.btn-quiet,.btn-secondary,.secondary,.icon-btn),
+#owner-customers-section :is(.btn-light,.btn-quiet,.btn-secondary,.secondary,.icon-btn),
+#owner-staff-area :is(.btn-light,.btn-quiet,.btn-secondary,.secondary,.icon-btn){
+  background:var(--aurora-sand)!important;
+  color:var(--aurora-mocha)!important;
+  border:1px solid var(--aurora-mocha)!important;
+}
+#pos-view :is(.active,[aria-current=page],[aria-pressed=true],.is-active,.selected),
+#receipts-home :is(.active,[aria-current=page],[aria-pressed=true],.is-active,.selected),
+#shop-home :is(.active,[aria-current=page],[aria-pressed=true],.is-active,.selected),
+#subscription-home :is(.active,[aria-current=page],[aria-pressed=true],.is-active,.selected),
+#profile-panel :is(.active,[aria-current=page],[aria-pressed=true],.is-active,.selected){
+  background:var(--aurora-electric)!important;
+  color:var(--aurora-sand)!important;
+  border-color:var(--aurora-electric)!important;
+}
+#pos-view :is(input,select,textarea),#receipts-home :is(input,select,textarea),
+#shop-home :is(input,select,textarea),#subscription-home :is(input,select,textarea),
+#profile-panel :is(input,select,textarea),#owner-customers-section :is(input,select,textarea),
+#owner-staff-area :is(input,select,textarea){
+  background:var(--aurora-sand)!important;
+  color:var(--aurora-mocha)!important;
+  border:1px solid var(--aurora-mocha)!important;
+}
