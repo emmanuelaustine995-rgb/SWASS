@@ -480,7 +480,7 @@
       const day=byDay.get(key);if(day)day.amount+=Math.max(0,Number(receipt.totalKes??receipt.total??0)||0);
     });
     const total=days.reduce((sum,d)=>sum+d.amount,0);
-    const tones=['#2798d1','#22a77a','#8b68d8','#ed9844','#d9588b','#527fd2','#269ca0'];
+    const tones=['#0066FF','#FC7584','#474329','#F0E5DB','#0066FF','#FC7584','#474329'];
     let offset=0;
     const slices=days.map((day,i)=>{const pct=total>0?day.amount/total*100:0;const from=offset;offset+=pct;return {...day,pct,from,to:offset,color:tones[i]};});
     chart.replaceChildren();legend.replaceChildren();
