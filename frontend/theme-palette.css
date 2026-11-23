@@ -277,6 +277,7 @@ body.shop-owner-account-active #workspace-nav :is(button.active,[aria-current=pa
 
 
 /* Strict Shop Staff palette. Scoped to staff accounts; Shop Owner styling is unchanged. */
+html.shop-staff-account-active{background:#F7F5F0!important;}
 body.shop-staff-account-active{
   --aurora-sand:#F7F5F0;--aurora-staff-canvas:#F7F5F0;
   --aurora-mocha:#474329;--aurora-watermelon:#FC7584;--aurora-electric:#0066FF;
