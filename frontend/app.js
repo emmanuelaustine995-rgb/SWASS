@@ -639,6 +639,8 @@
       staffSummary?.classList.add('hidden');
       $('open-issue-receipt')?.classList.toggle('hidden',isCustomerAccount);
       $('open-recover-receipt')?.classList.remove('hidden');
+      $('open-receipt-history')?.classList.toggle('hidden',!['owner','freelancer','staff','cashier','manager'].includes(state.role));
+      $('open-declaration-history')?.classList.toggle('hidden',!['owner','freelancer'].includes(state.role));
     }else if(screen==='shop'){
       if(state.role==='customer'){showWorkspaceScreen('dashboard',{fromBack:true});return;}
       $('shop-home')?.classList.remove('hidden');
@@ -2189,7 +2191,7 @@
     target.innerHTML=rows.length?rows.map(d=>'<article class="aurora-history-row"><div class="aurora-history-row-main"><strong>'+escapeHtml(d.declarationRef||'Declaration')+' · '+escapeHtml(d.phoneMakeModel||d.productName||'Product not recorded')+'</strong><small>'+escapeHtml(historyDate(d.createdAt))+' · Seller: '+escapeHtml(d.sellerName||'—')+' · Buyer: '+escapeHtml(d.buyerName||'—')+' · '+money(d.purchasePriceKes)+'</small></div><span class="badge badge-success">RECORDED</span></article>').join(''):'<div class="aurora-history-empty">No declaration forms have been submitted yet.</div>';
   }
   async function openReceiptHistory(){
-    if(!['owner','freelancer','staff'].includes(state.role)){showNotice('Receipt history is available to authorised shop accounts.',true);return;}
+    if(!['owner','freelancer','staff','cashier','manager'].includes(state.role)){showNotice('Receipt history is available to authorised shop accounts.',true);return;}
     $('receipts-home')?.classList.add('hidden');$('declaration-history-panel')?.classList.add('hidden');$('receipt-history-panel')?.classList.remove('hidden');
     $('receipt-history-status').textContent='Loading receipts…';$('receipt-history-list').innerHTML='';
     syncGlobalBackButton();
