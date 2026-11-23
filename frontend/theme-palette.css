@@ -54,7 +54,7 @@ body input,body select,body textarea{background:var(--aurora-sand)!important;col
 body input::placeholder,body textarea::placeholder{color:var(--aurora-mocha)!important;opacity:.78}
 body input:focus,body select:focus,body textarea:focus{border-color:var(--aurora-electric)!important;outline:2px solid var(--aurora-electric)!important;outline-offset:1px}
 body :focus-visible{outline:3px solid var(--aurora-electric)!important;outline-offset:2px}
-body .text-btn,body .danger,body .error,body .stock.out{color:var(--aurora-watermelon)!important}
+body .text-btn,body .danger,body .error,body .stock.out{background:var(--aurora-watermelon)!important;color:var(--aurora-mocha)!important;border-color:var(--aurora-mocha)!important}
 body .notice,body .warning,body .alert,body .error-box{background:var(--aurora-watermelon)!important;color:var(--aurora-mocha)!important;border:1px solid var(--aurora-mocha)!important}
 body .success,body .success-box,body .online,body .network-status{background:var(--aurora-electric)!important;color:var(--aurora-sand)!important;border:1px solid var(--aurora-electric)!important}
 body .day-bar i,body .metric-progress,body .progress-fill,body .report-bar{background:var(--aurora-electric)!important}
