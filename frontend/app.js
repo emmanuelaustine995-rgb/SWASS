@@ -502,7 +502,6 @@
     const profileVisible=$('owner-dashboard-view')?.classList.contains('profile-workspace-mode');
     const receiptsVisible=!$('receipts-home')?.classList.contains('hidden');
     const shopVisible=!$('shop-home')?.classList.contains('hidden');
-    const secondhandVisible=!$('secondhand-panel')?.classList.contains('hidden');
     const modalOpen=['checkout-modal','receipt-modal','receipt-recovery-modal'].some(id=>$(id)&&!$(id).classList.contains('hidden'));
     const workspaceOpen=!!$('workspace-nav')&&!$('workspace-nav').classList.contains('hidden');
     const issueStep=posVisible&&$('pos-view')?.classList.contains('workspace-issue-mode');
@@ -556,9 +555,9 @@
     try{localStorage.setItem('swass-active-workspace-v1',screen);}catch{}
     const owner=document.getElementById('owner-dashboard-view'),pos=$('pos-view');
     const posGrid=document.querySelector('.pos-grid');
-    const history=$('history-panel'),crm=$('owner-customers-section'),lookup=document.querySelector('.customer-lookup-panel');
+    const crm=$('owner-customers-section'),lookup=document.querySelector('.customer-lookup-panel');
     // Reset nested panels as well as the outer page. These were previously left visible inside POS/profile containers.
-    [history,crm,lookup].forEach(el=>el?.classList.add('hidden'));
+    [crm,lookup].forEach(el=>el?.classList.add('hidden'));
     const profile=$('profile-panel'),receiptHome=$('receipts-home'),ownerHome=$('owner-home');
     const dashboardBusinessCard=$('dashboard-business-card');
     const subscriptionHome=$('subscription-home');
@@ -570,7 +569,7 @@
     dashboardBusinessCard?.classList.add('hidden');
     pos?.classList.remove('profile-workspace-mode');
     owner?.classList.remove('profile-workspace-mode');
-    [history,crm,lookup,receiptHome,ownerHome,profile,$('platform-referral-admin'),$('shop-home'),subscriptionHome].forEach(el=>el?.classList.add('hidden'));
+    [crm,lookup,receiptHome,ownerHome,profile,$('platform-referral-admin'),$('shop-home'),subscriptionHome].forEach(el=>el?.classList.add('hidden'));
     owner?.classList.add('hidden');
     pos?.classList.add('hidden');
     document.getElementById('account-profile-menu')?.classList.add('hidden');
@@ -620,28 +619,18 @@
         void loadSubscriptionBalance();
       }
     }else if(screen==='receipts'){
-      // Always return to the compact declaration card; open the form only after a tap.
-      receiptHome?.classList.remove('secondhand-active');
-      $('secondhand-panel')?.classList.add('hidden');
-      $('secondhand-open-card')?.setAttribute('aria-expanded','false');
       receiptHome?.classList.remove('hidden');
-      const ownerHistory=$('shop-receipt-history-card');
-      ownerHistory?.classList.toggle('hidden',state.role!=='owner');
-      ownerHistory?.toggleAttribute('hidden',state.role!=='owner');
-      if(ownerHistory)ownerHistory.style.setProperty('display',state.role==='owner'?'':'none','important');
-      if(state.role==='owner')history?.classList.remove('hidden');
       // Re-apply account permissions every time the Receipts page is opened.
       const isCustomerAccount=state.role==='customer';
       document.body.classList.toggle('customer-account-active',isCustomerAccount);
       // Re-apply visibility for every account switch: a previous customer login
       // must not leave Issue Receipt hidden for the next owner or freelancer.
       enforceCustomerReceiptActions();
-      // Receipts landing page is intentionally limited to its three action cards.
+      // Receipts landing page contains only ordinary receipt actions.
       // Sales summaries belong on the role dashboard, not above these cards.
       staffSummary?.classList.add('hidden');
       $('open-issue-receipt')?.classList.toggle('hidden',isCustomerAccount);
       $('open-recover-receipt')?.classList.remove('hidden');
-      $('secondhand-open-card')?.classList.toggle('hidden',!['owner','freelancer','customer'].includes(state.role));
     }else if(screen==='shop'){
       if(state.role==='customer'){showWorkspaceScreen('dashboard',{fromBack:true});return;}
       $('shop-home')?.classList.remove('hidden');
@@ -654,7 +643,6 @@
       void loadBusinessProfile().catch(err=>showNotice('Shop profile could not be loaded. '+(err.message||''),true));
       
       const isShopOwner = state.role === 'owner';
-      $('secondhand-panel')?.classList.add('hidden');
       document.querySelector('#shop-home > .shop-directory-card')?.classList.remove('hidden');
       $('shop-register-product-card')?.classList.toggle('hidden', !isShopOwner);
       $('shop-owner-note')?.classList.toggle('hidden', isShopOwner);
