@@ -488,6 +488,7 @@
     finally{button.disabled=false;}
   });
   function renderHomeDailySales(receipts){
+    receipts=Array.isArray(receipts)?receipts:[];
     const chart=$('home-sales-chart'),status=$('home-sales-status');
     if(!chart||!status)return;
     const now=new Date(),today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
@@ -501,12 +502,12 @@
       const day=byDay.get(key);if(day)day.amount+=Math.max(0,Number(receipt.totalKes??receipt.total??0)||0);
     });
     const todayAmount=days[6].amount,yesterdayAmount=days[5].amount;
-    const change=yesterdayAmount>0?((todayAmount-yesterdayAmount)/yesterdayAmount)*100:(todayAmount>0?100:0);
+    const change=yesterdayAmount>0?((todayAmount-yesterdayAmount)/yesterdayAmount)*100:null;
     const weekTotal=days.reduce((sum,d)=>sum+d.amount,0);
     const previousTotal=receipts.reduce((sum,r)=>{const raw=r.issuedAt||r.createdAt||r.date;if(!raw)return sum;const date=new Date(raw);if(Number.isNaN(date.getTime()))return sum;const diff=Math.floor((today-new Date(date.getFullYear(),date.getMonth(),date.getDate()))/86400000);return diff>=7&&diff<14?sum+Math.max(0,Number(r.totalKes??r.total??0)||0):sum;},0);
     const weekChange=previousTotal>0?((weekTotal-previousTotal)/previousTotal)*100:(weekTotal>0?100:0);
     $('home-sales-today').textContent=money(todayAmount);
-    $('home-sales-today-change').textContent=(change>0?'↑ ':change<0?'↓ ':'')+Math.abs(change).toFixed(1)+'% '+(change>=0?'up':'down')+' vs yesterday';
+    $('home-sales-today-change').textContent=change===null?(todayAmount>0?'No sales yesterday to calculate a percentage':'No sales recorded today'):(change>0?'↑ ':change<0?'↓ ':'')+Math.abs(change).toFixed(1)+'% '+(change>=0?'up':'down')+' vs yesterday';
     $('home-sales-today-change').className='home-sales-change '+(change>0?'positive':change<0?'negative':'neutral');
     $('home-sales-week-total').textContent=money(weekTotal);
     $('home-sales-week-change').textContent=previousTotal>0?(weekChange>=0?'↑ ':'↓ ')+Math.abs(weekChange).toFixed(1)+'% vs previous 7 days':'Previous 7-day comparison unavailable';
