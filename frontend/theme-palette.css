@@ -11,8 +11,16 @@ body{background-color:var(--aurora-sand)!important;background-image:none!importa
 body::before,body::after{display:none!important;background-image:none!important}
 *,*::before,*::after{box-shadow:none!important;text-shadow:none!important}
 body *:not(.home-sales-pie):not(.product-pie){background-image:none!important}
-body *{border-color:var(--aurora-mocha)!important}
-h1,h2,h3,h4,h5,h6,p,span,small,strong,b,label,legend,summary,figcaption,dt,dd,li,th,td,caption{color:var(--aurora-mocha)}
+body *{border-color:var(--aurora-mocha)!important;color:var(--aurora-mocha)!important}
+body *::before,body *::after{background-image:none!important}
+body a,body a:visited{color:var(--aurora-electric)!important}
+body button,body .btn,body .primary,body input[type=submit],body input[type=button],body [role=button]{background:var(--aurora-electric)!important;color:var(--aurora-sand)!important;border:1px solid var(--aurora-electric)!important}
+body .btn-light,body .btn-quiet,body .btn-secondary,body .secondary,body .icon-btn{background:var(--aurora-sand)!important;color:var(--aurora-mocha)!important;border:1px solid var(--aurora-mocha)!important}
+body .btn-primary,body .btn-install,body .receipt-nav{background:var(--aurora-electric)!important;color:var(--aurora-sand)!important;border-color:var(--aurora-electric)!important}
+body .bottom-nav button.active,body .bottom-nav button.receipt-nav,body .bottom-nav button.receipt-nav.active{background:var(--aurora-electric)!important;color:var(--aurora-sand)!important}
+body .home-sales-legend-item i,body .product-legend-row i{background:var(--aurora-watermelon)!important}
+body .day-bar i,body .metric-progress,body .progress-fill{background:var(--aurora-electric)!important}
+body .text-btn,body .danger,body .error,body .stock.out{color:var(--aurora-watermelon)!important}
 a,a:visited{color:var(--aurora-electric)!important}
 a:hover,a:focus-visible{color:var(--aurora-mocha)!important}
 .topbar,.bottom-nav,.workspace-nav,#workspace-nav,.command-bar,header,nav{background:var(--aurora-sand)!important;color:var(--aurora-mocha)!important;border-color:var(--aurora-mocha)!important}
