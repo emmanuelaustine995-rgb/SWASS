@@ -100,7 +100,7 @@
     // A signed-out visitor must see only the login/registration area.
     document.body.classList.remove('customer-account-active');
     const protectedScreens=[
-      'welcome-back-banner','pos-view','customer-home','owner-home','receipts-home','shop-home','owner-dashboard-view','loans-home',
+      'welcome-back-banner','pos-view','customer-home','owner-home','receipts-home','receipt-history-panel','declaration-history-panel','shop-home','owner-dashboard-view','loans-home',
       'staff-profile-panel','profile-panel','history-panel','owner-customers-section',
       'account-profile-menu','receipt-modal','receipt-recovery-modal','workspace-nav'
     ];
@@ -508,9 +508,10 @@
     const issueStep=posVisible&&$('pos-view')?.classList.contains('workspace-issue-mode');
     const shopResults=shopVisible&&$('shop-product-results')&&!$('shop-product-results').classList.contains('hidden');
     // Back is only for moving within a multi-step task, never for switching workspaces.
-    const hasBack=!!state.token&&workspaceOpen&&(modalOpen||secondhandVisible||issueStep||shopResults);
+    const historyVisible=['receipt-history-panel','declaration-history-panel'].some(id=>$(id)&&!$(id).classList.contains('hidden'));
+    const hasBack=!!state.token&&workspaceOpen&&(modalOpen||secondhandVisible||historyVisible||issueStep||shopResults);
     button.classList.toggle('hidden',!hasBack);
-    button.textContent=secondhandVisible?'← Back to Receipts':'← Back';
+    button.textContent=(secondhandVisible||historyVisible)?'← Back to Receipts':'← Back';
     button.setAttribute('aria-label',button.textContent.replace('← ','Go back to '));
   }
   function goBackWorkspace(){
@@ -529,6 +530,7 @@
       openModal.classList.add('hidden');openModal.setAttribute('aria-hidden','true');syncGlobalBackButton();return;
     }
     if($('secondhand-panel')&&!$('secondhand-panel').classList.contains('hidden')){closeSecondhandWorkspace();return;}
+    if(['receipt-history-panel','declaration-history-panel'].some(id=>$(id)&&!$(id).classList.contains('hidden'))){closeHistoryWorkspace();return;}
     if(!$('pos-view')?.classList.contains('hidden')&&$('pos-view')?.classList.contains('workspace-issue-mode')){
       $('pos-view').classList.add('hidden');$('pos-view').classList.remove('workspace-issue-mode');
       if(state.posReturnScreen==='dashboard'&&goBackWorkspace()){state.posReturnScreen=null;return;}
@@ -568,7 +570,7 @@
     const customerHome=$('customer-home');
     // Hide every workspace root before opening exactly one destination.
     // This also prevents content retained by a previous tab from remaining visible.
-    [dashboardBusinessCard,ownerHome,customerHome,$('loans-home'),receiptHome,pos,owner,$('platform-referral-admin'),$('shop-home'),$('shop-lost-items-panel'),subscriptionHome,staffSummary,$('staff-profile-panel'),$('account-profile-menu')].forEach(el=>el?.classList.add('hidden'));
+    [dashboardBusinessCard,ownerHome,customerHome,$('loans-home'),receiptHome,$('receipt-history-panel'),$('declaration-history-panel'),pos,owner,$('platform-referral-admin'),$('shop-home'),$('shop-lost-items-panel'),subscriptionHome,staffSummary,$('staff-profile-panel'),$('account-profile-menu')].forEach(el=>el?.classList.add('hidden'));
     dashboardBusinessCard?.classList.add('hidden');
     pos?.classList.remove('profile-workspace-mode');
     owner?.classList.remove('profile-workspace-mode');
@@ -637,6 +639,8 @@
       staffSummary?.classList.add('hidden');
       $('open-issue-receipt')?.classList.toggle('hidden',isCustomerAccount);
       $('open-recover-receipt')?.classList.remove('hidden');
+      $('open-receipt-history')?.classList.toggle('hidden',!['owner','freelancer','staff','cashier','manager'].includes(state.role));
+      $('open-declaration-history')?.classList.toggle('hidden',!['owner','freelancer'].includes(state.role));
     }else if(screen==='shop'){
       if(state.role==='customer'){showWorkspaceScreen('dashboard',{fromBack:true});return;}
       $('shop-home')?.classList.remove('hidden');
@@ -2168,6 +2172,48 @@
     }catch{status.textContent='Device biometric availability could not be checked. Use the signature and finger-drawn thumbprint mark.';}
   }
   checkSecondhandBiometricSupport();
+  // Separate history workspaces for ordinary receipts and sales declarations.
+  let receiptHistoryRows=[];
+  let declarationHistoryRows=[];
+  const historyDate=value=>value?new Date(value).toLocaleString():'Date not available';
+  function closeHistoryWorkspace(){
+    $('receipt-history-panel')?.classList.add('hidden');
+    $('declaration-history-panel')?.classList.add('hidden');
+    $('receipts-home')?.classList.remove('hidden');
+    syncGlobalBackButton();
+  }
+  function renderReceiptHistory(rows){
+    const target=$('receipt-history-list');if(!target)return;
+    target.innerHTML=rows.length?rows.map(r=>'<article class="aurora-history-row"><div class="aurora-history-row-main"><strong>'+escapeHtml(r.receiptNo||'Receipt')+' · '+money(r.totalKes)+'</strong><small>'+escapeHtml(historyDate(r.issuedAt))+' · '+escapeHtml(r.customer?.fullName||'Walk-in customer')+' · '+escapeHtml((r.items||[]).map(x=>x.name).join(', ')||'No item details')+'</small></div><button class="btn btn-light" type="button" data-open-history-receipt="'+escapeHtml(r.id)+'">View / Print</button></article>').join(''):'<div class="aurora-history-empty">No ordinary receipts were found for this shop yet.</div>';
+  }
+  function renderDeclarationHistory(rows){
+    const target=$('declaration-history-list');if(!target)return;
+    target.innerHTML=rows.length?rows.map(d=>'<article class="aurora-history-row"><div class="aurora-history-row-main"><strong>'+escapeHtml(d.declarationRef||'Declaration')+' · '+escapeHtml(d.phoneMakeModel||d.productName||'Product not recorded')+'</strong><small>'+escapeHtml(historyDate(d.createdAt))+' · Seller: '+escapeHtml(d.sellerName||'—')+' · Buyer: '+escapeHtml(d.buyerName||'—')+' · '+money(d.purchasePriceKes)+'</small></div><span class="badge badge-success">RECORDED</span></article>').join(''):'<div class="aurora-history-empty">No declaration forms have been submitted yet.</div>';
+  }
+  async function openReceiptHistory(){
+    if(!['owner','freelancer','staff','cashier','manager'].includes(state.role)){showNotice('Receipt history is available to authorised shop accounts.',true);return;}
+    $('receipts-home')?.classList.add('hidden');$('declaration-history-panel')?.classList.add('hidden');$('receipt-history-panel')?.classList.remove('hidden');
+    $('receipt-history-status').textContent='Loading receipts…';$('receipt-history-list').innerHTML='';
+    syncGlobalBackButton();
+    try{const result=await request('/api/v1/receipts?limit=100');receiptHistoryRows=result.receipts||[];renderReceiptHistory(receiptHistoryRows);$('receipt-history-status').textContent=receiptHistoryRows.length?receiptHistoryRows.length+' receipt record(s)':'No receipt records yet.';}
+    catch(error){$('receipt-history-status').textContent=error.message||'Could not load receipt history.';}
+  }
+  async function openDeclarationHistory(){
+    if(!['owner','freelancer'].includes(state.role)){showNotice('Declaration history is available to shop owners and linked freelancers.',true);return;}
+    $('receipts-home')?.classList.add('hidden');$('receipt-history-panel')?.classList.add('hidden');$('declaration-history-panel')?.classList.remove('hidden');
+    $('declaration-history-status').textContent='Loading declaration records…';$('declaration-history-list').innerHTML='';
+    syncGlobalBackButton();
+    try{const result=await request('/api/v1/second-hand-phone-declarations');declarationHistoryRows=result.declarations||[];renderDeclarationHistory(declarationHistoryRows);$('declaration-history-status').textContent=declarationHistoryRows.length?declarationHistoryRows.length+' declaration record(s)':'No declaration records yet.';}
+    catch(error){$('declaration-history-status').textContent=error.message||'Could not load declaration history.';}
+  }
+  $('open-receipt-history')?.addEventListener('click',openReceiptHistory);
+  $('open-declaration-history')?.addEventListener('click',openDeclarationHistory);
+  $('receipt-history-back')?.addEventListener('click',closeHistoryWorkspace);
+  $('declaration-history-back')?.addEventListener('click',closeHistoryWorkspace);
+  $('receipt-history-search')?.addEventListener('input',e=>{const q=e.target.value.trim().toLowerCase();renderReceiptHistory(receiptHistoryRows.filter(r=>[r.receiptNo,r.customer?.fullName,r.customer?.phone,...(r.items||[]).map(x=>x.name)].join(' ').toLowerCase().includes(q)));});
+  $('declaration-history-search')?.addEventListener('input',e=>{const q=e.target.value.trim().toLowerCase();renderDeclarationHistory(declarationHistoryRows.filter(d=>[d.declarationRef,d.sellerName,d.buyerName,d.phoneMakeModel,d.productName].join(' ').toLowerCase().includes(q)));});
+  $('receipt-history-list')?.addEventListener('click',e=>{const button=e.target.closest('[data-open-history-receipt]');if(button)openReceiptPdf(button.dataset.openHistoryReceipt);});
+
   // New declaration navigation: the card opens a dedicated workspace, not an inline expansion.
   function closeSecondhandWorkspace(){
     $('secondhand-panel')?.classList.add('hidden');

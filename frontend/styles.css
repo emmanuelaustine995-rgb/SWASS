@@ -3510,3 +3510,26 @@ body:has(#request-form #national-id) .auth-shell>.panel{
 .aurora-declaration-workspace #secondhand-form fieldset{min-width:0;margin:0;padding:18px;border:1px solid #e0e6ee;border-radius:14px;background:#fbfcfe}
 .aurora-declaration-workspace #secondhand-form legend{padding:0 8px;color:#174e70;font-weight:850}
 @media(max-width:620px){.aurora-declaration-workspace:not(.hidden){padding:14px;border-radius:15px}.aurora-declaration-workspace .secondhand-receipt-options{grid-template-columns:1fr}.aurora-declaration-workspace #secondhand-form fieldset{padding:13px}}
+
+
+/* AURORA receipt and declaration history — compact, distinct record cards */
+.aurora-history-card{position:relative;overflow:hidden;border:1px solid #dce5f0!important;background:linear-gradient(145deg,#fff 0%,#f5f8ff 100%)!important;box-shadow:0 8px 22px rgba(35,54,88,.08)!important}
+.aurora-history-card>span{display:grid;place-items:center;width:42px;height:42px;border-radius:13px;font-size:23px;font-weight:800;margin-bottom:10px}
+.aurora-receipt-history-card>span{color:#087e9c;background:#e0f5f8}
+.aurora-declaration-history-card>span{color:#6240a4;background:#eee8fb}
+.aurora-history-card strong{display:block;color:#1c2d45}
+.aurora-history-card small{display:block;color:#65758b;line-height:1.45}
+.aurora-history-workspace{background:#fff;border:1px solid #e1e8f1;border-radius:20px;padding:clamp(16px,3vw,26px);box-shadow:0 12px 32px rgba(31,50,82,.07);margin:12px 0 90px}
+.aurora-history-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:18px}
+.aurora-history-heading h2{margin:2px 0 5px;color:#1c2d45}
+.aurora-history-toolbar{display:grid;gap:7px;margin:14px 0}
+.aurora-history-toolbar label{font-weight:700;font-size:.88rem;color:#34445a}
+.aurora-history-toolbar input{width:100%;min-height:44px;border:1px solid #d8e1ed;border-radius:12px;padding:10px 13px;background:#fbfdff;color:#1b2b42}
+.aurora-history-list{display:grid;gap:10px}
+.aurora-history-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px;border:1px solid #e5ebf3;border-radius:14px;background:linear-gradient(110deg,#fff,#f8faff)}
+.aurora-history-row-main{min-width:0;display:grid;gap:4px}
+.aurora-history-row-main strong{color:#243650;overflow-wrap:anywhere}
+.aurora-history-row-main small{color:#68788e;line-height:1.4}
+.aurora-history-row .btn{flex:0 0 auto;white-space:nowrap}
+.aurora-history-empty{padding:24px 16px;text-align:center;border:1px dashed #ccd7e5;border-radius:14px;color:#6c7a8e;background:#fafcff}
+@media(max-width:560px){.aurora-history-heading{display:grid}.aurora-history-heading .btn{width:100%}.aurora-history-row{align-items:flex-start;flex-direction:column}.aurora-history-row .btn{width:100%}}
