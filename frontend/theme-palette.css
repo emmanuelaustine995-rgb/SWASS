@@ -262,3 +262,15 @@ body.shop-owner-account-active :is(
     padding:12px!important;
   }
 }
+
+/* The shared bottom workspace dock sits outside the page panels. */
+body.shop-owner-account-active #workspace-nav{
+  background:var(--aurora-sand)!important;
+  color:var(--aurora-mocha)!important;
+  border-color:var(--aurora-mocha)!important;
+}
+body.shop-owner-account-active #workspace-nav :is(button.active,[aria-current=page],[aria-pressed=true],.active){
+  background:var(--aurora-electric)!important;
+  color:var(--aurora-sand)!important;
+  border-color:var(--aurora-electric)!important;
+}
