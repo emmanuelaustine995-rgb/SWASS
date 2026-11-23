@@ -551,6 +551,7 @@
     $('login-view')?.classList.add('hidden');
     $('back-to-login-btn')?.classList.remove('hidden');
     if(!['dashboard','receipts','profile','shop','subscription','lost-goods','loans'].includes(screen))screen='dashboard';
+    if(screen!=='receipts'){$('secondhand-panel')?.classList.add('hidden');$('secondhand-open-card')?.setAttribute('aria-expanded','false');}
     const previous=state.currentWorkspace;
     if(!options.fromBack&&previous&&previous!==screen){state.workspaceHistory.push(previous);if(state.workspaceHistory.length>30)state.workspaceHistory.shift();}
     state.currentWorkspace=screen;
@@ -623,6 +624,7 @@
     }else if(screen==='receipts'){
       $('secondhand-panel')?.classList.add('hidden');
       $('secondhand-open-card')?.setAttribute('aria-expanded','false');
+      $('secondhand-open-card')?.classList.toggle('hidden',!['owner','freelancer','customer'].includes(state.role));
       receiptHome?.classList.remove('hidden');
       // Re-apply account permissions every time the Receipts page is opened.
       const isCustomerAccount=state.role==='customer';
@@ -2189,7 +2191,7 @@
     $('sh-sale-type').value='';
     document.querySelectorAll('[data-secondhand-mode]').forEach(el=>el.classList.remove('selected'));
     checkSecondhandBiometricSupport();
-    window.scrollTo({top:0,behavior:'instant'});
+    window.scrollTo(0,0);
     syncGlobalBackButton();
   });
   $('secondhand-back')?.addEventListener('click',closeSecondhandWorkspace);
