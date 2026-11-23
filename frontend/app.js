@@ -502,15 +502,14 @@
     const profileVisible=$('owner-dashboard-view')?.classList.contains('profile-workspace-mode');
     const receiptsVisible=!$('receipts-home')?.classList.contains('hidden');
     const shopVisible=!$('shop-home')?.classList.contains('hidden');
-    const secondhandVisible=!$('secondhand-panel')?.classList.contains('hidden');
     const modalOpen=['checkout-modal','receipt-modal','receipt-recovery-modal'].some(id=>$(id)&&!$(id).classList.contains('hidden'));
     const workspaceOpen=!!$('workspace-nav')&&!$('workspace-nav').classList.contains('hidden');
     const issueStep=posVisible&&$('pos-view')?.classList.contains('workspace-issue-mode');
     const shopResults=shopVisible&&$('shop-product-results')&&!$('shop-product-results').classList.contains('hidden');
     // Back is only for moving within a multi-step task, never for switching workspaces.
-    const hasBack=!!state.token&&workspaceOpen&&(modalOpen||secondhandVisible||issueStep||shopResults);
+    const hasBack=!!state.token&&workspaceOpen&&(modalOpen||issueStep||shopResults);
     button.classList.toggle('hidden',!hasBack);
-    button.textContent=secondhandVisible?'← Back to Receipts':'← Back';
+    button.textContent='← Back';
     button.setAttribute('aria-label',button.textContent.replace('← ','Go back to '));
   }
   function goBackWorkspace(){
@@ -527,16 +526,6 @@
         $('checkout-payment-step')?.classList.add('hidden');$('checkout-customer-step')?.classList.remove('hidden');syncGlobalBackButton();return;
       }
       openModal.classList.add('hidden');openModal.setAttribute('aria-hidden','true');syncGlobalBackButton();return;
-    }
-    const secondhand=$('secondhand-panel');
-    if(secondhand&&!secondhand.classList.contains('hidden')){
-      secondhand.classList.add('hidden');
-      $('receipts-home')?.classList.remove('secondhand-active');
-      $('receipts-home')?.classList.remove('hidden');
-      $('secondhand-open-card')?.classList.remove('hidden');
-      $('secondhand-history')?.classList.add('hidden');
-      $('secondhand-saved-record')?.classList.add('hidden');
-      syncGlobalBackButton();return;
     }
     if(!$('pos-view')?.classList.contains('hidden')&&$('pos-view')?.classList.contains('workspace-issue-mode')){
       $('pos-view').classList.add('hidden');$('pos-view').classList.remove('workspace-issue-mode');
@@ -566,9 +555,9 @@
     try{localStorage.setItem('swass-active-workspace-v1',screen);}catch{}
     const owner=document.getElementById('owner-dashboard-view'),pos=$('pos-view');
     const posGrid=document.querySelector('.pos-grid');
-    const history=$('history-panel'),crm=$('owner-customers-section'),lookup=document.querySelector('.customer-lookup-panel');
+    const crm=$('owner-customers-section'),lookup=document.querySelector('.customer-lookup-panel');
     // Reset nested panels as well as the outer page. These were previously left visible inside POS/profile containers.
-    [history,crm,lookup].forEach(el=>el?.classList.add('hidden'));
+    [crm,lookup].forEach(el=>el?.classList.add('hidden'));
     const profile=$('profile-panel'),receiptHome=$('receipts-home'),ownerHome=$('owner-home');
     const dashboardBusinessCard=$('dashboard-business-card');
     const subscriptionHome=$('subscription-home');
@@ -580,7 +569,7 @@
     dashboardBusinessCard?.classList.add('hidden');
     pos?.classList.remove('profile-workspace-mode');
     owner?.classList.remove('profile-workspace-mode');
-    [history,crm,lookup,receiptHome,ownerHome,profile,$('platform-referral-admin'),$('shop-home'),subscriptionHome].forEach(el=>el?.classList.add('hidden'));
+    [crm,lookup,receiptHome,ownerHome,profile,$('platform-referral-admin'),$('shop-home'),subscriptionHome].forEach(el=>el?.classList.add('hidden'));
     owner?.classList.add('hidden');
     pos?.classList.add('hidden');
     document.getElementById('account-profile-menu')?.classList.add('hidden');
@@ -630,28 +619,18 @@
         void loadSubscriptionBalance();
       }
     }else if(screen==='receipts'){
-      // Always return to the compact declaration card; open the form only after a tap.
-      receiptHome?.classList.remove('secondhand-active');
-      $('secondhand-panel')?.classList.add('hidden');
-      $('secondhand-open-card')?.setAttribute('aria-expanded','false');
       receiptHome?.classList.remove('hidden');
-      const ownerHistory=$('shop-receipt-history-card');
-      ownerHistory?.classList.toggle('hidden',state.role!=='owner');
-      ownerHistory?.toggleAttribute('hidden',state.role!=='owner');
-      if(ownerHistory)ownerHistory.style.setProperty('display',state.role==='owner'?'':'none','important');
-      if(state.role==='owner')history?.classList.remove('hidden');
       // Re-apply account permissions every time the Receipts page is opened.
       const isCustomerAccount=state.role==='customer';
       document.body.classList.toggle('customer-account-active',isCustomerAccount);
       // Re-apply visibility for every account switch: a previous customer login
       // must not leave Issue Receipt hidden for the next owner or freelancer.
       enforceCustomerReceiptActions();
-      // Receipts landing page is intentionally limited to its three action cards.
+      // Receipts landing page contains only ordinary receipt actions.
       // Sales summaries belong on the role dashboard, not above these cards.
       staffSummary?.classList.add('hidden');
       $('open-issue-receipt')?.classList.toggle('hidden',isCustomerAccount);
       $('open-recover-receipt')?.classList.remove('hidden');
-      $('secondhand-open-card')?.classList.toggle('hidden',!['owner','freelancer','customer'].includes(state.role));
     }else if(screen==='shop'){
       if(state.role==='customer'){showWorkspaceScreen('dashboard',{fromBack:true});return;}
       $('shop-home')?.classList.remove('hidden');
@@ -664,7 +643,6 @@
       void loadBusinessProfile().catch(err=>showNotice('Shop profile could not be loaded. '+(err.message||''),true));
       
       const isShopOwner = state.role === 'owner';
-      $('secondhand-panel')?.classList.add('hidden');
       document.querySelector('#shop-home > .shop-directory-card')?.classList.remove('hidden');
       $('shop-register-product-card')?.classList.toggle('hidden', !isShopOwner);
       $('shop-owner-note')?.classList.toggle('hidden', isShopOwner);
@@ -752,52 +730,6 @@
       const blob=await response.blob();
       pdfWindow.location.href=URL.createObjectURL(blob);
     }catch(error){pdfWindow.close();showNotice(error.message||'Could not open the receipt PDF.',true);}
-  }
-  let activeReceiptHistoryType='ordinary';
-  async function loadReceiptHistory(){
-    $('history-error').textContent='';
-    const historyType=activeReceiptHistoryType;
-    const isDeclaration=historyType==='declaration';
-    $('history-list').innerHTML='<div class="empty">Loading '+(isDeclaration?'sales declaration':'ordinary receipt')+' history…</div>';
-    const p=new URLSearchParams();
-    const q=$('history-search').value.trim();
-    const from=$('history-from').value;
-    const to=$('history-to').value;
-    if(q)p.set('q',q);if(from)p.set('from',from);if(to)p.set('to',to);p.set('limit','50');
-    try{
-      if(isDeclaration){
-        if(!['owner','freelancer'].includes(state.role)){
-          $('history-list').innerHTML='<div class="empty">Sales Declaration Receipt History is available to shop owners and freelancers.</div>';
-          return;
-        }
-        const secondhand=await request('/api/v1/second-hand-phone-declarations');
-        const needle=q.toLowerCase();
-        const declarations=(secondhand.declarations||[]).filter(d=>{
-          const date=d.createdAt?new Date(d.createdAt):null;
-          if(from&&date&&date<new Date(from+'T00:00:00'))return false;
-          if(to&&date&&date>new Date(to+'T23:59:59'))return false;
-          if(!needle)return true;
-          return [d.sellerName,d.buyerName,d.sellerPhone,d.buyerPhone,d.nationalId,d.phoneMakeModel,d.imei1,d.imei2,d.serialNumber,d.declarationRef]
-            .some(v=>String(v||'').toLowerCase().includes(needle));
-        }).sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
-        if(!declarations.length){
-          $('history-list').innerHTML='<div class="empty">No Sales Declaration receipts match your search or date range.</div>';
-          return;
-        }
-        $('history-list').innerHTML=declarations.map(r=>'<article class="history-row secondhand-pdf-history-row"><div class="history-row-top"><strong>SALES DECLARATION · '+escapeHtml(r.declarationRef)+'</strong><strong>'+money(r.purchasePriceKes)+'</strong></div><div class="history-row-meta">'+escapeHtml(new Date(r.createdAt).toLocaleString('en-KE'))+' · Sales Declaration PDF</div><div class="history-row-meta">Seller: '+escapeHtml(r.sellerName)+' · '+escapeHtml(r.sellerPhone||'')+'</div><div class="history-row-meta">Buyer: '+escapeHtml(r.buyerName||'')+' · '+escapeHtml(r.buyerPhone||'')+'</div><div class="history-row-items">'+escapeHtml(r.phoneMakeModel||'Product')+' · IMEI: '+escapeHtml(r.imei1||'Not provided')+'</div><button type="button" class="btn btn-primary btn-small" data-view-secondhand-pdf="'+escapeHtml(r.id)+'">View / print full Sales Declaration PDF</button></article>').join('');
-        return;
-      }
-      const ordinary=await request('/api/v1/receipts?'+p.toString());
-      const receipts=(ordinary.receipts||[]);
-      if(!receipts.length){
-        $('history-list').innerHTML='<div class="empty">No ordinary receipts match your search or date range.</div>';
-        return;
-      }
-      $('history-list').innerHTML=receipts.map(r=>'<article class="history-row"><div class="history-row-top"><strong>'+escapeHtml(r.receiptNo)+'</strong><strong>'+money(r.totalKes)+'</strong></div><div class="history-row-meta">'+escapeHtml(new Date(r.issuedAt).toLocaleString('en-KE'))+' · '+escapeHtml(r.status)+' · '+escapeHtml(String(r.paymentMethod||'').toUpperCase())+'</div><div class="history-row-meta">Sales agent: '+escapeHtml(r.cashier?.name||'Staff')+'</div><div class="history-row-meta">PDF delivery · Email: '+escapeHtml(r.delivery?.email||'not requested')+' · WhatsApp: '+escapeHtml(r.delivery?.whatsapp||'not requested')+'</div><div class="history-row-meta">'+(r.customer?escapeHtml(r.customer.fullName)+' · '+escapeHtml(r.customer.phone)+(r.customer.nationalIdLast4?' · ID ending '+escapeHtml(r.customer.nationalIdLast4):''):'Walk-in customer')+'</div><div class="history-row-items">'+(r.items||[]).map(item=>escapeHtml(item.name)+' × '+Number(item.qty)+(item.serialNo?' · IMEI: '+escapeHtml(item.serialNo):'')).join(' · ')+'</div><button type="button" class="btn btn-light btn-small" data-view-pdf="'+escapeHtml(r.id)+'">View / print original PDF</button></article>').join('');
-    }catch(e){
-      $('history-list').innerHTML='';
-      $('history-error').textContent=e.message||'Could not load receipt history.';
-    }
   }
   function renderFreelancerHomeShop(){if(state.role!=='freelancer')return;const p=state.businessProfile||{};const name=String(p.businessName||'').trim();const store=String(p.storeName||'').trim();const location=String(p.storeLocation||'').trim();const title=$('freelancer-shop-name');const details=$('freelancer-shop-details');const message=$('freelancer-home-message');if(title)title.textContent=name||store||'Shop details unavailable';if(details)details.textContent=[store&&store!==name?store:'',location].filter(Boolean).join(' · ');if(message)message.textContent=name?'You are connected to this shop. Your work is linked to its registered business account.':'Your account is signed in, but its shop details could not be confirmed. Please contact support.';}
   async function loadBusinessProfile(){const d=await request('/api/v1/business/profile');const p=d.profile||{};state.businessProfile=p;renderFreelancerHomeShop();state.shopInsidePhotoDraft=undefined;state.shopOutsidePhotoDraft=undefined;if(!state.userName){state.userName=p.ownerFullName||p.ownerName||p.fullName||p.name||'';if(state.userName)saveSession();}$('profile-business-name').value=p.businessName||'';$('profile-business-phone').value=p.businessPhone||'';$('profile-business-email').value=p.businessEmail||'';$('profile-store-name').value=p.storeName||'';$('profile-store-location').value=p.storeLocation||'';$('profile-legal-name').value=p.legalName||'';$('profile-house-name').value=p.houseName||'';$('profile-floor').value=p.floor||'';$('profile-house-number').value=p.houseNumber||'';$('profile-website').value=p.websiteUrl||'';$('profile-kra-pin').value=p.kraPin||'';$('profile-registration-code').value=p.registrationCode||'';$('profile-outlet-id').value=p.outletId||'';$('profile-terminal-number').value=p.terminalNumber||'';$('profile-receipt-header').value=p.receiptHeader||'';$('profile-receipt-footer').value=p.receiptFooter||'';state.profileLogoData=p.logoData||undefined;const img=$('logo-preview');if(state.profileLogoData){img.src=state.profileLogoData;img.classList.remove('hidden');}else{img.removeAttribute('src');img.classList.add('hidden');}const inside=$('profile-shop-inside-preview'),outside=$('profile-shop-outside-preview');if(inside){if(p.shopInsidePhotoData){inside.src=p.shopInsidePhotoData;inside.classList.remove('hidden');}else{inside.removeAttribute('src');inside.classList.add('hidden');}}if(outside){if(p.shopOutsidePhotoData){outside.src=p.shopOutsidePhotoData;outside.classList.remove('hidden');}else{outside.removeAttribute('src');outside.classList.add('hidden');}}renderDashboardBusinessProfile();}
@@ -1909,35 +1841,11 @@
   });
   $('open-issue-receipt').addEventListener('click',()=>{
     $('receipts-home').classList.add('hidden');$('pos-view').classList.remove('hidden');$('pos-view').classList.add('workspace-issue-mode');state.posReturnScreen='receipts';
-    document.querySelector('.pos-grid')?.classList.remove('hidden');$('history-panel').classList.add('hidden');$('owner-customers-section')?.classList.add('hidden');document.querySelector('.customer-lookup-panel')?.classList.add('hidden');$('products-panel').classList.add('hidden');
+    document.querySelector('.pos-grid')?.classList.remove('hidden');$('owner-customers-section')?.classList.add('hidden');document.querySelector('.customer-lookup-panel')?.classList.add('hidden');$('products-panel').classList.add('hidden');
     closeSaleItemForm();$('checkout-open').disabled=!state.cart.size;
     syncGlobalBackButton();
   });
   $('open-recover-receipt').addEventListener('click',()=>{window.location.href='recover.html';});
-  $('open-special-amendment')?.addEventListener('click',()=>{
-    if(!['owner','freelancer'].includes(state.role)){showNotice('This account cannot amend a saved Second-Hand Special Receipt.',true);return;}
-    showWorkspaceScreen('receipts');
-    const historyBox=$('history-content');
-    if(historyBox?.classList.contains('hidden'))$('history-toggle')?.click();
-    $('history-panel')?.scrollIntoView({behavior:'smooth',block:'start'});
-  });
-  document.querySelector('.dashboard-sidebar')?.addEventListener('click',e=>{const link=e.target.closest('.sidebar-link');if(!link)return;const screen=link.dataset.screen||(link.getAttribute('href')==='#owner-customers-section'?'customers':link.getAttribute('href')==='#owner-reports-section'?'reports':link.getAttribute('href')==='#owner-payments-section'?'payments':'overview');e.preventDefault();showWorkspaceScreen(screen);});
-  $('history-toggle').addEventListener('click',async()=>{const box=$('history-content');const opening=box.classList.contains('hidden');box.classList.toggle('hidden');$('history-toggle').textContent=opening?'Close receipt history':'My receipt history';$('history-toggle').setAttribute('aria-expanded',String(opening));$('history-declaration-tab')?.classList.toggle('hidden',!['owner','freelancer'].includes(state.role));if(opening)await loadReceiptHistory();});
-  document.querySelectorAll('[data-history-type]').forEach(tab=>tab.addEventListener('click',()=>{activeReceiptHistoryType=tab.dataset.historyType;document.querySelectorAll('[data-history-type]').forEach(item=>{const active=item===tab;item.classList.toggle('active',active);item.setAttribute('aria-selected',String(active));});void loadReceiptHistory();}));
-  $('history-search-btn').addEventListener('click',loadReceiptHistory);
-  $('history-list').addEventListener('click',e=>{const b=e.target.closest('[data-view-pdf]');if(b)openReceiptPdf(b.dataset.viewPdf);});
-  $('history-list').addEventListener('click',async e=>{
-    const b=e.target.closest('[data-view-secondhand-pdf]');if(!b)return;
-    const popup=window.open('about:blank','_blank');if(!popup){showNotice('Allow pop-ups to open the Second-Hand PDF.',true);return;}
-    b.disabled=true;b.textContent='Opening full PDF…';
-    try{
-      const response=await fetch(API+'/api/v1/second-hand-phone-declarations/'+encodeURIComponent(b.dataset.viewSecondhandPdf)+'/pdf',{headers:{Authorization:'Bearer '+state.token},cache:'no-store'});
-      if(!response.ok){const body=await response.json().catch(()=>({}));throw new Error(body.message||'Could not open the Second-Hand PDF.');}
-      popup.location.href=URL.createObjectURL(await response.blob());
-    }catch(err){popup.close();showNotice(err.message||'Could not open the Second-Hand PDF.',true);}
-    finally{b.disabled=false;b.textContent='View / print full Second-Hand PDF';}
-  });
-  $('history-search').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();loadReceiptHistory();}});
   $('dashboard-edit-profile').addEventListener('click',()=>{showWorkspaceScreen('shop');setShopTab('profile');});
   $('profile-close')?.addEventListener('click',()=>{if(!goBackWorkspace())showWorkspaceScreen('dashboard',{fromBack:true});});
   $('business-logo').addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file)return;const img=$('logo-preview');img.classList.remove('hidden');img.alt='Preparing selected business logo…';$('profile-error').textContent='Preparing logo…';try{state.profileLogoData=await compressLogo(file);img.src=state.profileLogoData;img.alt='Selected business logo preview';$('profile-error').textContent='Logo preview ready. Tap Save business profile to keep it.';}catch(err){state.profileLogoData=undefined;e.target.value='';img.removeAttribute('src');img.classList.add('hidden');$('profile-error').textContent=err.message;}});
@@ -2079,332 +1987,6 @@
       await loadShopInventory();
     }catch(err){$('shop-stock-message').textContent=err.message||'Could not update stock.';button.disabled=false;button.textContent='Update stock';}
   });
-
-  // Second-hand product seller declaration workspace.
-  const secondhandPadState = { 'sh-signature': false, 'sh-thumbprint': false };
-  function setupSecondhandPad(id) {
-    const canvas = $(id); if (!canvas || canvas.dataset.ready === '1') return;
-    canvas.dataset.ready = '1';
-    const ctx = canvas.getContext('2d');
-    ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#172b45';
-    let drawing = false;
-    const point = ev => { const r=canvas.getBoundingClientRect(); return {x:(ev.clientX-r.left)*canvas.width/r.width,y:(ev.clientY-r.top)*canvas.height/r.height}; };
-    canvas.addEventListener('pointerdown',ev=>{ev.preventDefault();drawing=true;canvas.setPointerCapture?.(ev.pointerId);const p=point(ev);ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p.x+.1,p.y+.1);ctx.stroke();secondhandPadState[id]=true;});
-    canvas.addEventListener('pointermove',ev=>{if(!drawing)return;ev.preventDefault();const p=point(ev);ctx.lineTo(p.x,p.y);ctx.stroke();});
-    const stop=()=>{drawing=false;};canvas.addEventListener('pointerup',stop);canvas.addEventListener('pointercancel',stop);canvas.addEventListener('lostpointercapture',stop);
-  }
-  function clearSecondhandPad(id) {
-    const canvas=$(id);if(!canvas)return;canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);secondhandPadState[id]=false;
-  }
-  setupSecondhandPad('sh-signature');setupSecondhandPad('sh-thumbprint');
-  document.querySelectorAll('[data-clear-pad]').forEach(btn=>btn.addEventListener('click',()=>clearSecondhandPad(btn.dataset.clearPad)));
-  function watchSecondhandPhoto(inputId,previewId) {
-    const input=$(inputId),preview=$(previewId);if(!input||!preview)return;
-    input.addEventListener('change',async()=>{
-      const file=input.files?.[0];
-      if(!file){preview.removeAttribute('src');preview.classList.add('hidden');return;}
-      preview.classList.add('hidden');preview.removeAttribute('src');
-      try{
-        const data=await secondhandImageData(inputId,true);
-        if(input.files?.[0]!==file)return;
-        preview.src=data;preview.classList.remove('hidden');
-      }catch(error){
-        if(input.files?.[0]===file)showNotice(error.message||'Could not open the selected photo. Choose another image.',true);
-      }
-    });
-  }
-  watchSecondhandPhoto('sh-id-photo','sh-id-preview');watchSecondhandPhoto('sh-seller-photo','sh-seller-preview');watchSecondhandPhoto('sh-phone-photo','sh-phone-preview');watchSecondhandPhoto('sh-receipt-photo','sh-receipt-preview');
-  function syncSecondhandReceiptMode(selected){
-    const mode=selected||$('sh-sale-type')?.value||'';
-    const form=$('secondhand-form');
-    if(!mode){if(form){form.hidden=true;form.classList.add('hidden');form.style.setProperty('display','none','important');}return;}
-    $('sh-sale-type').value=mode;
-    const withReceipt=mode==='with_receipt';
-    if(form){form.hidden=false;form.classList.remove('hidden');form.style.setProperty('display','grid','important');}
-    $('sh-no-receipt-wrap')?.classList.toggle('hidden',withReceipt);
-    $('sh-receipt-photo-wrap')?.classList.toggle('hidden',!withReceipt);
-    // Keep the seller/client photo upload visible in both declaration paths.
-    // It is mandatory without an original receipt and optional when a receipt is supplied.
-    const sellerPhotoWrap=$('sh-seller-photo-wrap');
-    sellerPhotoWrap?.classList.remove('hidden');
-    if(sellerPhotoWrap){sellerPhotoWrap.hidden=false;sellerPhotoWrap.style.setProperty('display','block','important');}
-    $('sh-seller-photo').required=!withReceipt;
-    const sellerPhotoLabel=sellerPhotoWrap?.querySelector('label');
-    if(sellerPhotoLabel) sellerPhotoLabel.firstChild.textContent=withReceipt?'Seller / client photo (optional) ':'Seller / client photo (required — upload a clear photo) ';
-    $('sh-no-receipt').required=!withReceipt;
-    $('sh-receipt-photo').required=withReceipt;
-    $('sh-thumbprint-wrap')?.classList.toggle('hidden',withReceipt);
-    $('sh-declaration-with-receipt')?.classList.toggle('hidden',!withReceipt);
-    $('sh-declaration-without-receipt')?.classList.toggle('hidden',withReceipt);
-    document.querySelectorAll('[data-secondhand-mode]').forEach(el=>el.classList.toggle('selected',el.dataset.secondhandMode===mode));
-    form.scrollIntoView({behavior:'smooth',block:'start'});
-  }
-  document.querySelectorAll('[data-secondhand-mode]').forEach(el=>el.addEventListener('click',()=>{
-    const mode=el.dataset.secondhandMode;
-    if($('sh-sale-type')?.value!==mode){
-      $('secondhand-form')?.reset();
-      ['sh-signature','sh-thumbprint'].forEach(clearSecondhandPad);
-    }
-    syncSecondhandReceiptMode(mode);
-  }));
-  let heicConverterPromise;
-  async function convertHeicPhoto(file){
-    if(!heicConverterPromise){
-      heicConverterPromise=(async()=>{
-        if(typeof window.heic2any==='function')return window.heic2any;
-        const urls=[
-          'https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js',
-          'https://unpkg.com/heic2any@0.0.4/dist/heic2any.min.js'
-        ];
-        let lastError;
-        for(const src of urls){
-          try{
-            await new Promise((resolve,reject)=>{
-              const script=document.createElement('script');
-              script.src=src;script.async=true;
-              script.onload=()=>typeof window.heic2any==='function'?resolve():reject(new Error('Photo converter did not initialise.'));
-              script.onerror=()=>reject(new Error('Photo converter could not be loaded.'));
-              document.head.appendChild(script);
-            });
-            if(typeof window.heic2any==='function')return window.heic2any;
-          }catch(error){lastError=error;}
-        }
-        throw lastError||new Error('HEIC photo conversion is unavailable.');
-      })();
-    }
-    const convert=await heicConverterPromise;
-    const result=await convert({blob:file,toType:'image/jpeg',quality:0.88});
-    const converted=Array.isArray(result)?result[0]:result;
-    if(!(converted instanceof Blob)||!converted.size)throw new Error('The selected photo could not be converted.');
-    return converted;
-  }
-  const secondhandImageCache=new WeakMap();
-  async function secondhandImageData(inputId,required=false) {
-    const file=$(inputId)?.files?.[0];
-    const label=inputId.replace('sh-','').replaceAll('-',' ');
-    if(!file){if(required)throw new Error('Please choose the required '+label+' using Camera, Gallery or Files.');return null;}
-    const cached=secondhandImageCache.get(file);if(cached)return cached;
-    if(file.size>20*1024*1024)throw new Error('The '+label+' is larger than 20 MB. Choose a smaller photo or retake it at a lower camera resolution.');
-    let bitmap=null,sourceFile=file;
-    const openPhoto=async(blob)=>{
-      if(typeof createImageBitmap==='function'){
-        try{return await createImageBitmap(blob);}catch(_){}
-      }
-      const url=URL.createObjectURL(blob);
-      try{
-        return await new Promise((resolve,reject)=>{
-          const img=new Image();
-          img.onload=()=>resolve(img);
-          img.onerror=()=>reject(new Error('This browser cannot decode the selected photo.'));
-          img.src=url;
-        });
-      }finally{URL.revokeObjectURL(url);}
-    };
-    try{
-      try{
-        bitmap=await openPhoto(sourceFile);
-      }catch(nativeError){
-        // Android gallery providers sometimes label HEIC/HEIF photos as
-        // application/octet-stream or omit the filename extension. Do not
-        // trust MIME type/extension: try HEIC conversion for every undecodable image.
-        try{
-          sourceFile=await convertHeicPhoto(file);
-          bitmap=await openPhoto(sourceFile);
-        }catch(convertError){
-          const detail=convertError instanceof Error?convertError.message:'';
-          throw new Error('AURORA could not decode this photo format. Try selecting the original photo from Gallery or Files again. '+detail);
-        }
-      }
-      if(!bitmap||!bitmap.width||!bitmap.height)throw new Error('The selected photo has invalid image dimensions.');
-      const maxDimension=1200;
-      const scale=Math.min(1,maxDimension/Math.max(bitmap.width,bitmap.height));
-      const canvas=document.createElement('canvas');
-      canvas.width=Math.max(1,Math.round(bitmap.width*scale));
-      canvas.height=Math.max(1,Math.round(bitmap.height*scale));
-      const ctx=canvas.getContext('2d');
-      if(!ctx)throw new Error('This browser could not prepare the '+label+'. Please try another photo.');
-      ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
-      ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
-      let data='';
-      for(let attempt=0;attempt<8;attempt++){
-        const quality=[.82,.74,.66,.58,.50,.42,.34,.28][attempt];
-        data=canvas.toDataURL('image/jpeg',quality);
-        if(data.length<=78000)break;
-        const factor=attempt<3?.82:.70;
-        const nextWidth=Math.max(180,Math.round(canvas.width*factor));
-        const nextHeight=Math.max(180,Math.round(canvas.height*factor));
-        if(nextWidth===canvas.width&&nextHeight===canvas.height)break;
-        canvas.width=nextWidth;canvas.height=nextHeight;
-        ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
-        ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
-      }
-      if(!data||data.length>82000)throw new Error('The '+label+' could not be compressed enough. Retake it with the document or person filling most of the frame.');
-      secondhandImageCache.set(file,data);
-      return data;
-    }finally{
-      if(bitmap&&typeof bitmap.close==='function')bitmap.close();
-    }
-  }
-  async function checkSecondhandBiometricSupport() {
-    const status=$('sh-biometric-status');if(!status)return;
-    try{
-      const supported=!!(window.PublicKeyCredential&&window.isSecureContext&&await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable());
-      status.textContent=supported?'This device reports a built-in secure authenticator (it may use fingerprint, face recognition or device PIN). This check does not capture or identify a fingerprint.':'No built-in platform biometric authenticator was detected. Continue with the seller signature and finger-drawn thumbprint mark.';
-      status.classList.toggle('available',supported);
-    }catch{status.textContent='Device biometric availability could not be checked. Use the signature and finger-drawn thumbprint mark.';}
-  }
-  checkSecondhandBiometricSupport();
-  $('secondhand-open-card')?.addEventListener('click',()=>{
-    if(!['owner','freelancer','customer'].includes(state.role)){showNotice('This form is available to customer, shop-owner and linked freelancer accounts.',true);return;}
-    const panel=$('secondhand-panel');
-    const card=$('secondhand-open-card');
-    if(panel&&!panel.classList.contains('hidden')){
-      panel.classList.add('hidden');
-      $('receipts-home')?.classList.remove('secondhand-active');
-      card?.setAttribute('aria-expanded','false');
-      syncGlobalBackButton();
-      return;
-    }
-    const isCustomer=state.role==='customer';
-    $('secondhand-shop-ack-fieldset')?.classList.toggle('hidden',isCustomer);
-    $('sh-shop-acknowledged').required=!isCustomer;
-    $('secondhand-submit').textContent=isCustomer?'Submit Sales Declaration for Review':'Issue Sales Declaration PDF & Send to Both Parties';
-    const copy=$('secondhand-panel-heading-copy')?.querySelector('.muted');
-    if(copy)copy.textContent=isCustomer?'Complete your details and submit your declaration securely. It will be marked pending review.':'Complete the seller, buyer and product details before issuing the signed sales declaration.';
-    $('receipts-home')?.classList.remove('hidden');
-    $('receipts-home')?.classList.add('secondhand-active');
-    $('secondhand-open-card')?.classList.remove('hidden');
-    $('secondhand-open-card')?.setAttribute('aria-expanded','true');
-    $('secondhand-panel')?.classList.remove('hidden');
-    if($('secondhand-form')){$('secondhand-form').hidden=true;$('secondhand-form').classList.add('hidden');$('secondhand-form').style.setProperty('display','none','important');}
-    $('sh-sale-type').value='';
-    document.querySelectorAll('[data-secondhand-mode]').forEach(el=>el.classList.remove('selected'));
-    checkSecondhandBiometricSupport();
-    $('secondhand-panel')?.scrollIntoView({behavior:'smooth',block:'start'});
-    syncGlobalBackButton();
-  });
-  $('secondhand-back')?.addEventListener('click',()=>{
-    $('secondhand-panel')?.classList.add('hidden');
-    $('receipts-home')?.classList.remove('secondhand-active');
-    $('receipts-home')?.classList.remove('hidden');
-    $('secondhand-open-card')?.classList.remove('hidden');
-    $('secondhand-open-card')?.setAttribute('aria-expanded','false');
-    $('secondhand-history')?.classList.add('hidden');
-    $('secondhand-saved-record')?.classList.add('hidden');
-    syncGlobalBackButton();
-  });
-  function renderSecondhandRecord(d) {
-    const target=$('secondhand-saved-record');if(!target)return;
-    const safe=v=>escapeHtml(v??'—');
-    const date=d.createdAt?new Date(d.createdAt).toLocaleString():'Recorded by AURORA';
-    target.innerHTML=`<div class="secondhand-record-print"><div class="secondhand-record-head"><div><p class="eyebrow">AURORA · SHOP RECORD</p><h2>SALES DECLARATION FORM</h2><p>Declaration reference: <strong>${safe(d.declarationRef)}</strong></p></div><span class="secondhand-record-stamp">DECLARED</span></div>
-      <p><strong>Recorded:</strong> ${safe(date)}</p><h3>Seller identification</h3><p><strong>Name:</strong> ${safe(d.sellerName)} · <strong>National ID:</strong> ${safe(d.nationalId)}</p><p><strong>Phone:</strong> ${safe(d.sellerPhone)} · <strong>Alternative:</strong> ${safe(d.alternativePhone)}</p><p><strong>Address:</strong> ${safe(d.residentialAddress)}</p>
-      <h3>Product details</h3><p><strong>Receipt status:</strong> ${safe(d.saleType==='with_receipt'?'Original receipt provided':'No original receipt — seller declaration')} </p><p><strong>Product name:</strong> ${safe(d.productName||d.phoneMakeModel)} · <strong>Condition:</strong> ${safe(d.condition)}</p><p><strong>Product identifier / IMEI:</strong> ${safe(d.imei1||'Not provided')} · <strong>Second identifier:</strong> ${safe(d.imei2)} · <strong>Serial:</strong> ${safe(d.serialNumber)}</p><p><strong>Purchase price:</strong> KSh ${safe(Number(d.purchasePriceKes).toLocaleString())}</p>${d.saleType==='with_receipt'?'':`<p><strong>Reason receipt unavailable:</strong> ${safe(d.noReceiptReason)}</p>`}
-      <h3>Seller's declaration</h3><p>I declare that I am the lawful owner of this product or have full legal authority to sell it; that, to the best of my knowledge, it is not stolen, unlawfully obtained, fraudulently acquired or subject to an ownership dispute; and that the product identifiers and serial details I have supplied are true and have not knowingly been altered. I have disclosed the receipt status recorded above. I accept responsibility for false statements, fraudulent representation or an unlawful ownership claim connected with this sale, and I agree to cooperate with lawful investigations and provide further information when lawfully required.</p>
-      <p class="secondhand-receipt-notice"><strong>SELLER LIABILITY NOTICE:</strong> I confirm that I am the lawful owner of the product recorded above or legally authorised to sell it. If the product is found to be stolen, fraudulently obtained, unlawfully possessed, or subject to a false ownership claim, I accept responsibility for any false information or unlawful sale attributable to me and agree to cooperate with lawful investigations. I understand that I may be held liable under applicable Kenyan law.</p>
-      <div class="secondhand-record-images">${d.idPhotoData?`<figure><img src="${d.idPhotoData}" alt="Seller ID"><figcaption>Seller ID</figcaption></figure>`:''}${d.sellerPhotoData?`<figure><img src="${d.sellerPhotoData}" alt="Seller photo"><figcaption>Seller photo</figcaption></figure>`:''}${d.phonePhotoData?`<figure><img src="${d.phonePhotoData}" alt="Phone photo"><figcaption>Product and identifying details</figcaption></figure>`:''}${d.receiptPhotoData?`<figure><img src="${d.receiptPhotoData}" alt="Original purchase receipt"><figcaption>Original purchase receipt</figcaption></figure>`:''}</div>
-      <div class="secondhand-record-signatures"><figure><strong>Seller signature</strong><img src="${d.signatureData}" alt="Seller signature"></figure>${d.thumbprintData?`<figure><strong>Seller thumbprint mark (drawn)</strong><img src="${d.thumbprintData}" alt="Drawn thumbprint mark"></figure>`:''}</div>
-      <p><strong>Witness:</strong> ${safe(d.witnessName)} · ${safe(d.witnessPhone)}</p><p><strong>Shop representative:</strong> ${safe(d.shopRepresentativeName||'Recorded shop owner')} · Seller and product checks acknowledged</p><p class="tiny">The seller confirmed the declaration electronically. This record supports shop record-keeping; it does not itself determine legal ownership or guarantee a court outcome.</p></div>${d.delivery&&['seller','buyer'].some(p=>!d.delivery[p]?.email?.sent||!d.delivery[p]?.whatsapp?.sent)?'<button id="secondhand-redeliver-button" class="btn btn-light full" type="button">Retry sending full PDF to both parties</button>':''}<button id="secondhand-print-button" class="btn btn-primary full" type="button">Print / Save as PDF</button><button id="secondhand-amend-button" class="btn btn-light full" type="button" data-declaration-id="${safe(d.id)}">Amend saved declaration</button><button id="secondhand-amend-history-button" class="btn btn-light full" type="button" data-declaration-id="${safe(d.id)}">View amendment history</button><p id="secondhand-amend-message" class="muted" aria-live="polite"></p>`;
-    if(d.pdfBase64){
-      const download=document.createElement('a');download.className='btn btn-primary full secondhand-download-pdf';
-      download.href='data:application/pdf;base64,'+d.pdfBase64;download.download='AURORA-Sales-Declaration-'+(d.declarationRef||'receipt')+'.pdf';
-      download.textContent='Download issued PDF';target.insertBefore(download,target.firstChild);
-    }
-    const buyerSummary=document.createElement('p');buyerSummary.className='secondhand-buyer-summary';
-    buyerSummary.textContent='Buyer: '+(d.buyerName||'')+' · ID: '+(d.buyerNationalId||'')+' · Phone: '+(d.buyerPhone||'')+' · Email: '+(d.buyerEmail||'');
-    target.insertBefore(buyerSummary,target.firstChild);
-    target.classList.remove('hidden');
-    $('secondhand-redeliver-button')?.addEventListener('click',async()=>{
-      const retry=$('secondhand-redeliver-button');
-      if(!d.id||!retry)return;
-      retry.disabled=true;retry.textContent='Retrying delivery…';
-      try{
-        const result=await request('/api/v1/second-hand-phone-declarations/'+encodeURIComponent(d.id)+'/deliver',{method:'POST',body:JSON.stringify({})});
-        const status=(party,channel)=>result.delivery?.[party]?.[channel]?.sent?'Sent':'Not sent'+(result.delivery?.[party]?.[channel]?.reason?': '+result.delivery[party][channel].reason:'');
-        const allSent=['seller','buyer'].every(p=>result.delivery?.[p]?.email?.sent&&result.delivery?.[p]?.whatsapp?.sent);
-        const message=$('secondhand-message');
-        if(message)message.textContent='Delivery retry · Seller — email: '+status('seller','email')+', WhatsApp: '+status('seller','whatsapp')+'. Buyer — email: '+status('buyer','email')+', WhatsApp: '+status('buyer','whatsapp')+'.';
-        if(result.pdfBase64){
-          let link=target.querySelector('.secondhand-download-pdf');
-          if(!link){link=document.createElement('a');link.className='btn btn-primary full secondhand-download-pdf';target.insertBefore(link,target.firstChild);}
-          link.href='data:application/pdf;base64,'+result.pdfBase64;link.download='AURORA-Sales-Declaration-'+(result.declarationRef||d.declarationRef||'copy')+'.pdf';link.textContent='Download latest complete PDF';
-        }
-        if(allSent){retry.remove();if(message)message.textContent+=' All four delivery attempts succeeded.';}
-        else{retry.disabled=false;retry.textContent='Retry sending full PDF to both parties';}
-      }catch(error){retry.disabled=false;retry.textContent='Retry sending full PDF to both parties';const message=$('secondhand-message');if(message)message.textContent=error.message||'Could not retry PDF delivery.';}
-    });
-    $('secondhand-print-button')?.addEventListener('click',()=>window.print());
-    $('secondhand-amend-button')?.addEventListener('click',async()=>{
-      const id=d.id;if(!id){showNotice('This saved record cannot be amended until it is reopened from history.',true);return;}
-      const reason=window.prompt('Why is this Special Receipt being amended?');if(!reason||!reason.trim())return;
-      const productName=window.prompt('Correct product name / model:',d.productName||d.phoneMakeModel||'');if(productName===null)return;
-      const imei1=window.prompt('Correct IMEI / product identifier:',d.imei1||'');if(imei1===null)return;
-      const priceText=window.prompt('Correct purchase price in KSh:',String(d.purchasePriceKes||''));if(priceText===null)return;
-      const price=Number(priceText);if(!Number.isSafeInteger(price)||price<1){showNotice('Enter a valid whole-number purchase price.',true);return;}
-      const button=$('secondhand-amend-button');button.disabled=true;button.textContent='Saving new version…';
-      try{
-        const result=await request('/api/v1/second-hand-phone-declarations/'+encodeURIComponent(id)+'/amendments',{method:'POST',body:JSON.stringify({reason:reason.trim(),changes:{productName:productName.trim(),imei1:imei1.trim(),purchasePriceKes:price}})});
-        $('secondhand-amend-message').textContent='Amendment saved as version '+result.amendment.versionNo+'. The original declaration remains unchanged.';
-      }catch(err){$('secondhand-amend-message').textContent=err.message||'Could not save amendment.';}
-      finally{button.disabled=false;button.textContent='Amend saved declaration';}
-    });
-    $('secondhand-amend-history-button')?.addEventListener('click',async()=>{
-      const id=d.id;if(!id)return;const out=$('secondhand-amend-message');out.textContent='Loading amendment history…';
-      try{const result=await request('/api/v1/second-hand-phone-declarations/'+encodeURIComponent(id)+'/amendments');const rows=result.amendments||[];out.textContent=rows.length?rows.map(a=>'Version '+a.versionNo+' · '+new Date(a.createdAt).toLocaleString()+' · '+a.reason+' · '+JSON.stringify(a.changes)).join('\\n'):'No amendments recorded. Original version remains unchanged.';}
-      catch(err){out.textContent=err.message||'Could not load amendment history.';}
-    });
-    target.scrollIntoView({behavior:'smooth',block:'start'});
-  }
-  $('secondhand-form')?.addEventListener('submit',async ev=>{
-    ev.preventDefault();
-    const message=$('secondhand-message'),button=$('secondhand-submit'),isCustomer=state.role==='customer';
-    const selectedSaleType=$('sh-sale-type').value;
-    if(!secondhandPadState['sh-signature']||(selectedSaleType==='without_receipt'&&!secondhandPadState['sh-thumbprint'])){message.textContent=selectedSaleType==='without_receipt'?'The seller must complete both the signature and thumbprint mark on the screen.':'The seller must complete the electronic signature.';message.style.color='#a12b22';return;}
-    if(!$('sh-declaration-accepted').checked){message.textContent='The seller must confirm the declaration before submission.';message.style.color='#a12b22';return;}
-    if(!isCustomer&&!$('sh-shop-acknowledged').checked){message.textContent='The shop representative must confirm that the seller and product details were checked.';message.style.color='#a12b22';return;}
-    button.disabled=true;button.textContent=isCustomer?'Submitting declaration…':'Saving protected declaration…';message.textContent='Preparing evidence and securely saving the declaration…';message.style.color='';
-    try{
-      const saleType=$('sh-sale-type').value;
-      const [idPhotoData,phonePhotoData,sellerPhotoData,receiptPhotoData]=await Promise.all([secondhandImageData('sh-id-photo',true),secondhandImageData('sh-phone-photo',true),secondhandImageData('sh-seller-photo',saleType==='without_receipt'),secondhandImageData('sh-receipt-photo',saleType==='with_receipt')]);
-      const payload={saleType,receiptPhotoData,sellerName:$('sh-seller-name').value.trim(),nationalId:$('sh-national-id').value.trim(),sellerPhone:$('sh-seller-phone').value.trim(),sellerEmail:$('sh-seller-email').value.trim(),buyerName:$('sh-buyer-name').value.trim(),buyerNationalId:$('sh-buyer-id').value.trim(),buyerPhone:$('sh-buyer-phone').value.trim(),buyerEmail:$('sh-buyer-email').value.trim(),alternativePhone:$('sh-alt-phone').value.trim(),residentialAddress:$('sh-address').value.trim(),productName:$('sh-model').value.trim(),imei1:$('sh-imei1').value.trim(),imei2:$('sh-imei2').value.trim(),serialNumber:$('sh-serial').value.trim(),condition:$('sh-condition').value,purchasePriceKes:Number($('sh-price').value),noReceiptReason:saleType==='with_receipt'?'Original purchase receipt photographed and attached.':$('sh-no-receipt').value.trim(),sellerPhotoData,idPhotoData,phonePhotoData,signatureData:$('sh-signature').toDataURL('image/png'),thumbprintData:saleType==='without_receipt'?$('sh-thumbprint').toDataURL('image/png'):null,witnessName:$('sh-witness-name').value.trim(),witnessPhone:$('sh-witness-phone').value.trim(),declarationAccepted:true,shopAcknowledged:!isCustomer&&$('sh-shop-acknowledged').checked};
-      if(isCustomer){
-        const result=await request('/api/v1/customers/sales-declarations',{method:'POST',body:JSON.stringify(payload)});
-        const submission=result.submission||{},delivery=result.delivery||{};
-        const status=(party,channel)=>delivery[party]?.[channel]?.sent?'Sent':'Not sent'+(delivery[party]?.[channel]?.reason?': '+delivery[party][channel].reason:'');
-        const allDelivered=['seller','buyer'].every(p=>delivery[p]?.email?.sent&&delivery[p]?.whatsapp?.sent);
-        message.textContent='Complete Sales Declaration PDF created · '+(submission.declarationRef||'saved')+'. Seller — email: '+status('seller','email')+'; WhatsApp: '+status('seller','whatsapp')+'. Buyer — email: '+status('buyer','email')+'; WhatsApp: '+status('buyer','whatsapp')+'. Full PDF copy is available below. Status: PENDING SHOP REVIEW — not an approved shop receipt.';
-        message.style.color=allDelivered?'#176b52':'#9a5b00';
-        $('secondhand-saved-record').innerHTML='<div class="secondhand-record-print"><h2>DECLARATION SUBMITTED</h2><p><strong>Reference:</strong> '+escapeHtml(submission.declarationRef||'—')+'</p><p><strong>Status:</strong> Pending shop review</p><p>The complete PDF, including the filled-in details and submitted evidence, was sent separately to the seller and buyer through the available email and WhatsApp channels. Delivery results are shown above.</p></div>'+(result.pdfBase64?'<a class="btn btn-primary full secondhand-download-pdf" download="AURORA-Sales-Declaration-'+encodeURIComponent(submission.declarationRef||'copy')+'.pdf" href="data:application/pdf;base64,'+result.pdfBase64+'">Download complete declaration PDF</a>':'');
-        $('secondhand-saved-record').classList.remove('hidden');
-      }else{
-        const result=await request('/api/v1/second-hand-phone-declarations',{method:'POST',body:JSON.stringify(payload)});
-        const delivery=result.delivery||{},status=(party,channel)=>delivery[party]?.[channel]?.sent?'Sent':'Not sent'+(delivery[party]?.[channel]?.reason?': '+delivery[party][channel].reason:'');
-        message.textContent='Sales Declaration PDF created · '+(result.declaration?.declarationRef||'saved')+'. Seller — email: '+status('seller','email')+', WhatsApp: '+status('seller','whatsapp')+'. Buyer — email: '+status('buyer','email')+', WhatsApp: '+status('buyer','whatsapp')+'. Download the PDF below if any delivery failed.';
-        message.style.color=(delivery.seller?.email?.sent&&delivery.seller?.whatsapp?.sent&&delivery.buyer?.email?.sent&&delivery.buyer?.whatsapp?.sent)?'#176b52':'#9a5b00';
-        renderSecondhandRecord({...result.declaration,pdfBase64:result.pdfBase64,delivery:result.delivery});
-      }
-      $('secondhand-form').reset();$('sh-sale-type').value='';$('secondhand-form').classList.add('hidden');document.querySelectorAll('[data-secondhand-mode]').forEach(el=>el.classList.remove('selected'));['sh-signature','sh-thumbprint'].forEach(clearSecondhandPad);
-      ['sh-id-preview','sh-seller-preview','sh-phone-preview','sh-receipt-preview'].forEach(id=>$(id)?.classList.add('hidden'));
-      $('secondhand-history')?.classList.add('hidden');
-    }catch(err){message.textContent=err.message||'Could not save the declaration. Please check the details and try again.';message.style.color='#a12b22';}
-    finally{button.disabled=false;button.textContent=isCustomer?'Submit Sales Declaration for Review':'Issue Sales Declaration PDF & Send to Both Parties';}
-  });
-  $('secondhand-clear')?.addEventListener('click',()=>{
-    const form=$('secondhand-form');if(!form)return;
-    form.reset();
-    $('sh-sale-type').value='';$('secondhand-form')?.classList.add('hidden');document.querySelectorAll('[data-secondhand-mode]').forEach(el=>el.classList.remove('selected'));
-    ['sh-signature','sh-thumbprint'].forEach(clearSecondhandPad);
-    ['sh-id-preview','sh-seller-preview','sh-phone-preview','sh-receipt-preview'].forEach(id=>{
-      const preview=$(id);if(preview){if(preview.src&&preview.src.startsWith('blob:'))URL.revokeObjectURL(preview.src);preview.removeAttribute('src');preview.classList.add('hidden');}
-    });
-    $('secondhand-message').textContent='';
-    $('secondhand-message').style.color='';
-    $('secondhand-saved-record').innerHTML='';
-    $('secondhand-saved-record').classList.add('hidden');
-    $('secondhand-form').scrollIntoView({behavior:'smooth',block:'start'});
-  });
-
-
 
   function loanStatusLabel(loan){
     if(loan.overdue)return 'OVERDUE';
