@@ -274,3 +274,104 @@ body.shop-owner-account-active #workspace-nav :is(button.active,[aria-current=pa
   color:var(--aurora-sand)!important;
   border-color:var(--aurora-electric)!important;
 }
+
+
+/* Strict Shop Staff (Vendor) palette. Soft Sand is replaced by the
+   muted whitish cream only while a Shop Staff account is active. */
+body.shop-staff-account-active{
+  --aurora-sand:#F7F5F0;
+  background-color:#F7F5F0!important;
+  color:#474329!important;
+}
+html:has(body.shop-staff-account-active),
+html:has(body.shop-staff-account-active) body{
+  background-color:#F7F5F0!important;
+}
+body.shop-staff-account-active,
+body.shop-staff-account-active :is(.shell,.app,main,#owner-home,#owner-dashboard-view,
+  #pos-view,#shop-home,#receipts-home,#loans-home,#staff-profile-panel,
+  #staff-sales-summary,#profile-panel,#receipt-history-panel,#declaration-history-panel,
+  #shop-lost-items-panel,#history-panel,#workspace-nav,.topbar,.command-bar,
+  .panel,.card,.modal-card,.account-profile-menu){
+  background-color:#F7F5F0!important;
+  background-image:none!important;
+  color:#474329!important;
+}
+body.shop-staff-account-active *{
+  color:#474329!important;
+  border-color:#474329!important;
+  background-image:none!important;
+  box-shadow:none!important;
+  text-shadow:none!important;
+}
+body.shop-staff-account-active :is(
+  .panel,.card,.metric,.owner-stat,.module-tile,.shop-card,.product-card,
+  .receipt-card,.history-card,.staff-card,.profile-card,.modal-card,
+  .staff-sales-summary,.staff-profile-panel,.command-bar,.workspace-nav
+){
+  background-color:#F7F5F0!important;
+  border:1px solid #474329!important;
+}
+body.shop-staff-account-active :is(
+  .badge,.pill,.tag,.chip,.count-pill,.status-badge,.loan-status,
+  .approval-badge,.return-status,.stock-status,[class*="pending"],
+  [class*="urgent"],[class*="counter"]
+){
+  background-color:#FC7584!important;
+  color:#474329!important;
+  border-color:#474329!important;
+}
+body.shop-staff-account-active :is(
+  button,.btn,input[type=submit],input[type=button],[role=button],
+  .btn-primary,.primary,.staff-invite-cta
+){
+  background-color:#0066FF!important;
+  color:#F7F5F0!important;
+  border:1px solid #0066FF!important;
+}
+body.shop-staff-account-active :is(
+  .btn-light,.btn-quiet,.btn-secondary,.secondary,.icon-btn
+){
+  background-color:#F7F5F0!important;
+  color:#474329!important;
+  border:1px solid #474329!important;
+}
+body.shop-staff-account-active #workspace-nav :is(
+  button.active,[aria-current=page],[aria-pressed=true],.active
+){
+  background-color:#0066FF!important;
+  color:#F7F5F0!important;
+  border-color:#0066FF!important;
+}
+body.shop-staff-account-active :is(input,select,textarea){
+  background-color:#F7F5F0!important;
+  color:#474329!important;
+  border:1px solid #474329!important;
+}
+body.shop-staff-account-active :is(input,select,textarea):focus,
+body.shop-staff-account-active :focus-visible{
+  outline:2px solid #0066FF!important;
+  outline-offset:2px;
+  border-color:#0066FF!important;
+}
+body.shop-staff-account-active :is(hr,th,td,table,.task-list,.task-item,
+  .receipt-line,.staff-record,.staff-task,.staff-workflow,.instruction,
+  .instructions,.record-row,.list-row){
+  border-color:#474329!important;
+}
+body.shop-staff-account-active svg{color:#474329!important}
+body.shop-staff-account-active svg :is(path,circle,rect,line,polyline){
+  fill:currentColor;
+  stroke:currentColor;
+}
+body.shop-staff-account-active *{
+  overflow-wrap:anywhere;
+}
+@media(max-width:700px){
+  body.shop-staff-account-active :is(.form-two,.content-grid,.dashboard-grid){
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+  body.shop-staff-account-active #workspace-nav{
+    background-color:#F7F5F0!important;
+  }
+}
