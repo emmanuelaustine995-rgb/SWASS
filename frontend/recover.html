@@ -1,16 +1,62 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Verify AURORA receipts</title><link rel="stylesheet" href="styles.css"></head>
-<body><main class="auth-shell"><section class="panel">
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Receipt Recovery | AURORA</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+body.receipt-recovery-page{background:#f3f6fa;color:#243244}
+.receipt-recovery-page .auth-shell{padding:22px 14px;align-items:start}
+.receipt-recovery-page .recovery-card{width:min(100%,620px);padding:0;overflow:hidden;border:1px solid #dce4ed;border-radius:22px;box-shadow:0 18px 50px #1d355012}
+.recovery-hero{padding:26px;background:linear-gradient(135deg,#25384f,#405b78);color:#fff}
+.recovery-hero .eyebrow{margin:0 0 8px;color:#d2dfed;font-size:11px;font-weight:800;letter-spacing:1.5px}
+.recovery-hero h1{margin:0;font-size:27px;color:#fff}
+.recovery-hero p{margin:9px 0 0;color:#e0e9f2;line-height:1.5}
+.recovery-body{padding:24px}
+.recovery-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:0 0 22px}
+.recovery-step{padding:11px 8px;border-radius:12px;background:#f0f4f8;color:#42546a;font-size:11px;font-weight:700;text-align:center}
+.recovery-step b{display:block;margin:0 auto 6px;width:24px;height:24px;line-height:24px;border-radius:50%;background:#dce6f0;color:#29445f}
+.recovery-body form{display:grid;gap:14px;margin:0}
+.recovery-body label{display:grid;gap:7px;font-weight:700;color:#34465b}
+.recovery-body input{width:100%;box-sizing:border-box;padding:13px;border:1px solid #cbd5e1;border-radius:10px;background:#fff}
+.recovery-body #request-button{margin-top:4px;background:#294b6c;border-radius:11px}
+.recovery-note{margin:15px 0 0;color:#68788b;font-size:12px;line-height:1.5}
+#message{margin:16px 0 0;line-height:1.5}
+@media(max-width:480px){.recovery-hero{padding:22px}.recovery-body{padding:18px}.recovery-hero h1{font-size:23px}.recovery-steps{gap:6px}.recovery-step{font-size:10px;padding:9px 4px}}
+</style>
+</head>
+<body class="receipt-recovery-page">
+<main class="auth-shell">
+<section class="panel recovery-card" aria-label="Receipt recovery">
+<header class="recovery-hero">
+<p class="eyebrow">AURORA · CUSTOMER SERVICES</p>
+<h1>Recover your receipts</h1>
+<p>Find your previous purchase records securely and save or print them again.</p>
+</header>
+<div class="recovery-body">
 <p class="page-back-row"><a class="btn btn-light page-back-link" href="index.html" onclick="if(window.history.length>1){event.preventDefault();window.history.back();}">← Back to AURORA</a></p>
-<h1>Verify Receipts</h1>
-<p>Enter the National ID and phone number used when purchasing. Pay a one-time KSh 10 verification fee to view <strong>all receipts</strong> linked to those details.</p>
-
+<div class="recovery-steps" aria-label="Recovery steps">
+<div class="recovery-step"><b>1</b>Enter details</div>
+<div class="recovery-step"><b>2</b>Verify payment</div>
+<div class="recovery-step"><b>3</b>Get receipts</div>
+</div>
+<p>Enter the National ID and phone number used when purchasing. A one-time KSh 10 verification payment is required to unlock all matching receipts.</p>
 <form id="request-form">
 <label>National ID number<input id="national-id" type="text" autocomplete="off" maxlength="30" placeholder="Enter National ID number" required></label>
 <label>Phone number<input id="phone" type="tel" autocomplete="tel" placeholder="07XXXXXXXX or 2547XXXXXXXX" required></label>
-<button id="request-button" type="submit">Pay KSh 10 and verify receipts</button>
+<button id="request-button" type="submit">Pay KSh 10 and recover receipts</button>
 </form>
+<p class="recovery-note">Use the same ID and phone number that were recorded on your purchase. Once payment is confirmed, your matching receipts will appear below for printing or saving as PDF.</p>
 <p id="message" role="status" aria-live="polite"></p>
 <div id="receipt-list"></div>
-
-</section></main><script src="config.js"></script><script src="recover.js"></script></body></html>
+<section hidden aria-hidden="true">
+<form id="special-request-form"><input id="special-national-id"><input id="special-phone"><button id="special-request-button" type="submit">Recover</button></form>
+<p id="special-message"></p><div id="special-receipt-list"></div>
+</section>
+</div>
+</section>
+</main>
+<script src="config.js"></script><script src="recover.js"></script>
+</body>
+</html>
