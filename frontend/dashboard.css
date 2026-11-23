@@ -4163,26 +4163,18 @@ html body.workspace-active #owner-home #referral-card .referral-invite-head h2 {
   overflow-wrap:anywhere;
 }
 
-/* Home page — colourful, compact daily sales snapshot below the existing cards. */
-.home-daily-sales{margin:14px 0 24px;padding:20px;border:1px solid #dce6f1;border-radius:18px;background:linear-gradient(135deg,#fff 0%,#f4f8ff 55%,#f8f4ff 100%);box-shadow:0 10px 28px rgba(30,55,90,.08)}
-.home-sales-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px}
-.home-sales-heading h2{margin:3px 0 5px;color:#1c3049;font-size:20px;font-weight:850}
-.home-sales-heading .muted{margin:0}
-.home-sales-live{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border-radius:999px;background:#e8f7ef;color:#23734c;font-size:11px;font-weight:800;white-space:nowrap}
-.home-sales-live i{width:7px;height:7px;border-radius:50%;background:#26a269}
-.home-sales-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:18px}
-.home-sales-total{padding:13px 14px;border:1px solid #e3eaf3;border-radius:13px;background:rgba(255,255,255,.86);min-width:0}
-.home-sales-total>span{display:block;color:#65758b;font-size:12px;font-weight:700}
-.home-sales-total>strong{display:block;margin:7px 0 4px;color:#1d3554;font-size:clamp(19px,3vw,25px);font-weight:850;overflow-wrap:anywhere}
-.home-sales-change{display:block;font-size:11px;font-weight:750}
-.home-sales-change.positive{color:#168454}.home-sales-change.negative{color:#c04a4a}.home-sales-change.neutral{color:#718096}
-.home-sales-chart{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;align-items:end;min-height:170px;padding:10px 4px 0;border-bottom:1px solid #e4eaf2}
-.home-sales-day{display:grid;grid-template-rows:22px 112px 20px;align-items:end;justify-items:center;gap:6px;min-width:0}
-.home-sales-bar-value{max-width:100%;font-size:9px;color:#66758a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700}
-.home-sales-bar-track{width:min(100%,34px);height:100%;display:flex;align-items:end;justify-content:center;border-radius:9px 9px 3px 3px;background:#edf1f7;overflow:hidden}
-.home-sales-bar{display:block;width:100%;min-height:2px;border-radius:8px 8px 2px 2px;transition:height .35s ease}
-.home-sales-day small{font-size:10px;color:#65758b;font-weight:700}
-.home-sales-day.is-today small{color:#243f67;font-weight:900}
-.bar-tone-0{background:linear-gradient(180deg,#55c7e8,#2584c7)}.bar-tone-1{background:linear-gradient(180deg,#71d8bd,#20a47e)}.bar-tone-2{background:linear-gradient(180deg,#b39af5,#7955d9)}.bar-tone-3{background:linear-gradient(180deg,#ffbd78,#ed8741)}.bar-tone-4{background:linear-gradient(180deg,#f58bb1,#d84d83)}.bar-tone-5{background:linear-gradient(180deg,#81b5ff,#477bd5)}.bar-tone-6{background:linear-gradient(180deg,#70d2d0,#248d9a)}
-.home-sales-status{margin:12px 2px 0;font-size:11px;line-height:1.45}
-@media(max-width:480px){.home-daily-sales{padding:15px 12px;margin-top:12px}.home-sales-heading h2{font-size:18px}.home-sales-summary{gap:8px}.home-sales-total{padding:11px 10px}.home-sales-chart{gap:4px;min-height:150px;padding-left:0;padding-right:0}.home-sales-day{grid-template-rows:20px 96px 18px;gap:5px}.home-sales-bar-value{font-size:8px}.home-sales-day small{font-size:9px}.home-sales-bar-track{width:min(100%,28px)}}
+/* Home page — minimal colourful daily sales pie chart. */
+.home-daily-sales{margin:12px 0 22px;padding:16px 18px;border:1px solid #e0e8f1;border-radius:16px;background:#fff;box-shadow:0 6px 20px rgba(30,55,90,.06)}
+.home-sales-title{margin:0 0 12px;color:#24364b;font-size:16px;font-weight:800}
+.home-sales-pie-layout{display:flex;align-items:center;justify-content:center;gap:24px;min-height:170px}
+.home-sales-chart{display:flex;align-items:center;justify-content:center;flex:0 0 160px;min-width:0}
+.home-sales-pie{width:154px;height:154px;border-radius:50%;display:grid;place-items:center;background:#e9eef4;position:relative}
+.home-sales-pie-center{width:82px;height:82px;border-radius:50%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 1px 6px rgba(25,45,70,.08);padding:5px}
+.home-sales-pie-center strong{font-size:13px;color:#263b55;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.home-sales-pie-center small{font-size:9px;color:#758399}
+.home-sales-pie.is-empty{background:#e9eef4}
+.home-sales-legend{display:grid;grid-template-columns:repeat(2,minmax(74px,1fr));gap:10px 16px;min-width:0}
+.home-sales-legend-item{display:grid;grid-template-columns:9px auto auto;align-items:center;gap:6px;font-size:11px;color:#65758a;white-space:nowrap}
+.home-sales-legend-item i{width:8px;height:8px;border-radius:50%}
+.home-sales-legend-item strong{color:#263b55;font-size:11px}
+@media(max-width:480px){.home-daily-sales{padding:13px 11px}.home-sales-pie-layout{gap:13px;min-height:145px}.home-sales-chart{flex-basis:126px}.home-sales-pie{width:122px;height:122px}.home-sales-pie-center{width:68px;height:68px}.home-sales-pie-center strong{font-size:11px}.home-sales-legend{gap:9px 8px;grid-template-columns:repeat(2,minmax(60px,1fr))}.home-sales-legend-item{font-size:10px;gap:4px}.home-sales-legend-item strong{font-size:10px}}
