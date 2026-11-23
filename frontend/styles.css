@@ -3493,3 +3493,162 @@ body:has(#request-form #national-id) .auth-shell,
 body:has(#request-form #national-id) .auth-shell>.panel{
   display:block!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;
 }
+
+
+/* AURORA SALES DECLARATION — dedicated opening workspace.
+   This intentionally replaces the old inline card-expansion presentation.
+   Only the declaration workspace is affected; Issue Receipt and Verify Receipt
+   retain their existing appearance and behaviour. */
+body.workspace-active #receipts-home.secondhand-active .section-head,
+body.workspace-active #receipts-home.secondhand-active #open-issue-receipt,
+body.workspace-active #receipts-home.secondhand-active #open-recover-receipt,
+body.workspace-active #receipts-home.secondhand-active #secondhand-open-card {
+  display: none !important;
+}
+body.workspace-active #receipts-home.secondhand-active .receipt-actions-grid {
+  display: block !important;
+  width: 100% !important;
+}
+body.workspace-active #receipts-home.secondhand-active .declaration-card {
+  display: block !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+body.workspace-active #receipts-home.secondhand-active #secondhand-panel:not(.hidden) {
+  display: block !important;
+  position: relative !important;
+  width: 100% !important;
+  max-width: 980px !important;
+  min-height: 65vh !important;
+  margin: 0 auto !important;
+  padding: clamp(16px, 3vw, 30px) !important;
+  overflow: visible !important;
+  border: 1px solid #dce3ed !important;
+  border-radius: 22px !important;
+  background: linear-gradient(145deg, #ffffff 0%, #f5f7fc 100%) !important;
+  box-shadow: 0 14px 40px rgba(29, 43, 68, .10) !important;
+  box-sizing: border-box !important;
+}
+body.workspace-active #receipts-home.secondhand-active #secondhand-panel.hidden {
+  display: none !important;
+}
+body.workspace-active #receipts-home.secondhand-active .secondhand-panel-heading {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 16px !important;
+  flex-wrap: wrap !important;
+  padding: 0 0 18px !important;
+  border-bottom: 1px solid #e1e7f0 !important;
+}
+body.workspace-active #receipts-home.secondhand-active #secondhand-panel-heading-copy .eyebrow {
+  color: #6850a5 !important;
+  font-size: 11px !important;
+  font-weight: 850 !important;
+  letter-spacing: .13em !important;
+}
+body.workspace-active #receipts-home.secondhand-active #secondhand-panel-heading-copy h2 {
+  margin: 5px 0 7px !important;
+  color: #17243a !important;
+  font-size: clamp(23px, 3vw, 32px) !important;
+  line-height: 1.15 !important;
+  font-weight: 850 !important;
+}
+body.workspace-active #receipts-home.secondhand-active .secondhand-warning {
+  margin: 18px 0 !important;
+  padding: 13px 15px !important;
+  border: 1px solid #f0d9a8 !important;
+  border-left: 4px solid #d69b36 !important;
+  border-radius: 12px !important;
+  background: #fff8e9 !important;
+  color: #62491d !important;
+  line-height: 1.5 !important;
+}
+body.workspace-active #receipts-home.secondhand-active .secondhand-receipt-options {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+  margin: 22px 0 !important;
+}
+body.workspace-active #receipts-home.secondhand-active .secondhand-receipt-option {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 104px !important;
+  padding: 18px !important;
+  border: 1.5px solid #d8dfeb !important;
+  border-radius: 16px !important;
+  background: #fff !important;
+  color: #24334b !important;
+  font-size: 15px !important;
+  font-weight: 850 !important;
+  letter-spacing: .04em !important;
+  box-shadow: 0 5px 16px rgba(31, 48, 77, .06) !important;
+  transition: border-color .18s ease, background .18s ease, transform .18s ease, box-shadow .18s ease !important;
+}
+body.workspace-active #receipts-home.secondhand-active .secondhand-receipt-option::before {
+  content: "✓" !important;
+  display: grid !important;
+  place-items: center !important;
+  width: 30px !important;
+  height: 30px !important;
+  margin-right: 10px !important;
+  border-radius: 50% !important;
+  background: #edf1f7 !important;
+  color: #5c6b81 !important;
+  font-size: 16px !important;
+}
+body.workspace-active #receipts-home.secondhand-active .secondhand-receipt-option.selected {
+  border-color: #6b4bb1 !important;
+  background: #f3effb !important;
+  color: #44227f !important;
+  box-shadow: 0 7px 20px rgba(88, 57, 151, .14) !important;
+}
+body.workspace-active #receipts-home.secondhand-active .secondhand-receipt-option.selected::before {
+  background: #6845aa !important;
+  color: #fff !important;
+}
+body.workspace-active #receipts-home.secondhand-active #secondhand-form:not(.hidden) {
+  display: grid !important;
+  gap: 16px !important;
+  width: 100% !important;
+  margin-top: 20px !important;
+}
+body.workspace-active #receipts-home.secondhand-active #secondhand-form.hidden {
+  display: none !important;
+}
+body.workspace-active #receipts-home.secondhand-active #secondhand-form fieldset {
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 18px !important;
+  border: 1px solid #dfe5ee !important;
+  border-radius: 15px !important;
+  background: #fff !important;
+}
+body.workspace-active #receipts-home.secondhand-active #secondhand-form legend {
+  padding: 0 8px !important;
+  color: #49317d !important;
+  font-size: 14px !important;
+  font-weight: 850 !important;
+}
+@media (max-width: 600px) {
+  body.workspace-active #receipts-home.secondhand-active #secondhand-panel:not(.hidden) {
+    padding: 14px !important;
+    border-radius: 16px !important;
+  }
+  body.workspace-active #receipts-home.secondhand-active .secondhand-receipt-options {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+  body.workspace-active #receipts-home.secondhand-active .secondhand-receipt-option {
+    justify-content: flex-start !important;
+    min-height: 76px !important;
+  }
+  body.workspace-active #receipts-home.secondhand-active #secondhand-form fieldset {
+    padding: 13px !important;
+  }
+}
