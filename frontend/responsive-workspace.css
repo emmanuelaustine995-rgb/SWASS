@@ -1701,3 +1701,64 @@ html body.platform-admin-workspace #platform-referral-admin .platform-admin-tabs
     text-align: center !important;
   }
 }
+
+
+/* DESKTOP CLEANUP: one scrolling model, no workspace navigation dock.
+   The dock is intentionally removed while the desktop workspace is rebuilt.
+   Remove the competing fixed-height/hidden-overflow shell behaviour so the
+   14 cm workspace and its content scroll naturally as one page. */
+@media (min-width: 1024px) {
+  html body.workspace-active {
+    position: relative !important;
+    inset: auto !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 100vh !important;
+    max-height: none !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    touch-action: pan-y !important;
+    overscroll-behavior-y: auto !important;
+    padding: 0 0 24px !important;
+  }
+
+  html body.workspace-active main.shell {
+    position: relative !important;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    transform: none !important;
+    display: block !important;
+    width: 14cm !important;
+    max-width: calc(100vw - 32px) !important;
+    height: auto !important;
+    min-height: calc(100vh - 72px) !important;
+    max-height: none !important;
+    margin: 0 auto !important;
+    padding: 16px 14px 28px !important;
+    overflow: visible !important;
+    box-sizing: border-box !important;
+  }
+
+  html body.workspace-active main.shell > #workspace-nav,
+  html body.workspace-active > #workspace-nav {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  html body.workspace-active main.shell > section:not(.hidden),
+  html body.workspace-active main.shell > main:not(.hidden),
+  html body.workspace-active main.shell > article:not(.hidden),
+  html body.workspace-active main.shell > .panel:not(.hidden) {
+    position: relative !important;
+    flex: none !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    overscroll-behavior: auto !important;
+    box-sizing: border-box !important;
+  }
+}

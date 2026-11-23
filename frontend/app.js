@@ -1,28 +1,6 @@
 (() => {
   'use strict';
   const $ = (id) => document.getElementById(id);
-  // Keep workspace navigation outside every scrolling/clipping content panel.
-  // A fixed descendant of the workspace shell can be clipped by its overflow.
-  // Appending directly to body makes the dock independent of page scrolling.
-  const workspaceNav = $('workspace-nav');
-  const workspaceShell = workspaceNav?.closest('main.shell');
-  if (workspaceNav && workspaceNav.parentElement !== document.body) document.body.appendChild(workspaceNav);
-  // Match the floating dock to the actual working column, not the full viewport.
-  const syncWorkspaceDock = () => {
-    if (!workspaceNav || !workspaceShell) return;
-    const rect = workspaceShell.getBoundingClientRect();
-    const width = Math.max(0, Math.min(400, rect.width - 32));
-    workspaceNav.style.setProperty('--workspace-dock-left', `${rect.left + rect.width / 2}px`);
-    workspaceNav.style.setProperty('--workspace-dock-width', `${width}px`);
-  };
-  if (workspaceNav && workspaceShell) {
-    syncWorkspaceDock();
-    window.addEventListener('resize', syncWorkspaceDock, { passive: true });
-    if (typeof ResizeObserver !== 'undefined') {
-      const dockObserver = new ResizeObserver(syncWorkspaceDock);
-      dockObserver.observe(workspaceShell);
-    }
-  }
   const state = { token: null, role: null, userName: '', staffTitle: '', userPhotoData: '', userPhone: '', userEmail: '', products: [], cart: new Map(), lastReceipt: null, profileLogoData: undefined, businessProfile: {}, workspaceHistory: [], currentWorkspace: null, posReturnScreen: null };
   const SESSION_KEY = 'swass-auth-session-v1';
   const referralCodeFromUrl = new URLSearchParams(window.location.search).get('ref') || '';
