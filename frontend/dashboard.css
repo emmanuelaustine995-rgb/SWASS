@@ -4178,3 +4178,15 @@ html body.workspace-active #owner-home #referral-card .referral-invite-head h2 {
 .home-sales-legend-item i{width:8px;height:8px;border-radius:50%}
 .home-sales-legend-item strong{color:#263b55;font-size:11px}
 @media(max-width:480px){.home-daily-sales{padding:13px 11px}.home-sales-pie-layout{gap:13px;min-height:145px}.home-sales-chart{flex-basis:126px}.home-sales-pie{width:122px;height:122px}.home-sales-pie-center{width:68px;height:68px}.home-sales-pie-center strong{font-size:11px}.home-sales-legend{gap:9px 8px;grid-template-columns:repeat(2,minmax(60px,1fr))}.home-sales-legend-item{font-size:10px;gap:4px}.home-sales-legend-item strong{font-size:10px}}
+
+
+/* Temporarily remove the primary workspace navigation dock.
+   Keep its hidden DOM node so existing workspace routing code remains safe;
+   section-level tabs and task navigation are not affected. */
+html body #workspace-nav,
+html body.workspace-active #workspace-nav,
+html body #workspace-nav.bottom-nav {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
