@@ -67,3 +67,127 @@ body .official-paid-stamp::before,body .official-paid-stamp::after{border-color:
 hr{border:0;border-top:1px solid var(--aurora-mocha)!important}
 ::selection{background:var(--aurora-watermelon);color:var(--aurora-mocha)}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+
+
+/* Shop Owner workspaces: strict four-colour component layer. */
+:root{
+  --owner-page:var(--aurora-sand);
+  --owner-ink:var(--aurora-mocha);
+  --owner-status:var(--aurora-watermelon);
+  --owner-action:var(--aurora-electric);
+}
+html body:has(#owner-dashboard-view:not(.hidden)),
+html body:has(#owner-home:not(.hidden)),
+html body:has(#loans-home:not(.hidden)),
+html body:has(#owner-dashboard-view:not(.hidden)) .shell,
+html body:has(#owner-home:not(.hidden)) .shell,
+html body:has(#loans-home:not(.hidden)) .shell{
+  background:var(--owner-page)!important;
+  color:var(--owner-ink)!important;
+}
+#owner-dashboard-view,
+#owner-dashboard-view :is(.dashboard-layout,.dashboard-main,.dashboard-sidebar,.page-heading,.command-bar,.owner-stats,.owner-stat,.period-comparison,.comparison-grid,.comparison-grid article,.metric-grid,.metric,.content-grid,.channel-grid,.channel-card,.panel,.setup-panel,.module-hub,.module-tile,.profile-shop-card,.profile-account-summary,.profile-invite-card,.profile-card,.profile-card-summary,.profile-card-body,#owner-staff-area),
+#owner-home,
+#owner-home :is(.panel,.owner-home-card,.subscription-expiry-countdown,.home-sales-chart,.home-sales-legend,.home-sales-legend-item,.receipt-history-card,.declaration-history-card),
+#loans-home,
+#loans-home :is(.loans-page-heading,.loans-create-card,.loans-list-section,.loan-record-card,.loan-record-facts,.loan-record-top,.loan-record-meta,.loan-record-actions){
+  background:var(--owner-page)!important;
+  background-image:none!important;
+  color:var(--owner-ink)!important;
+  border-color:var(--owner-ink)!important;
+  box-shadow:none!important;
+}
+#owner-dashboard-view :is(h1,h2,h3,h4,p,span,small,strong,b,em,label,th,td,dt,dd,.muted,.eyebrow,.metric span,.metric small,.metric strong,.owner-stat span,.owner-stat strong,.owner-stat small,.profile-card-summary strong,.profile-card-summary small),
+#owner-home :is(h1,h2,h3,h4,p,span,small,strong,b,em,label,.muted,.eyebrow),
+#loans-home :is(h1,h2,h3,h4,p,span,small,strong,b,em,label,.muted,.eyebrow,.loans-section-heading h2,.loans-create-card summary strong,.loans-create-card summary small,.loan-record-card,.loan-record-facts,.loan-record-meta){
+  color:var(--owner-ink)!important;
+}
+#owner-dashboard-view :is(.panel,.metric,.owner-stat,.period-comparison,.comparison-grid article,.channel-card,.module-tile,.profile-shop-card,.profile-account-summary,.profile-invite-card,.profile-card),
+#owner-home :is(.panel,.owner-home-card),
+#loans-home :is(.loans-page-heading,.loans-create-card,.loans-list-section,.loan-record-card){
+  border:1px solid var(--owner-ink)!important;
+  border-radius:14px;
+}
+#owner-dashboard-view :is(.badge,.pill,.tag,.chip,.count-pill,.status-badge,.account-state,.module-state,.channel-period),
+#owner-home :is(.badge,.pill,.tag,.chip,.status-badge,.count-pill),
+#loans-home :is(.loan-status,.loans-count,.badge,.pill,.tag,.chip,[class*="approval"],[class*="return-status"]){
+  background:var(--owner-status)!important;
+  color:var(--owner-ink)!important;
+  border:1px solid var(--owner-ink)!important;
+}
+#owner-dashboard-view :is(button,.btn,input[type=submit],input[type=button],[role=button]),
+#owner-home :is(button,.btn,input[type=submit],input[type=button],[role=button]),
+#loans-home :is(button,.btn,input[type=submit],input[type=button],[role=button]){
+  background:var(--owner-action)!important;
+  color:var(--owner-page)!important;
+  border:1px solid var(--owner-action)!important;
+}
+#owner-dashboard-view :is(.btn-light,.btn-quiet,.btn-secondary,.secondary,.icon-btn),
+#owner-home :is(.btn-light,.btn-quiet,.btn-secondary,.secondary,.icon-btn),
+#loans-home :is(.btn-light,.btn-quiet,.btn-secondary,.secondary,.icon-btn){
+  background:var(--owner-page)!important;
+  color:var(--owner-ink)!important;
+  border:1px solid var(--owner-ink)!important;
+}
+#owner-dashboard-view :is(.active,[aria-current=page],[aria-pressed=true],.is-active,.selected),
+#owner-home :is(.active,[aria-current=page],[aria-pressed=true],.is-active,.selected),
+#loans-home :is(.active,[aria-current=page],[aria-pressed=true],.is-active,.selected){
+  background:var(--owner-action)!important;
+  color:var(--owner-page)!important;
+  border-color:var(--owner-action)!important;
+}
+#owner-dashboard-view :is(input,select,textarea),
+#owner-home :is(input,select,textarea),
+#loans-home :is(input,select,textarea){
+  background:var(--owner-page)!important;
+  color:var(--owner-ink)!important;
+  border:1px solid var(--owner-ink)!important;
+  min-width:0;
+}
+#owner-dashboard-view :is(input,select,textarea):focus,
+#owner-home :is(input,select,textarea):focus,
+#loans-home :is(input,select,textarea):focus{
+  outline:2px solid var(--owner-action)!important;
+  border-color:var(--owner-action)!important;
+}
+#owner-dashboard-view :is(hr,th,td,.comparison-grid article,.expense-row,.profile-card-summary,.loans-section-heading),
+#owner-home :is(hr,.history-card,.receipt-history-card,.declaration-history-card),
+#loans-home :is(hr,.loans-section-heading,.loan-record-facts,.loan-record-meta){
+  border-color:var(--owner-ink)!important;
+}
+#owner-dashboard-view svg :is(path,circle,rect,line,polyline),
+#owner-home svg :is(path,circle,rect,line,polyline),
+#loans-home svg :is(path,circle,rect,line,polyline){
+  stroke:currentColor;
+}
+#owner-dashboard-view :is(.metric-progress,.progress-fill,.day-bar i,.report-bar),
+#owner-home :is(.metric-progress,.progress-fill,.day-bar i),
+#loans-home :is(.progress-fill){
+  background:var(--owner-action)!important;
+}
+#owner-dashboard-view :is(.product-pie,.home-sales-pie),
+#owner-home :is(.product-pie,.home-sales-pie){
+  border-color:var(--owner-ink)!important;
+}
+#loans-home .loan-record-card.is-overdue .loan-status{
+  background:var(--owner-status)!important;
+  color:var(--owner-ink)!important;
+}
+#loans-home .loans-offer-form{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+#loans-home .loans-offer-form .form-two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+#owner-dashboard-view :is(.metric-grid,.owner-stats,.channel-grid,.comparison-grid),
+#owner-dashboard-view :is(.content-grid,.dashboard-grid){min-width:0}
+#owner-dashboard-view *,
+#owner-home *,
+#loans-home *{overflow-wrap:anywhere}
+@media(max-width:700px){
+  #owner-dashboard-view :is(.metric-grid,.owner-stats,.channel-grid,.comparison-grid){grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  #owner-dashboard-view :is(.content-grid,.dashboard-grid){grid-template-columns:minmax(0,1fr)!important}
+  #loans-home .loans-offer-form .form-two{grid-template-columns:minmax(0,1fr)}
+  #loans-home .loans-section-heading{align-items:flex-start}
+  #loans-home .loan-record-top{flex-wrap:wrap}
+}
+@media(max-width:420px){
+  #owner-dashboard-view :is(.metric-grid,.owner-stats,.channel-grid,.comparison-grid){grid-template-columns:minmax(0,1fr)!important}
+  #owner-dashboard-view :is(.panel,.metric,.owner-stat),#loans-home :is(.loans-page-heading,.loans-list-section){padding:12px!important}
+}
