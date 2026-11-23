@@ -4,6 +4,28 @@
   --aurora-mocha:#474329;
   --aurora-watermelon:#FC7584;
   --aurora-electric:#0066FF;
+  /* Compatibility aliases for legacy component styles. */
+  --ink:var(--aurora-mocha);
+  --text:var(--aurora-mocha);
+  --muted:var(--aurora-mocha);
+  --green:var(--aurora-electric);
+  --green-dark:var(--aurora-mocha);
+  --primary:var(--aurora-electric);
+  --blue:var(--aurora-electric);
+  --navy:var(--aurora-mocha);
+  --red:var(--aurora-watermelon);
+  --auth-red:var(--aurora-watermelon);
+  --auth-gold:var(--aurora-watermelon);
+  --paper:var(--aurora-sand);
+  --soft:var(--aurora-sand);
+  --pale:var(--aurora-sand);
+  --cream:var(--aurora-sand);
+  --auth-cream:var(--aurora-sand);
+  --line:var(--aurora-mocha);
+  --border:var(--aurora-mocha);
+  --surface:var(--aurora-sand);
+  --panel:var(--aurora-sand);
+  --card-accent:var(--aurora-watermelon);
   color-scheme:light;
 }
 html,body{min-height:100%;background:var(--aurora-sand)!important;color:var(--aurora-mocha)!important}
