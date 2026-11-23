@@ -403,3 +403,158 @@ body .notice[data-tone="error"],body .notice[data-tone="warning"]{
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition:none!important}
 }
+
+/* SHOP OWNER — complete four-colour component pass.
+   Keep this role-scoped: staff, freelancer, customer and admin screens are untouched.
+   No legacy component colour is allowed to leak into the Shop Owner workspace. */
+body.shop-owner-account-active,
+body.shop-owner-account-active #app,
+body.shop-owner-account-active main,
+body.shop-owner-account-active .shell,
+body.shop-owner-account-active .workspace,
+body.shop-owner-account-active .workspace-content,
+body.shop-owner-account-active .workspace-view,
+body.shop-owner-account-active [id$="-home"],
+body.shop-owner-account-active [id$="-panel"],
+body.shop-owner-account-active [id$="-view"],
+body.shop-owner-account-active [id$="-section"]{
+  background-color:var(--aurora-cream)!important;
+  background-image:none!important;
+  color:var(--aurora-mocha)!important;
+}
+
+/* Reset old gradients, shadows and component-specific colours before assigning
+   the four semantic roles below. */
+body.shop-owner-account-active :is(
+  main,.shell,.workspace,.workspace-content,.workspace-view,
+  [id$="-home"],[id$="-panel"],[id$="-view"],[id$="-section"]
+) *,
+body.shop-owner-account-active #workspace-nav *{
+  color:var(--aurora-mocha)!important;
+  border-color:var(--aurora-mocha)!important;
+  background-image:none!important;
+  box-shadow:none!important;
+  text-shadow:none!important;
+}
+
+/* Cream is the only Shop Owner canvas and card/surface colour. */
+body.shop-owner-account-active :is(
+  .panel,.card,.tile,.module-tile,.module-hub,.metric,.owner-stat,
+  .shop-card,.product-card,.customer-card,.crm-card,.staff-card,
+  .invite-card,.receipt-card,.history-card,.loan-record-card,
+  .loans-create-card,.loans-list-section,.profile-card,
+  .profile-shop-card,.profile-account-summary,.subscription-card,
+  .empty-state,.notice,.modal-card,.table-wrap,.table-responsive,
+  .workspace-nav,#workspace-nav,.bottom-nav,.topbar,header,nav,
+  section,article,aside,table,thead,tbody,tr,th,td
+){
+  background-color:var(--aurora-cream)!important;
+  color:var(--aurora-mocha)!important;
+}
+
+/* Item IDs, quantities, KSh values, dates, borrowers and all other metadata. */
+body.shop-owner-account-active :is(
+  small,.muted,.meta,.metadata,.item-id,.product-id,.quantity,.amount,
+  .money,.currency,.due-date,.borrower-name,.customer-name,
+  .record-meta,.table-meta,td,th,label,.field-hint,.helper-text
+){
+  color:var(--aurora-mocha)!important;
+}
+
+/* Statuses and callouts use pink, not green/red/amber legacy variants. */
+body.shop-owner-account-active :is(
+  .badge,.pill,.tag,.chip,.count-pill,.status-badge,.loan-status,
+  .approval-badge,.return-status,.stock-status,.account-state,
+  [class*="status"],[class*="pending"],[class*="urgent"],
+  [class*="approval-tag"],[class*="loan-tag"]
+){
+  background-color:var(--aurora-watermelon)!important;
+  color:var(--aurora-mocha)!important;
+  border:1px solid var(--aurora-mocha)!important;
+}
+
+/* All primary actions and approvals are electric blue. */
+body.shop-owner-account-active :is(
+  button,.btn,input[type=submit],input[type=button],[role=button],
+  .create-loan-offer,.approve-sale,.approve-return,.primary-action
+){
+  background-color:var(--aurora-electric)!important;
+  color:var(--aurora-cream)!important;
+  border:1px solid var(--aurora-electric)!important;
+}
+body.shop-owner-account-active :is(
+  button,.btn,input[type=submit],input[type=button],[role=button]
+) :is(svg,path){
+  color:var(--aurora-cream)!important;
+  fill:currentColor!important;
+  stroke:currentColor!important;
+}
+
+/* Quiet controls remain cream with mocha outlines. */
+body.shop-owner-account-active :is(
+  .btn-light,.btn-quiet,.btn-secondary,.secondary,.icon-btn,
+  button[aria-label*="close"],button.close
+){
+  background-color:var(--aurora-cream)!important;
+  color:var(--aurora-mocha)!important;
+  border:1px solid var(--aurora-mocha)!important;
+}
+
+/* Selected tabs, filters and navigation states are electric blue. */
+body.shop-owner-account-active :is(
+  .active,.is-active,.selected,[aria-current=page],[aria-pressed=true],
+  [role=tab][aria-selected=true],.filter.active,.tab.active
+),
+body.shop-owner-account-active #workspace-nav :is(
+  .active,.is-active,.selected,[aria-current=page],[aria-pressed=true]
+){
+  background-color:var(--aurora-electric)!important;
+  color:var(--aurora-cream)!important;
+  border-color:var(--aurora-electric)!important;
+}
+
+/* Form fields and dividers. */
+body.shop-owner-account-active :is(input,select,textarea,option){
+  background-color:var(--aurora-cream)!important;
+  color:var(--aurora-mocha)!important;
+  border:1px solid var(--aurora-mocha)!important;
+}
+body.shop-owner-account-active :is(input,select,textarea):focus{
+  outline:2px solid var(--aurora-electric)!important;
+  border-color:var(--aurora-electric)!important;
+}
+body.shop-owner-account-active :is(hr,th,td,table,*[class*="divider"]){
+  border-color:var(--aurora-mocha)!important;
+}
+body.shop-owner-account-active a,
+body.shop-owner-account-active a:visited{
+  color:var(--aurora-electric)!important;
+}
+body.shop-owner-account-active :focus-visible{
+  outline:2px solid var(--aurora-electric)!important;
+  outline-offset:2px;
+}
+@media(max-width:700px){
+  body.shop-owner-account-active :is(
+    .metric-grid,.owner-stats,.channel-grid,.comparison-grid,
+    .content-grid,.dashboard-grid,.module-grid
+  ){
+    min-width:0;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+  body.shop-owner-account-active :is(
+    .table-wrap,.table-responsive
+  ){
+    max-width:100%;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+}
+@media(max-width:420px){
+  body.shop-owner-account-active :is(
+    .metric-grid,.owner-stats,.channel-grid,.comparison-grid,
+    .content-grid,.dashboard-grid,.module-grid
+  ){
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+}
