@@ -3432,7 +3432,6 @@ body.workspace-active:has(#receipts-home #history-content:not(.hidden)){
   padding:0 0 calc(132px + env(safe-area-inset-bottom,0px))!important;
 }
 body.workspace-active:has(#pos-view.workspace-issue-mode:not(.hidden)) main.shell,
- main.shell,
 body.workspace-active:has(#receipts-home #history-content:not(.hidden)) main.shell{
   display:block!important;position:relative!important;width:100%!important;max-width:1240px!important;
   height:auto!important;min-height:calc(100svh - 72px)!important;max-height:none!important;
