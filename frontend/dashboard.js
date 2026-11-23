@@ -99,7 +99,7 @@
     try{return await state.dashboardRequest;}finally{state.dashboardRequest=null;}
   }
   function renderProductMix(rows){
-    const colors=['#2676b8','#16a36a','#e6a23c','#8b65c8','#e16b75','#36a6a6','#65758b','#c27b42','#789b42','#b05c9d','#4b83a8','#9a8c73'];
+    const colors=['#0066FF','#FC7584','#474329','#F0E5DB'];
     const valid=rows.filter(row=>Number(row.salesKes)>0);
     const total=valid.reduce((sum,row)=>sum+Number(row.salesKes),0);
     if(!valid.length||!total){
@@ -117,7 +117,7 @@
     $('product-pie').innerHTML=`<span>${money(total)}<small>Total product sales</small></span>`;
     $('product-legend').innerHTML=valid.map((row,index)=>{
       const share=Number(row.salesKes)/total*100;
-      return `<div class="product-legend-row"><i style="background:${colors[index%colors.length]}"></i><span><strong>${esc(row.name)}</strong><small>${Number(row.unitsSold||0)} units · ${share.toFixed(1)}%</small></span><b>${money(row.salesKes)}</b></div>`;
+      return `<div class="product-legend-row"><i style="background-color:${colors[index%colors.length]} !important"></i><span><strong>${esc(row.name)}</strong><small>${Number(row.unitsSold||0)} units · ${share.toFixed(1)}%</small></span><b>${money(row.salesKes)}</b></div>`;
     }).join('');
   }
   function renderDaily(rows){const max=Math.max(1,...rows.map(r=>Number(r.salesKes)));$('daily-chart').innerHTML=rows.length?rows.map(r=>{const h=Math.max(3,Number(r.salesKes)/max*125);return `<div class="day-bar" title="${esc(r.day)} · ${money(r.salesKes)}"><small>${money(r.salesKes)}</small><i style="height:${h}px"></i><b>${new Date(`${r.day}T00:00:00`).toLocaleDateString('en-KE',{day:'numeric',month:'short'})}</b></div>`;}).join(''):'<p class="muted">No sales data for this period.</p>';}

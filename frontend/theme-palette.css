@@ -1,0 +1,69 @@
+/* AURORA four-colour design system. Loaded after route-specific styles. */
+:root{
+  --aurora-sand:#F0E5DB;
+  --aurora-mocha:#474329;
+  --aurora-watermelon:#FC7584;
+  --aurora-electric:#0066FF;
+  /* Compatibility aliases for legacy component styles. */
+  --ink:var(--aurora-mocha);
+  --text:var(--aurora-mocha);
+  --muted:var(--aurora-mocha);
+  --green:var(--aurora-electric);
+  --green-dark:var(--aurora-mocha);
+  --primary:var(--aurora-electric);
+  --blue:var(--aurora-electric);
+  --navy:var(--aurora-mocha);
+  --red:var(--aurora-watermelon);
+  --auth-red:var(--aurora-watermelon);
+  --auth-gold:var(--aurora-watermelon);
+  --paper:var(--aurora-sand);
+  --soft:var(--aurora-sand);
+  --pale:var(--aurora-sand);
+  --cream:var(--aurora-sand);
+  --auth-cream:var(--aurora-sand);
+  --line:var(--aurora-mocha);
+  --border:var(--aurora-mocha);
+  --surface:var(--aurora-sand);
+  --panel:var(--aurora-sand);
+  --card-accent:var(--aurora-watermelon);
+  color-scheme:light;
+}
+html,body{min-height:100%;background:var(--aurora-sand)!important;color:var(--aurora-mocha)!important}
+body,body.registration-open,.shell,.app,.wrap,.auth-shell,.login-screen{background:var(--aurora-sand)!important;color:var(--aurora-mocha)!important}
+body::before,body::after{display:none!important;background-image:none!important}
+*,*::before,*::after{box-shadow:none!important;text-shadow:none!important}
+body *:not(.home-sales-pie):not(.product-pie){background-image:none!important}
+body *{color:var(--aurora-mocha)!important;border-color:var(--aurora-mocha)!important;background-color:transparent!important}
+body *::before,body *::after{background-image:none!important;background-color:transparent!important}
+body a,body a:visited{color:var(--aurora-electric)!important}
+body a:hover,body a:focus-visible{color:var(--aurora-mocha)!important}
+body [class*="card"],body [class*="panel"],body [class*="tile"],body [class*="banner"],body [class*="workspace"],body section,body article,body aside,body .hero,body .login-screen,body .login-card,body .modal-card,body .account-profile-menu,body .bottom-nav,body .topbar,body .workspace-nav,body #workspace-nav,body .command-bar{background-color:var(--aurora-sand)!important;color:var(--aurora-mocha)!important}
+body .topbar,body .bottom-nav,body .workspace-nav,body #workspace-nav,body .command-bar,body header,body nav{background:var(--aurora-sand)!important;color:var(--aurora-mocha)!important}
+body .brand,body .brand small,body .user-label{color:var(--aurora-mocha)!important}
+body .brand-mark{background:var(--aurora-watermelon)!important;color:var(--aurora-mocha)!important}
+body .welcome-back-banner,body .recovery-hero{background:var(--aurora-watermelon)!important;color:var(--aurora-mocha)!important}
+body .eyebrow,body .muted,body .small,body .footer,body .home-sales-title,body .home-sales-legend-item{color:var(--aurora-mocha)!important}
+body .count-pill,body .badge,body .pill,body .status-badge,body .tag,body .chip,body .customer-match,body .channel-period,body .account-state{background:var(--aurora-watermelon)!important;color:var(--aurora-mocha)!important;border-color:var(--aurora-mocha)!important}
+body button,body .btn,body .primary,body input[type=submit],body input[type=button],body [role=button]{background:var(--aurora-electric)!important;color:var(--aurora-sand)!important;border:1px solid var(--aurora-electric)!important}
+body button:hover,body .btn:hover,body .primary:hover,body input[type=submit]:hover,body input[type=button]:hover,body [role=button]:hover{background:var(--aurora-mocha)!important;color:var(--aurora-sand)!important;border-color:var(--aurora-mocha)!important}
+body .btn-light,body .btn-quiet,body .btn-secondary,body .secondary,body .icon-btn{background:var(--aurora-sand)!important;color:var(--aurora-mocha)!important;border:1px solid var(--aurora-mocha)!important}
+body .btn-primary,body .btn-install,body .receipt-nav{background:var(--aurora-electric)!important;color:var(--aurora-sand)!important;border-color:var(--aurora-electric)!important}
+body .bottom-nav button{background:transparent!important;color:var(--aurora-mocha)!important;border-color:transparent!important}
+body .bottom-nav button.active,body .bottom-nav button.receipt-nav,body .bottom-nav button.receipt-nav.active,body .workspace-nav button.active,body [aria-current=page],body [aria-pressed=true]{background:var(--aurora-electric)!important;color:var(--aurora-sand)!important;border-color:var(--aurora-electric)!important}
+body input,body select,body textarea{background:var(--aurora-sand)!important;color:var(--aurora-mocha)!important;border:1px solid var(--aurora-mocha)!important}
+body input::placeholder,body textarea::placeholder{color:var(--aurora-mocha)!important;opacity:.78}
+body input:focus,body select:focus,body textarea:focus{border-color:var(--aurora-electric)!important;outline:2px solid var(--aurora-electric)!important;outline-offset:1px}
+body :focus-visible{outline:3px solid var(--aurora-electric)!important;outline-offset:2px}
+body .text-btn,body .danger,body .error,body .stock.out{background:var(--aurora-watermelon)!important;color:var(--aurora-mocha)!important;border-color:var(--aurora-mocha)!important}
+body .notice,body .warning,body .alert,body .error-box{background:var(--aurora-watermelon)!important;color:var(--aurora-mocha)!important;border:1px solid var(--aurora-mocha)!important}
+body .success,body .success-box,body .online,body .network-status{background:var(--aurora-electric)!important;color:var(--aurora-sand)!important;border:1px solid var(--aurora-electric)!important}
+body .day-bar i,body .metric-progress,body .progress-fill,body .report-bar{background:var(--aurora-electric)!important}
+body .report-bar.users{background:var(--aurora-watermelon)!important}
+body .home-sales-pie,body .product-pie{background-color:var(--aurora-sand)!important}
+body .home-sales-pie-center,body #owner-dashboard-view.workspace-dashboard .product-pie:before{background:var(--aurora-sand)!important;color:var(--aurora-mocha)!important}
+body .home-sales-pie-center strong,body #owner-dashboard-view.workspace-dashboard .product-pie>span{color:var(--aurora-mocha)!important}
+body .official-paid-stamp,body .stamp-business,body .stamp-paid,body .stamp-date,body .stamp-branch{border-color:var(--aurora-mocha)!important;color:var(--aurora-mocha)!important;background-image:none!important}
+body .official-paid-stamp::before,body .official-paid-stamp::after{border-color:var(--aurora-mocha)!important}
+hr{border:0;border-top:1px solid var(--aurora-mocha)!important}
+::selection{background:var(--aurora-watermelon);color:var(--aurora-mocha)}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
