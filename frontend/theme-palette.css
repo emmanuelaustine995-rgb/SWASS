@@ -67,3 +67,210 @@ body .official-paid-stamp::before,body .official-paid-stamp::after{border-color:
 hr{border:0;border-top:1px solid var(--aurora-mocha)!important}
 ::selection{background:var(--aurora-watermelon);color:var(--aurora-mocha)}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+
+
+
+/* Strict Shop Owner-only surface system. Role scope prevents changing staff,
+   freelancer, customer or platform-admin workspaces. */
+body.shop-owner-account-active,
+body.shop-owner-account-active .shell,
+body.shop-owner-account-active .app,
+body.shop-owner-account-active main,
+body.shop-owner-account-active #owner-home,
+body.shop-owner-account-active #shop-home,
+body.shop-owner-account-active #subscription-home,
+body.shop-owner-account-active #loans-home,
+body.shop-owner-account-active #receipts-home,
+body.shop-owner-account-active #pos-view,
+body.shop-owner-account-active #owner-dashboard-view,
+body.shop-owner-account-active #profile-panel,
+body.shop-owner-account-active #owner-customers-section,
+body.shop-owner-account-active #owner-staff-area,
+body.shop-owner-account-active #receipt-history-panel,
+body.shop-owner-account-active #declaration-history-panel,
+body.shop-owner-account-active #secondhand-panel,
+body.shop-owner-account-active #shop-lost-items-panel,
+body.shop-owner-account-active #history-panel{
+  background-color:var(--aurora-sand)!important;
+  background-image:none!important;
+  color:var(--aurora-mocha)!important;
+}
+body.shop-owner-account-active :is(
+  #owner-home,#shop-home,#subscription-home,#loans-home,#receipts-home,
+  #pos-view,#owner-dashboard-view,#profile-panel,#owner-customers-section,
+  #owner-staff-area,#receipt-history-panel,#declaration-history-panel,
+  #secondhand-panel,#shop-lost-items-panel,#history-panel
+) *{
+  color:var(--aurora-mocha)!important;
+  border-color:var(--aurora-mocha)!important;
+  background-image:none!important;
+  box-shadow:none!important;
+  text-shadow:none!important;
+}
+body.shop-owner-account-active :is(
+  #owner-home,#shop-home,#subscription-home,#loans-home,#receipts-home,
+  #pos-view,#owner-dashboard-view,#profile-panel,#owner-customers-section,
+  #owner-staff-area,#receipt-history-panel,#declaration-history-panel,
+  #secondhand-panel,#shop-lost-items-panel,#history-panel
+) :is(
+  .panel,.card,.metric,.owner-stat,.module-tile,.module-hub,.shop-card,
+  .product-card,.customer-card,.crm-card,.staff-card,.invite-card,
+  .receipt-card,.history-card,.loans-page-heading,.loans-create-card,
+  .loans-list-section,.loan-record-card,.profile-shop-card,
+  .profile-account-summary,.profile-invite-card,.profile-card,
+  .subscription-card,.comparison-grid article,.channel-card
+){
+  background-color:var(--aurora-sand)!important;
+  background-image:none!important;
+  border:1px solid var(--aurora-mocha)!important;
+  box-shadow:none!important;
+}
+body.shop-owner-account-active :is(
+  #owner-home,#shop-home,#subscription-home,#loans-home,#receipts-home,
+  #pos-view,#owner-dashboard-view,#profile-panel,#owner-customers-section,
+  #owner-staff-area,#receipt-history-panel,#declaration-history-panel,
+  #secondhand-panel,#shop-lost-items-panel,#history-panel
+) :is(
+  .badge,.pill,.tag,.chip,.count-pill,.status-badge,.loan-status,
+  .loans-count,.approval-badge,.return-status,.stock-status,
+  [class*="status-badge"],[class*="approval-tag"],[class*="loan-tag"]
+){
+  background-color:var(--aurora-watermelon)!important;
+  color:var(--aurora-mocha)!important;
+  border:1px solid var(--aurora-mocha)!important;
+}
+body.shop-owner-account-active :is(
+  #owner-home,#shop-home,#subscription-home,#loans-home,#receipts-home,
+  #pos-view,#owner-dashboard-view,#profile-panel,#owner-customers-section,
+  #owner-staff-area,#receipt-history-panel,#declaration-history-panel,
+  #secondhand-panel,#shop-lost-items-panel,#history-panel
+) :is(
+  button,.btn,input[type=submit],input[type=button],[role=button]
+){
+  background-color:var(--aurora-electric)!important;
+  background-image:none!important;
+  color:var(--aurora-sand)!important;
+  border:1px solid var(--aurora-electric)!important;
+}
+body.shop-owner-account-active :is(
+  #owner-home,#shop-home,#subscription-home,#loans-home,#receipts-home,
+  #pos-view,#owner-dashboard-view,#profile-panel,#owner-customers-section,
+  #owner-staff-area,#receipt-history-panel,#declaration-history-panel,
+  #secondhand-panel,#shop-lost-items-panel,#history-panel
+) :is(.btn-light,.btn-quiet,.btn-secondary,.secondary,.icon-btn){
+  background-color:var(--aurora-sand)!important;
+  color:var(--aurora-mocha)!important;
+  border:1px solid var(--aurora-mocha)!important;
+}
+body.shop-owner-account-active :is(
+  #owner-home,#shop-home,#subscription-home,#loans-home,#receipts-home,
+  #pos-view,#owner-dashboard-view,#profile-panel,#owner-customers-section,
+  #owner-staff-area
+) :is(.active,[aria-current=page],[aria-pressed=true],.is-active,.selected){
+  background-color:var(--aurora-electric)!important;
+  background-image:none!important;
+  color:var(--aurora-sand)!important;
+  border-color:var(--aurora-electric)!important;
+}
+body.shop-owner-account-active :is(
+  #owner-home,#shop-home,#subscription-home,#loans-home,#receipts-home,
+  #pos-view,#owner-dashboard-view,#profile-panel,#owner-customers-section,
+  #owner-staff-area,#receipt-history-panel,#declaration-history-panel,
+  #secondhand-panel,#shop-lost-items-panel,#history-panel
+) :is(input,select,textarea){
+  background-color:var(--aurora-sand)!important;
+  color:var(--aurora-mocha)!important;
+  border:1px solid var(--aurora-mocha)!important;
+  min-width:0;
+}
+body.shop-owner-account-active :is(
+  #owner-home,#shop-home,#subscription-home,#loans-home,#receipts-home,
+  #pos-view,#owner-dashboard-view,#profile-panel,#owner-customers-section,
+  #owner-staff-area
+) :is(input,select,textarea):focus{
+  outline:2px solid var(--aurora-electric)!important;
+  border-color:var(--aurora-electric)!important;
+}
+body.shop-owner-account-active :is(
+  #owner-home,#shop-home,#subscription-home,#loans-home,#receipts-home,
+  #pos-view,#owner-dashboard-view,#profile-panel,#owner-customers-section,
+  #owner-staff-area
+) :is(hr,th,td,.loans-section-heading,.profile-card-summary,.loan-record-facts){
+  border-color:var(--aurora-mocha)!important;
+}
+body.shop-owner-account-active :is(
+  #owner-home,#shop-home,#subscription-home,#loans-home,#receipts-home,
+  #pos-view,#owner-dashboard-view,#profile-panel,#owner-customers-section,
+  #owner-staff-area
+) :is(.metric-progress,.progress-fill,.day-bar i,.report-bar){
+  background-color:var(--aurora-electric)!important;
+}
+body.shop-owner-account-active :is(
+  #owner-home,#shop-home,#subscription-home,#loans-home,#receipts-home,
+  #pos-view,#owner-dashboard-view,#profile-panel,#owner-customers-section,
+  #owner-staff-area
+) svg{
+  color:var(--aurora-mocha)!important;
+}
+body.shop-owner-account-active :is(
+  #owner-home,#shop-home,#subscription-home,#loans-home,#receipts-home,
+  #pos-view,#owner-dashboard-view,#profile-panel,#owner-customers-section,
+  #owner-staff-area
+) svg :is(path,circle,rect,line,polyline){
+  fill:currentColor;
+  stroke:currentColor;
+}
+body.shop-owner-account-active #loans-home .loans-offer-form{
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  gap:12px;
+}
+body.shop-owner-account-active #loans-home .loan-record-top{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:10px;
+}
+body.shop-owner-account-active :is(#owner-dashboard-view .metric-grid,#owner-dashboard-view .owner-stats,#owner-dashboard-view .channel-grid,#owner-dashboard-view .comparison-grid){
+  min-width:0;
+}
+body.shop-owner-account-active :is(
+  #owner-home,#shop-home,#subscription-home,#loans-home,#receipts-home,
+  #pos-view,#owner-dashboard-view,#profile-panel,#owner-customers-section,
+  #owner-staff-area,#receipt-history-panel,#declaration-history-panel,
+  #secondhand-panel,#shop-lost-items-panel,#history-panel
+) *{
+  overflow-wrap:anywhere;
+}
+@media(max-width:700px){
+  body.shop-owner-account-active #owner-dashboard-view :is(.metric-grid,.owner-stats,.channel-grid,.comparison-grid){
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+  body.shop-owner-account-active #owner-dashboard-view :is(.content-grid,.dashboard-grid){
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+  body.shop-owner-account-active #loans-home .loan-record-top{
+    align-items:flex-start;
+  }
+}
+@media(max-width:420px){
+  body.shop-owner-account-active #owner-dashboard-view :is(.metric-grid,.owner-stats,.channel-grid,.comparison-grid){
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+  body.shop-owner-account-active #loans-home :is(.loans-page-heading,.loans-list-section){
+    padding:12px!important;
+  }
+}
+
+/* The shared bottom workspace dock sits outside the page panels. */
+body.shop-owner-account-active #workspace-nav{
+  background:var(--aurora-sand)!important;
+  color:var(--aurora-mocha)!important;
+  border-color:var(--aurora-mocha)!important;
+}
+body.shop-owner-account-active #workspace-nav :is(button.active,[aria-current=page],[aria-pressed=true],.active){
+  background:var(--aurora-electric)!important;
+  color:var(--aurora-sand)!important;
+  border-color:var(--aurora-electric)!important;
+}

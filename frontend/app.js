@@ -10,7 +10,7 @@
   let lastSessionWrite = 0;
   function saveSession(){ if(!state.token)return; const now=Date.now(); localStorage.setItem(SESSION_KEY,JSON.stringify({token:state.token,role:state.role,userName:state.userName,staffTitle:state.staffTitle,userPhotoData:state.userPhotoData,userPhone:state.userPhone,userEmail:state.userEmail,lastActivity:now})); lastSessionWrite=now; }
   function touchSession(){ if(!state.token)return; const now=Date.now(); if(now-lastSessionWrite<30000)return; try{const saved=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');if(saved?.token===state.token){saved.lastActivity=now;localStorage.setItem(SESSION_KEY,JSON.stringify(saved));lastSessionWrite=now;}}catch{localStorage.removeItem(SESSION_KEY);} }
-  function clearSession(){ localStorage.removeItem(SESSION_KEY); state.token=null; state.role=null; state.userName=''; state.staffTitle=''; state.userPhotoData=''; state.userPhone=''; state.userEmail=''; state.workspaceHistory=[]; state.currentWorkspace=null; state.posReturnScreen=null; }
+  function clearSession(){ document.body.classList.remove('shop-owner-account-active'); localStorage.removeItem(SESSION_KEY); state.token=null; state.role=null; state.userName=''; state.staffTitle=''; state.userPhotoData=''; state.userPhone=''; state.userEmail=''; state.workspaceHistory=[]; state.currentWorkspace=null; state.posReturnScreen=null; }
   function sessionIsValid(saved){ if(!saved?.token||!Number.isFinite(saved.lastActivity)||Date.now()-saved.lastActivity>SESSION_IDLE_MS)return false; try{const part=saved.token.split('.')[1];const claims=JSON.parse(atob(part.replace(/-/g,'+').replace(/_/g,'/')));return !!claims.exp&&claims.exp*1000>Date.now();}catch{return false;} }
   // Restore a still-valid session after refresh/reopening the browser. Expire only after five hours without activity.
   function restoreSession(){
@@ -572,6 +572,7 @@
     // Platform Admin has a dedicated control-room destination, never the shop workspace.
     if(state.role==='super_admin'&&screen!=='dashboard')screen='dashboard';
     document.body.classList.toggle('platform-admin-workspace',state.role==='super_admin');
+    document.body.classList.toggle('shop-owner-account-active',state.role==='owner');
     document.body.classList.add('workspace-active');
     $('login-view')?.classList.add('hidden');
     $('back-to-login-btn')?.classList.remove('hidden');
