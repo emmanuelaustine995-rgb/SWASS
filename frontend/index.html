@@ -350,8 +350,26 @@
       <strong>Sales Declaration</strong>
       <small>Prepare a separate seller and buyer ownership record for a product.</small>
     </button>
+      <button id="open-receipt-history" class="receipt-choice aurora-history-card aurora-receipt-history-card" type="button">
+      <span aria-hidden="true">▤</span><strong>Receipt History</strong><small>Find, review and reopen previously issued ordinary receipts.</small>
+    </button>
+      <button id="open-declaration-history" class="receipt-choice aurora-history-card aurora-declaration-history-card" type="button">
+      <span aria-hidden="true">▣</span><strong>Declaration Form History</strong><small>View previously submitted sales declaration records.</small>
+    </button>
   </div>
 
+</section>
+<section id="receipt-history-panel" class="aurora-history-workspace hidden" aria-label="Ordinary receipt history">
+  <div class="aurora-history-heading"><div><p class="eyebrow">AURORA · RECORDS</p><h2>Receipt History</h2><p class="muted small">Previously issued ordinary receipts for this shop.</p></div><button id="receipt-history-back" class="btn btn-light" type="button">← Back to Receipts</button></div>
+  <div class="aurora-history-toolbar"><label for="receipt-history-search">Search receipts</label><input id="receipt-history-search" type="search" placeholder="Receipt number, customer, phone or item"></div>
+  <p id="receipt-history-status" class="muted small" role="status">Loading receipts…</p>
+  <div id="receipt-history-list" class="aurora-history-list"></div>
+</section>
+<section id="declaration-history-panel" class="aurora-history-workspace hidden" aria-label="Sales declaration history">
+  <div class="aurora-history-heading"><div><p class="eyebrow">AURORA · RECORDS</p><h2>Declaration Form History</h2><p class="muted small">Previously submitted sales declarations for this shop.</p></div><button id="declaration-history-back" class="btn btn-light" type="button">← Back to Receipts</button></div>
+  <div class="aurora-history-toolbar"><label for="declaration-history-search">Search declarations</label><input id="declaration-history-search" type="search" placeholder="Reference, seller, buyer or product"></div>
+  <p id="declaration-history-status" class="muted small" role="status">Loading declarations…</p>
+  <div id="declaration-history-list" class="aurora-history-list"></div>
 </section>
 <section id="secondhand-panel" class="secondhand-panel hidden aurora-declaration-workspace" aria-label="Sales declaration form">
         <div class="secondhand-panel-heading">
