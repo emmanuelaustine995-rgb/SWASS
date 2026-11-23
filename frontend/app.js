@@ -495,7 +495,7 @@
     center.append(totalLabel,caption);pie.append(center);chart.append(pie);
     slices.forEach(day=>{
       const item=document.createElement('div');item.className='home-sales-legend-item';
-      const swatch=document.createElement('i');swatch.style.background=day.color;
+      const swatch=document.createElement('i');swatch.style.setProperty('background-color',day.color,'important');
       const label=document.createElement('span');label.textContent=day.label;
       const percent=document.createElement('strong');percent.textContent=day.pct.toFixed(0)+'%';
       item.append(swatch,label,percent);legend.append(item);
