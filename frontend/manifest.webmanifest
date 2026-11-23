@@ -7,8 +7,8 @@
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#F0E5DB",
-  "theme_color": "#F0E5DB",
+  "background_color": "#F7F5F0",
+  "theme_color": "#F7F5F0",
   "categories": ["business", "finance", "productivity"],
   "icons": [
     { "src": "./swass-icon.svg", "sizes": "192x192 512x512", "type": "image/svg+xml", "purpose": "any" },
