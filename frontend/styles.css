@@ -4045,3 +4045,66 @@ html body.workspace-active #workspace-nav.bottom-nav {
   transform:translateX(-50%)!important;
   z-index:10000!important;
 }
+
+
+/* Mobile navigation fix: keep the dock outside the scrolling shell so it
+   remains visible and tappable on every phone workspace. */
+@media (max-width: 760px) {
+  html body.workspace-active > #workspace-nav.bottom-nav:not(.hidden) {
+    position: fixed !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: stretch !important;
+    justify-content: space-between !important;
+    left: 8px !important;
+    right: 8px !important;
+    top: auto !important;
+    bottom: max(8px, env(safe-area-inset-bottom, 0px)) !important;
+    width: auto !important;
+    max-width: 520px !important;
+    min-width: 0 !important;
+    height: 68px !important;
+    min-height: 64px !important;
+    max-height: 72px !important;
+    margin: 0 auto !important;
+    padding: 6px !important;
+    gap: 5px !important;
+    box-sizing: border-box !important;
+    overflow: visible !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    transform: none !important;
+    z-index: 2147483000 !important;
+  }
+  html body.workspace-active > #workspace-nav.bottom-nav:not(.hidden) > button:not(.hidden) {
+    display: flex !important;
+    flex: 1 1 0 !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 0 !important;
+    width: auto !important;
+    min-height: 52px !important;
+    max-height: 58px !important;
+    margin: 0 !important;
+    padding: 4px 2px !important;
+    gap: 2px !important;
+    font-size: 10px !important;
+    line-height: 1.1 !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+  }
+  html body.workspace-active > #workspace-nav.bottom-nav .nav-icon {
+    display: grid !important;
+    place-items: center !important;
+    width: 22px !important;
+    height: 22px !important;
+    font-size: 18px !important;
+    margin: 0 !important;
+  }
+  html body.workspace-active > #workspace-nav.bottom-nav .nav-icon svg {
+    width: 20px !important;
+    height: 20px !important;
+  }
+}

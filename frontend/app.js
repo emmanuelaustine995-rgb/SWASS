@@ -1,6 +1,9 @@
 (() => {
   'use strict';
   const $ = (id) => document.getElementById(id);
+  // Keep the navigation outside the scrolling workspace so mobile overflow cannot clip it.
+  const workspaceNav = $('workspace-nav');
+  if (workspaceNav && workspaceNav.parentElement !== document.body) document.body.appendChild(workspaceNav);
   const state = { token: null, role: null, userName: '', staffTitle: '', userPhotoData: '', userPhone: '', userEmail: '', products: [], cart: new Map(), lastReceipt: null, profileLogoData: undefined, businessProfile: {}, workspaceHistory: [], currentWorkspace: null, posReturnScreen: null };
   const SESSION_KEY = 'swass-auth-session-v1';
   const referralCodeFromUrl = new URLSearchParams(window.location.search).get('ref') || '';
