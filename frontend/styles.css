@@ -3579,3 +3579,68 @@ body.workspace-active #workspace-nav.bottom-nav > button.nav-lost-goods.active {
     border-bottom-right-radius: 0 !important;
   }
 }
+
+
+/* AURORA workspace refresh: pure-white canvas and restrained card surfaces */
+body.workspace-active main.shell {
+  background: #ffffff !important;
+  background-image: none !important;
+}
+body.workspace-active main.shell > section:not(.hidden),
+body.workspace-active main.shell > div:not(.hidden),
+body.workspace-active main.shell > article:not(.hidden) {
+  background-color: #ffffff !important;
+  background-image: none !important;
+}
+body.workspace-active main.shell .panel,
+body.workspace-active main.shell [class$="-card"],
+body.workspace-active main.shell .receipt-choice,
+body.workspace-active main.shell .receipt-card,
+body.workspace-active main.shell .owner-stat,
+body.workspace-active main.shell .owner-home-card,
+body.workspace-active main.shell .freelancer-home-card,
+body.workspace-active main.shell .profile-card,
+body.workspace-active main.shell .subscription-choice-card,
+body.workspace-active main.shell .subscription-plan-card,
+body.workspace-active main.shell .aurora-history-workspace,
+body.workspace-active main.shell .aurora-history-row,
+body.workspace-active main.shell .secondhand-panel,
+body.workspace-active main.shell .cart-panel,
+body.workspace-active main.shell .repair-stage-panel {
+  background: #ffffff !important;
+  background-image: none !important;
+  border: 1px solid #e3e6ea !important;
+  border-radius: 11px !important;
+  box-shadow: 0 1px 3px rgba(20, 30, 40, .07) !important;
+}
+body.workspace-active main.shell .panel,
+body.workspace-active main.shell [class$="-card"],
+body.workspace-active main.shell .receipt-choice,
+body.workspace-active main.shell .receipt-card,
+body.workspace-active main.shell .owner-stat,
+body.workspace-active main.shell .owner-home-card,
+body.workspace-active main.shell .freelancer-home-card,
+body.workspace-active main.shell .profile-card,
+body.workspace-active main.shell .subscription-choice-card,
+body.workspace-active main.shell .subscription-plan-card,
+body.workspace-active main.shell .aurora-history-workspace,
+body.workspace-active main.shell .aurora-history-row,
+body.workspace-active main.shell .secondhand-panel,
+body.workspace-active main.shell .cart-panel,
+body.workspace-active main.shell .repair-stage-panel {
+  outline: none !important;
+  filter: none !important;
+}
+body.workspace-active main.shell .panel .panel,
+body.workspace-active main.shell [class$="-card"] [class$="-card"],
+body.workspace-active main.shell .panel [class$="-card"] {
+  box-shadow: none !important;
+}
+@media (min-width: 761px) {
+  body.workspace-active main.shell,
+  body.workspace-active main.shell > section:not(.hidden),
+  body.workspace-active main.shell > div:not(.hidden),
+  body.workspace-active main.shell > article:not(.hidden) {
+    background: #ffffff !important;
+  }
+}
