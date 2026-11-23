@@ -3487,3 +3487,29 @@ body:has(#request-form #national-id) .auth-shell,
 body:has(#request-form #national-id) .auth-shell>.panel{
   display:block!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;
 }
+
+
+/* Restore the opened Sales Declaration workspace without changing Issue Receipt. */
+body.workspace-active #receipts-home.secondhand-active:not(.hidden) {
+  display: block !important;
+  position: relative !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  height: auto !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior-y: contain !important;
+  visibility: visible !important;
+}
+body.workspace-active #receipts-home.secondhand-active #secondhand-panel:not(.hidden) {
+  display: block !important;
+  position: relative !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  margin: 10px 0 18px !important;
+}
