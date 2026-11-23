@@ -3779,3 +3779,129 @@ body.workspace-active main.shell .shop-product-action-copy small{
     box-shadow:0 5px 13px rgba(31,45,65,.10)!important;
   }
 }
+
+
+/* AURORA Home + Flagged Items colour refinement.
+   Visual-only overrides; preserve the existing card order, dimensions and actions. */
+
+/* Home: distinct, friendly pastel colours with a clean premium finish. */
+body.workspace-active main.shell #owner-home .owner-home-card{
+  background:linear-gradient(125deg,#fff0f4 0%,#fff9fb 100%)!important;
+  border:1px solid #f3d5df!important;
+  border-left:4px solid #d97898!important;
+  border-radius:14px!important;
+  box-shadow:0 3px 10px rgba(157,76,104,.08)!important;
+}
+body.workspace-active main.shell #owner-home .subscription-expiry-countdown{
+  background:linear-gradient(125deg,#edf3ff 0%,#f8faff 100%)!important;
+  border:1px solid #d7e2f7!important;
+  border-left:4px solid #7292d1!important;
+  border-radius:14px!important;
+  box-shadow:0 3px 10px rgba(75,105,160,.08)!important;
+  color:#344c75!important;
+}
+body.workspace-active main.shell #owner-home .referral-invite-card{
+  background:linear-gradient(125deg,#eaf7ff 0%,#f7fcff 100%)!important;
+  border:1px solid #d1e9f7!important;
+  border-left:4px solid #65a9cf!important;
+  border-radius:14px!important;
+  box-shadow:0 3px 10px rgba(68,137,173,.08)!important;
+}
+body.workspace-active main.shell #owner-home .owner-subscription-bar{
+  background:linear-gradient(125deg,#fff5df 0%,#fffbf1 100%)!important;
+  border:1px solid #f1e1b9!important;
+  border-left:4px solid #d5a448!important;
+  border-radius:14px!important;
+  box-shadow:0 3px 10px rgba(160,119,45,.08)!important;
+}
+body.workspace-active main.shell #owner-home #home-daily-sales{
+  background:linear-gradient(125deg,#f2efff 0%,#fbfaff 100%)!important;
+  border:1px solid #e2dcf6!important;
+  border-left:4px solid #9886cb!important;
+  border-radius:14px!important;
+  box-shadow:0 3px 10px rgba(110,94,160,.07)!important;
+}
+
+/* Flagged Items workspace keeps its soft sky-blue identity. */
+body.workspace-active main.shell #shop-lost-items-panel .lost-items-intro{
+  background:linear-gradient(120deg,#e6f4ff 0%,#f5fbff 100%)!important;
+  border:1px solid #cfe5f5!important;
+  border-left:4px solid #6da9d1!important;
+  border-radius:14px!important;
+  box-shadow:0 3px 10px rgba(62,119,158,.07)!important;
+}
+body.workspace-active main.shell #shop-lost-items-panel .lost-goods-card{
+  border-radius:14px!important;
+  min-height:88px!important;
+  border-width:1px!important;
+  border-style:solid!important;
+  box-shadow:0 3px 10px rgba(45,77,105,.07)!important;
+}
+body.workspace-active main.shell #shop-lost-items-panel .lost-goods-card .lost-card-icon{
+  display:grid!important;
+  place-items:center!important;
+  width:42px!important;
+  height:42px!important;
+  border-radius:12px!important;
+  font-size:22px!important;
+  background:rgba(255,255,255,.72)!important;
+}
+
+/* Log Lost Item — soft rose/red: alerting without an aggressive solid-red block. */
+body.workspace-active main.shell #shop-lost-items-panel .lost-goods-card.lost-card-register{
+  background:linear-gradient(120deg,#fff0f1 0%,#fff8f8 100%)!important;
+  border-color:#f1cfd3!important;
+  border-left:4px solid #d66e79!important;
+  box-shadow:0 3px 10px rgba(174,77,88,.08)!important;
+}
+body.workspace-active main.shell #shop-lost-items-panel .lost-card-register .lost-card-icon{
+  color:#bd5361!important;background:#ffe1e4!important;
+}
+body.workspace-active main.shell #shop-lost-items-panel .lost-card-register strong{color:#843d48!important}
+body.workspace-active main.shell #shop-lost-items-panel .lost-card-register small{color:#875c63!important}
+
+/* Mark as Found — calm mint green. */
+body.workspace-active main.shell #shop-lost-items-panel .lost-goods-card.lost-card-found{
+  background:linear-gradient(120deg,#eaf8f0 0%,#f7fcf9 100%)!important;
+  border-color:#cfe8d9!important;
+  border-left:4px solid #62a783!important;
+  box-shadow:0 3px 10px rgba(67,133,96,.07)!important;
+}
+body.workspace-active main.shell #shop-lost-items-panel .lost-card-found .lost-card-icon{
+  color:#38845d!important;background:#d8f1e2!important;
+}
+body.workspace-active main.shell #shop-lost-items-panel .lost-card-found strong{color:#315f48!important}
+body.workspace-active main.shell #shop-lost-items-panel .lost-card-found small{color:#5a7b68!important}
+
+/* Check Before Purchase — warm, premium amber. */
+body.workspace-active main.shell #shop-lost-items-panel .lost-goods-card.lost-card-check{
+  background:linear-gradient(120deg,#fff5df 0%,#fffbf2 100%)!important;
+  border-color:#f0dfb7!important;
+  border-left:4px solid #d2a044!important;
+  box-shadow:0 3px 10px rgba(157,119,43,.07)!important;
+}
+body.workspace-active main.shell #shop-lost-items-panel .lost-card-check .lost-card-icon{
+  color:#a87920!important;background:#ffedc4!important;
+}
+body.workspace-active main.shell #shop-lost-items-panel .lost-card-check strong{color:#76551d!important}
+body.workspace-active main.shell #shop-lost-items-panel .lost-card-check small{color:#8a754f!important}
+
+/* Active Lost Items — clear sky blue. */
+body.workspace-active main.shell #shop-lost-items-panel .lost-goods-card.lost-card-active{
+  background:linear-gradient(120deg,#e8f4ff 0%,#f6fbff 100%)!important;
+  border-color:#cfe3f5!important;
+  border-left:4px solid #659dcc!important;
+  box-shadow:0 3px 10px rgba(69,119,164,.07)!important;
+}
+body.workspace-active main.shell #shop-lost-items-panel .lost-card-active .lost-card-icon{
+  color:#397eaf!important;background:#d9edff!important;
+}
+body.workspace-active main.shell #shop-lost-items-panel .lost-card-active strong{color:#315c7d!important}
+body.workspace-active main.shell #shop-lost-items-panel .lost-card-active small{color:#5c7890!important}
+
+@media(hover:hover){
+  body.workspace-active main.shell #shop-lost-items-panel .lost-goods-card:hover{
+    transform:translateY(-2px)!important;
+    box-shadow:0 7px 16px rgba(45,77,105,.11)!important;
+  }
+}
