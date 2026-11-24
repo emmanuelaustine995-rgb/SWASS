@@ -515,8 +515,7 @@
       if(requestId!==homeDailySalesRequestId)return;
       renderHomeDailySales(result.receipts||[]);
       const chart=$('home-sales-chart');
-      const total=(Array.isArray(result.receipts)?result.receipts:[]).reduce((sum,r)=>sum+Math.max(0,Number(r.totalKes??r.total??0)||0),0);
-      status.textContent='Sales snapshot updated · '+money(total)+' across the last 7 days.';
+      status.textContent='Your seven-day sales snapshot is up to date.';
       if(chart)chart.removeAttribute('aria-busy');
     }catch(error){
       if(requestId!==homeDailySalesRequestId)return;
@@ -2511,7 +2510,7 @@
         if(price.trim()===''||!Number.isSafeInteger(Number(price))||Number(price)<0){showNotice('Enter a valid whole-number sale price in KSh.',true);return;}
         const buyer=window.prompt('Buyer name (optional):')||'';
         const receipt=window.prompt('Receipt reference (optional):')||'';
-        const saleDate=new Date().toLocaleDateString('en-CA');
+        const now=new Date(),saleDate=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
         await request('/api/v1/loan-items/'+encodeURIComponent(id)+'/sale-report',{method:'POST',body:JSON.stringify({salePriceKes:Number(price),saleDate,buyerName:buyer,receiptReference:receipt})});
       }else if(action==='return'){
         const condition=window.prompt("Describe the item's condition before return:");if(condition===null)return;
