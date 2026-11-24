@@ -47,7 +47,8 @@
   </section>
   <main class="shell">
     <section id="login-view" class="login-wrap">
-      <div class="login-card">
+      <div class="login-card auth-animated-container">
+          <div class="curved-shape" aria-hidden="true"></div><div class="curved-shape2" aria-hidden="true"></div>
         
         <div class="aurora-brand-lockup" aria-label="AURORA E-RECEIPT">
           <svg class="aurora-login-logo" viewBox="0 0 360 142" role="img" aria-labelledby="aurora-logo-title">
@@ -65,7 +66,7 @@
           </svg>
           <p class="aurora-tagline"><span>Timeless receipts, never lose a receipt.</span></p>
         </div>
-        <form id="login-form"><div class="login-role-tabs" role="group" aria-label="Choose account type"><button class="login-role-tab active" type="button" data-login-role="owner" aria-pressed="true">Shop Owner</button><button class="login-role-tab" type="button" data-login-role="staff" aria-pressed="false">Shop Staff</button><button class="login-role-tab" type="button" data-login-role="freelancer" aria-pressed="false">Freelancer</button><button class="login-role-tab" type="button" data-login-role="customer" aria-pressed="false">Customer</button></div><div id="platform-admin-login-heading" class="platform-admin-login-heading hidden"><p>PLATFORM ADMIN CONTROL CENTRE</p><span>Authorised platform administrators only</span></div><select id="login-account-type" class="hidden" aria-hidden="true" tabindex="-1"><option value="owner">Shop Owner</option><option value="staff">Shop Staff</option><option value="freelancer">Freelancer</option><option value="customer">Customer</option><option value="platform_admin">Platform Admin</option></select><label id="login-identity-label"><span id="login-identity-label-text">Phone number</span><input id="login-phone" name="phone" type="tel" autocomplete="username" inputmode="tel" placeholder="07XX XXX XXX" required></label><label>Password<input id="login-password" name="password" type="password" autocomplete="current-password" required></label><button class="btn btn-primary full login-submit-compact" type="submit">LOG IN</button><p id="login-error" class="error" role="alert"></p></form><p id="platform-admin-return" class="platform-admin-return hidden"><a href="/">Return to ordinary AURORA login</a></p><p class="login-forgot-wrap"><button id="show-password-reset" class="text-btn login-forgot-btn" type="button">FORGOT PASSWORD</button></p>
+        <form id="login-form" class="form-box Login"><div class="login-role-tabs" role="group" aria-label="Choose account type"><button class="login-role-tab active" type="button" data-login-role="owner" aria-pressed="true">Shop Owner</button><button class="login-role-tab" type="button" data-login-role="staff" aria-pressed="false">Shop Staff</button><button class="login-role-tab" type="button" data-login-role="freelancer" aria-pressed="false">Freelancer</button><button class="login-role-tab" type="button" data-login-role="customer" aria-pressed="false">Customer</button></div><div id="platform-admin-login-heading" class="platform-admin-login-heading hidden"><p>PLATFORM ADMIN CONTROL CENTRE</p><span>Authorised platform administrators only</span></div><select id="login-account-type" class="hidden" aria-hidden="true" tabindex="-1"><option value="owner">Shop Owner</option><option value="staff">Shop Staff</option><option value="freelancer">Freelancer</option><option value="customer">Customer</option><option value="platform_admin">Platform Admin</option></select><label id="login-identity-label"><span id="login-identity-label-text">Phone number</span><input id="login-phone" name="phone" type="tel" autocomplete="username" inputmode="tel" placeholder="07XX XXX XXX" required></label><label>Password<input id="login-password" name="password" type="password" autocomplete="current-password" required></label><button class="btn btn-primary full login-submit-compact" type="submit">LOG IN</button><p id="login-error" class="error" role="alert"></p></form><p id="platform-admin-return" class="platform-admin-return hidden"><a href="/">Return to ordinary AURORA login</a></p><p class="login-forgot-wrap"><button id="show-password-reset" class="text-btn login-forgot-btn" type="button">FORGOT PASSWORD</button></p>
         <form id="first-password-form" class="hidden">
           <p class="eyebrow">SECURE YOUR SHOP ACCOUNT</p><h3>Create your own password</h3>
           <p class="muted small">Your owner-provided access code is temporary. Choose a private password of at least 10 characters.</p>
@@ -112,7 +113,7 @@
           <p id="freelancer-register-message" class="muted small" role="status"></p>
           <div class="registration-sticky-footer"><span>Already registered?</span><button id="freelancer-back-login" type="button" class="registration-back-button">← Back to sign in</button></div>
         </form>
-        <form id="register-form" class="hidden">
+        <form id="register-form" class="form-box Register hidden">
           <button id="signup-back-btn" class="btn btn-light btn-small hidden" type="button" style="align-self:flex-start;margin-bottom:2px">← Back</button>
           <p class="eyebrow">CREATE YOUR AURORA E-RECEIPT ACCOUNT</p>
           <p class="muted small">If your previous shop account was deactivated, register again using the same registered phone number and National ID. After SMS verification, your existing shop records will be restored.</p>
@@ -143,6 +144,8 @@
           <p id="register-error" class="error" role="alert"></p>
 
         </form>
+        <div class="info-content Login" aria-hidden="true"><h2>WELCOME BACK!</h2><p>Sign in to continue managing your receipts, sales and customers.</p></div>
+        <div class="info-content Register" aria-hidden="true"><h2>WELCOME!</h2><p>Create your AURORA account and keep your business records connected.</p></div>
       </div>
       <aside class="aurora-auth-welcome" aria-label="Welcome to AURORA E-RECEIPT">
         <div class="aurora-auth-brand" role="img" aria-label="Aurora E-Receipt logo">
