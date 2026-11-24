@@ -651,6 +651,7 @@ html body.workspace-active #workspace-nav.bottom-nav > button:not(.hidden):focus
    staggered form movement. Existing form IDs and submission logic remain. */
 html body:not(.workspace-active):not(.platform-admin-login) #login-view .auth-animated-container{
   isolation:isolate;position:relative!important;overflow:hidden!important;
+  display:grid!important;grid-template-columns:minmax(0,1fr);grid-auto-rows:auto;
   width:min(100%,14cm)!important;max-width:14cm!important;min-height:520px;
   padding:30px 28px!important;border-radius:22px!important;
   background:linear-gradient(135deg,#fff 0%,#f7f8fc 100%)!important;
@@ -672,6 +673,16 @@ html body:not(.workspace-active):not(.platform-admin-login) #login-view .curved-
   transform:rotate(0) skewY(0);transition:transform 1.5s ease 1.2s,clip-path 1.5s ease 1.2s;
 }
 html body:not(.workspace-active):not(.platform-admin-login) #login-view .auth-animated-container > :not(.curved-shape):not(.curved-shape2):not(.info-content){position:relative;z-index:2}
+html body:not(.workspace-active):not(.platform-admin-login) #login-view .aurora-brand-lockup{grid-column:1;grid-row:1}
+html body:not(.workspace-active):not(.platform-admin-login) #login-view .form-box,
+html body:not(.workspace-active):not(.platform-admin-login) #login-view #first-password-form,
+html body:not(.workspace-active):not(.platform-admin-login) #login-view #password-reset-form{
+  grid-column:1;grid-row:2;align-self:start;width:66%;max-width:360px;
+}
+html body:not(.workspace-active):not(.platform-admin-login) #login-view #owner-register-entry,
+html body:not(.workspace-active):not(.platform-admin-login) #login-view #freelancer-register-entry{grid-column:1;grid-row:3}
+html body:not(.workspace-active):not(.platform-admin-login) #login-view #signup-success-message,
+html body:not(.workspace-active):not(.platform-admin-login) #login-view #freelancer-register-success{grid-column:1;grid-row:4}
 html body:not(.workspace-active):not(.platform-admin-login) #login-view .form-box{
   position:relative;z-index:2;transform:none!important;opacity:1!important;filter:none!important;
 }
@@ -733,6 +744,9 @@ html body:not(.workspace-active):not(.platform-admin-login) #login-view .login-c
   html body:not(.workspace-active):not(.platform-admin-login) #login-view .auth-animated-container{
     min-height:0;padding:18px 14px!important;border-radius:18px!important;
   }
+  html body:not(.workspace-active):not(.platform-admin-login) #login-view .form-box,
+  html body:not(.workspace-active):not(.platform-admin-login) #login-view #first-password-form,
+  html body:not(.workspace-active):not(.platform-admin-login) #login-view #password-reset-form{width:100%;max-width:none}
   html body:not(.workspace-active):not(.platform-admin-login) #login-view .info-content{display:none!important}
   html body:not(.workspace-active):not(.platform-admin-login) #login-view .curved-shape,
   html body:not(.workspace-active):not(.platform-admin-login) #login-view .curved-shape2{opacity:.14}
