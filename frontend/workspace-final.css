@@ -668,7 +668,7 @@ html body:not(.workspace-active):not(.platform-admin-login) #login-view .curved-
   opacity:.96;
 }
 html body:not(.workspace-active):not(.platform-admin-login) #login-view .curved-shape2{
-  background:linear-gradient(145deg,#07152d 0%,#102b52 70%,#1d3154 100%);
+  background:linear-gradient(145deg,#07152d 0%,#102b52 70%,#1d3154 100%);border-top:5px solid #ff8a28;
   clip-path:polygon(100% 0,100% 100%,55% 100%,100% 55%);
   transform:rotate(0) skewY(0);transition:transform 1.5s ease 1.2s,clip-path 1.5s ease 1.2s;
 }
@@ -679,10 +679,11 @@ html body:not(.workspace-active):not(.platform-admin-login) #login-view #first-p
 html body:not(.workspace-active):not(.platform-admin-login) #login-view #password-reset-form{
   grid-column:1;grid-row:2;align-self:start;width:66%;max-width:360px;
 }
+html body:not(.workspace-active):not(.platform-admin-login) #login-view .login-forgot-wrap{grid-column:1;grid-row:3}
 html body:not(.workspace-active):not(.platform-admin-login) #login-view #owner-register-entry,
-html body:not(.workspace-active):not(.platform-admin-login) #login-view #freelancer-register-entry{grid-column:1;grid-row:3}
+html body:not(.workspace-active):not(.platform-admin-login) #login-view #freelancer-register-entry{grid-column:1;grid-row:4}
 html body:not(.workspace-active):not(.platform-admin-login) #login-view #signup-success-message,
-html body:not(.workspace-active):not(.platform-admin-login) #login-view #freelancer-register-success{grid-column:1;grid-row:4}
+html body:not(.workspace-active):not(.platform-admin-login) #login-view #freelancer-register-success{grid-column:1;grid-row:5}
 html body:not(.workspace-active):not(.platform-admin-login) #login-view .form-box{
   position:relative;z-index:2;transform:none!important;opacity:1!important;filter:none!important;
 }
