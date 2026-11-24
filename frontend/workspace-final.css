@@ -138,6 +138,31 @@ html body.workspace-active main.shell :where(.modal-card) {
   overscroll-behavior:contain!important;
 }
 
+/* Remove legacy nested vertical scroll areas throughout every workspace page.
+   Exclude dialogs and horizontal table scrollers; the document handles vertical movement. */
+html body.workspace-active main.shell :not(.modal):not(.modal *):not(.table-scroll):not(.table-scroll *):not(.table-wrap):not(.table-wrap *):not(.table-responsive):not(.table-responsive *):not(.history-table-wrap):not(.history-table-wrap *):not(.data-table-wrap):not(.data-table-wrap *):not(textarea):not(input):not(select) {
+  max-height:none!important;
+  overflow-x:clip!important;
+  overflow-y:visible!important;
+  overscroll-behavior:auto!important;
+  touch-action:auto!important;
+}
+html body.workspace-active main.shell :where(#pos-view,#receipt-recovery-view,#receipts-home,#shop-home,#owner-home,#owner-dashboard-view,#shop-lost-items-panel,#loans-home,#profile-panel,#staff-profile-panel) {
+  display:block!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow:visible!important;
+}
+html body.workspace-active main.shell :where(.cart-list,#cart-list,#product-form,#dashboard-payment-panel) {
+  max-height:none!important;
+  overflow:visible!important;
+  overflow-y:visible!important;
+}
+
 /* The login/registration card is centred inside the same narrow workspace. */
 html body:not(.workspace-active):not(.platform-admin-login) .login-wrap,
 html body:not(.workspace-active):not(.platform-admin-login) #login-view {
