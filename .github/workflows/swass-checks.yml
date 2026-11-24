@@ -31,6 +31,8 @@ jobs:
       - run: npm install --include=dev
       - name: Check every JavaScript file
         run: git ls-files -z '*.js' '*.mjs' | xargs -0 -r -n1 node --check
+      - name: Test controller and method role enforcement
+        run: node --test test/roles-guard.test.mjs
       - name: Prevent ordinary and Platform Admin login from being mixed
         run: node --test test/platform-admin-separation.test.mjs
       - name: Reject unresolved Git conflict markers
