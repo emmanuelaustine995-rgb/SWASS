@@ -148,7 +148,6 @@ html body.workspace-active main.shell :not(.modal):not(.modal *):not(.table-scro
   touch-action:auto!important;
 }
 html body.workspace-active main.shell :where(#pos-view,#receipt-recovery-view,#receipts-home,#shop-home,#owner-home,#owner-dashboard-view,#shop-lost-items-panel,#loans-home,#profile-panel,#staff-profile-panel) {
-  display:block!important;
   width:100%!important;
   max-width:100%!important;
   min-width:0!important;
