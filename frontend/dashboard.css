@@ -4190,3 +4190,166 @@ html body #workspace-nav.bottom-nav {
   visibility: hidden !important;
   pointer-events: none !important;
 }
+
+
+
+/* AURORA unified workspace canvas and flowing card system.
+   The workspace itself is a single pure-white surface; colour belongs to cards. */
+html body.workspace-active,
+html body.workspace-active main.shell,
+html body.workspace-active main.shell > section:not(.hidden),
+html body.workspace-active main.shell > section.panel:not(.hidden) {
+  background-color:#fff !important;
+  background-image:none !important;
+}
+html body.workspace-active main.shell > section:not(.hidden) {
+  border-color:transparent !important;
+  box-shadow:none !important;
+}
+html body.workspace-active main.shell > #receipts-home:not(.hidden),
+html body.workspace-active main.shell > #loans-home:not(.hidden),
+html body.workspace-active main.shell > #shop-home:not(.hidden),
+html body.workspace-active main.shell > #shop-lost-items-panel:not(.hidden),
+html body.workspace-active main.shell > #owner-home:not(.hidden),
+html body.workspace-active main.shell > #pos-view:not(.hidden) {
+  background:#fff !important;
+  background-image:none !important;
+}
+
+/* Shared card finish: softly flowing colour, rounded corners and gentle depth. */
+html body.workspace-active main.shell .panel:not(#receipts-home),
+html body.workspace-active main.shell .receipt-choice,
+html body.workspace-active main.shell .aurora-history-workspace,
+html body.workspace-active main.shell .declaration-card,
+html body.workspace-active main.shell .channel-card,
+html body.workspace-active main.shell .setup-steps > li,
+html body.workspace-active main.shell .owner-home-card,
+html body.workspace-active main.shell .home-daily-sales,
+html body.workspace-active main.shell .shop-product-action-grid > button,
+html body.workspace-active main.shell .shop-section-tabs > button {
+  border:1px solid rgba(125,151,181,.22) !important;
+  border-radius:19px !important;
+  background:
+    radial-gradient(ellipse at 0% 0%, rgba(115,190,255,.16), transparent 58%),
+    linear-gradient(132deg, #ffffff 0%, #f5f9ff 52%, #f4fbfa 100%) !important;
+  box-shadow:0 7px 22px rgba(35,66,100,.075), inset 0 1px 0 rgba(255,255,255,.92) !important;
+}
+html body.workspace-active main.shell .receipt-choice,
+html body.workspace-active main.shell .shop-product-action-grid > button,
+html body.workspace-active main.shell .shop-section-tabs > button {
+  overflow:hidden;
+  transition:transform .2s ease, box-shadow .2s ease, background .2s ease;
+}
+html body.workspace-active main.shell .receipt-choice:active,
+html body.workspace-active main.shell .shop-product-action-grid > button:active {
+  transform:translateY(1px) scale(.99);
+}
+html body.workspace-active main.shell .receipt-choice:nth-child(4n+2),
+html body.workspace-active main.shell .shop-product-action-grid > button:nth-child(4n+2) {
+  background:radial-gradient(ellipse at 0% 0%,rgba(91,199,222,.18),transparent 60%),linear-gradient(132deg,#fff 0%,#f0faff 58%,#f2fbfa 100%) !important;
+}
+html body.workspace-active main.shell .receipt-choice:nth-child(4n+3),
+html body.workspace-active main.shell .shop-product-action-grid > button:nth-child(4n+3) {
+  background:radial-gradient(ellipse at 0% 0%,rgba(174,139,255,.17),transparent 60%),linear-gradient(132deg,#fff 0%,#f7f3ff 58%,#f4f8ff 100%) !important;
+}
+html body.workspace-active main.shell .receipt-choice:nth-child(4n+4),
+html body.workspace-active main.shell .shop-product-action-grid > button:nth-child(4n+4) {
+  background:radial-gradient(ellipse at 0% 0%,rgba(255,174,122,.18),transparent 60%),linear-gradient(132deg,#fff 0%,#fff7f1 58%,#fff9f5 100%) !important;
+}
+
+/* Loans: colour fills the complete card face, not just its outline. */
+html body.workspace-active #loans-home .loans-page-heading {
+  border:1px solid rgba(94,142,194,.20) !important;
+  border-radius:22px !important;
+  background:
+    radial-gradient(ellipse at 5% 0%,rgba(94,177,255,.30),transparent 58%),
+    linear-gradient(125deg,#eef6ff 0%,#f2f1ff 52%,#edf9f8 100%) !important;
+  box-shadow:0 8px 24px rgba(31,73,119,.08),inset 0 1px 0 rgba(255,255,255,.9) !important;
+}
+html body.workspace-active #loans-home .loans-create-card,
+html body.workspace-active #loans-home .loans-list-section {
+  border:1px solid rgba(107,139,183,.22) !important;
+  border-radius:21px !important;
+  overflow:hidden !important;
+  box-shadow:0 8px 24px rgba(36,66,103,.09),inset 0 1px 0 rgba(255,255,255,.55) !important;
+}
+html body.workspace-active #loans-home .loans-create-card {
+  background:
+    radial-gradient(ellipse at 0% 0%,rgba(177,151,255,.42),transparent 66%),
+    linear-gradient(128deg,#e9eaff 0%,#f0edff 48%,#eaf5ff 100%) !important;
+}
+html body.workspace-active #loans-home .loans-list-section:nth-of-type(1) {
+  background:
+    radial-gradient(ellipse at 0% 0%,rgba(89,207,174,.34),transparent 68%),
+    linear-gradient(128deg,#e8faf3 0%,#effbf7 52%,#eaf8ff 100%) !important;
+}
+html body.workspace-active #loans-home .loans-list-section:nth-of-type(2) {
+  background:
+    radial-gradient(ellipse at 0% 0%,rgba(106,173,255,.34),transparent 68%),
+    linear-gradient(128deg,#eaf4ff 0%,#f0f2ff 52%,#f5efff 100%) !important;
+}
+html body.workspace-active #loans-home .loans-create-card>summary,
+html body.workspace-active #loans-home .loans-section-heading {
+  background:transparent !important;
+}
+html body.workspace-active #loans-home .loans-section-heading {
+  border-bottom-color:rgba(75,111,151,.13) !important;
+}
+html body.workspace-active #loans-home .loans-count {
+  background:rgba(255,255,255,.72) !important;
+  border:1px solid rgba(91,130,177,.16);
+  border-radius:12px !important;
+}
+html body.workspace-active #loans-home .loan-record-card {
+  border:1px solid rgba(84,133,169,.18) !important;
+  border-radius:17px !important;
+  background:
+    radial-gradient(ellipse at 0% 0%,rgba(101,192,218,.22),transparent 66%),
+    linear-gradient(130deg,#f0fbff 0%,#f4f8ff 58%,#f1fbf8 100%) !important;
+  box-shadow:0 5px 16px rgba(37,82,111,.075),inset 0 1px 0 rgba(255,255,255,.9) !important;
+}
+html body.workspace-active #loans-home .loan-record-card:nth-child(3n+2) {
+  background:
+    radial-gradient(ellipse at 0% 0%,rgba(173,146,255,.22),transparent 66%),
+    linear-gradient(130deg,#f7f2ff 0%,#f4f6ff 58%,#f1f8ff 100%) !important;
+}
+html body.workspace-active #loans-home .loan-record-card.is-overdue {
+  border-color:rgba(211,93,93,.25) !important;
+  background:
+    radial-gradient(ellipse at 0% 0%,rgba(255,145,132,.24),transparent 66%),
+    linear-gradient(130deg,#fff0ee 0%,#fff6f3 58%,#fff9f6 100%) !important;
+}
+html body.workspace-active #loans-home .loan-record-facts {
+  border-top-color:rgba(67,108,143,.14) !important;
+  border-bottom-color:rgba(67,108,143,.14) !important;
+}
+html body.workspace-active #loans-home .loan-status {
+  background:rgba(255,255,255,.72) !important;
+  border:1px solid rgba(80,124,162,.14);
+}
+
+/* Keep card contents readable and form controls clean white. */
+html body.workspace-active #loans-home input,
+html body.workspace-active #loans-home textarea,
+html body.workspace-active #loans-home select {
+  background:#fff !important;
+  border-radius:11px !important;
+}
+@media(max-width:760px) {
+  html body.workspace-active main.shell > section:not(.hidden) {
+    border-radius:0 !important;
+  }
+  html body.workspace-active main.shell .panel:not(#receipts-home),
+  html body.workspace-active main.shell .receipt-choice,
+  html body.workspace-active main.shell .aurora-history-workspace,
+  html body.workspace-active main.shell .declaration-card,
+  html body.workspace-active #loans-home .loans-page-heading,
+  html body.workspace-active #loans-home .loans-create-card,
+  html body.workspace-active #loans-home .loans-list-section,
+  html body.workspace-active #loans-home .loan-record-card {
+    border-radius:17px !important;
+  }
+  html body.workspace-active #loans-home .loans-page-heading {
+    padding:16px !important;
+  }
+}
