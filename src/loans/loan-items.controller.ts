@@ -155,7 +155,7 @@ export class LoanItemsController {
     const role=this.partyRole(req.user);
     const salePrice=Number(b?.salePriceKes),saleDate=String(b?.saleDate||'').trim();
     if(!Number.isSafeInteger(salePrice)||salePrice<0||salePrice>1000000000)throw new BadRequestException('Enter a valid sale price');
-    if(!/^\d{4}-\d{2}-\d{2}$/.test(saleDate))throw new BadRequestException('Enter the sale date');
+    if(!isRealDate(saleDate)||saleDate>new Date().toISOString().slice(0,10))throw new BadRequestException('Enter a real sale date that is not in the future');
     const report={salePriceKes:salePrice,saleDate,buyerName:String(b?.buyerName||'').trim().slice(0,160),receiptReference:String(b?.receiptReference||'').trim().slice(0,120),notes:String(b?.notes||'').trim().slice(0,1000)};
     const q=await this.db.pool.query(
       `UPDATE aurora_loans SET status='sale_pending',sale_report=$4::jsonb,updated_at=now()
