@@ -1274,11 +1274,11 @@
     $('show-password-reset')?.click();
     setAuroraAuthTab('aurora-tab-recovery');
   });
-  function animateAuthCard(toRegister){
+  function animateAuthCard(toRegister,registerFormId='register-form'){
     const card=document.querySelector('#login-view .auth-animated-container');
     if(!card)return;
-    const incoming=$(toRegister?'register-form':'login-form');
-    const outgoing=$(toRegister?'login-form':'register-form');
+    const incoming=$(toRegister?registerFormId:'login-form');
+    const outgoing=$(toRegister?'login-form':registerFormId);
     card.classList.toggle('active',toRegister);
     if(incoming){
       incoming.classList.remove('hidden','auth-slide-out');
