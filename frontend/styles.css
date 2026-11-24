@@ -3902,3 +3902,73 @@ html body.workspace-active > #workspace-nav.bottom-nav:not(.hidden) {
   bottom: max(8px, env(safe-area-inset-bottom, 0px)) !important;
   z-index: 2147483000 !important;
 }
+
+
+/* AURORA desktop 14 cm workspace navigation fit.
+   The document remains the only vertical scroll surface. The dock stays fixed
+   to the viewport, but its width and centre match the 14 cm desktop workspace. */
+@media (min-width: 1024px) {
+  html body.workspace-active main.shell {
+    width: 14cm !important;
+    max-width: calc(100vw - 32px) !important;
+    min-width: 0 !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    box-sizing: border-box !important;
+    padding-bottom: 150px !important;
+  }
+
+  html body.workspace-active > nav#workspace-nav.bottom-nav:not(.hidden) {
+    position: fixed !important;
+    left: 50% !important;
+    right: auto !important;
+    top: auto !important;
+    bottom: max(12px, env(safe-area-inset-bottom, 0px)) !important;
+    transform: translateX(-50%) !important;
+    display: grid !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    grid-auto-flow: row !important;
+    width: min(calc(14cm - 32px), calc(100vw - 64px)) !important;
+    max-width: calc(100vw - 64px) !important;
+    min-width: 0 !important;
+    height: 64px !important;
+    min-height: 64px !important;
+    max-height: 64px !important;
+    margin: 0 !important;
+    padding: 5px 6px !important;
+    gap: 3px !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    z-index: 2147483000 !important;
+  }
+
+  html body.workspace-active > nav#workspace-nav.bottom-nav:not(.hidden) > button:not(.hidden) {
+    display: flex !important;
+    position: static !important;
+    flex: none !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    min-height: 52px !important;
+    max-height: 54px !important;
+    margin: 0 !important;
+    padding: 4px 2px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 2px !important;
+    font-size: 10px !important;
+    line-height: 1.1 !important;
+    text-align: center !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    box-sizing: border-box !important;
+  }
+
+  html body.workspace-active > nav#workspace-nav.bottom-nav:not(.hidden) > button:not(.hidden) > span:not(.nav-icon) {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    text-align: center !important;
+  }
+}
