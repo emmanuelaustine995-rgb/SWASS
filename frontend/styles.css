@@ -4145,8 +4145,8 @@ html body.workspace-active .shell {
   html body.workspace-active #workspace-nav.bottom-nav,
   html body.workspace-active main.shell > #workspace-nav.bottom-nav,
   html body.workspace-active > #workspace-nav.bottom-nav {
-    width: min(calc(14cm - 32px), calc(100vw - 64px)) !important;
-    max-width: calc(100vw - 64px) !important;
+    width: min(400px, calc(14cm - 32px), calc(100vw - 64px)) !important;
+    max-width: min(400px, calc(100vw - 64px)) !important;
   }
 }
 @media (max-width: 760px) {
