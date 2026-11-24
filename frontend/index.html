@@ -33,6 +33,7 @@
   <link rel="stylesheet" href="./responsive-auth.css?v=shop-card-disclosure-fix-20261119">
   <link rel="stylesheet" href="./responsive-workspace.css?v=repair-receipt-details-thankyou-20261121">
   <link rel="stylesheet" href="./auth-sunset.css?v=desktop-14cm-pages-nav-recovery-20261124">
+  <link rel="stylesheet" href="./workspace-final.css?v=single-scroll-14cm-snow-20261124">
   </head>
 <body>
   <header class="topbar"><a class="brand" href="#" aria-label="AURORA E-RECEIPT PLATFORM"><span>AURORA E-RECEIPT PLATFORM</span></a><div class="topbar-actions"></div></header>
@@ -448,6 +449,36 @@
 <section id="owner-customers-section" class="panel crm-panel"><div class="panel-heading"><div><h2>Customer CRM</h2><p class="muted">Search customers, understand repeat visits and track loyalty.</p></div><button id="owner-crm-refresh" class="btn btn-secondary" type="button">Refresh customers</button></div><div class="crm-search"><label>Find a customer<input id="owner-crm-search" type="search" placeholder="Name, phone or email"></label><button id="owner-crm-search-btn" class="btn btn-primary" type="button">Search</button></div><p id="owner-crm-message" class="muted" aria-live="polite"></p><div class="table-scroll"><table><thead><tr><th>Customer</th><th>Contact</th><th>Purchases</th><th>Lifetime spend</th><th>Loyalty points</th><th>Last visit</th></tr></thead><tbody id="owner-crm-rows"><tr><td colspan="6">Sign in to view customers.</td></tr></tbody></table></div></section>
 <section class="panel customer-lookup-panel"><div class="section-head"><div><h2>Find existing customer</h2><p class="muted small">Verify a customer using their National ID and phone number before adding another purchase.</p></div></div><form id="customer-lookup-form" class="customer-lookup-form"><label>Customer phone<input id="lookup-phone" type="tel" inputmode="tel" placeholder="07XX XXX XXX" required></label><label>National ID<input id="lookup-national-id" inputmode="numeric" autocomplete="off" placeholder="Enter National ID" required></label><button class="btn btn-primary" type="submit">Find customer</button></form><p id="customer-lookup-message" class="error" role="status"></p><div id="customer-lookup-result"></div></section>
     </section>
+
+<section id="receipt-recovery-view" class="panel recovery-card hidden" aria-label="Receipt recovery">
+  <header class="recovery-hero">
+    <p class="eyebrow">AURORA · CUSTOMER SERVICES</p>
+    <h1>Recover your receipts</h1>
+    <p>Find your previous purchase records securely and save or print them again.</p>
+  </header>
+  <div class="recovery-body">
+    <p class="recovery-back-row"><button id="recovery-back-to-receipts" class="btn btn-light" type="button">← Back to Receipts</button></p>
+    <div class="recovery-steps" aria-label="Recovery steps">
+      <div class="recovery-step"><b>1</b>Enter details</div>
+      <div class="recovery-step"><b>2</b>Verify payment</div>
+      <div class="recovery-step"><b>3</b>Get receipts</div>
+    </div>
+    <p>Enter the National ID and phone number used when purchasing. A one-time KSh 10 verification payment is required to unlock all matching receipts.</p>
+    <form id="request-form">
+      <label>National ID number<input id="national-id" type="text" autocomplete="off" maxlength="30" placeholder="Enter National ID number" required></label>
+      <label>Phone number<input id="phone" type="tel" autocomplete="tel" placeholder="07XXXXXXXX or 2547XXXXXXXX" required></label>
+      <button id="request-button" type="submit">Pay KSh 10 and recover receipts</button>
+    </form>
+    <p class="recovery-note">Use the same ID and phone number that were recorded on your purchase. Once payment is confirmed, your matching receipts will appear below for printing or saving as PDF.</p>
+    <p id="message" role="status" aria-live="polite"></p>
+    <div id="receipt-list"></div>
+    <section hidden aria-hidden="true">
+      <form id="special-request-form"><input id="special-national-id"><input id="special-phone"><button id="special-request-button" type="submit">Recover</button></form>
+      <p id="special-message"></p><div id="special-receipt-list"></div>
+    </section>
+  </div>
+</section>
+
 <section id="shop-lost-items-panel" class="shop-lost-items-panel hidden">
         <article class="panel lost-items-intro"><div><p class="eyebrow">ITEM SECURITY &amp; RECOVERY</p><h2>Flagged Items</h2><p class="muted small">Report lost goods, record recovered items and check identifiers before buying or selling.</p></div></article>
         <div id="lost-goods-cards" class="lost-goods-cards" aria-label="Flagged Items actions">
@@ -544,7 +575,8 @@
   <footer class="aurora-copyright" aria-label="Copyright">copyright@auroraskyholdings2026</footer>
   <script src="./config.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script src="./app.js?v=mobile-nav-fix-20261123"></script>
+  <script src="./recover.js?v=embedded-recovery-workspace-20261124"></script>
+  <script src="./app.js?v=single-workspace-scroll-recovery-20261124"></script>
   <script src="./dashboard.js?v=all-accounts-login-landing-20261117"></script>
 
 <script>
