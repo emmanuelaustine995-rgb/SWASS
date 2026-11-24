@@ -72,7 +72,7 @@
     return data;
   }
   function publishWorkspaceSession(){saveSession();window.dispatchEvent(new CustomEvent('swass:login',{detail:{token:state.token,role:state.role}}));}
-  function showNotice(message, error = false) { const el=$('notice'); el.textContent=message; el.dataset.tone=error?'error':'warning'; el.classList.remove('hidden'); el.style.removeProperty('background'); el.style.removeProperty('color'); }
+  function showNotice(message, error = false) { const el=$('notice'); el.textContent=message; el.classList.remove('hidden'); el.style.background=error?'#fff0ef':'#fff5e8'; el.style.color=error?'#a12b22':'#8a4b08'; }
   function hideNotice(){ $('notice').classList.add('hidden'); }
   function showLogin(){
     clearSession();
@@ -483,7 +483,7 @@
       const day=byDay.get(key);if(day)day.amount+=Math.max(0,Number(receipt.totalKes??receipt.total??0)||0);
     });
     const total=days.reduce((sum,d)=>sum+d.amount,0);
-    const tones=['#0066FF','#FC7584','#474329','#F7F5F0','#0066FF','#FC7584','#474329'];
+    const tones=['#2798d1','#22a77a','#8b68d8','#ed9844','#d9588b','#527fd2','#269ca0'];
     let offset=0;
     const slices=days.map((day,i)=>{const pct=total>0?day.amount/total*100:0;const from=offset;offset+=pct;return {...day,pct,from,to:offset,color:tones[i]};});
     chart.replaceChildren();legend.replaceChildren();
@@ -780,13 +780,13 @@
       if(width>maxSide||height>maxSide){const scale=Math.min(maxSide/width,maxSide/height);width=Math.max(1,Math.round(width*scale));height=Math.max(1,Math.round(height*scale));}
       const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
       const ctx=canvas.getContext('2d');if(!ctx)throw new Error('Your browser could not prepare the logo.');
-      ctx.fillStyle='#F7F5F0';ctx.fillRect(0,0,width,height);ctx.drawImage(bitmap,0,0,width,height);
+      ctx.fillStyle='#fff';ctx.fillRect(0,0,width,height);ctx.drawImage(bitmap,0,0,width,height);
       let blob=null;
       for(let pass=0;pass<7;pass++){
         const quality=[0.82,0.72,0.62,0.52,0.42,0.32,0.25][pass];
         blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',quality));
         if(blob&&blob.size<=45000)break;
-        if(pass===2){canvas.width=Math.max(1,Math.round(canvas.width*0.8));canvas.height=Math.max(1,Math.round(canvas.height*0.8));ctx.fillStyle='#F7F5F0';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);}
+        if(pass===2){canvas.width=Math.max(1,Math.round(canvas.width*0.8));canvas.height=Math.max(1,Math.round(canvas.height*0.8));ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);}
       }
       if(!blob||blob.size>45000)throw new Error('This logo is too detailed to reduce. Please choose a simpler image.');
       return await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(new Error('Could not prepare the logo.'));reader.readAsDataURL(blob);});
@@ -1378,7 +1378,7 @@
       canvas.height=Math.max(1,Math.round(bitmap.height*scale));
       const ctx=canvas.getContext('2d');
       if(!ctx)throw new Error('Your phone could not prepare the '+label+'. Please try another photo.');
-      ctx.fillStyle='#F7F5F0';ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
       ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
       const targetBytes=maxBytes;
       let blob=null;
@@ -1393,7 +1393,7 @@
           const temp=document.createElement('canvas');temp.width=nextWidth;temp.height=nextHeight;
           const tempCtx=temp.getContext('2d');
           if(!tempCtx)break;
-          tempCtx.fillStyle='#F7F5F0';tempCtx.fillRect(0,0,nextWidth,nextHeight);
+          tempCtx.fillStyle='#fff';tempCtx.fillRect(0,0,nextWidth,nextHeight);
           tempCtx.drawImage(canvas,0,0,nextWidth,nextHeight);
           canvas.width=nextWidth;canvas.height=nextHeight;
           const resizedCtx=canvas.getContext('2d');
@@ -1551,7 +1551,7 @@
       const canvas=document.createElement('canvas');
       canvas.width=Math.max(1,Math.round(bitmap.width*scale));canvas.height=Math.max(1,Math.round(bitmap.height*scale));
       const ctx=canvas.getContext('2d');if(!ctx)throw new Error('Your device could not prepare this photo. Please try another image.');
-      ctx.fillStyle='#F7F5F0';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
+      ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
       let blob=null;
       for(let attempt=0;attempt<9;attempt++){
         const quality=[0.9,0.84,0.78,0.72,0.66,0.6,0.56,0.52,0.48][attempt];
@@ -1561,7 +1561,7 @@
           const factor=0.86,nextWidth=Math.max(600,Math.round(canvas.width*factor)),nextHeight=Math.max(600,Math.round(canvas.height*factor));
           const resized=document.createElement('canvas');resized.width=nextWidth;resized.height=nextHeight;
           const resizedCtx=resized.getContext('2d');if(!resizedCtx)break;
-          resizedCtx.fillStyle='#F7F5F0';resizedCtx.fillRect(0,0,nextWidth,nextHeight);resizedCtx.drawImage(canvas,0,0,nextWidth,nextHeight);
+          resizedCtx.fillStyle='#fff';resizedCtx.fillRect(0,0,nextWidth,nextHeight);resizedCtx.drawImage(canvas,0,0,nextWidth,nextHeight);
           canvas.width=nextWidth;canvas.height=nextHeight;const nextCtx=canvas.getContext('2d');
           if(!nextCtx)break;nextCtx.drawImage(resized,0,0,nextWidth,nextHeight);
         }
@@ -2168,7 +2168,7 @@
       canvas.height=Math.max(1,Math.round(bitmap.height*scale));
       const ctx=canvas.getContext('2d');
       if(!ctx)throw new Error('This browser could not prepare the '+label+'. Please try another photo.');
-      ctx.fillStyle='#F7F5F0';ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
       ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
       let data='';
       for(let attempt=0;attempt<8;attempt++){
@@ -2180,7 +2180,7 @@
         const nextHeight=Math.max(180,Math.round(canvas.height*factor));
         if(nextWidth===canvas.width&&nextHeight===canvas.height)break;
         canvas.width=nextWidth;canvas.height=nextHeight;
-        ctx.fillStyle='#F7F5F0';ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
         ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
       }
       if(!data||data.length>82000)throw new Error('The '+label+' could not be compressed enough. Retake it with the document or person filling most of the frame.');
