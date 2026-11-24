@@ -84,7 +84,7 @@
         await loadReceipts();
         return;
       }
-      if (data.status === 'failed') throw new Error('M-Pesa payment was not completed. Please try again.');
+      if (data.status === 'failed') { pendingRecovery = null; recoveryToken = ''; throw new Error('M-Pesa payment was not completed. Please try again.'); }
       message('Waiting for payment confirmation from M-Pesa…');
     }
     throw new Error('Payment is still pending. Do not pay again yet. Refresh this page and contact the business if you were charged.');
