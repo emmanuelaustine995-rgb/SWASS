@@ -3,6 +3,13 @@ import { randomUUID } from 'node:crypto';
 import { AuthGuard, Roles, RolesGuard } from '../auth/auth';
 import { DbService } from '../db/db.service';
 import * as QRCode from 'qrcode';
+
+function isRealDate(value: string): boolean {
+  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(value)) return false;
+  const [year, month, day] = value.split('-').map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
+}
 import { EmailVerificationService } from '../notifications/email-verification.service';
 import { WhatsAppReceiptService } from '../notifications/whatsapp-receipt.service';
 
@@ -29,28 +36,35 @@ export class LostItemsController {
   @Get() @Roles('owner','manager','freelancer')
   async list(@Req() req:any){
     const [t,s]=this.scope(req.user);
-    const {rows}=await this.db.pool.query(`SELECT li.id,li.item_code AS "itemCode",li.item_name AS "itemName",li.brand,li.model,li.colour,li.description,li.imei_1 AS "imei1",li.imei_2 AS "imei2",li.serial_number AS "serialNumber",li.purchase_date AS "purchaseDate",li.receipt_reference AS "receiptReference",li.ob_number AS "obNumber",li.status,li.lost_at AS "lostAt",li.created_at AS "createdAt",COUNT(r.id)::int AS "reportCount" FROM lost_items li LEFT JOIN lost_item_reports r ON r.lost_item_id=li.id WHERE li.tenant_id=$1 AND li.store_id=$2 AND li.status='lost' GROUP BY li.id ORDER BY li.created_at DESC LIMIT 200`,[t,s]);
+    const {rows}=await this.db.pool.query(`SELECT li.id,li.item_code AS "itemCode",li.item_name AS "itemName",li.brand,li.model,li.colour,li.description,li.imei_1 AS "imei1",li.imei_2 AS "imei2",li.serial_number AS "serialNumber",li.purchase_date AS "purchaseDate",li.receipt_reference AS "receiptReference",li.ob_number AS "obNumber",li.status,li.lost_at AS "lostAt",li.created_at AS "createdAt",COUNT(r.id)::int AS "reportCount" FROM lost_items li LEFT JOIN lost_item_reports r ON r.lost_item_id=li.id WHERE li.tenant_id=$1 AND li.store_id=$2 GROUP BY li.id ORDER BY li.created_at DESC LIMIT 200`,[t,s]);
     return {items:rows};
   }
   @Post() @Roles('owner','manager','freelancer')
   async create(@Req() req:any,@Body() b:any){
     const [t,s]=this.scope(req.user);
-    for(const k of ['itemName'])if(typeof b?.[k]!=='string'||!b[k].trim())throw new BadRequestException('Item name is required');
+    if(!b||typeof b!=='object'||Array.isArray(b))throw new BadRequestException('Lost-item details are required');
+    if(typeof b.itemName!=='string'||!b.itemName.trim()||b.itemName.trim().length>160)throw new BadRequestException('Enter an item name up to 160 characters');
     const imei1=String(b.imei1||'').trim(),imei2=String(b.imei2||'').trim(),serial=String(b.serialNumber||'').trim();
     if(!imei1&&!imei2&&!serial)throw new BadRequestException('Enter at least one IMEI or serial number so the item can be identified');
     for(const v of [imei1,imei2])if(v&&!/^[A-Za-z0-9 -]{6,30}$/.test(v))throw new BadRequestException('Check the IMEI number');
-    const normalized=[imei1,imei2,serial].filter(Boolean);
+    if(serial&&!/^[A-Za-z0-9 ._/-]{6,80}$/.test(serial))throw new BadRequestException('Enter a valid serial number (6–80 letters or numbers)');
+    const normalized=[imei1,imei2,serial].filter(Boolean).map(v=>v.toUpperCase().replace(/[^A-Z0-9]/g,''));
+    if(new Set(normalized).size!==normalized.length)throw new BadRequestException('Use a different value for each IMEI / serial field');
     const lostDate=String(b.lostDate||'').trim();
-    if(lostDate&&!/^\d{4}-\d{2}-\d{2}$/.test(lostDate))throw new BadRequestException('Enter a valid date lost');
+    if(lostDate&&!isRealDate(lostDate))throw new BadRequestException('Enter a real calendar date for when the item was lost');
+    const purchaseDate=String(b.purchaseDate||'').trim();
+    if(purchaseDate&&!isRealDate(purchaseDate))throw new BadRequestException('Enter a real calendar date for the purchase date');
+    if(lostDate&&lostDate>new Date().toISOString().slice(0,10))throw new BadRequestException('The lost date cannot be in the future');
+    if(purchaseDate&&lostDate&&purchaseDate>lostDate)throw new BadRequestException('The purchase date cannot be after the date lost');
     const obNumber=String(b.obNumber||'').trim().slice(0,100);
     if(!obNumber)throw new BadRequestException('Police OB number is required when registering a lost item');
-    const duplicate=await this.db.pool.query(`SELECT item_code AS "itemCode",item_name AS "itemName",brand,model,status FROM lost_items WHERE (NULLIF(upper(regexp_replace(imei_1,'[^A-Za-z0-9]','','g')),'')=ANY($1::text[]) OR NULLIF(upper(regexp_replace(imei_2,'[^A-Za-z0-9]','','g')),'')=ANY($1::text[]) OR NULLIF(upper(regexp_replace(serial_number,'[^A-Za-z0-9]','','g')),'')=ANY($1::text[])) ORDER BY created_at DESC LIMIT 10`,[normalized.map(v=>v.toUpperCase().replace(/[^A-Za-z0-9]/g,''))]);
+    const duplicate=await this.db.pool.query(`SELECT item_code AS "itemCode",item_name AS "itemName",brand,model,status FROM lost_items WHERE (NULLIF(upper(regexp_replace(imei_1,'[^A-Za-z0-9]','','g')),'')=ANY($1::text[]) OR NULLIF(upper(regexp_replace(imei_2,'[^A-Za-z0-9]','','g')),'')=ANY($1::text[]) OR NULLIF(upper(regexp_replace(serial_number,'[^A-Za-z0-9]','','g')),'')=ANY($1::text[])) ORDER BY created_at DESC LIMIT 10`,[normalized]);
     const normalizedIds=normalized.map(v=>v.toUpperCase().replace(/[^A-Za-z0-9]/g,''));
     const declaredDuplicates=await this.db.pool.query(`SELECT declaration_ref AS "itemCode",phone_make_model AS "itemName",NULL::text AS brand,NULL::text AS model,'second-hand declaration' AS status FROM second_hand_phone_declarations WHERE (NULLIF(upper(regexp_replace(imei1,'[^A-Za-z0-9]','','g')),'')=ANY($1::text[]) OR NULLIF(upper(regexp_replace(imei2,'[^A-Za-z0-9]','','g')),'')=ANY($1::text[]) OR NULLIF(upper(regexp_replace(serial_number,'[^A-Za-z0-9]','','g')),'')=ANY($1::text[])) ORDER BY created_at DESC LIMIT 10`,[normalizedIds]);
     const duplicateMatches=[...duplicate.rows,...declaredDuplicates.rows].slice(0,10);
     const code='AUR-LI-'+Date.now().toString(36).toUpperCase()+'-'+Math.random().toString(36).slice(2,6).toUpperCase();
     const publicCode=randomUUID();
-    const {rows}=await this.db.pool.query(`INSERT INTO lost_items(tenant_id,store_id,registered_by,item_code,public_code,item_name,brand,model,colour,description,imei_1,imei_2,serial_number,photo_data,purchase_date,receipt_reference,ob_number,status,lost_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15::date,$16,$17,'lost',COALESCE($18::timestamptz,now())) RETURNING id,item_code AS "itemCode",item_name AS "itemName",brand,model,colour,description,imei_1 AS "imei1",imei_2 AS "imei2",serial_number AS "serialNumber",ob_number AS "obNumber",status,lost_at AS "lostAt",created_at AS "createdAt"`,[t,s,req.user.sub,code,publicCode,b.itemName.trim(),b.brand?.trim()||null,b.model?.trim()||null,b.colour?.trim()||null,b.description?.trim()||null,imei1||null,imei2||null,serial||null,null,b.purchaseDate||null,b.receiptReference?.trim()||null,obNumber,lostDate?new Date(lostDate+'T12:00:00').toISOString():null]);
+    const {rows}=await this.db.pool.query(`INSERT INTO lost_items(tenant_id,store_id,registered_by,item_code,public_code,item_name,brand,model,colour,description,imei_1,imei_2,serial_number,photo_data,purchase_date,receipt_reference,ob_number,status,lost_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15::date,$16,$17,'lost',COALESCE($18::timestamptz,now())) RETURNING id,item_code AS "itemCode",item_name AS "itemName",brand,model,colour,description,imei_1 AS "imei1",imei_2 AS "imei2",serial_number AS "serialNumber",ob_number AS "obNumber",status,lost_at AS "lostAt",created_at AS "createdAt"`,[t,s,req.user.sub,code,publicCode,b.itemName.trim(),String(b.brand||'').trim().slice(0,100)||null,String(b.model||'').trim().slice(0,100)||null,String(b.colour||'').trim().slice(0,80)||null,String(b.description||'').trim().slice(0,1000)||null,imei1||null,imei2||null,serial||null,null,purchaseDate||null,String(b.receiptReference||'').trim().slice(0,120)||null,obNumber,lostDate?new Date(lostDate+'T12:00:00').toISOString():null]);
     const base=(process.env.FRONTEND_URL||'https://swass-web.onrender.com').replace(/\/$/,'');
     const publicUrl=base+'/?lostItem='+encodeURIComponent(publicCode);
     const qrDataUrl=await QRCode.toDataURL(publicUrl,{errorCorrectionLevel:'M',margin:2,width:420});
