@@ -345,7 +345,6 @@
   <section class="loans-list-section" aria-labelledby="loans-borrowed-title"><div class="loans-section-heading"><div><p class="eyebrow">ITEMS ENTRUSTED TO YOU</p><h2 id="loans-borrowed-title">Items I have borrowed</h2></div><span id="loans-borrowed-count" class="loans-count">0</span></div><div id="loans-borrowed-list" class="loans-list"><p class="muted small">Your incoming offers and active loans will appear here.</p></div></section>
   <p id="aurora-loans-message" class="muted small" role="status" aria-live="polite"></p>
 </section><section id="owner-home" class="owner-home hidden aurora-home-redesign" aria-label="Home dashboard">
-  <div class="dashboard-login-return-row"><button id="dashboard-back-to-login" class="dashboard-back-to-login" type="button">← Back to Login</button></div>
   <header class="aurora-home-header">
     <div class="aurora-home-brand">
       <svg viewBox="0 0 56 68" fill="none" aria-hidden="true">
@@ -355,9 +354,15 @@
       </svg>
       <div><strong>AURORA <span>E-RECEIPT</span></strong><small>Scan · Send · Grow</small></div>
     </div>
-    <button id="home-profile-button" class="aurora-home-avatar" type="button" aria-label="Open account profile">
-      <svg viewBox="0 0 24 24" fill="#1a73e8" aria-hidden="true"><circle cx="12" cy="8" r="4.6"/><path d="M3.5 21c0-4.6 3.8-7.4 8.5-7.4s8.5 2.8 8.5 7.4z"/></svg>
-    </button>
+    <div class="aurora-home-header-right">
+      <button id="dashboard-back-to-login" class="aurora-home-back-login" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+        Back to Login
+      </button>
+      <button id="home-profile-button" class="aurora-home-avatar" type="button" aria-label="Open account profile">
+        <svg viewBox="0 0 24 24" fill="#1a73e8" aria-hidden="true"><circle cx="12" cy="8" r="4.6"/><path d="M3.5 21c0-4.6 3.8-7.4 8.5-7.4s8.5 2.8 8.5 7.4z"/></svg>
+      </button>
+    </div>
   </header>
 
   <section class="aurora-home-welcome" aria-label="Business welcome">
