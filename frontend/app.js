@@ -81,7 +81,7 @@
     // A signed-out visitor must see only the login/registration area.
     document.body.classList.remove('customer-account-active');
     const protectedScreens=[
-      'welcome-back-banner','pos-view','customer-home','owner-home','receipts-home','receipt-history-panel','declaration-history-panel','shop-home','owner-dashboard-view','loans-home',
+      'welcome-back-banner','pos-view','customer-home','owner-home','receipts-home','receipt-recovery-view','receipt-history-panel','declaration-history-panel','shop-home','owner-dashboard-view','loans-home',
       'staff-profile-panel','profile-panel','history-panel','owner-customers-section',
       'account-profile-menu','receipt-modal','receipt-recovery-modal','workspace-nav'
     ];
@@ -535,9 +535,10 @@
     const shopResults=shopVisible&&$('shop-product-results')&&!$('shop-product-results').classList.contains('hidden');
     // Back is only for moving within a multi-step task, never for switching workspaces.
     const historyVisible=['receipt-history-panel','declaration-history-panel'].some(id=>$(id)&&!$(id).classList.contains('hidden'));
-    const hasBack=!!state.token&&workspaceOpen&&(modalOpen||secondhandVisible||historyVisible||issueStep||shopResults);
+    const recoveryVisible=!!$('receipt-recovery-view')&&!$('receipt-recovery-view').classList.contains('hidden');
+    const hasBack=!!state.token&&workspaceOpen&&(modalOpen||secondhandVisible||historyVisible||recoveryVisible||issueStep||shopResults);
     button.classList.toggle('hidden',!hasBack);
-    button.textContent=(secondhandVisible||historyVisible)?'← Back to Receipts':'← Back';
+    button.textContent=(secondhandVisible||historyVisible||recoveryVisible)?'← Back to Receipts':'← Back';
     button.setAttribute('aria-label',button.textContent.replace('← ','Go back to '));
   }
   function goBackWorkspace(){
@@ -557,6 +558,7 @@
     }
     if($('secondhand-panel')&&!$('secondhand-panel').classList.contains('hidden')){closeSecondhandWorkspace();return;}
     if(['receipt-history-panel','declaration-history-panel'].some(id=>$(id)&&!$(id).classList.contains('hidden'))){closeHistoryWorkspace();return;}
+    if($('receipt-recovery-view')&&!$('receipt-recovery-view').classList.contains('hidden')){$('receipt-recovery-view').classList.add('hidden');$('receipts-home')?.classList.remove('hidden');syncGlobalBackButton();return;}
     if(!$('pos-view')?.classList.contains('hidden')&&$('pos-view')?.classList.contains('workspace-issue-mode')){
       $('pos-view').classList.add('hidden');$('pos-view').classList.remove('workspace-issue-mode');
       if(state.posReturnScreen==='dashboard'&&goBackWorkspace()){state.posReturnScreen=null;return;}
@@ -597,7 +599,7 @@
     const customerHome=$('customer-home');
     // Hide every workspace root before opening exactly one destination.
     // This also prevents content retained by a previous tab from remaining visible.
-    [dashboardBusinessCard,ownerHome,customerHome,$('loans-home'),receiptHome,$('receipt-history-panel'),$('declaration-history-panel'),pos,owner,$('platform-referral-admin'),$('shop-home'),$('shop-lost-items-panel'),subscriptionHome,staffSummary,$('staff-profile-panel'),$('account-profile-menu')].forEach(el=>el?.classList.add('hidden'));
+    [dashboardBusinessCard,ownerHome,customerHome,$('loans-home'),receiptHome,$('receipt-recovery-view'),$('receipt-history-panel'),$('declaration-history-panel'),pos,owner,$('platform-referral-admin'),$('shop-home'),$('shop-lost-items-panel'),subscriptionHome,staffSummary,$('staff-profile-panel'),$('account-profile-menu')].forEach(el=>el?.classList.add('hidden'));
     dashboardBusinessCard?.classList.add('hidden');
     pos?.classList.remove('profile-workspace-mode');
     owner?.classList.remove('profile-workspace-mode');
@@ -1882,7 +1884,8 @@
     closeSaleItemForm();$('checkout-open').disabled=!state.cart.size;
     syncGlobalBackButton();
   });
-  $('open-recover-receipt').addEventListener('click',()=>{window.location.href='recover.html';});
+  $('open-recover-receipt').addEventListener('click',()=>{$('receipts-home')?.classList.add('hidden');$('receipt-recovery-view')?.classList.remove('hidden');syncGlobalBackButton();});
+  $('recovery-back-to-receipts')?.addEventListener('click',()=>{$('receipt-recovery-view')?.classList.add('hidden');$('receipts-home')?.classList.remove('hidden');syncGlobalBackButton();});
   $('dashboard-edit-profile').addEventListener('click',()=>{showWorkspaceScreen('shop');setShopTab('profile');});
   $('profile-close')?.addEventListener('click',()=>{if(!goBackWorkspace())showWorkspaceScreen('dashboard',{fromBack:true});});
   $('business-logo').addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file)return;const img=$('logo-preview');img.classList.remove('hidden');img.alt='Preparing selected business logo…';$('profile-error').textContent='Preparing logo…';try{state.profileLogoData=await compressLogo(file);img.src=state.profileLogoData;img.alt='Selected business logo preview';$('profile-error').textContent='Logo preview ready. Tap Save business profile to keep it.';}catch(err){state.profileLogoData=undefined;e.target.value='';img.removeAttribute('src');img.classList.add('hidden');$('profile-error').textContent=err.message;}});
