@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" role="img" aria-label="Snow-covered evergreen forest in a pale winter twilight">
+<defs>
+  <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#9fc8e5"/><stop offset=".48" stop-color="#d9eaf5"/><stop offset="1" stop-color="#eef6fb"/></linearGradient>
+  <radialGradient id="glow"><stop stop-color="#fff" stop-opacity=".95"/><stop offset=".45" stop-color="#eff8ff" stop-opacity=".48"/><stop offset="1" stop-color="#e8f5ff" stop-opacity="0"/></radialGradient>
+  <linearGradient id="mountain" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#dceaf4"/><stop offset="1" stop-color="#8faec4"/></linearGradient>
+  <linearGradient id="pine" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#234c63"/><stop offset=".55" stop-color="#315f73"/><stop offset="1" stop-color="#17394e"/></linearGradient>
+  <linearGradient id="snow" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff"/><stop offset="1" stop-color="#dcecf7"/></linearGradient>
+  <filter id="blur"><feGaussianBlur stdDeviation="30"/></filter>
+  <g id="tree">
+    <path d="M0 0 L-75 115 -39 106 -94 194 -52 184 -116 286 -39 267 -39 355 39 355 39 267 116 286 52 184 94 194 39 106 75 115Z" fill="url(#pine)"/>
+    <path d="M0 0 L-75 115 -39 106 -94 194 -52 184 -116 286 -39 267 0 278 39 267 116 286 52 184 94 194 39 106 75 115Z" fill="none" stroke="#173b51" stroke-width="8" stroke-linejoin="round"/>
+    <path d="M0 4 L-65 106 Q-35 91 0 117 Q35 91 65 106Z M0 112 L-82 190 Q-38 172 0 205 Q38 172 82 190Z M0 198 L-100 280 Q-48 258 0 293 Q48 258 100 280Z" fill="none" stroke="url(#snow)" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M-39 355H39V385H-39Z" fill="#634f42"/>
+  </g>
+</defs>
+<rect width="1600" height="1000" fill="url(#sky)"/>
+<circle cx="1230" cy="210" r="260" fill="url(#glow)"/>
+<path d="M0 550 210 310 370 490 580 250 780 500 1010 285 1210 500 1410 300 1600 520V1000H0Z" fill="url(#mountain)" opacity=".75"/>
+<path d="M0 570 210 310 285 405 370 490 580 250 680 390 780 500 1010 285 1110 405 1210 500 1410 300 1510 410 1600 520" fill="none" stroke="#fff" stroke-width="20" opacity=".7"/>
+<path d="M0 620 Q250 560 480 630T960 620T1600 600V1000H0Z" fill="#edf6fb"/>
+<path d="M0 720 Q300 650 620 730T1250 700T1600 710V1000H0Z" fill="#d9eaf4"/>
+<g opacity=".58" filter="url(#blur)"><ellipse cx="780" cy="620" rx="580" ry="110" fill="#fff"/></g>
+<g opacity=".86">
+  <use href="#tree" x="80" y="420" transform="translate(80 420) scale(1.15)"/>
+  <use href="#tree" x="80" y="420" transform="translate(270 490) scale(.9)"/>
+  <use href="#tree" x="80" y="420" transform="translate(480 445) scale(1.05)"/>
+  <use href="#tree" x="80" y="420" transform="translate(690 510) scale(.82)"/>
+  <use href="#tree" x="80" y="420" transform="translate(900 455) scale(1.12)"/>
+  <use href="#tree" x="80" y="420" transform="translate(1110 500) scale(.92)"/>
+  <use href="#tree" x="80" y="420" transform="translate(1320 430) scale(1.12)"/>
+  <use href="#tree" x="80" y="420" transform="translate(1510 490) scale(.9)"/>
+</g>
+<g opacity=".45">
+  <use href="#tree" transform="translate(180 620) scale(1.25)"/>
+  <use href="#tree" transform="translate(410 655) scale(1.1)"/>
+  <use href="#tree" transform="translate(760 645) scale(1.2)"/>
+  <use href="#tree" transform="translate(1030 650) scale(1.28)"/>
+  <use href="#tree" transform="translate(1390 635) scale(1.22)"/>
+</g>
+<path d="M0 850 Q240 800 490 860T1000 840T1600 850V1000H0Z" fill="#f8fcff" opacity=".9"/>
+</svg>
