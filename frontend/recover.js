@@ -5,6 +5,7 @@
   let receipts = [];
   let recoveryToken = '';
   let pendingRecovery = null;
+  try { const saved = JSON.parse(sessionStorage.getItem('aurora-receipt-recovery-pending') || 'null'); if (saved?.paymentId && saved?.recoveryToken) { pendingRecovery = { paymentId: saved.paymentId }; recoveryToken = saved.recoveryToken; } } catch {}
   let apiWarmupPromise = null;
   async function warmApi() {
     if (apiWarmupPromise) return apiWarmupPromise;
@@ -33,6 +34,7 @@
         await pollPayment(pendingRecovery.paymentId);
         pendingRecovery = null;
         recoveryToken = '';
+        sessionStorage.removeItem('aurora-receipt-recovery-pending');
         button.disabled = false;
         button.textContent = 'Recover another set of receipts';
       } catch (error) {
@@ -58,11 +60,13 @@
       const data = await readResponse(response);
       recoveryToken = data.recoveryToken;
       pendingRecovery = { paymentId: data.paymentId };
+      sessionStorage.setItem('aurora-receipt-recovery-pending', JSON.stringify({ paymentId: data.paymentId, recoveryToken }));
       message('An M-Pesa STK prompt for KSh 10 has been sent. Enter your M-Pesa PIN. If confirmation is delayed, check the existing payment instead of requesting another prompt.');
       button.textContent = 'Waiting for M-Pesa payment…';
       await pollPayment(data.paymentId);
       pendingRecovery = null;
       recoveryToken = '';
+      sessionStorage.removeItem('aurora-receipt-recovery-pending');
       button.disabled = false;
       button.textContent = 'Recover another set of receipts';
     } catch (error) {
@@ -84,7 +88,7 @@
         await loadReceipts();
         return;
       }
-      if (data.status === 'failed') { pendingRecovery = null; recoveryToken = ''; throw new Error('M-Pesa payment was not completed. Please try again.'); }
+      if (data.status === 'failed') { pendingRecovery = null; recoveryToken = ''; sessionStorage.removeItem('aurora-receipt-recovery-pending'); throw new Error('M-Pesa payment was not completed. Please try again.'); }
       message('Waiting for payment confirmation from M-Pesa…');
     }
     throw new Error('Payment is still pending. Do not pay again yet. Refresh this page and contact the business if you were charged.');
