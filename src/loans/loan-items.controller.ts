@@ -99,7 +99,7 @@ export class LoanItemsController {
     const quantity=Number(b?.quantity||1),value=Number(b?.valueKes||0);
     if(!itemName||itemName.length>160)throw new BadRequestException('Enter a valid item name');
     if(!conditionOut||conditionOut.length>1000)throw new BadRequestException('Describe the item condition');
-    if(!/^\d{4}-\d{2}-\d{2}$/.test(due)||Number.isNaN(Date.parse(due))||due<new Date().toISOString().slice(0,10))throw new BadRequestException('Choose a valid return date');
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(due)||!isRealDate(due)||due<new Date().toISOString().slice(0,10))throw new BadRequestException('Choose a valid return date');
     if(!Number.isSafeInteger(quantity)||quantity<1||quantity>10000)throw new BadRequestException('Enter a valid quantity');
     if(!Number.isSafeInteger(value)||value<0||value>1000000000)throw new BadRequestException('Enter a valid item value');
     for(const [label,value] of [['IMEI',String(b?.imei||'').trim()],['serial number',String(b?.serialNumber||'').trim()]] as const)if(value&&!/^[A-Za-z0-9 ._/-]{6,80}$/.test(value))throw new BadRequestException('Enter a valid '+label+' (6–80 letters or numbers)');
