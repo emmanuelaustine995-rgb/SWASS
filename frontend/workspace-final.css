@@ -984,7 +984,7 @@ html body.workspace-active #workspace-nav.bottom-nav > button.active .nav-icon {
 
 
 /* AURORA Home redesign — deliberately scoped to #owner-home only. */
-#owner-home.aurora-home-redesign{display:flex;flex-direction:column;gap:14px;padding:0 0 22px!important;margin:0 auto!important;width:100%!important;max-width:100%!important;color:#15234b}
+#owner-home.aurora-home-redesign:not(.hidden){display:flex;flex-direction:column;gap:14px;padding:0 0 22px!important;margin:0 auto!important;width:100%!important;max-width:100%!important;color:#15234b}
 #owner-home.aurora-home-redesign .dashboard-login-return-row{margin:0 0 2px!important}
 #owner-home.aurora-home-redesign .aurora-home-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:17px 18px;border-radius:0 0 28px 28px;background:linear-gradient(105deg,#0fd3b0 0%,#0aa9d8 48%,#1d6fe0 100%);color:#fff;box-shadow:0 8px 22px rgba(17,139,196,.17)}
 #owner-home.aurora-home-redesign .aurora-home-brand{display:flex;align-items:center;gap:12px;min-width:0}
