@@ -4,6 +4,7 @@
   const $ = (id) => document.getElementById(id);
   let receipts = [];
   let recoveryToken = '';
+  let pendingRecovery = null;
   let apiWarmupPromise = null;
   async function warmApi() {
     if (apiWarmupPromise) return apiWarmupPromise;
@@ -25,6 +26,22 @@
   $('request-form').addEventListener('submit', async (event) => {
     event.preventDefault();
     const button = $('request-button');
+    if (pendingRecovery) {
+      button.disabled = true;
+      button.textContent = 'Checking payment status…';
+      try {
+        await pollPayment(pendingRecovery.paymentId);
+        pendingRecovery = null;
+        recoveryToken = '';
+        button.disabled = false;
+        button.textContent = 'Recover another set of receipts';
+      } catch (error) {
+        message(error.message || 'Could not check payment status.');
+        button.disabled = false;
+        button.textContent = 'Check payment status';
+      }
+      return;
+    }
     const nationalId = $('national-id').value.trim();
     const phone = $('phone').value.trim();
     if (!nationalId || !phone) { message('Enter both your National ID and phone number.'); return; }
@@ -40,13 +57,18 @@
       });
       const data = await readResponse(response);
       recoveryToken = data.recoveryToken;
-      message('An M-Pesa STK prompt for KSh 10 has been sent. Enter your M-Pesa PIN to pay. One payment unlocks all receipts matching your ID and phone.');
+      pendingRecovery = { paymentId: data.paymentId };
+      message('An M-Pesa STK prompt for KSh 10 has been sent. Enter your M-Pesa PIN. If confirmation is delayed, check the existing payment instead of requesting another prompt.');
       button.textContent = 'Waiting for M-Pesa payment…';
       await pollPayment(data.paymentId);
+      pendingRecovery = null;
+      recoveryToken = '';
+      button.disabled = false;
+      button.textContent = 'Recover another set of receipts';
     } catch (error) {
       message(error.message || 'Could not start receipt recovery. Please try again.');
       button.disabled = false;
-      button.textContent = 'Pay KSh 10 and recover receipts';
+      button.textContent = pendingRecovery ? 'Check payment status' : 'Pay KSh 10 and recover receipts';
     }
   });
   async function pollPayment(paymentId) {
