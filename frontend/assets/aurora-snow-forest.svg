@@ -21,14 +21,14 @@
 <path d="M0 720 Q300 650 620 730T1250 700T1600 710V1000H0Z" fill="#d9eaf4"/>
 <g opacity=".58" filter="url(#blur)"><ellipse cx="780" cy="620" rx="580" ry="110" fill="#fff"/></g>
 <g opacity=".86">
-  <use href="#tree" x="80" y="420" transform="translate(80 420) scale(1.15)"/>
-  <use href="#tree" x="80" y="420" transform="translate(270 490) scale(.9)"/>
-  <use href="#tree" x="80" y="420" transform="translate(480 445) scale(1.05)"/>
-  <use href="#tree" x="80" y="420" transform="translate(690 510) scale(.82)"/>
-  <use href="#tree" x="80" y="420" transform="translate(900 455) scale(1.12)"/>
-  <use href="#tree" x="80" y="420" transform="translate(1110 500) scale(.92)"/>
-  <use href="#tree" x="80" y="420" transform="translate(1320 430) scale(1.12)"/>
-  <use href="#tree" x="80" y="420" transform="translate(1510 490) scale(.9)"/>
+  <use href="#tree" transform="translate(80 420) scale(1.15)"/>
+  <use href="#tree" transform="translate(270 490) scale(.9)"/>
+  <use href="#tree" transform="translate(480 445) scale(1.05)"/>
+  <use href="#tree" transform="translate(690 510) scale(.82)"/>
+  <use href="#tree" transform="translate(900 455) scale(1.12)"/>
+  <use href="#tree" transform="translate(1110 500) scale(.92)"/>
+  <use href="#tree" transform="translate(1320 430) scale(1.12)"/>
+  <use href="#tree" transform="translate(1510 490) scale(.9)"/>
 </g>
 <g opacity=".45">
   <use href="#tree" transform="translate(180 620) scale(1.25)"/>
