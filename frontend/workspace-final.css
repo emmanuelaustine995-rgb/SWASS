@@ -645,3 +645,92 @@ html body.workspace-active #workspace-nav.bottom-nav > button:not(.hidden):focus
     height:28px!important;
   }
 }
+
+
+/* Login / signup animated card: orange and midnight curved panels with
+   staggered form movement. Existing form IDs and submission logic remain. */
+html body:not(.workspace-active):not(.platform-admin-login) #login-view .auth-animated-container{
+  isolation:isolate;position:relative!important;overflow:hidden!important;
+  width:min(100%,14cm)!important;max-width:14cm!important;min-height:520px;
+  padding:30px 28px!important;border-radius:22px!important;
+  background:linear-gradient(135deg,#fff 0%,#f7f8fc 100%)!important;
+}
+html body:not(.workspace-active):not(.platform-admin-login) #login-view .curved-shape,
+html body:not(.workspace-active):not(.platform-admin-login) #login-view .curved-shape2{
+  position:absolute;pointer-events:none;z-index:-1;inset:0;
+}
+html body:not(.workspace-active):not(.platform-admin-login) #login-view .curved-shape{
+  background:linear-gradient(135deg,#ff9b32 0%,#f26b21 52%,#d94b18 100%);
+  clip-path:polygon(100% 0,100% 100%,42% 100%,0 62%,0 0);
+  transform:rotate(10deg) skewY(40deg) scale(1.5);transform-origin:bottom right;
+  transition:transform 1.5s ease .5s,clip-path 1.5s ease .5s;
+  opacity:.96;
+}
+html body:not(.workspace-active):not(.platform-admin-login) #login-view .curved-shape2{
+  background:linear-gradient(145deg,#07152d 0%,#102b52 70%,#1d3154 100%);
+  clip-path:polygon(100% 0,100% 100%,55% 100%,100% 55%);
+  transform:rotate(0) skewY(0);transition:transform 1.5s ease 1.2s,clip-path 1.5s ease 1.2s;
+}
+html body:not(.workspace-active):not(.platform-admin-login) #login-view .form-box{
+  position:relative;z-index:2;transition:transform .85s ease,opacity .7s ease,filter .7s ease;
+  transform:translateX(0);opacity:1;filter:blur(0);
+}
+html body:not(.workspace-active):not(.platform-admin-login) #login-view .form-box.auth-slide-out{
+  transform:translateX(-120%);opacity:0;filter:blur(10px);transition-delay:0s;
+}
+html body:not(.workspace-active):not(.platform-admin-login) #login-view .form-box.Register.auth-slide-out{
+  transform:translateX(120%);
+}
+html body:not(.workspace-active):not(.platform-admin-login) #login-view .form-box.auth-slide-in{
+  animation:aurora-auth-slide-in .85s ease both;
+}
+@keyframes aurora-auth-slide-in{from{transform:translateX(120%);opacity:0;filter:blur(10px)}to{transform:translateX(0);opacity:1;filter:blur(0)}}
+html body:not(.workspace-active):not(.platform-admin-login) #login-view .form-box.Login.auth-slide-in{
+  animation-name:aurora-auth-slide-in-left;
+}
+@keyframes aurora-auth-slide-in-left{from{transform:translateX(-120%);opacity:0;filter:blur(10px)}to{transform:translateX(0);opacity:1;filter:blur(0)}}
+html body:not(.workspace-active):not(.platform-admin-login) #login-view .auth-animated-container.active .curved-shape{
+  transform:rotate(0) skewY(0) scale(1);clip-path:polygon(0 0,100% 0,100% 100%,0 100%);
+}
+html body:not(.workspace-active):not(.platform-admin-login) #login-view .auth-animated-container.active .curved-shape2{
+  transform:rotate(-11deg) skewY(-41deg) translate(18%,0);clip-path:polygon(45% 0,100% 0,100% 100%,0 100%);
+}
+html body:not(.workspace-active):not(.platform-admin-login) #login-view .info-content{
+  position:absolute;z-index:1;right:22px;top:42%;width:36%;color:#fff;
+  text-align:center;opacity:1;transform:translateX(0);
+  transition:opacity .6s ease,transform .8s ease,filter .6s ease;pointer-events:none;
+}
+html body:not(.workspace-active):not(.platform-admin-login) #login-view .info-content h2{
+  font-size:clamp(19px,3vw,27px);font-weight:850;letter-spacing:.04em;margin:0 0 9px;
+}
+html body:not(.workspace-active):not(.platform-admin-login) #login-view .info-content p{font-size:12px;line-height:1.6;margin:0}
+html body:not(.workspace-active):not(.platform-admin-login) #login-view .info-content.Register{
+  left:22px;right:auto;opacity:0;transform:translateX(-120%);filter:blur(10px);
+}
+html body:not(.workspace-active):not(.platform-admin-login) #login-view .auth-animated-container.active .info-content.Login{
+  opacity:0;transform:translateX(120%);filter:blur(10px);
+}
+html body:not(.workspace-active):not(.platform-admin-login) #login-view .auth-animated-container.active .info-content.Register{
+  opacity:1;transform:translateX(0);filter:blur(0);transition-delay:1.35s;
+}
+html body:not(.workspace-active):not(.platform-admin-login) #login-view .aurora-brand-lockup{
+  position:relative;z-index:2;max-width:245px;margin:0 auto 12px;
+}
+html body:not(.workspace-active):not(.platform-admin-login) #login-view .aurora-login-logo{max-width:100%;height:auto}
+html body:not(.workspace-active):not(.platform-admin-login) #login-view .login-card #register-form{
+  position:relative;z-index:3;
+}
+@media(max-width:560px){
+  html body:not(.workspace-active):not(.platform-admin-login) #login-view .auth-animated-container{
+    min-height:0;padding:18px 14px!important;border-radius:18px!important;
+  }
+  html body:not(.workspace-active):not(.platform-admin-login) #login-view .info-content{display:none!important}
+  html body:not(.workspace-active):not(.platform-admin-login) #login-view .curved-shape,
+  html body:not(.workspace-active):not(.platform-admin-login) #login-view .curved-shape2{opacity:.14}
+}
+@media(prefers-reduced-motion:reduce){
+  html body:not(.workspace-active):not(.platform-admin-login) #login-view .curved-shape,
+  html body:not(.workspace-active):not(.platform-admin-login) #login-view .curved-shape2,
+  html body:not(.workspace-active):not(.platform-admin-login) #login-view .form-box,
+  html body:not(.workspace-active):not(.platform-admin-login) #login-view .info-content{transition:none!important;animation:none!important}
+}
