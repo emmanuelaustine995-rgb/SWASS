@@ -1331,6 +1331,7 @@
     const selected=tab.dataset.loginRole;
     // Always return to the normal sign-in panel when switching account types.
     document.body.classList.remove('registration-open');
+    document.querySelector('#login-view .auth-animated-container')?.classList.remove('active');
     $('login-view')?.classList.remove('hidden');
     $('login-form')?.classList.remove('hidden');
     $('password-reset-form')?.classList.add('hidden');
