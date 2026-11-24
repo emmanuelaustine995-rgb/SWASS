@@ -657,7 +657,7 @@ html body:not(.workspace-active):not(.platform-admin-login) #login-view .auth-an
 }
 html body:not(.workspace-active):not(.platform-admin-login) #login-view .curved-shape,
 html body:not(.workspace-active):not(.platform-admin-login) #login-view .curved-shape2{
-  position:absolute;pointer-events:none;z-index:-1;inset:0;
+  position:absolute;pointer-events:none;z-index:0;inset:0;
 }
 html body:not(.workspace-active):not(.platform-admin-login) #login-view .curved-shape{
   background:linear-gradient(135deg,#ff9b32 0%,#f26b21 52%,#d94b18 100%);
@@ -671,6 +671,7 @@ html body:not(.workspace-active):not(.platform-admin-login) #login-view .curved-
   clip-path:polygon(100% 0,100% 100%,55% 100%,100% 55%);
   transform:rotate(0) skewY(0);transition:transform 1.5s ease 1.2s,clip-path 1.5s ease 1.2s;
 }
+html body:not(.workspace-active):not(.platform-admin-login) #login-view .auth-animated-container > :not(.curved-shape):not(.curved-shape2):not(.info-content){position:relative;z-index:2}
 html body:not(.workspace-active):not(.platform-admin-login) #login-view .form-box{
   position:relative;z-index:2;transition:transform .85s ease,opacity .7s ease,filter .7s ease;
   transform:translateX(0);opacity:1;filter:blur(0);
