@@ -57,18 +57,27 @@ export class LoanItemsController {
   @Get('workspace') @Roles('owner','freelancer','customer')
   async workspace(@Req() req:any){
     const role=this.partyRole(req.user),id=req.user.sub;
-    const {rows}=await this.db.pool.query(
-      `SELECT l.*,
-        (l.status IN ('active','sale_pending','return_pending') AND l.expected_return_date<CURRENT_DATE) AS overdue,
-        CASE WHEN l.accepted_at IS NULL THEN 0 ELSE GREATEST(1,CURRENT_DATE-l.accepted_at::date+1) END AS "daysOnLoan",
-        (l.lender_role=$1 AND l.lender_id=$2) AS "isLender"
-       FROM aurora_loans l
-       WHERE (l.lender_role=$1 AND l.lender_id=$2)
-          OR (l.borrower_role=$1 AND l.borrower_id=$2)
-       ORDER BY l.created_at DESC LIMIT 200`,
-      [role,id],
-    );
-    return {loans:rows};
+    const [{rows},summary]=await Promise.all([
+      this.db.pool.query(
+        `SELECT l.*,
+          (l.status IN ('active','sale_pending','return_pending') AND l.expected_return_date<CURRENT_DATE) AS overdue,
+          CASE WHEN l.accepted_at IS NULL THEN 0 ELSE GREATEST(1,CURRENT_DATE-l.accepted_at::date+1) END AS "daysOnLoan",
+          (l.lender_role=$1 AND l.lender_id=$2) AS "isLender"
+         FROM aurora_loans l
+         WHERE (l.lender_role=$1 AND l.lender_id=$2)
+            OR (l.borrower_role=$1 AND l.borrower_id=$2)
+         ORDER BY l.created_at DESC LIMIT 200`,
+        [role,id],
+      ),
+      this.db.pool.query(
+        `SELECT COUNT(*) FILTER (WHERE lender_role=$1 AND lender_id=$2)::int AS "lentCount",
+                COUNT(*) FILTER (WHERE borrower_role=$1 AND borrower_id=$2)::int AS "borrowedCount"
+           FROM aurora_loans
+          WHERE (lender_role=$1 AND lender_id=$2) OR (borrower_role=$1 AND borrower_id=$2)`,
+        [role,id],
+      ),
+    ]);
+    return {loans:rows,summary:summary.rows[0]||{lentCount:0,borrowedCount:0}};
   }
 
   @Post('offers') @Roles('owner','freelancer','customer')
