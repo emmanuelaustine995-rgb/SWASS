@@ -504,12 +504,25 @@
       item.append(swatch,label,percent);legend.append(item);
     });
   }
+  let homeDailySalesRequestId=0;
   async function loadHomeDailySales(){
     if(!['owner','manager','vendor','freelancer'].includes(state.role))return;
     const status=$('home-sales-status');if(!status)return;
+    const requestId=++homeDailySalesRequestId;
     status.textContent='Loading your sales snapshot…';
-    try{const result=await request('/api/v1/receipts?limit=100');renderHomeDailySales(result.receipts||[]);}
-    catch(error){status.textContent=error.message||'Daily sales snapshot could not be loaded.';$('home-sales-chart').innerHTML='<p class="muted small">Sales chart is temporarily unavailable.</p>';}
+    try{
+      const result=await request('/api/v1/receipts?limit=100');
+      if(requestId!==homeDailySalesRequestId)return;
+      renderHomeDailySales(result.receipts||[]);
+      const chart=$('home-sales-chart');
+      status.textContent='Your seven-day sales snapshot is up to date.';
+      if(chart)chart.removeAttribute('aria-busy');
+    }catch(error){
+      if(requestId!==homeDailySalesRequestId)return;
+      status.textContent=(error.message||'Daily sales snapshot could not be loaded.')+' Refresh the dashboard to try again.';
+      const chart=$('home-sales-chart');
+      if(chart){chart.replaceChildren();const note=document.createElement('p');note.className='muted small';note.textContent='Sales chart is temporarily unavailable.';chart.append(note);chart.setAttribute('aria-busy','false');}
+    }
   }
 
   async function loadOwnerHomeSummary(){
@@ -873,7 +886,7 @@
   // Checkout and receipt dialogs must live under <body>, not inside the hidden dashboard view.
   // Otherwise their hidden ancestor prevents them from appearing when a sale is started from the POS.
   ['checkout-modal','receipt-modal','imei-scanner-modal'].forEach(id=>{const modal=$(id);if(modal&&modal.parentElement!==document.body)document.body.appendChild(modal);});
-  function openCheckout(){$('checkout-customer-step')?.classList.remove('hidden');$('checkout-payment-step')?.classList.add('hidden');const items=[...state.cart.values()];if(!items.length){showNotice('Add at least one product before customer details.',true);return;}const invalid=[...$('cart-list').querySelectorAll('[data-price]')].some(input=>!Number.isSafeInteger(Number(input.value))||Number(input.value)<1);if(invalid){showNotice('Enter a valid price for each product before continuing.',true);return;}$('buyer-id').required=true;$('checkout-total').textContent=money(totals().total);$('receipt-mpesa-amount').value=String(totals().total);$('receipt-mpesa-phone').value=$('buyer-phone').value.trim();$('receipt-mpesa-fields').classList.toggle('hidden',$('payment-method').value!=='mpesa');$('checkout-error').textContent='';const modal=$('checkout-modal');$('checkout-open').classList.add('hidden');modal.classList.remove('hidden');modal.setAttribute('aria-hidden','false');const card=modal.querySelector('.modal-card');if(card)card.scrollTop=0;syncGlobalBackButton();}
+  function openCheckout(){$('checkout-customer-step')?.classList.remove('hidden');$('checkout-payment-step')?.classList.add('hidden');const items=[...state.cart.values()];if(!items.length){showNotice('Add at least one product before customer details.',true);return;}const invalid=[...$('cart-list').querySelectorAll('[data-price]')].some(input=>!Number.isSafeInteger(Number(input.value))||Number(input.value)<1);if(invalid){showNotice('Enter a valid price for each product before continuing.',true);return;}const requiresBuyerId=items.some(r=>!!r.product.requiresBuyerId||/\b(phone|mobile|smartphone|iphone|ipad|tablet|laptop|notebook|computer|desktop|television|tv|camera|watch|console|electronics?)\b/i.test(String(r.product.name||'')));$('buyer-id').required=requiresBuyerId;$('checkout-total').textContent=money(totals().total);$('receipt-mpesa-amount').value=String(totals().total);$('receipt-mpesa-phone').value=$('buyer-phone').value.trim();$('receipt-mpesa-fields').classList.toggle('hidden',$('payment-method').value!=='mpesa');$('checkout-error').textContent='';const modal=$('checkout-modal');$('checkout-open').classList.add('hidden');modal.classList.remove('hidden');modal.setAttribute('aria-hidden','false');const card=modal.querySelector('.modal-card');if(card)card.scrollTop=0;syncGlobalBackButton();}
   function makeReceiptMarkup(receipt, sale, customer){
     const business=receipt.business||{};
     const lines=sale.items.map((i,index)=>{const serials=Array.isArray(i.serials)?i.serials.filter(Boolean):(i.serialNo?[i.serialNo]:[]);const serialMarkup=serials.map((serialNo,serialIndex)=>`<div class="receipt-serial">IMEI / Serial ${serialIndex+1}: ${escapeHtml(serialNo)}<span id="imei-qr-${index}-${serialIndex}" class="imei-qr"></span></div>`).join('');return `<div class="receipt-line"><span><strong>${escapeHtml(i.name)}</strong> × ${i.qty}<br><small>Unit price: ${money(i.price)}${serialMarkup}</small></span><strong>${money(i.price*i.qty)}</strong></div>`;}).join('');
@@ -906,7 +919,7 @@
     // Read the final values directly from the visible fields at checkout so
     // the receipt payload can never fall back to an older product price.
     priceInputs.forEach(input=>{const row=state.cart.get(input.dataset.price);if(row)row.unitPriceKes=Number(input.value);});
-    const t=totals(); const needsBuyer=true;
+    const t=totals(); const needsBuyer=items.some(r=>!!r.product.requiresBuyerId||/\b(phone|mobile|smartphone|iphone|ipad|tablet|laptop|notebook|computer|desktop|television|tv|camera|watch|console|electronics?)\b/i.test(String(r.product.name||'')));
     const needsIdentifier=p=>!!p.requiresBuyerId||/\b(phone|mobile|smartphone|iphone|ipad|tablet|laptop|notebook|computer|desktop|television|tv|camera|watch|console|electronics?)\b/i.test(String(p.name||''));
     if(items.some(r=>needsIdentifier(r.product)&&!((Array.isArray(r.serials)&&r.serials.some(v=>String(v||'').trim()))||String(r.imei||'').trim()))){$('checkout-error').textContent='Enter the IMEI / serial number for every phone or identifiable electronic item before issuing the receipt.';return;}
     const customer={fullName:$('buyer-name').value.trim(),phone:$('buyer-phone').value.trim(),...($('buyer-email').value.trim()?{email:$('buyer-email').value.trim()}:{}),...($('buyer-id').value.trim()?{nationalId:$('buyer-id').value.trim()}:{})};
@@ -1024,35 +1037,55 @@
     const payload = { purpose, phone: $('owner-mpesa-phone').value.trim() };
     if (purpose === 'subscription') payload.plan = $('owner-subscription-plan').value;
     else payload.amountKes = Number($('owner-topup-amount').value);
+    if (!/^(?:254|0)?[17][0-9]{8}$/.test(payload.phone.replace(/[+ ()-]/g,''))) {
+      message.textContent = 'Enter a valid Kenyan M-Pesa phone number.';
+      return;
+    }
+    if (purpose !== 'subscription' && (!Number.isSafeInteger(payload.amountKes) || payload.amountKes < 4 || payload.amountKes > 1000000 || payload.amountKes % 4 !== 0)) {
+      message.textContent = 'Enter a whole KSh top-up amount of at least KSh 4, in multiples of KSh 4.';
+      return;
+    }
+    const paymentFingerprint = JSON.stringify(payload);
+    const pendingKey = 'aurora-pending-owner-payment';
+    let pending = null;
+    try { pending = JSON.parse(localStorage.getItem(pendingKey) || 'null'); } catch {}
+    if (pending && pending.fingerprint !== paymentFingerprint) {
+      message.textContent = 'A previous payment is still awaiting confirmation. Check or resolve that payment before starting a different one.';
+      return;
+    }
     button.disabled = true;
-    message.textContent = 'Connecting securely to Tuma Payments…';
+    message.textContent = pending ? 'Checking your existing M-Pesa payment…' : 'Connecting securely to Tuma Payments…';
     try {
-      const started = await request('/api/v1/mpesa/stk-push', {
-        method: 'POST',
-        body: JSON.stringify(payload)
-      });
-      message.textContent = started.message || 'STK prompt requested. Check your phone and enter your M-Pesa PIN.';
-      if (!started.paymentId) throw new Error('Tuma did not return a payment reference. Contact support before trying again.');
+      let paymentId = pending?.paymentId;
+      if (!paymentId) {
+        const started = await request('/api/v1/mpesa/stk-push', { method: 'POST', body: JSON.stringify(payload) });
+        if (!started.paymentId) throw new Error('Tuma did not return a payment reference. Do not retry until support checks whether a prompt was created.');
+        paymentId = started.paymentId;
+        localStorage.setItem(pendingKey, JSON.stringify({ paymentId, fingerprint: paymentFingerprint, createdAt: Date.now() }));
+        message.textContent = started.message || 'STK prompt requested. Check your phone and enter your M-Pesa PIN.';
+      }
       const deadline = Date.now() + 90000;
       while (Date.now() < deadline) {
         await new Promise(resolve => setTimeout(resolve, 3000));
-        const current = await request('/api/v1/mpesa/payments/' + encodeURIComponent(started.paymentId));
+        const current = await request('/api/v1/mpesa/payments/' + encodeURIComponent(paymentId));
         if (current.status === 'success') {
+          localStorage.removeItem(pendingKey);
           await loadSubscriptionBalance();
-          const plan=$('owner-subscription-plan')?.value||'monthly';const amount=Number(payload.amountKes||0);const count=Math.floor(amount/4);
+          const plan=payload.plan||'monthly';const amount=Number(payload.amountKes||0);const count=Math.floor(amount/4);
           const confirmation=purpose==='subscription'?'Congratulations! You have paid for your '+plan+' subscription.':'Congratulations! You have bought '+count.toLocaleString('en-KE')+' receipt'+(count===1?'':'s')+' for '+money(amount)+'.';
           $('subscription-payment-success-message').textContent=confirmation+(current.receiptNumber?' M-Pesa receipt: '+current.receiptNumber+'.':'');$('subscription-payment-success')?.classList.remove('hidden');$('owner-mpesa-form')?.classList.add('hidden');
           message.textContent=confirmation;showNotice('Payment confirmed successfully.');return;
         }
         if (current.status === 'failed') {
+          localStorage.removeItem(pendingKey);
           message.textContent = 'Tuma reports that this payment was not completed. You can try again.';
           return;
         }
         message.textContent = 'Waiting for M-Pesa confirmation… Please complete the prompt on your phone.';
       }
-      message.textContent = 'Payment is still pending. Do not pay again yet; refresh the payment page or contact support to check its status.';
+      message.textContent = 'Payment is still pending. Submit again to check this same payment; a new STK prompt will not be sent.';
     } catch (error) {
-      message.textContent = error.message || 'Could not start or verify the Tuma payment. Please try again later.';
+      message.textContent = (error.message || 'Could not verify the Tuma payment.') + (localStorage.getItem(pendingKey) ? ' Submit again to check the same payment without sending another STK prompt.' : '');
     } finally {
       button.disabled = false;
     }
@@ -2009,14 +2042,19 @@
       $('shop-add-products').reset();$('shop-product-quantity').value='1';
       message.textContent=(result.product?.name||payload.name)+' has been listed for customers across AURORA.';
       message.style.color='#0066FF';
+      // The directory and shop stock list share the products table; refresh
+      // the inventory immediately if its panel is already open.
+      if($('shop-stock-manager-card')?.open)await loadShopInventory(false);
     }catch(err){message.textContent=err.message||'Could not add this product.';message.style.color='#FC7584';}
     finally{btn.disabled=false;btn.textContent='＋ Add Product';}
   });
 
   // Shop Products dashboard cards: reuse the existing directory and inventory APIs.
   let shopInventoryLowOnly = false;
+  let shopInventoryRequestId=0;
   async function loadShopInventory(lowOnly=shopInventoryLowOnly){
     shopInventoryLowOnly=!!lowOnly;
+    const requestId=++shopInventoryRequestId;
     const list=$('shop-stock-list'),count=$('shop-stock-count'),title=$('shop-stock-title');
     if(!list)return;
     if(title)title.textContent=shopInventoryLowOnly?'Low Stock Alerts':'My Products & Stock';
@@ -2024,7 +2062,8 @@
     list.innerHTML='<p class="empty">Loading products…</p>';
     try{
       const data=await request('/api/v1/products'+(shopInventoryLowOnly?'?lowStock=true':''));
-      const products=data.products||[];
+      if(requestId!==shopInventoryRequestId)return;
+      const products=Array.isArray(data.products)?data.products:[];
       if(count)count.textContent=products.length+' '+(products.length===1?'product':'products')+(shopInventoryLowOnly?' needing attention':' registered in this shop');
       if(!products.length){list.innerHTML='<p class="empty">'+(shopInventoryLowOnly?'No low-stock products. Your current stock levels look good.':'No products registered yet. Use Register New Product to add your first item.')+'</p>';return;}
       list.innerHTML=products.map(p=>{
@@ -2032,7 +2071,7 @@
         const low=qty<=level,stockClass=qty===0?'is-out':low?'is-low':'is-healthy';
         return '<article class="shop-stock-item '+stockClass+'"><div class="shop-stock-item-main"><strong>'+escapeHtml(p.name)+'</strong><small>'+(p.sku?'SKU: '+escapeHtml(p.sku)+' · ':'')+'Selling price: '+money(p.priceKes)+'</small></div><span class="shop-stock-quantity">'+qty+' <small>in stock</small></span><div class="shop-stock-adjust"><label>Stock change<input type="number" step="1" min="-1000000" max="1000000" inputmode="numeric" data-stock-change="'+escapeHtml(p.id)+'" placeholder="+ / − quantity"></label><button type="button" class="btn btn-light btn-small" data-stock-save="'+escapeHtml(p.id)+'">Update stock</button></div><small class="shop-stock-status">'+(qty===0?'Out of stock':low?'Restock recommended':'Stock available')+'</small></article>';
       }).join('');
-    }catch(err){if(count)count.textContent='Inventory unavailable';list.innerHTML='<p class="empty">'+escapeHtml(err.message||'Could not load your shop inventory.')+'</p>';}
+    }catch(err){if(requestId!==shopInventoryRequestId)return;if(count)count.textContent='Inventory unavailable';list.innerHTML='<p class="empty">'+escapeHtml(err.message||'Could not load your shop inventory.')+'</p>';}
   }
   document.querySelectorAll('[data-product-action]').forEach(card=>card.addEventListener('click',()=>{
     const action=card.dataset.productAction;
@@ -2448,8 +2487,9 @@
       const data=await request('/api/v1/loan-items/workspace');
       const loans=Array.isArray(data.loans)?data.loans:[];
       const outgoing=loans.filter(x=>x.isLender===true),incoming=loans.filter(x=>x.isLender!==true);
-      $('loans-lent-count').textContent=String(outgoing.length);
-      $('loans-borrowed-count').textContent=String(incoming.length);
+      const lentCount=$('loans-lent-count'),borrowedCount=$('loans-borrowed-count');
+      if(lentCount)lentCount.textContent=String(Number(data.summary?.lentCount??outgoing.length));
+      if(borrowedCount)borrowedCount.textContent=String(Number(data.summary?.borrowedCount??incoming.length));
       lent.innerHTML=outgoing.length?outgoing.map(x=>renderLoanCard(x,true)).join(''):'<p class="loans-empty">You have not lent any items yet.</p>';
       borrowed.innerHTML=incoming.length?incoming.map(x=>renderLoanCard(x,false)).join(''):'<p class="loans-empty">No loan offers or borrowed items yet.</p>';
       if(message)message.textContent=loans.length+' loan record(s) connected to your account.';
@@ -2465,6 +2505,10 @@
     button.disabled=true;button.textContent='Sending offer…';message.textContent='Checking the recipient account and recording the offer…';
     try{
       const payload={borrowerPhone:$('loan-recipient-phone').value.trim(),itemName:$('aurora-loan-item-name').value.trim(),quantity:Number($('aurora-loan-quantity').value),valueKes:Number($('aurora-loan-value').value),expectedReturnDate:$('aurora-loan-due-date').value,imei:$('aurora-loan-imei').value.trim(),serialNumber:$('aurora-loan-serial').value.trim(),conditionOut:$('aurora-loan-condition').value.trim(),sellingAllowed:$('aurora-loan-selling-allowed').checked,ownershipConfirmed:$('aurora-loan-ownership-confirmed').checked};
+      if(!payload.borrowerPhone||!payload.itemName||!payload.conditionOut||!payload.expectedReturnDate||!Number.isSafeInteger(payload.quantity)||payload.quantity<1||!Number.isSafeInteger(payload.valueKes)||payload.valueKes<0||!payload.ownershipConfirmed){
+        message.textContent='Complete the recipient, item, positive whole-number quantity, valid KSh value, return date, condition and ownership confirmation before sending.';
+        return;
+      }
       const result=await request('/api/v1/loan-items/offers',{method:'POST',body:JSON.stringify(payload)});
       message.textContent='Offer '+result.loan.reference+' sent. The recipient must accept it before the loan-day counter starts.';
       $('aurora-loan-offer-form').reset();$('aurora-loan-quantity').value='1';$('aurora-loan-value').value='0';
@@ -2482,12 +2526,14 @@
         const reason=window.prompt('Optional reason for declining this offer:')||'';
         await request('/api/v1/loan-items/'+encodeURIComponent(id)+'/decline',{method:'PATCH',body:JSON.stringify({reason})});
       }else if(action==='sale'){
-        const price=window.prompt('Enter the actual sale price in KSh:');if(price===null) return;
+        const price=window.prompt('Enter the actual sale price in KSh:');if(price===null)return;
+        if(price.trim()===''||!Number.isSafeInteger(Number(price))||Number(price)<0){showNotice('Enter a valid whole-number sale price in KSh.',true);return;}
         const buyer=window.prompt('Buyer name (optional):')||'';
         const receipt=window.prompt('Receipt reference (optional):')||'';
-        await request('/api/v1/loan-items/'+encodeURIComponent(id)+'/sale-report',{method:'POST',body:JSON.stringify({salePriceKes:Number(price),saleDate:new Date().toISOString().slice(0,10),buyerName:buyer,receiptReference:receipt})});
+        const now=new Date(),saleDate=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+        await request('/api/v1/loan-items/'+encodeURIComponent(id)+'/sale-report',{method:'POST',body:JSON.stringify({salePriceKes:Number(price),saleDate,buyerName:buyer,receiptReference:receipt})});
       }else if(action==='return'){
-        const condition=window.prompt("Describe the item's condition before return:")||'';
+        const condition=window.prompt("Describe the item's condition before return:");if(condition===null)return;
         await request('/api/v1/loan-items/'+encodeURIComponent(id)+'/return-request',{method:'POST',body:JSON.stringify({conditionIn:condition})});
       }else if(action==='approve-sale')await request('/api/v1/loan-items/'+encodeURIComponent(id)+'/decision',{method:'PATCH',body:JSON.stringify({action:'approve_sale'})});
       else if(action==='approve-return')await request('/api/v1/loan-items/'+encodeURIComponent(id)+'/decision',{method:'PATCH',body:JSON.stringify({action:'approve_return'})});
