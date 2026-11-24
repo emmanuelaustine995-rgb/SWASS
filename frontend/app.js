@@ -1037,7 +1037,7 @@
     const payload = { purpose, phone: $('owner-mpesa-phone').value.trim() };
     if (purpose === 'subscription') payload.plan = $('owner-subscription-plan').value;
     else payload.amountKes = Number($('owner-topup-amount').value);
-    if (!/^(?:254|0)?[17]\\d{8}$/.test(payload.phone.replace(/[+\\s()-]/g,''))) {
+    if (!/^(?:254|0)?[17][0-9]{8}$/.test(payload.phone.replace(/[+\\s()-]/g,''))) {
       message.textContent = 'Enter a valid Kenyan M-Pesa phone number.';
       return;
     }
