@@ -414,19 +414,28 @@
   async function loadOwnerReferralSummary(){
     const card=$('referral-card');
     if(!card)return;
-    card.classList.toggle('hidden',!['owner','freelancer'].includes(state.role));
-    if(!['owner','freelancer'].includes(state.role))return;
+    // The referral summary endpoint is owner-only. Never expose a broken referral
+    // request to staff, vendors, managers or freelancers.
+    card.classList.toggle('hidden',state.role!=='owner');
+    if(state.role!=='owner')return;
     try{
-      const data=await request('/api/v1/referrals/summary');
+      const data=await request('/api/v1/referrals/summary',{cache:'no-store'});
       $('referral-total').textContent=Number(data.totalReferrals||0).toLocaleString('en-KE');
       $('referral-active').textContent=Number(data.activeReferrals||0).toLocaleString('en-KE');
       $('referral-earned').textContent=Math.floor(Math.max(0,Number(data.earnedKes)||0)/4).toLocaleString('en-KE');
       $('referral-available').textContent=money(data.availableKes);
       if($('referral-remainder'))$('referral-remainder').textContent=money(data.rewardRemainderKes);
       $('referral-receipts-available').textContent=Math.floor(Math.max(0,Number(data.availableKes)||0)/4).toLocaleString('en-KE');
-      $('referral-link').value=data.referralLink||'';const qr=$('referral-qr');if(qr){qr.innerHTML='';if(data.referralLink&&window.QRCode){new QRCode(qr,{text:data.referralLink,width:240,height:240,correctLevel:QRCode.CorrectLevel.M});}}
-      $('referral-message').textContent='Your available reward has been converted into receipt credits. Tap Redeem to add them to your receipt wallet.';
-      const history=await request('/api/v1/referrals/transactions');
+      // Use the real tenant referral code with the hostname the user is currently visiting.
+      // This automatically makes shared links use auroraereciept.co.ke after its DNS is live.
+      const referralLink=data.referralCode
+        ? new URL('/?ref='+encodeURIComponent(data.referralCode),window.location.origin).toString()
+        : (data.referralLink||'');
+      $('referral-link').value=referralLink;
+      const qr=$('referral-qr');
+      if(qr){qr.replaceChildren();if(referralLink&&window.QRCode){new QRCode(qr,{text:referralLink,width:164,height:164,correctLevel:QRCode.CorrectLevel.M});}}
+      $('referral-message').textContent=referralLink?'Your personal referral link is ready to share.':'Your referral link is being prepared.';
+      const history=await request('/api/v1/referrals/transactions',{cache:'no-store'});
       const earningsList=$('referral-earning-history');
       if(earningsList){
         earningsList.replaceChildren();
@@ -449,7 +458,11 @@
           row.append(detail,amount);list.append(row);
         });
       }
-    }catch(error){$('referral-message').textContent=error.message||'Referral details could not be loaded.';}
+    }catch(error){
+      $('referral-message').textContent=error.message||'Your referral link could not be loaded.';
+      $('referral-link').value='';
+      $('referral-qr')?.replaceChildren();
+    }
   }
   $('referral-share')?.addEventListener('click',async()=>{
     const link=$('referral-link')?.value;if(!link)return;
@@ -468,58 +481,114 @@
     }catch(error){$('referral-message').textContent=error.message||'Could not redeem referral rewards.';}
     finally{button.disabled=false;}
   });
-  function renderHomeDailySales(receipts){
-    receipts=Array.isArray(receipts)?receipts:[];
-    const chart=$('home-sales-chart'),legend=$('home-sales-legend');
+  function homeNairobiDateKey(value){
+    const date=value instanceof Date?value:new Date(String(value).length===10?String(value)+'T12:00:00Z':value);
+    if(Number.isNaN(date.getTime()))return '';
+    const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Africa/Nairobi',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(date);
+    const part=type=>parts.find(item=>item.type===type)?.value||'';
+    return part('year')+'-'+part('month')+'-'+part('day');
+  }
+  function shiftHomeDate(dateKey,offset){
+    const date=new Date(dateKey+'T12:00:00Z');
+    date.setUTCDate(date.getUTCDate()+offset);
+    return date.toISOString().slice(0,10);
+  }
+  function homeSalesRangeBounds(range){
+    const today=homeNairobiDateKey(new Date());
+    if(range==='today')return {from:today,to:today};
+    if(range==='month')return {from:today.slice(0,7)+'-01',to:today};
+    const weekday=new Date(today+'T12:00:00Z').getUTCDay();
+    return {from:shiftHomeDate(today,-((weekday+6)%7)),to:today};
+  }
+  function renderHomeDailySales(daily,range,totalSales,transactions){
+    const chart=$('home-sales-chart'),legend=$('home-sales-legend'),status=$('home-sales-status');
     if(!chart||!legend)return;
-    const now=new Date(),today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
-    const days=Array.from({length:7},(_,i)=>{const d=new Date(today);d.setDate(today.getDate()-(6-i));return {date:d,key:d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'),label:d.toLocaleDateString('en-KE',{weekday:'short'}),amount:0};});
-    const byDay=new Map(days.map(d=>[d.key,d]));
-    receipts.forEach(receipt=>{
-      const raw=receipt.issuedAt||receipt.createdAt||receipt.date;
-      if(!raw)return;
-      const date=new Date(raw);if(Number.isNaN(date.getTime()))return;
-      const key=date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');
-      const day=byDay.get(key);if(day)day.amount+=Math.max(0,Number(receipt.totalKes??receipt.total??0)||0);
+    const bounds=homeSalesRangeBounds(range);
+    const rows=Array.isArray(daily)?daily:[];
+    const byDay=new Map(rows.map(item=>[String(item.day||'').slice(0,10),{
+      amount:Math.max(0,Number(item.salesKes??item.totalKes??0)||0),
+      transactions:Math.max(0,Number(item.transactions||0)||0)
+    }]));
+    const days=[];
+    for(let key=bounds.from;key<=bounds.to;key=shiftHomeDate(key,1)){
+      const saved=byDay.get(key)||{amount:0,transactions:0};
+      const date=new Date(key+'T12:00:00Z');
+      const label=range==='today'?'Today':range==='month'?String(Number(key.slice(8,10))):date.toLocaleDateString('en-KE',{weekday:'short',timeZone:'Africa/Nairobi'});
+      days.push({key,label,amount:saved.amount,transactions:saved.transactions});
+    }
+    const total=Number.isFinite(Number(totalSales))?Number(totalSales):days.reduce((sum,item)=>sum+item.amount,0);
+    const count=Number.isFinite(Number(transactions))?Number(transactions):days.reduce((sum,item)=>sum+item.transactions,0);
+    const max=Math.max(1,...days.map(item=>item.amount));
+    chart.replaceChildren();
+    const bars=document.createElement('div');bars.className='aurora-home-sales-bars';
+    days.forEach(day=>{
+      const column=document.createElement('div');column.className='aurora-home-sales-column';
+      const value=document.createElement('div');value.className='aurora-home-sales-bar-value';value.textContent=day.amount?money(day.amount):'';
+      const track=document.createElement('div');track.className='aurora-home-sales-bar-track';
+      const bar=document.createElement('div');bar.className='aurora-home-sales-bar';
+      bar.style.height=(day.amount?Math.max(5,day.amount/max*132):4)+'px';
+      if(!day.amount)bar.classList.add('is-empty');
+      track.append(bar);
+      const label=document.createElement('small');label.textContent=day.label;
+      column.title=day.key+' · '+money(day.amount)+' · '+day.transactions+' sale(s)';
+      column.append(value,track,label);bars.append(column);
     });
-    const total=days.reduce((sum,d)=>sum+d.amount,0);
-    const tones=['#2798d1','#22a77a','#8b68d8','#ed9844','#d9588b','#527fd2','#269ca0'];
-    let offset=0;
-    const slices=days.map((day,i)=>{const pct=total>0?day.amount/total*100:0;const from=offset;offset+=pct;return {...day,pct,from,to:offset,color:tones[i]};});
-    chart.replaceChildren();legend.replaceChildren();
-    const pie=document.createElement('div');pie.className='home-sales-pie';
-    pie.setAttribute('aria-label','Last seven days sales total '+money(total));
-    if(total>0){
-      pie.style.background='conic-gradient('+slices.filter(s=>s.pct>0).map(s=>s.color+' '+s.from+'% '+s.to+'%').join(', ')+')';
-    }else{pie.classList.add('is-empty');}
-    const center=document.createElement('div');center.className='home-sales-pie-center';
-    const totalLabel=document.createElement('strong');totalLabel.textContent=money(total);
-    const caption=document.createElement('small');caption.textContent='7-day sales';
-    center.append(totalLabel,caption);pie.append(center);chart.append(pie);
-    slices.forEach(day=>{
-      const item=document.createElement('div');item.className='home-sales-legend-item';
-      const swatch=document.createElement('i');swatch.style.setProperty('background-color',day.color,'important');
-      const label=document.createElement('span');label.textContent=day.label;
-      const percent=document.createElement('strong');percent.textContent=day.pct.toFixed(0)+'%';
-      item.append(swatch,label,percent);legend.append(item);
-    });
+    chart.append(bars);
+    chart.setAttribute('aria-label',range+' sales: '+money(total)+' across '+count+' issued receipts');
+    legend.textContent=range==='today'?'Today · Africa/Nairobi time':range==='month'?'Daily totals · Africa/Nairobi time':'Monday to today · Africa/Nairobi time';
+    if(status)status.textContent=money(total)+' total · '+count.toLocaleString('en-KE')+' issued sale'+(count===1?'':'s');
   }
-  async function loadHomeDailySales(){
+  let homeSalesRequestSequence=0;
+  async function loadHomeDailySales(selectedRange){
     if(!['owner','manager','vendor','freelancer'].includes(state.role))return;
-    const status=$('home-sales-status');if(!status)return;
-    status.textContent='Loading your sales snapshot…';
-    try{const result=await request('/api/v1/receipts?limit=100');renderHomeDailySales(result.receipts||[]);}
-    catch(error){status.textContent=error.message||'Daily sales snapshot could not be loaded.';$('home-sales-chart').innerHTML='<p class="muted small">Sales chart is temporarily unavailable.</p>';}
+    const range=selectedRange||$('home-sales-range')?.value||'week';
+    const status=$('home-sales-status'),chart=$('home-sales-chart');
+    if(!status||!chart)return;
+    const requestId=++homeSalesRequestSequence;
+    const bounds=homeSalesRangeBounds(range);
+    status.textContent='Loading your actual sales records…';
+    chart.innerHTML='<p class="muted small">Loading sales…</p>';
+    try{
+      let daily=[],totalSales=0,transactions=0;
+      if(state.role==='vendor'){
+        // Vendors can see their own issued receipts; use the existing receipt endpoint.
+        const params=new URLSearchParams({from:bounds.from,to:bounds.to,limit:'100'});
+        const result=await request('/api/v1/receipts?'+params.toString(),{cache:'no-store'});
+        const grouped=new Map();
+        (result.receipts||[]).filter(receipt=>receipt.status==='issued').forEach(receipt=>{
+          const key=homeNairobiDateKey(receipt.issuedAt||receipt.createdAt);
+          if(!key)return;
+          const current=grouped.get(key)||{day:key,salesKes:0,transactions:0};
+          current.salesKes+=Math.max(0,Number(receipt.totalKes||0)||0);current.transactions+=1;grouped.set(key,current);
+        });
+        daily=Array.from(grouped.values());
+        totalSales=daily.reduce((sum,item)=>sum+item.salesKes,0);
+        transactions=daily.reduce((sum,item)=>sum+item.transactions,0);
+      }else{
+        // The dashboard endpoint aggregates every issued sale for this tenant/store in Nairobi time.
+        const params=new URLSearchParams({from:bounds.from,to:bounds.to});
+        const result=await request('/api/v1/dashboard/summary?'+params.toString(),{cache:'no-store'});
+        daily=result.daily||[];
+        totalSales=Number(result.sales?.salesKes||0);
+        transactions=Number(result.sales?.transactions||0);
+      }
+      if(requestId!==homeSalesRequestSequence)return;
+      renderHomeDailySales(daily,range,totalSales,transactions);
+    }catch(error){
+      if(requestId!==homeSalesRequestSequence)return;
+      status.textContent=error.message||'Your sales records could not be loaded.';
+      chart.innerHTML='<p class="muted small">Sales data is temporarily unavailable. Please refresh Home to try again.</p>';
+    }
   }
-
+  $('home-sales-range')?.addEventListener('change',event=>{void loadHomeDailySales(event.target.value);});
   async function loadOwnerHomeSummary(){
     if(!['owner','manager','vendor','freelancer'].includes(state.role))return;
-    void loadOwnerReferralSummary();
-    void loadHomeDailySales();
-    void loadSubscriptionBalance();
     $('owner-home-title').textContent=state.businessProfile?.businessName||'Business overview';
     $('owner-home-subtitle').textContent=state.businessProfile?.storeName||'Your business workspace at a glance.';
-
+    $('home-subscription-card')?.classList.toggle('hidden',!['owner','manager','freelancer'].includes(state.role));
+    void loadOwnerReferralSummary();
+    void loadHomeDailySales();
+    if(['owner','manager','freelancer'].includes(state.role))void loadSubscriptionBalance();
   }
 
   function syncGlobalBackButton(){
@@ -957,6 +1026,7 @@
     try{
       const data=await request('/api/v1/mpesa/account-summary',{cache:'no-store'});
       const sub=data.subscription;
+      if($('home-subscription-status'))$('home-subscription-status').textContent=sub?.active?((sub.plan||'').toUpperCase()+' · ACTIVE'):(sub?'EXPIRED':'PAYMENT REQUIRED');
       if(status)status.textContent=sub?.active?'Active':(sub?'Expired':'Payment required');
       if(expiry)expiry.textContent=sub?.endsAt?'Expires: '+new Date(sub.endsAt).toLocaleString('en-KE'):(sub?'Subscription expired or inactive':'No active subscription');
       updateSubscriptionCountdown(sub?.endsAt);
@@ -964,7 +1034,7 @@
       if(balance)balance.textContent=sub?.active?'Included':money(data.balanceKes);
       if(remainder)remainder.textContent=sub?.active?'No receipt top-ups required':'Subscription includes unlimited receipts once active.';
       if(message)message.textContent=sub?.active?'Your paid subscription includes unlimited receipts until the plan expires. No per-receipt wallet charge applies.': 'Pay KSh 100 monthly or KSh 900 yearly to unlock unlimited receipts for the subscription period.';
-    }catch(error){if(message)message.textContent=error.message||'Could not load your subscription balance.';}
+    }catch(error){if($('home-subscription-status'))$('home-subscription-status').textContent='Unavailable';if(message)message.textContent=error.message||'Could not load your subscription balance.';}
   }
   // Put the existing M-Pesa subscription/top-up form behind compact dashboard tabs.
   const dashboardPaymentSlot = $('dashboard-payment-form-slot');
@@ -1898,6 +1968,7 @@
   });
   $('workspace-nav').addEventListener('click',e=>{const b=e.target.closest('[data-workspace]');if(b)showWorkspaceScreen(b.dataset.workspace);});
   $('owner-home-subscription')?.addEventListener('click',()=>showWorkspaceScreen('subscription'));
+  $('home-profile-button')?.addEventListener('click',()=> $('profile-menu-btn')?.click());
   $('back-to-receipts').addEventListener('click',()=>{
     $('pos-view').classList.add('hidden');
     $('pos-view').classList.remove('workspace-issue-mode');
