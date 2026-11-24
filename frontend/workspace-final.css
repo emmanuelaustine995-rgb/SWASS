@@ -529,3 +529,119 @@ html body.workspace-active #workspace-nav.bottom-nav > button:not(.hidden):focus
   html body.workspace-active #workspace-nav.bottom-nav > button:not(.hidden) {padding:2px 1px!important}
   html body.workspace-active #workspace-nav.bottom-nav > button:not(.hidden) > span:not(.nav-icon) {font-size:8px!important}
 }
+
+
+/* Facebook-inspired floating navigation dock.
+   Keep it inset from the device edges and preserve all five AURORA routes. */
+html body.workspace-active > nav#workspace-nav.bottom-nav:not(.hidden),
+html body.workspace-active main.shell > nav#workspace-nav.bottom-nav:not(.hidden) {
+  inset:auto auto calc(12px + env(safe-area-inset-bottom,0px)) 50%!important;
+  transform:translateX(-50%)!important;
+  width:min(480px,calc(100vw - 28px))!important;
+  max-width:calc(100vw - 28px)!important;
+  height:70px!important;
+  min-height:70px!important;
+  max-height:70px!important;
+  padding:6px 8px!important;
+  gap:4px!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  background:#F7F5F0!important;
+  border:1px solid rgba(71,67,41,.16)!important;
+  border-radius:999px!important;
+  box-shadow:0 5px 22px rgba(0,0,0,.17),0 1px 4px rgba(0,0,0,.10)!important;
+  -webkit-backdrop-filter:blur(18px) saturate(1.2)!important;
+  backdrop-filter:blur(18px) saturate(1.2)!important;
+  overflow:visible!important;
+}
+html body.workspace-active #workspace-nav.bottom-nav > button:not(.hidden),
+html body.workspace-active main.shell > #workspace-nav.bottom-nav > button:not(.hidden) {
+  flex:1 1 0!important;
+  min-width:0!important;
+  height:56px!important;
+  min-height:56px!important;
+  max-height:56px!important;
+  padding:0!important;
+  gap:0!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  border:0!important;
+  border-radius:999px!important;
+  background:transparent!important;
+  color:#111!important;
+  font-size:0!important;
+  line-height:0!important;
+  box-shadow:none!important;
+  -webkit-tap-highlight-color:transparent;
+  transition:background-color .18s ease,color .18s ease,transform .18s ease!important;
+}
+html body.workspace-active #workspace-nav.bottom-nav > button:not(.hidden) > span:not(.nav-icon) {
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
+  padding:0!important;
+  margin:-1px!important;
+  overflow:hidden!important;
+  clip:rect(0,0,0,0)!important;
+  white-space:nowrap!important;
+  border:0!important;
+}
+html body.workspace-active #workspace-nav.bottom-nav > button:not(.hidden) .nav-icon {
+  display:grid!important;
+  place-items:center!important;
+  width:30px!important;
+  height:30px!important;
+  margin:0!important;
+  color:currentColor!important;
+  font-size:0!important;
+  line-height:1!important;
+}
+html body.workspace-active #workspace-nav.bottom-nav .nav-icon svg {
+  display:block!important;
+  width:30px!important;
+  height:30px!important;
+  fill:none!important;
+  stroke:currentColor!important;
+  stroke-width:2!important;
+  stroke-linecap:round!important;
+  stroke-linejoin:round!important;
+}
+html body.workspace-active #workspace-nav.bottom-nav > button.active {
+  color:#0066FF!important;
+  background:rgba(0,102,255,.12)!important;
+  box-shadow:none!important;
+}
+html body.workspace-active #workspace-nav.bottom-nav > button.active .nav-icon svg {
+  stroke-width:2.25!important;
+}
+html body.workspace-active #workspace-nav.bottom-nav > button:not(.hidden):focus-visible {
+  outline:2px solid #0066FF!important;
+  outline-offset:1px!important;
+}
+@media (hover:hover) and (pointer:fine) {
+  html body.workspace-active #workspace-nav.bottom-nav > button:not(.hidden):not(.active):hover {
+    background:rgba(71,67,41,.08)!important;
+  }
+}
+@media (max-width:380px) {
+  html body.workspace-active > nav#workspace-nav.bottom-nav:not(.hidden),
+  html body.workspace-active main.shell > nav#workspace-nav.bottom-nav:not(.hidden) {
+    width:calc(100vw - 24px)!important;
+    max-width:calc(100vw - 24px)!important;
+    height:66px!important;
+    min-height:66px!important;
+    max-height:66px!important;
+    padding:5px 6px!important;
+  }
+  html body.workspace-active #workspace-nav.bottom-nav > button:not(.hidden) {
+    height:54px!important;
+    min-height:54px!important;
+    max-height:54px!important;
+  }
+  html body.workspace-active #workspace-nav.bottom-nav > button:not(.hidden) .nav-icon,
+  html body.workspace-active #workspace-nav.bottom-nav .nav-icon svg {
+    width:28px!important;
+    height:28px!important;
+  }
+}
