@@ -102,7 +102,6 @@ html body.workspace-active main.shell :where(img,video,canvas,svg,iframe) {
   height:auto;
 }
 html body.workspace-active main.shell :where(.pos-grid) {
-  display:grid!important;
   grid-template-columns:minmax(0,1fr)!important;
   width:100%!important;
   max-width:100%!important;
