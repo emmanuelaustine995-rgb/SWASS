@@ -1285,11 +1285,13 @@
     if(outgoing)outgoing.querySelectorAll(':scope > *').forEach((node,index)=>node.style.setProperty('--S',index));
     if(incoming)incoming.querySelectorAll(':scope > *').forEach((node,index)=>{node.style.setProperty('--li',index);node.style.setProperty('--D',index);});
     if(incoming){
-      incoming.classList.remove('hidden','auth-slide-out');
+      incoming.classList.remove('hidden','auth-slide-out','auth-slide-in');
+      void incoming.offsetWidth;
       incoming.classList.add('auth-slide-in');
     }
     if(outgoing){
-      outgoing.classList.remove('hidden','auth-slide-in');
+      outgoing.classList.remove('hidden','auth-slide-in','auth-slide-out');
+      void outgoing.offsetWidth;
       outgoing.classList.add('auth-slide-out');
     }
     authCardAnimationTimer=window.setTimeout(()=>{
