@@ -504,12 +504,26 @@
       item.append(swatch,label,percent);legend.append(item);
     });
   }
+  let homeDailySalesRequestId=0;
   async function loadHomeDailySales(){
     if(!['owner','manager','vendor','freelancer'].includes(state.role))return;
     const status=$('home-sales-status');if(!status)return;
+    const requestId=++homeDailySalesRequestId;
     status.textContent='Loading your sales snapshot…';
-    try{const result=await request('/api/v1/receipts?limit=100');renderHomeDailySales(result.receipts||[]);}
-    catch(error){status.textContent=error.message||'Daily sales snapshot could not be loaded.';$('home-sales-chart').innerHTML='<p class="muted small">Sales chart is temporarily unavailable.</p>';}
+    try{
+      const result=await request('/api/v1/receipts?limit=100');
+      if(requestId!==homeDailySalesRequestId)return;
+      renderHomeDailySales(result.receipts||[]);
+      const chart=$('home-sales-chart');
+      const total=(Array.isArray(result.receipts)?result.receipts:[]).reduce((sum,r)=>sum+Math.max(0,Number(r.totalKes??r.total??0)||0),0);
+      status.textContent='Sales snapshot updated · '+money(total)+' across the last 7 days.';
+      if(chart)chart.removeAttribute('aria-busy');
+    }catch(error){
+      if(requestId!==homeDailySalesRequestId)return;
+      status.textContent=(error.message||'Daily sales snapshot could not be loaded.')+' Refresh the dashboard to try again.';
+      const chart=$('home-sales-chart');
+      if(chart){chart.replaceChildren();const note=document.createElement('p');note.className='muted small';note.textContent='Sales chart is temporarily unavailable.';chart.append(note);chart.setAttribute('aria-busy','false');}
+    }
   }
 
   async function loadOwnerHomeSummary(){
@@ -2009,14 +2023,19 @@
       $('shop-add-products').reset();$('shop-product-quantity').value='1';
       message.textContent=(result.product?.name||payload.name)+' has been listed for customers across AURORA.';
       message.style.color='#0066FF';
+      // The directory and shop stock list share the products table; refresh
+      // the inventory immediately if its panel is already open.
+      if($('shop-stock-manager-card')?.open)await loadShopInventory(false);
     }catch(err){message.textContent=err.message||'Could not add this product.';message.style.color='#FC7584';}
     finally{btn.disabled=false;btn.textContent='＋ Add Product';}
   });
 
   // Shop Products dashboard cards: reuse the existing directory and inventory APIs.
   let shopInventoryLowOnly = false;
+  let shopInventoryRequestId=0;
   async function loadShopInventory(lowOnly=shopInventoryLowOnly){
     shopInventoryLowOnly=!!lowOnly;
+    const requestId=++shopInventoryRequestId;
     const list=$('shop-stock-list'),count=$('shop-stock-count'),title=$('shop-stock-title');
     if(!list)return;
     if(title)title.textContent=shopInventoryLowOnly?'Low Stock Alerts':'My Products & Stock';
@@ -2024,7 +2043,8 @@
     list.innerHTML='<p class="empty">Loading products…</p>';
     try{
       const data=await request('/api/v1/products'+(shopInventoryLowOnly?'?lowStock=true':''));
-      const products=data.products||[];
+      if(requestId!==shopInventoryRequestId)return;
+      const products=Array.isArray(data.products)?data.products:[];
       if(count)count.textContent=products.length+' '+(products.length===1?'product':'products')+(shopInventoryLowOnly?' needing attention':' registered in this shop');
       if(!products.length){list.innerHTML='<p class="empty">'+(shopInventoryLowOnly?'No low-stock products. Your current stock levels look good.':'No products registered yet. Use Register New Product to add your first item.')+'</p>';return;}
       list.innerHTML=products.map(p=>{
@@ -2032,7 +2052,7 @@
         const low=qty<=level,stockClass=qty===0?'is-out':low?'is-low':'is-healthy';
         return '<article class="shop-stock-item '+stockClass+'"><div class="shop-stock-item-main"><strong>'+escapeHtml(p.name)+'</strong><small>'+(p.sku?'SKU: '+escapeHtml(p.sku)+' · ':'')+'Selling price: '+money(p.priceKes)+'</small></div><span class="shop-stock-quantity">'+qty+' <small>in stock</small></span><div class="shop-stock-adjust"><label>Stock change<input type="number" step="1" min="-1000000" max="1000000" inputmode="numeric" data-stock-change="'+escapeHtml(p.id)+'" placeholder="+ / − quantity"></label><button type="button" class="btn btn-light btn-small" data-stock-save="'+escapeHtml(p.id)+'">Update stock</button></div><small class="shop-stock-status">'+(qty===0?'Out of stock':low?'Restock recommended':'Stock available')+'</small></article>';
       }).join('');
-    }catch(err){if(count)count.textContent='Inventory unavailable';list.innerHTML='<p class="empty">'+escapeHtml(err.message||'Could not load your shop inventory.')+'</p>';}
+    }catch(err){if(requestId!==shopInventoryRequestId)return;if(count)count.textContent='Inventory unavailable';list.innerHTML='<p class="empty">'+escapeHtml(err.message||'Could not load your shop inventory.')+'</p>';}
   }
   document.querySelectorAll('[data-product-action]').forEach(card=>card.addEventListener('click',()=>{
     const action=card.dataset.productAction;
@@ -2448,8 +2468,9 @@
       const data=await request('/api/v1/loan-items/workspace');
       const loans=Array.isArray(data.loans)?data.loans:[];
       const outgoing=loans.filter(x=>x.isLender===true),incoming=loans.filter(x=>x.isLender!==true);
-      $('loans-lent-count').textContent=String(outgoing.length);
-      $('loans-borrowed-count').textContent=String(incoming.length);
+      const lentCount=$('loans-lent-count'),borrowedCount=$('loans-borrowed-count');
+      if(lentCount)lentCount.textContent=String(Number(data.summary?.lentCount??outgoing.length));
+      if(borrowedCount)borrowedCount.textContent=String(Number(data.summary?.borrowedCount??incoming.length));
       lent.innerHTML=outgoing.length?outgoing.map(x=>renderLoanCard(x,true)).join(''):'<p class="loans-empty">You have not lent any items yet.</p>';
       borrowed.innerHTML=incoming.length?incoming.map(x=>renderLoanCard(x,false)).join(''):'<p class="loans-empty">No loan offers or borrowed items yet.</p>';
       if(message)message.textContent=loans.length+' loan record(s) connected to your account.';
@@ -2465,6 +2486,10 @@
     button.disabled=true;button.textContent='Sending offer…';message.textContent='Checking the recipient account and recording the offer…';
     try{
       const payload={borrowerPhone:$('loan-recipient-phone').value.trim(),itemName:$('aurora-loan-item-name').value.trim(),quantity:Number($('aurora-loan-quantity').value),valueKes:Number($('aurora-loan-value').value),expectedReturnDate:$('aurora-loan-due-date').value,imei:$('aurora-loan-imei').value.trim(),serialNumber:$('aurora-loan-serial').value.trim(),conditionOut:$('aurora-loan-condition').value.trim(),sellingAllowed:$('aurora-loan-selling-allowed').checked,ownershipConfirmed:$('aurora-loan-ownership-confirmed').checked};
+      if(!payload.borrowerPhone||!payload.itemName||!payload.conditionOut||!payload.expectedReturnDate||!Number.isSafeInteger(payload.quantity)||payload.quantity<1||!Number.isSafeInteger(payload.valueKes)||payload.valueKes<0||!payload.ownershipConfirmed){
+        message.textContent='Complete the recipient, item, positive whole-number quantity, valid KSh value, return date, condition and ownership confirmation before sending.';
+        return;
+      }
       const result=await request('/api/v1/loan-items/offers',{method:'POST',body:JSON.stringify(payload)});
       message.textContent='Offer '+result.loan.reference+' sent. The recipient must accept it before the loan-day counter starts.';
       $('aurora-loan-offer-form').reset();$('aurora-loan-quantity').value='1';$('aurora-loan-value').value='0';
@@ -2482,12 +2507,14 @@
         const reason=window.prompt('Optional reason for declining this offer:')||'';
         await request('/api/v1/loan-items/'+encodeURIComponent(id)+'/decline',{method:'PATCH',body:JSON.stringify({reason})});
       }else if(action==='sale'){
-        const price=window.prompt('Enter the actual sale price in KSh:');if(price===null) return;
+        const price=window.prompt('Enter the actual sale price in KSh:');if(price===null)return;
+        if(price.trim()===''||!Number.isSafeInteger(Number(price))||Number(price)<0){showNotice('Enter a valid whole-number sale price in KSh.',true);return;}
         const buyer=window.prompt('Buyer name (optional):')||'';
         const receipt=window.prompt('Receipt reference (optional):')||'';
-        await request('/api/v1/loan-items/'+encodeURIComponent(id)+'/sale-report',{method:'POST',body:JSON.stringify({salePriceKes:Number(price),saleDate:new Date().toISOString().slice(0,10),buyerName:buyer,receiptReference:receipt})});
+        const saleDate=new Date().toLocaleDateString('en-CA');
+        await request('/api/v1/loan-items/'+encodeURIComponent(id)+'/sale-report',{method:'POST',body:JSON.stringify({salePriceKes:Number(price),saleDate,buyerName:buyer,receiptReference:receipt})});
       }else if(action==='return'){
-        const condition=window.prompt("Describe the item's condition before return:")||'';
+        const condition=window.prompt("Describe the item's condition before return:");if(condition===null)return;
         await request('/api/v1/loan-items/'+encodeURIComponent(id)+'/return-request',{method:'POST',body:JSON.stringify({conditionIn:condition})});
       }else if(action==='approve-sale')await request('/api/v1/loan-items/'+encodeURIComponent(id)+'/decision',{method:'PATCH',body:JSON.stringify({action:'approve_sale'})});
       else if(action==='approve-return')await request('/api/v1/loan-items/'+encodeURIComponent(id)+'/decision',{method:'PATCH',body:JSON.stringify({action:'approve_return'})});
