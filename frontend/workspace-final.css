@@ -758,3 +758,142 @@ html body:not(.workspace-active):not(.platform-admin-login) #login-view .login-c
   html body:not(.workspace-active):not(.platform-admin-login) #login-view .form-box,
   html body:not(.workspace-active):not(.platform-admin-login) #login-view .info-content{transition:none!important;animation:none!important}
 }
+
+
+/* Premium black navigation rail with five individually surfaced ivory tabs.
+   Each destination gets its own space, clear icon and readable micro-label. */
+html body.workspace-active > nav#workspace-nav.bottom-nav:not(.hidden),
+html body.workspace-active main.shell > nav#workspace-nav.bottom-nav:not(.hidden) {
+  width:min(520px,calc(100vw - 24px))!important;
+  max-width:calc(100vw - 24px)!important;
+  height:82px!important;
+  min-height:82px!important;
+  max-height:82px!important;
+  padding:8px 9px!important;
+  gap:7px!important;
+  background:linear-gradient(180deg,#17191e 0%,#050608 100%)!important;
+  border:1px solid rgba(255,255,255,.18)!important;
+  border-radius:28px!important;
+  box-shadow:0 13px 34px rgba(0,0,0,.30),inset 0 1px 0 rgba(255,255,255,.12)!important;
+  -webkit-backdrop-filter:blur(20px) saturate(1.15)!important;
+  backdrop-filter:blur(20px) saturate(1.15)!important;
+}
+html body.workspace-active #workspace-nav.bottom-nav > button:not(.hidden),
+html body.workspace-active main.shell > #workspace-nav.bottom-nav > button:not(.hidden) {
+  flex:1 1 0!important;
+  min-width:0!important;
+  height:64px!important;
+  min-height:64px!important;
+  max-height:64px!important;
+  padding:5px 2px!important;
+  gap:4px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  border:1px solid rgba(71,67,41,.10)!important;
+  border-radius:19px!important;
+  background:linear-gradient(180deg,#fffefa 0%,#eeece5 100%)!important;
+  color:#24251f!important;
+  font-size:9px!important;
+  line-height:1.05!important;
+  font-weight:750!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 2px 5px rgba(0,0,0,.12)!important;
+  -webkit-tap-highlight-color:transparent;
+  transition:transform .18s ease,box-shadow .18s ease,background .18s ease,color .18s ease!important;
+}
+html body.workspace-active #workspace-nav.bottom-nav > button:not(.hidden) > span:not(.nav-icon) {
+  position:static!important;
+  display:block!important;
+  width:100%!important;
+  height:auto!important;
+  margin:0!important;
+  padding:0 1px!important;
+  overflow:hidden!important;
+  clip:auto!important;
+  white-space:nowrap!important;
+  text-overflow:ellipsis!important;
+  text-align:center!important;
+  color:inherit!important;
+  font-size:clamp(7px,2.1vw,9px)!important;
+  line-height:1.1!important;
+  font-weight:750!important;
+  letter-spacing:-.015em!important;
+}
+html body.workspace-active #workspace-nav.bottom-nav > button:not(.hidden) .nav-icon {
+  display:grid!important;
+  place-items:center!important;
+  width:29px!important;
+  height:29px!important;
+  margin:0!important;
+  color:currentColor!important;
+  font-size:0!important;
+  line-height:1!important;
+}
+html body.workspace-active #workspace-nav.bottom-nav .nav-icon svg {
+  display:block!important;
+  width:27px!important;
+  height:27px!important;
+  fill:none!important;
+  stroke:currentColor!important;
+  stroke-width:1.9!important;
+  stroke-linecap:round!important;
+  stroke-linejoin:round!important;
+}
+html body.workspace-active #workspace-nav.bottom-nav > button.nav-dashboard .nav-icon {color:#1769e8!important}
+html body.workspace-active #workspace-nav.bottom-nav > button.receipt-nav .nav-icon {color:#5750b8!important}
+html body.workspace-active #workspace-nav.bottom-nav > button.nav-shop .nav-icon {color:#16856f!important}
+html body.workspace-active #workspace-nav.bottom-nav > button.nav-lost-goods .nav-icon {color:#d05b45!important}
+html body.workspace-active #workspace-nav.bottom-nav > button.nav-loans .nav-icon {color:#a36a13!important}
+html body.workspace-active #workspace-nav.bottom-nav > button.active {
+  color:#fff!important;
+  background:linear-gradient(145deg,#1477ff 0%,#0054dc 100%)!important;
+  border:1px solid rgba(255,255,255,.48)!important;
+  box-shadow:0 0 0 2px rgba(0,102,255,.20),0 5px 15px rgba(0,102,255,.42),inset 0 1px 0 rgba(255,255,255,.30)!important;
+  transform:translateY(-2px)!important;
+}
+html body.workspace-active #workspace-nav.bottom-nav > button.active .nav-icon,
+html body.workspace-active #workspace-nav.bottom-nav > button.active > span:not(.nav-icon) {
+  color:#fff!important;
+}
+html body.workspace-active #workspace-nav.bottom-nav > button.active .nav-icon svg {
+  stroke-width:2.15!important;
+}
+html body.workspace-active #workspace-nav.bottom-nav > button:not(.hidden):focus-visible {
+  outline:2px solid #80b6ff!important;
+  outline-offset:2px!important;
+}
+@media (hover:hover) and (pointer:fine) {
+  html body.workspace-active #workspace-nav.bottom-nav > button:not(.hidden):not(.active):hover {
+    transform:translateY(-2px)!important;
+    box-shadow:inset 0 1px 0 #fff,0 5px 12px rgba(255,255,255,.16)!important;
+  }
+}
+@media (max-width:380px) {
+  html body.workspace-active > nav#workspace-nav.bottom-nav:not(.hidden),
+  html body.workspace-active main.shell > nav#workspace-nav.bottom-nav:not(.hidden) {
+    width:calc(100vw - 16px)!important;
+    max-width:calc(100vw - 16px)!important;
+    height:76px!important;
+    min-height:76px!important;
+    max-height:76px!important;
+    padding:6px!important;
+    gap:4px!important;
+    border-radius:25px!important;
+  }
+  html body.workspace-active #workspace-nav.bottom-nav > button:not(.hidden) {
+    height:62px!important;
+    min-height:62px!important;
+    max-height:62px!important;
+    padding:4px 1px!important;
+    border-radius:16px!important;
+  }
+  html body.workspace-active #workspace-nav.bottom-nav > button:not(.hidden) .nav-icon,
+  html body.workspace-active #workspace-nav.bottom-nav .nav-icon svg {
+    width:25px!important;
+    height:25px!important;
+  }
+  html body.workspace-active #workspace-nav.bottom-nav > button:not(.hidden) > span:not(.nav-icon) {
+    font-size:7px!important;
+  }
+}
