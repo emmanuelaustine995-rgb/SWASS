@@ -1037,35 +1037,55 @@
     const payload = { purpose, phone: $('owner-mpesa-phone').value.trim() };
     if (purpose === 'subscription') payload.plan = $('owner-subscription-plan').value;
     else payload.amountKes = Number($('owner-topup-amount').value);
+    if (!/^(?:254|0)?[17]\\d{8}$/.test(payload.phone.replace(/[+\\s()-]/g,''))) {
+      message.textContent = 'Enter a valid Kenyan M-Pesa phone number.';
+      return;
+    }
+    if (purpose !== 'subscription' && (!Number.isSafeInteger(payload.amountKes) || payload.amountKes < 4 || payload.amountKes > 1000000 || payload.amountKes % 4 !== 0)) {
+      message.textContent = 'Enter a whole KSh top-up amount of at least KSh 4, in multiples of KSh 4.';
+      return;
+    }
+    const paymentFingerprint = JSON.stringify(payload);
+    const pendingKey = 'aurora-pending-owner-payment';
+    let pending = null;
+    try { pending = JSON.parse(localStorage.getItem(pendingKey) || 'null'); } catch {}
+    if (pending && pending.fingerprint !== paymentFingerprint) {
+      message.textContent = 'A previous payment is still awaiting confirmation. Check or resolve that payment before starting a different one.';
+      return;
+    }
     button.disabled = true;
-    message.textContent = 'Connecting securely to Tuma Payments…';
+    message.textContent = pending ? 'Checking your existing M-Pesa payment…' : 'Connecting securely to Tuma Payments…';
     try {
-      const started = await request('/api/v1/mpesa/stk-push', {
-        method: 'POST',
-        body: JSON.stringify(payload)
-      });
-      message.textContent = started.message || 'STK prompt requested. Check your phone and enter your M-Pesa PIN.';
-      if (!started.paymentId) throw new Error('Tuma did not return a payment reference. Contact support before trying again.');
+      let paymentId = pending?.paymentId;
+      if (!paymentId) {
+        const started = await request('/api/v1/mpesa/stk-push', { method: 'POST', body: JSON.stringify(payload) });
+        if (!started.paymentId) throw new Error('Tuma did not return a payment reference. Do not retry until support checks whether a prompt was created.');
+        paymentId = started.paymentId;
+        localStorage.setItem(pendingKey, JSON.stringify({ paymentId, fingerprint: paymentFingerprint, createdAt: Date.now() }));
+        message.textContent = started.message || 'STK prompt requested. Check your phone and enter your M-Pesa PIN.';
+      }
       const deadline = Date.now() + 90000;
       while (Date.now() < deadline) {
         await new Promise(resolve => setTimeout(resolve, 3000));
-        const current = await request('/api/v1/mpesa/payments/' + encodeURIComponent(started.paymentId));
+        const current = await request('/api/v1/mpesa/payments/' + encodeURIComponent(paymentId));
         if (current.status === 'success') {
+          localStorage.removeItem(pendingKey);
           await loadSubscriptionBalance();
-          const plan=$('owner-subscription-plan')?.value||'monthly';const amount=Number(payload.amountKes||0);const count=Math.floor(amount/4);
+          const plan=payload.plan||'monthly';const amount=Number(payload.amountKes||0);const count=Math.floor(amount/4);
           const confirmation=purpose==='subscription'?'Congratulations! You have paid for your '+plan+' subscription.':'Congratulations! You have bought '+count.toLocaleString('en-KE')+' receipt'+(count===1?'':'s')+' for '+money(amount)+'.';
           $('subscription-payment-success-message').textContent=confirmation+(current.receiptNumber?' M-Pesa receipt: '+current.receiptNumber+'.':'');$('subscription-payment-success')?.classList.remove('hidden');$('owner-mpesa-form')?.classList.add('hidden');
           message.textContent=confirmation;showNotice('Payment confirmed successfully.');return;
         }
         if (current.status === 'failed') {
+          localStorage.removeItem(pendingKey);
           message.textContent = 'Tuma reports that this payment was not completed. You can try again.';
           return;
         }
         message.textContent = 'Waiting for M-Pesa confirmation… Please complete the prompt on your phone.';
       }
-      message.textContent = 'Payment is still pending. Do not pay again yet; refresh the payment page or contact support to check its status.';
+      message.textContent = 'Payment is still pending. Submit again to check this same payment; a new STK prompt will not be sent.';
     } catch (error) {
-      message.textContent = error.message || 'Could not start or verify the Tuma payment. Please try again later.';
+      message.textContent = (error.message || 'Could not verify the Tuma payment.') + (localStorage.getItem(pendingKey) ? ' Submit again to check the same payment without sending another STK prompt.' : '');
     } finally {
       button.disabled = false;
     }
