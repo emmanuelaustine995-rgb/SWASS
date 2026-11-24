@@ -3928,8 +3928,8 @@ html body.workspace-active > #workspace-nav.bottom-nav:not(.hidden) {
     display: grid !important;
     grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
     grid-auto-flow: row !important;
-    width: min(calc(14cm - 32px), calc(100vw - 64px)) !important;
-    max-width: calc(100vw - 64px) !important;
+    width: min(400px, calc(14cm - 32px), calc(100vw - 64px)) !important;
+    max-width: min(400px, calc(100vw - 64px)) !important;
     min-width: 0 !important;
     height: 64px !important;
     min-height: 64px !important;
@@ -3970,5 +3970,218 @@ html body.workspace-active > #workspace-nav.bottom-nav:not(.hidden) {
     white-space: normal !important;
     overflow-wrap: anywhere !important;
     text-align: center !important;
+  }
+}
+
+
+/* AURORA glass navigation — replaces the legacy dock appearance only.
+   Keep the existing navigation markup and data-workspace actions intact. */
+@keyframes aurora-glass-sheen {
+  0% { transform: translateX(-140%) skewX(-18deg); opacity: 0; }
+  18% { opacity: .72; }
+  48% { opacity: .28; }
+  100% { transform: translateX(160%) skewX(-18deg); opacity: 0; }
+}
+@keyframes aurora-glass-tap {
+  0% { transform: scale(1); filter: brightness(1); }
+  42% { transform: scale(.93); filter: brightness(1.55); }
+  100% { transform: scale(1); filter: brightness(1.08); }
+}
+@keyframes aurora-glass-active-glow {
+  0%,100% { box-shadow: inset 0 1px 0 rgba(255,255,255,.22), 0 0 9px rgba(78,190,255,.18), 0 4px 16px rgba(4,12,28,.25); }
+  50% { box-shadow: inset 0 1px 0 rgba(255,255,255,.32), 0 0 17px rgba(113,210,255,.36), 0 4px 18px rgba(4,12,28,.30); }
+}
+
+/* One compact floating glass capsule, centred on the 14 cm workspace. */
+html body.workspace-active #workspace-nav.bottom-nav,
+html body.workspace-active main.shell > #workspace-nav.bottom-nav,
+html body.workspace-active > #workspace-nav.bottom-nav {
+  position: fixed !important;
+  z-index: 2147483000 !important;
+  left: 50% !important;
+  right: auto !important;
+  top: auto !important;
+  bottom: max(9px, env(safe-area-inset-bottom, 0px)) !important;
+  transform: translateX(-50%) !important;
+  display: grid !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  align-items: center !important;
+  width: min(calc(14cm - 32px), calc(100vw - 20px)) !important;
+  max-width: calc(100vw - 20px) !important;
+  min-width: 0 !important;
+  height: 62px !important;
+  min-height: 62px !important;
+  max-height: 62px !important;
+  padding: 6px !important;
+  gap: 4px !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(205,235,255,.42) !important;
+  border-radius: 24px 30px 22px 30px / 28px 22px 30px 22px !important;
+  background:
+    radial-gradient(ellipse at 18% 0%, rgba(104,202,255,.22), transparent 42%),
+    linear-gradient(125deg, rgba(16,31,52,.82), rgba(30,48,72,.72) 48%, rgba(14,27,48,.84)) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(175%) !important;
+  backdrop-filter: blur(22px) saturate(175%) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.24), inset 0 -1px 0 rgba(120,190,255,.12), 0 9px 28px rgba(5,13,29,.28), 0 0 22px rgba(88,180,255,.12) !important;
+  isolation: isolate !important;
+}
+html body.workspace-active #workspace-nav.bottom-nav::before,
+html body.workspace-active main.shell > #workspace-nav.bottom-nav::before,
+html body.workspace-active > #workspace-nav.bottom-nav::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 1px !important;
+  z-index: -1 !important;
+  pointer-events: none !important;
+  border-radius: inherit !important;
+  background: linear-gradient(110deg, rgba(255,255,255,.09), transparent 34%, rgba(125,210,255,.08) 72%, transparent) !important;
+}
+html body.workspace-active #workspace-nav.bottom-nav > button,
+html body.workspace-active #workspace-nav.bottom-nav > button.receipt-nav,
+html body.workspace-active main.shell > #workspace-nav.bottom-nav > button,
+html body.workspace-active main.shell > #workspace-nav.bottom-nav > button.receipt-nav,
+html body.workspace-active > #workspace-nav.bottom-nav > button,
+html body.workspace-active > #workspace-nav.bottom-nav > button.receipt-nav {
+  position: relative !important;
+  display: flex !important;
+  flex: none !important;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  min-height: 48px !important;
+  max-height: 50px !important;
+  margin: 0 !important;
+  padding: 4px 2px !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 3px !important;
+  overflow: hidden !important;
+  border: 1px solid transparent !important;
+  border-radius: 15px 19px 14px 19px / 18px 14px 19px 14px !important;
+  background: rgba(255,255,255,.035) !important;
+  color: rgba(232,243,255,.78) !important;
+  box-shadow: none !important;
+  font: 600 9px/1.1 system-ui, sans-serif !important;
+  text-align: center !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+  cursor: pointer !important;
+  -webkit-tap-highlight-color: transparent !important;
+  transition: background .24s ease, color .24s ease, border-color .24s ease, box-shadow .24s ease, filter .24s ease !important;
+}
+html body.workspace-active #workspace-nav.bottom-nav > button::after,
+html body.workspace-active main.shell > #workspace-nav.bottom-nav > button::after,
+html body.workspace-active > #workspace-nav.bottom-nav > button::after {
+  content: "" !important;
+  position: absolute !important;
+  top: -20% !important;
+  bottom: -20% !important;
+  left: -45% !important;
+  width: 34% !important;
+  pointer-events: none !important;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.5), transparent) !important;
+  opacity: 0 !important;
+}
+html body.workspace-active #workspace-nav.bottom-nav > button:active,
+html body.workspace-active main.shell > #workspace-nav.bottom-nav > button:active,
+html body.workspace-active > #workspace-nav.bottom-nav > button:active {
+  animation: aurora-glass-tap .42s ease-out !important;
+  color: #fff !important;
+  background: linear-gradient(135deg, rgba(73,180,255,.44), rgba(151,116,255,.34), rgba(60,224,205,.30)) !important;
+  border-color: rgba(194,235,255,.72) !important;
+  box-shadow: 0 0 10px rgba(91,197,255,.45), 0 0 22px rgba(139,120,255,.22), inset 0 1px 0 rgba(255,255,255,.36) !important;
+}
+html body.workspace-active #workspace-nav.bottom-nav > button:active::after,
+html body.workspace-active main.shell > #workspace-nav.bottom-nav > button:active::after,
+html body.workspace-active > #workspace-nav.bottom-nav > button:active::after {
+  animation: aurora-glass-sheen .62s ease-out !important;
+  opacity: 1 !important;
+}
+html body.workspace-active #workspace-nav.bottom-nav > button.active,
+html body.workspace-active #workspace-nav.bottom-nav > button.receipt-nav.active,
+html body.workspace-active main.shell > #workspace-nav.bottom-nav > button.active,
+html body.workspace-active > #workspace-nav.bottom-nav > button.active {
+  color: #fff !important;
+  border-color: rgba(169,225,255,.62) !important;
+  background: linear-gradient(135deg, rgba(64,166,255,.38), rgba(127,112,255,.30) 55%, rgba(52,211,195,.26)) !important;
+  animation: aurora-glass-active-glow 3.2s ease-in-out infinite !important;
+}
+html body.workspace-active #workspace-nav.bottom-nav .nav-icon,
+html body.workspace-active main.shell > #workspace-nav.bottom-nav .nav-icon,
+html body.workspace-active > #workspace-nav.bottom-nav .nav-icon {
+  display: grid !important;
+  place-items: center !important;
+  width: 21px !important;
+  height: 21px !important;
+  margin: 0 !important;
+  color: inherit !important;
+  font-size: 18px !important;
+  line-height: 1 !important;
+  filter: drop-shadow(0 0 5px currentColor) !important;
+}
+html body.workspace-active #workspace-nav.bottom-nav .nav-icon svg,
+html body.workspace-active main.shell > #workspace-nav.bottom-nav .nav-icon svg,
+html body.workspace-active > #workspace-nav.bottom-nav .nav-icon svg {
+  display: block !important;
+  width: 19px !important;
+  height: 19px !important;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 1.8 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+}
+html body.workspace-active #workspace-nav.bottom-nav > button.nav-lost-goods,
+html body.workspace-active #workspace-nav.bottom-nav > button.nav-lost-goods.active {
+  color: #ffb7c3 !important;
+}
+html body.workspace-active main.shell,
+html body.workspace-active .shell {
+  padding-bottom: max(112px, calc(100px + env(safe-area-inset-bottom, 0px))) !important;
+}
+@media (min-width: 1024px) {
+  html body.workspace-active #workspace-nav.bottom-nav,
+  html body.workspace-active main.shell > #workspace-nav.bottom-nav,
+  html body.workspace-active > #workspace-nav.bottom-nav {
+    width: min(400px, calc(14cm - 32px), calc(100vw - 64px)) !important;
+    max-width: min(400px, calc(100vw - 64px)) !important;
+  }
+}
+@media (max-width: 760px) {
+  html body.workspace-active #workspace-nav.bottom-nav,
+  html body.workspace-active main.shell > #workspace-nav.bottom-nav,
+  html body.workspace-active > #workspace-nav.bottom-nav {
+    width: calc(100vw - 20px) !important;
+    height: 60px !important;
+    min-height: 60px !important;
+    max-height: 60px !important;
+    padding: 5px !important;
+    gap: 2px !important;
+    border-radius: 22px 27px 20px 27px / 26px 20px 27px 20px !important;
+  }
+  html body.workspace-active #workspace-nav.bottom-nav > button,
+  html body.workspace-active main.shell > #workspace-nav.bottom-nav > button,
+  html body.workspace-active > #workspace-nav.bottom-nav > button {
+    min-height: 48px !important;
+    max-height: 48px !important;
+    font-size: 8px !important;
+    gap: 2px !important;
+  }
+  html body.workspace-active #workspace-nav.bottom-nav .nav-icon,
+  html body.workspace-active main.shell > #workspace-nav.bottom-nav .nav-icon,
+  html body.workspace-active > #workspace-nav.bottom-nav .nav-icon {
+    width: 20px !important;
+    height: 20px !important;
+    font-size: 17px !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html body.workspace-active #workspace-nav.bottom-nav *,
+  html body.workspace-active main.shell > #workspace-nav.bottom-nav *,
+  html body.workspace-active > #workspace-nav.bottom-nav * {
+    animation: none !important;
+    transition: none !important;
   }
 }
