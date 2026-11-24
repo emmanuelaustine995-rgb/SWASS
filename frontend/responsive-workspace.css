@@ -1740,13 +1740,6 @@ html body.platform-admin-workspace #platform-referral-admin .platform-admin-tabs
     box-sizing: border-box !important;
   }
 
-  html body.workspace-active main.shell > #workspace-nav,
-  html body.workspace-active > #workspace-nav {
-    display: none !important;
-    visibility: hidden !important;
-    pointer-events: none !important;
-  }
-
   html body.workspace-active main.shell > section:not(.hidden),
   html body.workspace-active main.shell > main:not(.hidden),
   html body.workspace-active main.shell > article:not(.hidden),
