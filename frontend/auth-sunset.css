@@ -97,7 +97,6 @@ body:not(.workspace-active):not(.platform-admin-login) .aurora-tagline {
   }
 
   html body.workspace-active main.shell > :not(#workspace-nav):not(.hidden) {
-    display:block;
     position:relative!important;
     width:100%!important;
     min-width:0!important;
@@ -115,7 +114,6 @@ body:not(.workspace-active):not(.platform-admin-login) .aurora-tagline {
   }
 
   html body.workspace-active main.shell :where(input,select,textarea) {
-    width:100%!important;
     min-width:0!important;
     max-width:100%!important;
   }
