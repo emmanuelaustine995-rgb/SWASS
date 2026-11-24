@@ -1274,7 +1274,9 @@
     $('show-password-reset')?.click();
     setAuroraAuthTab('aurora-tab-recovery');
   });
+  let authCardAnimationTimer=null;
   function animateAuthCard(toRegister,registerFormId='register-form'){
+    if(authCardAnimationTimer){clearTimeout(authCardAnimationTimer);authCardAnimationTimer=null;}
     const card=document.querySelector('#login-view .auth-animated-container');
     if(!card)return;
     const incoming=$(toRegister?registerFormId:'login-form');
@@ -1290,10 +1292,11 @@
       outgoing.classList.remove('hidden','auth-slide-in');
       outgoing.classList.add('auth-slide-out');
     }
-    window.setTimeout(()=>{
+    authCardAnimationTimer=window.setTimeout(()=>{
       if(outgoing)outgoing.classList.add('hidden');
       if(incoming)incoming.classList.remove('auth-slide-in');
       if(outgoing)outgoing.classList.remove('auth-slide-out');
+      authCardAnimationTimer=null;
     },2200);
   }
   $('show-register')?.addEventListener('click',()=>{
@@ -1331,6 +1334,7 @@
     const selected=tab.dataset.loginRole;
     // Always return to the normal sign-in panel when switching account types.
     document.body.classList.remove('registration-open');
+    if(authCardAnimationTimer){clearTimeout(authCardAnimationTimer);authCardAnimationTimer=null;}
     document.querySelector('#login-view .auth-animated-container')?.classList.remove('active');
     $('login-view')?.classList.remove('hidden');
     $('login-form')?.classList.remove('hidden');
