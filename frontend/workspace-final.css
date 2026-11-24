@@ -981,3 +981,87 @@ html body.workspace-active #workspace-nav.bottom-nav > button.active .nav-icon {
     width:23px!important;height:23px!important;
   }
 }
+
+
+/* AURORA Home redesign — deliberately scoped to #owner-home only. */
+#owner-home.aurora-home-redesign{display:flex;flex-direction:column;gap:14px;padding:0 0 22px!important;margin:0 auto!important;width:100%!important;max-width:100%!important;color:#15234b}
+#owner-home.aurora-home-redesign .dashboard-login-return-row{margin:0 0 2px!important}
+#owner-home.aurora-home-redesign .aurora-home-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:17px 18px;border-radius:0 0 28px 28px;background:linear-gradient(105deg,#0fd3b0 0%,#0aa9d8 48%,#1d6fe0 100%);color:#fff;box-shadow:0 8px 22px rgba(17,139,196,.17)}
+#owner-home.aurora-home-redesign .aurora-home-brand{display:flex;align-items:center;gap:12px;min-width:0}
+#owner-home.aurora-home-redesign .aurora-home-brand>svg{width:43px;height:53px;flex:none}
+#owner-home.aurora-home-redesign .aurora-home-brand strong{display:block;font-size:19px;line-height:1.1;letter-spacing:-.3px;color:#fff}
+#owner-home.aurora-home-redesign .aurora-home-brand strong span{color:#fff16b}
+#owner-home.aurora-home-redesign .aurora-home-brand small{display:block;margin-top:4px;font-size:11px;font-weight:600;color:rgba(255,255,255,.92)}
+#owner-home.aurora-home-redesign .aurora-home-avatar{width:46px;height:46px;flex:none;border:2px solid rgba(255,255,255,.85);border-radius:50%;background:#e8f0ff;display:grid;place-items:center;box-shadow:0 4px 12px rgba(0,0,0,.13);cursor:pointer}
+#owner-home.aurora-home-redesign .aurora-home-avatar svg{width:29px;height:29px}
+#owner-home.aurora-home-redesign .aurora-home-welcome{position:relative;display:flex;align-items:center;min-height:152px;padding:13px 16px 8px;overflow:hidden}
+#owner-home.aurora-home-redesign .aurora-home-welcome-copy{position:relative;z-index:1;max-width:62%;min-width:0}
+#owner-home.aurora-home-redesign .aurora-home-kicker,#owner-home.aurora-home-redesign .aurora-home-card-eyebrow{margin:0 0 5px;font-size:9px;font-weight:850;letter-spacing:1.25px;color:#4774a3}
+#owner-home.aurora-home-redesign #owner-home-title{margin:0;color:#17264d;font-size:clamp(22px,5vw,31px);line-height:1.12;font-weight:850;letter-spacing:-.6px;overflow-wrap:anywhere}
+#owner-home.aurora-home-redesign #owner-home-subtitle{margin:6px 0 0;color:#536580;font-size:12px;line-height:1.4;font-weight:550}
+#owner-home.aurora-home-redesign .aurora-home-shop-art{position:absolute;right:-7px;top:0;width:48%;max-width:218px;height:150px;object-fit:contain}
+#owner-home.aurora-home-redesign .aurora-home-card{position:relative;isolation:isolate;margin:0 10px!important;padding:15px 15px 14px;border:1px solid rgba(255,255,255,.9)!important;border-radius:22px!important;overflow:hidden;box-shadow:0 9px 24px rgba(46,72,112,.10)!important}
+#owner-home.aurora-home-redesign .aurora-home-subscription{background:linear-gradient(135deg,#fff3c4 0%,#ffe1a8 55%,#ffd694 100%)!important;box-shadow:0 10px 26px rgba(249,160,50,.19)!important}
+#owner-home.aurora-home-redesign .aurora-home-card-heading{display:flex;align-items:center;gap:10px;min-width:0}
+#owner-home.aurora-home-redesign .aurora-home-card-icon{width:42px;height:42px;flex:none;border-radius:13px;display:grid;place-items:center;background:rgba(255,255,255,.65);font-size:27px;color:#a05a00}
+#owner-home.aurora-home-redesign .aurora-home-card-heading h2,#owner-home.aurora-home-redesign .aurora-home-sales-heading h2{margin:0;font-size:19px;line-height:1.15;font-weight:850;color:#4d412c}
+#owner-home.aurora-home-redesign .aurora-home-card-heading .aurora-home-card-eyebrow{color:#8c7042}
+#owner-home.aurora-home-redesign .aurora-home-status{margin-left:auto;padding:6px 9px;border-radius:30px;background:rgba(255,255,255,.65);color:#80500c;font-size:9px;font-weight:850;white-space:nowrap}
+#owner-home.aurora-home-redesign .aurora-home-subscription-body{display:flex;align-items:center;gap:14px;margin-top:11px}
+#owner-home.aurora-home-redesign .aurora-home-calendar{width:72px;height:70px;flex:none;border:1px solid #f0d7a5;border-radius:13px;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 4px 10px rgba(143,103,43,.10)}
+#owner-home.aurora-home-redesign .aurora-home-calendar span{font-size:8px;font-weight:900;letter-spacing:1px;color:#d34b45}
+#owner-home.aurora-home-redesign .aurora-home-calendar strong{font-size:29px;line-height:1.1;color:#e69b17}
+#owner-home.aurora-home-redesign .aurora-home-calendar small{font-size:7px;font-weight:900;color:#6e8e6e}
+#owner-home.aurora-home-redesign .aurora-home-countdown-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:3px}
+#owner-home.aurora-home-redesign .aurora-home-countdown-copy small{font-size:10px;color:#715d3e}
+#owner-home.aurora-home-redesign #subscription-expiry-countdown{font-size:clamp(20px,5vw,28px);line-height:1.1;font-weight:900;color:#382c19;letter-spacing:-.6px}
+#owner-home.aurora-home-redesign #subscription-expiry{font-size:10px;color:#715d3e;overflow-wrap:anywhere}
+#owner-home.aurora-home-redesign .aurora-home-action{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;margin-top:12px;padding:10px 15px;border:0;border-radius:30px;background:linear-gradient(90deg,#ff9a00,#ff6a00);color:#fff;font-size:14px;font-weight:800;box-shadow:0 6px 14px rgba(255,106,0,.22);cursor:pointer}
+#owner-home.aurora-home-redesign .aurora-home-action span{font-size:21px;line-height:12px}
+#owner-home.aurora-home-redesign .aurora-home-invite{margin:0 10px!important;padding:0;border:1px solid rgba(255,255,255,.85)!important;border-radius:22px!important;overflow:hidden;background:linear-gradient(180deg,#f1eeff,#e9e6ff)!important;box-shadow:0 10px 25px rgba(110,80,230,.15)!important}
+#owner-home.aurora-home-redesign .aurora-home-invite-head{display:flex;align-items:center;gap:11px;padding:15px;background:linear-gradient(105deg,#10d68c 0%,#12b0d6 38%,#5b5be6 72%,#9333ea 100%);color:#fff}
+#owner-home.aurora-home-redesign .aurora-home-qr-mark{width:54px;height:54px;flex:none}
+#owner-home.aurora-home-redesign .aurora-home-qr-mark svg{width:100%;height:100%}
+#owner-home.aurora-home-redesign .aurora-home-invite-copy{flex:1;min-width:0}
+#owner-home.aurora-home-redesign .aurora-home-invite-copy .aurora-home-card-eyebrow{color:rgba(255,255,255,.82)}
+#owner-home.aurora-home-redesign .aurora-home-invite-copy h2{margin:0;color:#fff;font-size:20px;line-height:1.15;font-weight:850}
+#owner-home.aurora-home-redesign .aurora-home-invite-copy p:last-child{margin:4px 0 0;color:rgba(255,255,255,.94);font-size:10px}
+#owner-home.aurora-home-redesign .aurora-home-qr{flex:none;width:60px!important;height:60px!important;min-width:60px!important;max-width:60px!important;min-height:60px!important;max-height:60px!important;padding:4px!important;border-radius:8px;background:#fff;overflow:hidden}
+#owner-home.aurora-home-redesign .aurora-home-qr img,#owner-home.aurora-home-redesign .aurora-home-qr canvas{display:block!important;width:52px!important;height:52px!important;max-width:52px!important;max-height:52px!important;object-fit:contain}
+#owner-home.aurora-home-redesign .aurora-home-share-row{display:flex;gap:8px;padding:12px 13px 5px}
+#owner-home.aurora-home-redesign .aurora-home-share-row input{flex:1;min-width:0;height:40px;padding:8px 10px;border:1px solid #d9d8f5;border-radius:11px;background:#fff;color:#43516e;font-size:10px}
+#owner-home.aurora-home-redesign .aurora-home-share-row button{display:flex;align-items:center;justify-content:center;gap:6px;flex:none;padding:8px 12px;border:0;border-radius:12px;background:#fff;color:#3e46b9;font-size:11px;font-weight:850;box-shadow:0 4px 10px rgba(43,48,120,.10);cursor:pointer}
+#owner-home.aurora-home-redesign .aurora-home-share-row button span{font-size:16px}
+#owner-home.aurora-home-redesign .aurora-home-feedback{margin:3px 13px 12px;color:#66649b;font-size:9px;min-height:12px}
+#owner-home.aurora-home-redesign .aurora-home-sales{background:linear-gradient(180deg,#fff,#eaf1ff)!important}
+#owner-home.aurora-home-redesign .aurora-home-sales-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}
+#owner-home.aurora-home-redesign .aurora-home-sales-heading h2{color:#203754}
+#owner-home.aurora-home-redesign .aurora-home-sales-heading .aurora-home-card-eyebrow{color:#62809e}
+#owner-home.aurora-home-redesign .aurora-home-range-label select{max-width:128px;padding:8px 26px 8px 10px;border:1px solid #d9e4f5;border-radius:24px;background:#eef3ff;color:#233754;font-size:10px;font-weight:750}
+#owner-home.aurora-home-redesign .aurora-home-sales-chart{width:100%;min-height:164px;margin-top:12px;padding:5px 0 0;overflow:hidden}
+#owner-home.aurora-home-redesign .aurora-home-sales-bars{display:flex;align-items:stretch;justify-content:space-around;gap:4px;width:100%;height:158px}
+#owner-home.aurora-home-redesign .aurora-home-sales-column{display:flex;flex:1 1 0;min-width:0;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;overflow:hidden}
+#owner-home.aurora-home-redesign .aurora-home-sales-bar-value{width:100%;min-height:11px;text-align:center;color:#526d8e;font-size:7px;font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:clip}
+#owner-home.aurora-home-redesign .aurora-home-sales-bar-track{display:flex;align-items:flex-end;justify-content:center;width:100%;height:132px;min-height:132px}
+#owner-home.aurora-home-redesign .aurora-home-sales-bar{width:min(28px,78%);min-height:4px;border-radius:8px 8px 3px 3px;background:linear-gradient(180deg,#2aa1ff,#1665e8);box-shadow:0 3px 7px rgba(26,115,232,.18);transition:height .35s ease}
+#owner-home.aurora-home-redesign .aurora-home-sales-bar.is-empty{background:#dce8f6;box-shadow:none}
+#owner-home.aurora-home-redesign .aurora-home-sales-column>small{height:13px;color:#6a7e99;font-size:8px;font-weight:750;white-space:nowrap}
+#owner-home.aurora-home-redesign .aurora-home-sales-legend{margin-top:3px;color:#71839b;font-size:9px;text-align:center}
+#owner-home.aurora-home-redesign .aurora-home-sales-status{margin:8px 0 0;padding-top:9px;border-top:1px solid #e5edf7;color:#253e5d;text-align:center;font-size:13px;font-weight:850}
+#owner-home.aurora-home-redesign .referral-hidden-data{display:none!important}
+@media(max-width:420px){
+  #owner-home.aurora-home-redesign .aurora-home-header{padding:14px 13px}
+  #owner-home.aurora-home-redesign .aurora-home-brand strong{font-size:17px}
+  #owner-home.aurora-home-redesign .aurora-home-welcome{min-height:136px;padding-left:12px;padding-right:12px}
+  #owner-home.aurora-home-redesign .aurora-home-shop-art{width:46%;height:132px;right:-8px}
+  #owner-home.aurora-home-redesign .aurora-home-card{margin-left:7px!important;margin-right:7px!important;padding:12px}
+  #owner-home.aurora-home-redesign .aurora-home-invite{margin-left:7px!important;margin-right:7px!important;padding:0}
+  #owner-home.aurora-home-redesign .aurora-home-invite-head{gap:8px;padding:12px}
+  #owner-home.aurora-home-redesign .aurora-home-qr-mark{width:45px;height:45px}
+  #owner-home.aurora-home-redesign .aurora-home-qr{width:52px!important;height:52px!important;min-width:52px!important;max-width:52px!important;min-height:52px!important;max-height:52px!important}
+  #owner-home.aurora-home-redesign .aurora-home-qr img,#owner-home.aurora-home-redesign .aurora-home-qr canvas{width:44px!important;height:44px!important;max-width:44px!important;max-height:44px!important}
+  #owner-home.aurora-home-redesign .aurora-home-share-row{padding-left:9px;padding-right:9px}
+  #owner-home.aurora-home-redesign .aurora-home-share-row button{padding:8px 9px;font-size:10px}
+}
+@media(prefers-reduced-motion:reduce){#owner-home.aurora-home-redesign *{scroll-behavior:auto!important;transition:none!important}}
+
