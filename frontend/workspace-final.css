@@ -467,3 +467,65 @@ html body.workspace-active:has(#pos-view.workspace-issue-mode:not(.hidden)) main
     max-width:calc(100vw - 32px)!important;
   }
 }
+
+
+/* AURORA main bottom dock — premium black navigation */
+html body.workspace-active #workspace-nav.bottom-nav:not(.hidden) {
+  background:#08090c!important;
+  border:1px solid rgba(255,255,255,.16)!important;
+  border-radius:999px!important;
+  padding:6px!important;
+  gap:5px!important;
+  box-shadow:0 12px 32px rgba(0,0,0,.28),0 2px 8px rgba(0,0,0,.18)!important;
+  -webkit-backdrop-filter:blur(16px)!important;
+  backdrop-filter:blur(16px)!important;
+}
+html body.workspace-active #workspace-nav.bottom-nav > button:not(.hidden) {
+  color:#f7f7f8!important;
+  border:0!important;
+  border-radius:999px!important;
+  background:transparent!important;
+  transition:background-color .18s ease,color .18s ease,transform .18s ease!important;
+  -webkit-tap-highlight-color:transparent;
+}
+html body.workspace-active #workspace-nav.bottom-nav > button:not(.hidden) .nav-icon {
+  color:currentColor!important;
+  width:26px!important;
+  height:26px!important;
+  font-size:22px!important;
+}
+html body.workspace-active #workspace-nav.bottom-nav .nav-icon svg {
+  width:25px!important;
+  height:25px!important;
+  fill:none!important;
+  stroke:currentColor!important;
+  stroke-width:1.85!important;
+  stroke-linecap:round!important;
+  stroke-linejoin:round!important;
+}
+html body.workspace-active #workspace-nav.bottom-nav > button:not(.hidden) > span:not(.nav-icon) {
+  color:inherit!important;
+  font-size:9px!important;
+  font-weight:700!important;
+  letter-spacing:.01em!important;
+  line-height:1.05!important;
+}
+html body.workspace-active #workspace-nav.bottom-nav > button.active {
+  color:#fff!important;
+  background:#0066ff!important;
+  box-shadow:0 4px 14px rgba(0,102,255,.32)!important;
+}
+html body.workspace-active #workspace-nav.bottom-nav > button:not(.hidden):focus-visible {
+  outline:2px solid #fff!important;
+  outline-offset:2px!important;
+}
+@media (hover:hover) and (pointer:fine) {
+  html body.workspace-active #workspace-nav.bottom-nav > button:not(.hidden):not(.active):hover {
+    background:rgba(255,255,255,.12)!important;
+  }
+}
+@media (max-width:380px) {
+  html body.workspace-active #workspace-nav.bottom-nav:not(.hidden) {gap:2px!important;padding:5px!important}
+  html body.workspace-active #workspace-nav.bottom-nav > button:not(.hidden) {padding:2px 1px!important}
+  html body.workspace-active #workspace-nav.bottom-nav > button:not(.hidden) > span:not(.nav-icon) {font-size:8px!important}
+}
