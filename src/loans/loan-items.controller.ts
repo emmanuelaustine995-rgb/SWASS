@@ -6,6 +6,13 @@ import { WhatsAppReceiptService } from '../notifications/whatsapp-receipt.servic
 import PDFDocument = require('pdfkit');
 import { hashNationalId } from '../receipts/receipts.service';
 
+function isRealDate(value: string): boolean {
+  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(value)) return false;
+  const [year, month, day] = value.split('-').map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
+}
+
 @Controller('api/v1/loan-items')
 @UseGuards(AuthGuard, RolesGuard)
 export class LoanItemsController {
@@ -95,6 +102,7 @@ export class LoanItemsController {
     if(!/^\d{4}-\d{2}-\d{2}$/.test(due)||Number.isNaN(Date.parse(due))||due<new Date().toISOString().slice(0,10))throw new BadRequestException('Choose a valid return date');
     if(!Number.isSafeInteger(quantity)||quantity<1||quantity>10000)throw new BadRequestException('Enter a valid quantity');
     if(!Number.isSafeInteger(value)||value<0||value>1000000000)throw new BadRequestException('Enter a valid item value');
+    for(const [label,value] of [['IMEI',String(b?.imei||'').trim()],['serial number',String(b?.serialNumber||'').trim()]] as const)if(value&&!/^[A-Za-z0-9 ._/-]{6,80}$/.test(value))throw new BadRequestException('Enter a valid '+label+' (6–80 letters or numbers)');
     const borrower=await this.findPartyByPhone(borrowerPhone);
     if(borrower.role===role&&borrower.id===req.user.sub)throw new BadRequestException('You cannot lend an item to your own account');
     const reference='AUR-LN-'+Date.now().toString(36).toUpperCase()+'-'+Math.random().toString(36).slice(2,6).toUpperCase();
@@ -162,7 +170,9 @@ export class LoanItemsController {
 
   @Post(':id/return-request') @Roles('owner','freelancer','customer')
   async requestReturn(@Req() req:any,@Param('id') id:string,@Body() b:any){
-    const role=this.partyRole(req.user),report={conditionIn:String(b?.conditionIn||'').trim().slice(0,1000),notes:String(b?.notes||'').trim().slice(0,1000)};
+    const role=this.partyRole(req.user),conditionIn=String(b?.conditionIn||'').trim();
+    if(!conditionIn||conditionIn.length>1000)throw new BadRequestException('Describe the item condition before requesting its return');
+    const report={conditionIn,notes:String(b?.notes||'').trim().slice(0,1000)};
     const q=await this.db.pool.query(
       `UPDATE aurora_loans SET status='return_pending',return_report=$4::jsonb,updated_at=now()
        WHERE id=$1 AND borrower_role=$2 AND borrower_id=$3 AND status='active'
@@ -201,6 +211,10 @@ export class LoanItemsController {
     for(const k of required)if(typeof b?.[k]!=='string'||!b[k].trim())throw new BadRequestException(k+' is required');
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(b.borrowerEmail))throw new BadRequestException('Enter a valid borrower email address');
     const amount=Number(b.amountKes);if(!Number.isSafeInteger(amount)||amount<0||amount>100000000)throw new BadRequestException('Enter a valid deposit / value amount');
+    if(!isRealDate(b.loanDate)||b.loanDate>new Date().toISOString().slice(0,10))throw new BadRequestException('Enter a valid loan date that is not in the future');
+    if(!/^[0-9+() -]{7,25}$/.test(b.phone.trim()))throw new BadRequestException('Enter a valid borrower phone number');
+    if(b.imei&&String(b.imei).trim()&&!/^[A-Za-z0-9 ._/-]{6,80}$/.test(String(b.imei).trim()))throw new BadRequestException('Enter a valid IMEI');
+    if(b.serialNumber&&String(b.serialNumber).trim()&&!/^[A-Za-z0-9 ._/-]{6,80}$/.test(String(b.serialNumber).trim()))throw new BadRequestException('Enter a valid serial number');
     const nationalIdHash=hashNationalId(b.idNumber.trim());
     const ref='AUR-LN-'+Date.now().toString(36).toUpperCase();
     const {rows}=await this.db.pool.query(`INSERT INTO loan_items(tenant_id,store_id,reference,item_name,borrower_name,phone,id_number,national_id_hash,borrower_email,imei,serial_number,loan_date,condition_out,amount_kes,processed_by,recorded_by) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12::date,$13,$14,$15,$16) RETURNING id`,[t,s,ref,b.itemName.trim(),b.borrowerName.trim(),b.phone.trim(),b.idNumber.trim(),nationalIdHash,b.borrowerEmail.trim().toLowerCase(),b.imei?.trim()||null,b.serialNumber?.trim()||null,b.loanDate,b.conditionOut.trim(),amount,b.processedBy?.trim()||req.user.fullName||'Shop owner',req.user.sub]);
