@@ -22,7 +22,7 @@
   }
   function showLogin(){ $('login-view').classList.remove('hidden'); $('dashboard-view').classList.add('hidden'); $('logout-btn').classList.add('hidden'); }
   function showDashboard(){ $('login-view').classList.add('hidden'); $('dashboard-view').classList.remove('hidden'); $('logout-btn').classList.remove('hidden'); $('user-label').textContent=state.role; }
-  function notice(msg,error=false){$('notice').textContent=msg;$('notice').classList.remove('hidden');$('notice').style.background=error?'#FC7584':'#F7F5F0';$('notice').style.color=error?'#FC7584':'#474329';}
+  function notice(msg,error=false){$('notice').textContent=msg;$('notice').classList.remove('hidden');$('notice').style.background=error?'#fff0ef':'#eef8f0';$('notice').style.color=error?'#a12b22':'#21643a';}
   function localDate(d){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');return `${y}-${m}-${day}`;}
   function initializePeriod(){const now=new Date();$('date-from').value=localDate(new Date(now.getFullYear(),now.getMonth(),1));$('date-to').value=localDate(now);}
   function periodQuery(){const p=new URLSearchParams();if($('date-from').value)p.set('from',$('date-from').value);if($('date-to').value)p.set('to',$('date-to').value);return p.toString()? `?${p}`:'';}
@@ -99,7 +99,7 @@
     try{return await state.dashboardRequest;}finally{state.dashboardRequest=null;}
   }
   function renderProductMix(rows){
-    const colors=['#0066FF','#FC7584','#474329','#F7F5F0'];
+    const colors=['#2676b8','#16a36a','#e6a23c','#8b65c8','#e16b75','#36a6a6','#65758b','#c27b42','#789b42','#b05c9d','#4b83a8','#9a8c73'];
     const valid=rows.filter(row=>Number(row.salesKes)>0);
     const total=valid.reduce((sum,row)=>sum+Number(row.salesKes),0);
     if(!valid.length||!total){
