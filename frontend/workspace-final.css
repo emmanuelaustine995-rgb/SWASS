@@ -673,17 +673,25 @@ html body:not(.workspace-active):not(.platform-admin-login) #login-view .curved-
 }
 html body:not(.workspace-active):not(.platform-admin-login) #login-view .auth-animated-container > :not(.curved-shape):not(.curved-shape2):not(.info-content){position:relative;z-index:2}
 html body:not(.workspace-active):not(.platform-admin-login) #login-view .form-box{
-  position:relative;z-index:2;transition:transform .85s ease,opacity .7s ease,filter .7s ease;
-  transform:translateX(0);opacity:1;filter:blur(0);
+  position:relative;z-index:2;transform:none!important;opacity:1!important;filter:none!important;
 }
-html body:not(.workspace-active):not(.platform-admin-login) #login-view .form-box.auth-slide-out{
-  transform:translateX(-120%);opacity:0;filter:blur(10px);transition-delay:0s;
+html body:not(.workspace-active):not(.platform-admin-login) #login-view .form-box > *{
+  transition:transform .8s ease,opacity .7s ease,filter .7s ease;
 }
-html body:not(.workspace-active):not(.platform-admin-login) #login-view .form-box.Register.auth-slide-out{
+html body:not(.workspace-active):not(.platform-admin-login) #login-view .form-box.auth-slide-out > *{
+  transform:translateX(-120%);opacity:0;filter:blur(10px);
+  transition-delay:calc(var(--S,0)*.1s);
+}
+html body:not(.workspace-active):not(.platform-admin-login) #login-view .form-box.Register.auth-slide-out > *{
   transform:translateX(120%);
 }
-html body:not(.workspace-active):not(.platform-admin-login) #login-view .form-box.auth-slide-in{
+html body:not(.workspace-active):not(.platform-admin-login) #login-view .form-box.auth-slide-in > *{
   animation:aurora-auth-slide-in .85s ease both;
+  animation-delay:calc(var(--li,0)*.1s);
+}
+html body:not(.workspace-active):not(.platform-admin-login) #login-view .form-box.Login.auth-slide-in > *{
+  animation-name:aurora-auth-slide-in-left;
+  animation-delay:calc(var(--D,0)*.1s);
 }
 @keyframes aurora-auth-slide-in{from{transform:translateX(120%);opacity:0;filter:blur(10px)}to{transform:translateX(0);opacity:1;filter:blur(0)}}
 html body:not(.workspace-active):not(.platform-admin-login) #login-view .form-box.Login.auth-slide-in{
