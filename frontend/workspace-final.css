@@ -408,3 +408,62 @@ html body:not(.workspace-active):not(.platform-admin-login) #login-view .login-c
     animation:none!important;
   }
 }
+
+
+/* Issue Receipt must obey the same 14 cm workspace boundary as every other
+   app screen. These scoped selectors intentionally outrank the older
+   receipt-page :has() layout rules in auth-sunset.css. */
+html body.workspace-active:has(#pos-view.workspace-issue-mode:not(.hidden)) main.shell {
+  display:block!important;
+  position:relative!important;
+  inset:auto!important;
+  width:min(14cm,calc(100vw - 24px))!important;
+  max-width:14cm!important;
+  min-width:0!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  margin:0 auto!important;
+  padding:12px 12px calc(142px + env(safe-area-inset-bottom,0px))!important;
+  overflow:visible!important;
+  box-sizing:border-box!important;
+}
+html body.workspace-active:has(#pos-view.workspace-issue-mode:not(.hidden)) main.shell > #pos-view.workspace-issue-mode:not(.hidden) {
+  display:block!important;
+  position:relative!important;
+  inset:auto!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  margin:0!important;
+  padding:8px 0 24px!important;
+  overflow:visible!important;
+  transform:none!important;
+}
+html body.workspace-active:has(#pos-view.workspace-issue-mode:not(.hidden)) main.shell #pos-view.workspace-issue-mode .pos-grid,
+html body.workspace-active:has(#pos-view.workspace-issue-mode:not(.hidden)) main.shell #pos-view.workspace-issue-mode .cart-panel,
+html body.workspace-active:has(#pos-view.workspace-issue-mode:not(.hidden)) main.shell #pos-view.workspace-issue-mode .cart-list,
+html body.workspace-active:has(#pos-view.workspace-issue-mode:not(.hidden)) main.shell #pos-view.workspace-issue-mode #product-form {
+  position:relative!important;
+  inset:auto!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  margin-left:0!important;
+  margin-right:0!important;
+  overflow:visible!important;
+  transform:none!important;
+  box-sizing:border-box!important;
+}
+@media(min-width:761px) {
+  html body.workspace-active:has(#pos-view.workspace-issue-mode:not(.hidden)) main.shell {
+    width:14cm!important;
+    max-width:calc(100vw - 32px)!important;
+  }
+}
