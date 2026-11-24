@@ -369,13 +369,15 @@ html body:not(.workspace-active):not(.platform-admin-login)::after {
   pointer-events:none!important;
   opacity:.88!important;
   background-image:
-    radial-gradient(3px 3px at 18px 22px,rgba(255,255,255,.98) 55%,transparent 72%),
-    radial-gradient(2px 2px at 70px 95px,rgba(255,255,255,.88) 55%,transparent 72%),
-    radial-gradient(2.5px 2.5px at 132px 45px,rgba(255,255,255,.92) 55%,transparent 72%),
-    radial-gradient(1.5px 1.5px at 185px 155px,rgba(255,255,255,.86) 55%,transparent 72%);
-  background-size:260px 230px,310px 270px,220px 250px,360px 310px;
+    radial-gradient(8px 8px at 24px 28px,rgba(255,255,255,1) 48%,rgba(255,255,255,.45) 68%,transparent 78%),
+    radial-gradient(6px 6px at 105px 115px,rgba(255,255,255,.98) 48%,rgba(255,255,255,.4) 68%,transparent 78%),
+    radial-gradient(10px 10px at 190px 55px,rgba(255,255,255,.98) 48%,rgba(255,255,255,.42) 68%,transparent 78%),
+    radial-gradient(7px 7px at 255px 180px,rgba(255,255,255,.96) 48%,rgba(255,255,255,.38) 68%,transparent 78%),
+    radial-gradient(5px 5px at 315px 90px,rgba(255,255,255,.94) 48%,rgba(255,255,255,.35) 68%,transparent 78%),
+    radial-gradient(9px 9px at 365px 220px,rgba(255,255,255,.98) 48%,rgba(255,255,255,.4) 68%,transparent 78%);
+  background-size:420px 330px,460px 390px,390px 360px,510px 420px,440px 370px,560px 460px;
   background-repeat:repeat;
-  animation:aurora-snowfall 12s linear infinite!important;
+  animation:aurora-snowfall 10s linear infinite!important;
 }
 html body:not(.workspace-active):not(.platform-admin-login) .topbar {
   position:relative!important;
@@ -395,8 +397,8 @@ html body:not(.workspace-active):not(.platform-admin-login) #login-view .login-c
   backdrop-filter:blur(14px)!important;
 }
 @keyframes aurora-snowfall {
-  from {background-position:0 -120px,40px -80px,-30px -100px,90px -150px}
-  to {background-position:65px 520px,170px 470px,45px 560px,210px 500px}
+  from {background-position:0 -160px,40px -120px,-30px -140px,90px -190px,130px -90px,-70px -210px}
+  to {background-position:75px 620px,190px 570px,55px 660px,240px 600px,260px 540px,180px 700px}
 }
 @keyframes aurora-snow-scene-drift {
   from {background-position:center,center 52%}
@@ -685,7 +687,21 @@ html body:not(.workspace-active):not(.platform-admin-login) #login-view #freelan
 html body:not(.workspace-active):not(.platform-admin-login) #login-view #signup-success-message,
 html body:not(.workspace-active):not(.platform-admin-login) #login-view #freelancer-register-success{grid-column:1;grid-row:5}
 html body:not(.workspace-active):not(.platform-admin-login) #login-view .form-box{
-  position:relative;z-index:2;transform:none!important;opacity:1!important;filter:none!important;
+  position:relative;z-index:2;transform:translateX(0);opacity:1;filter:blur(0);
+  transition:transform .9s cubic-bezier(.22,.75,.25,1),opacity .75s ease,filter .75s ease;
+  will-change:transform,opacity,filter;
+}
+html body:not(.workspace-active):not(.platform-admin-login) #login-view .form-box.auth-slide-out{
+  transform:translateX(-125%);opacity:0;filter:blur(10px);pointer-events:none;
+}
+html body:not(.workspace-active):not(.platform-admin-login) #login-view .form-box.Register.auth-slide-out{
+  transform:translateX(125%);
+}
+html body:not(.workspace-active):not(.platform-admin-login) #login-view .form-box.auth-slide-in{
+  animation:aurora-auth-panel-in-right .95s cubic-bezier(.22,.75,.25,1) both;
+}
+html body:not(.workspace-active):not(.platform-admin-login) #login-view .form-box.Login.auth-slide-in{
+  animation-name:aurora-auth-panel-in-left;
 }
 html body:not(.workspace-active):not(.platform-admin-login) #login-view .form-box > *{
   transition:transform .8s ease,opacity .7s ease,filter .7s ease;
@@ -694,21 +710,16 @@ html body:not(.workspace-active):not(.platform-admin-login) #login-view .form-bo
   transform:translateX(-120%);opacity:0;filter:blur(10px);
   transition-delay:calc(var(--S,0)*.1s);
 }
-html body:not(.workspace-active):not(.platform-admin-login) #login-view .form-box.Register.auth-slide-out > *{
-  transform:translateX(120%);
-}
+html body:not(.workspace-active):not(.platform-admin-login) #login-view .form-box.Register.auth-slide-out > *{transform:translateX(120%)}
 html body:not(.workspace-active):not(.platform-admin-login) #login-view .form-box.auth-slide-in > *{
-  animation:aurora-auth-slide-in .85s ease both;
-  animation-delay:calc(var(--li,0)*.1s);
+  animation:aurora-auth-slide-in .85s ease both;animation-delay:calc(var(--li,0)*.1s);
 }
 html body:not(.workspace-active):not(.platform-admin-login) #login-view .form-box.Login.auth-slide-in > *{
-  animation-name:aurora-auth-slide-in-left;
-  animation-delay:calc(var(--D,0)*.1s);
+  animation-name:aurora-auth-slide-in-left;animation-delay:calc(var(--D,0)*.1s);
 }
+@keyframes aurora-auth-panel-in-right{from{transform:translateX(125%);opacity:0;filter:blur(10px)}to{transform:translateX(0);opacity:1;filter:blur(0)}}
+@keyframes aurora-auth-panel-in-left{from{transform:translateX(-125%);opacity:0;filter:blur(10px)}to{transform:translateX(0);opacity:1;filter:blur(0)}}
 @keyframes aurora-auth-slide-in{from{transform:translateX(120%);opacity:0;filter:blur(10px)}to{transform:translateX(0);opacity:1;filter:blur(0)}}
-html body:not(.workspace-active):not(.platform-admin-login) #login-view .form-box.Login.auth-slide-in{
-  animation-name:aurora-auth-slide-in-left;
-}
 @keyframes aurora-auth-slide-in-left{from{transform:translateX(-120%);opacity:0;filter:blur(10px)}to{transform:translateX(0);opacity:1;filter:blur(0)}}
 html body:not(.workspace-active):not(.platform-admin-login) #login-view .auth-animated-container.active .curved-shape{
   transform:rotate(0) skewY(0) scale(1);clip-path:polygon(0 0,100% 0,100% 100%,0 100%);
