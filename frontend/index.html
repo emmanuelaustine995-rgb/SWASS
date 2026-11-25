@@ -502,6 +502,7 @@
         <form id="secondhand-form" class="secondhand-form" hidden style="display:none!important">
           <input type="hidden" id="sh-sale-type" value="">
           <fieldset><legend>1 · Seller identification</legend>
+            <label id="sh-shop-phone-wrap" class="hidden">Shop’s registered business phone number<input id="sh-shop-phone" type="tel" maxlength="30" autocomplete="tel" placeholder="Enter the phone number registered by the shop"></label>
             <label>Full legal name<input id="sh-seller-name" maxlength="160" autocomplete="name" required placeholder="Name as shown on ID"></label>
             <div class="secondhand-fields"><label>National ID / Passport number<input id="sh-national-id" maxlength="40" required></label><label>Seller phone number<input id="sh-seller-phone" type="tel" maxlength="30" autocomplete="tel" required placeholder="07XX XXX XXX"></label></div><div class="secondhand-fields"><label>Seller email address<input id="sh-seller-email" type="email" maxlength="254" autocomplete="email" required placeholder="seller@example.com"></label><label>Alternative phone (optional)<input id="sh-alt-phone" type="tel" maxlength="30"></label></div>
             <label>Residential address / area<input id="sh-address" maxlength="300" required placeholder="Estate, town, county"></label>
