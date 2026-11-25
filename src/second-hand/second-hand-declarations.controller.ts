@@ -29,25 +29,10 @@ export class SecondHandPhoneDeclarationsController {
       `SELECT id, seller_name AS "sellerName", national_id AS "nationalId",
                seller_phone AS "sellerPhone", seller_email AS "sellerEmail", buyer_name AS "buyerName", buyer_national_id AS "buyerNationalId", buyer_phone AS "buyerPhone", buyer_email AS "buyerEmail", phone_make_model AS "phoneMakeModel", sale_type AS "saleType",
               imei1, imei2, serial_number AS "serialNumber", phone_condition AS "condition", purchase_price_kes AS "purchasePriceKes",
-              declaration_ref AS "declarationRef", created_at AS "createdAt",
-              'shop_created' AS "sourceType", 'recorded' AS status
+              declaration_ref AS "declarationRef", created_at AS "createdAt"
          FROM second_hand_phone_declarations
         WHERE tenant_id=$1 AND store_id=$2
-        UNION ALL
-       SELECT s.id, s.seller_name AS "sellerName", s.payload->>'nationalId' AS "nationalId",
-              s.payload->>'sellerPhone' AS "sellerPhone", s.payload->>'sellerEmail' AS "sellerEmail",
-              s.payload->>'buyerName' AS "buyerName", s.payload->>'buyerNationalId' AS "buyerNationalId",
-              s.payload->>'buyerPhone' AS "buyerPhone", s.payload->>'buyerEmail' AS "buyerEmail",
-              s.product_name AS "phoneMakeModel", s.payload->>'saleType' AS "saleType",
-              s.payload->>'imei1' AS imei1, s.payload->>'imei2' AS imei2, s.payload->>'serialNumber' AS "serialNumber",
-              s.payload->>'condition' AS "condition",
-              CASE WHEN COALESCE(s.payload->>'purchasePriceKes','') ~ '^[0-9]+$'
-                   THEN (s.payload->>'purchasePriceKes')::bigint ELSE NULL END AS "purchasePriceKes",
-              s.declaration_ref AS "declarationRef", s.created_at AS "createdAt",
-              'customer_submission' AS "sourceType", s.status
-         FROM customer_sales_declaration_submissions s
-        WHERE s.tenant_id=$1
-        ORDER BY "createdAt" DESC LIMIT 100`,
+        ORDER BY created_at DESC LIMIT 50`,
       [user.tenantId, user.storeId],
     );
     return { declarations: rows };
