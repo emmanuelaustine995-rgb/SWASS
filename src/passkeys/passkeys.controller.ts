@@ -201,6 +201,7 @@ export class PasskeysController {
         payload.adminPersonId = admin.rows[0].person_id;
       }
     }
+    if (user.must_change_password) throw new UnauthorizedException('Please sign in with your password and finish the required password update before using passkey login.');
     const accessToken = await this.jwt.signAsync(payload, { expiresIn: user.role === 'super_admin' ? '8h' : '30d' });
     await this.db.recordSecurityEvent({
       eventType: 'passkey_login_success', outcome: 'success', actorUserId: passkey.user_id || null,
