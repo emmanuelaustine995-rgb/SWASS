@@ -4286,3 +4286,18 @@ html body.workspace-active > #workspace-nav.bottom-nav > button.nav-lost-goods.a
     height: 16px !important;
   }
 }
+
+
+/* The Products action cards are the only visible triggers for these panels.
+   Keep their native disclosure content available to JavaScript, but hide the
+   empty summary rows that previously rendered as three "Details" bars. */
+body.workspace-active #shop-home #shop-register-product-card > .shop-product-panel-summary,
+body.workspace-active #shop-home #shop-find-products-card > .shop-product-panel-summary,
+body.workspace-active #shop-home #shop-stock-manager-card > .shop-product-panel-summary {
+  display:none!important;
+  min-height:0!important;
+  height:0!important;
+  padding:0!important;
+  margin:0!important;
+  border:0!important;
+}
