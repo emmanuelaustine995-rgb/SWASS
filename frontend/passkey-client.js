@@ -18,7 +18,12 @@
       signal: AbortSignal.timeout(75000),
     });
     const data = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(data.message || 'Passkey request failed.');
+    if (!response.ok) {
+      const error = new Error(data.message || data.error || 'Passkey request failed.');
+      error.status = response.status;
+      error.data = data;
+      throw error;
+    }
     return data;
   }
   function deviceName() {
@@ -43,6 +48,9 @@
       const options = await call('/passkeys/register/options', 'POST', {}, token);
       const credential = await browser.startRegistration({ optionsJSON: options });
       await call('/passkeys/register/verify', 'POST', { credential, deviceName: deviceName() }, token);
+      // A credential ID is not a secret key; retain it to support phones that
+      // cannot offer discoverable credentials during the sign-in prompt.
+      localStorage.setItem('aurora-passkey-credential-id', credential.id);
       message.textContent = 'This device is now registered. You can use its fingerprint or screen lock to sign in.';
       await refreshDevices();
     } finally { button.disabled = false; }
@@ -76,7 +84,18 @@
     const button = $('passkey-login-btn'), message = $('passkey-login-message');
     button.disabled = true; message.textContent = 'Waiting for your phone to verify…';
     try {
-      const { options, flowId } = await call('/passkeys/login/options', 'POST', {});
+      const savedCredentialId = localStorage.getItem('aurora-passkey-credential-id') || '';
+      let optionsResult;
+      try {
+        optionsResult = await call('/passkeys/login/options', 'POST', savedCredentialId ? { credentialId: savedCredentialId } : {});
+      } catch (error) {
+        // A revoked device can leave a stale local identifier. Retry using
+        // discoverable credentials so another available passkey can be used.
+        if (error.status !== 404 || !savedCredentialId) throw error;
+        localStorage.removeItem('aurora-passkey-credential-id');
+        optionsResult = await call('/passkeys/login/options', 'POST', {});
+      }
+      const { options, flowId } = optionsResult;
       const credential = await browser.startAuthentication({ optionsJSON: options });
       const result = await call('/passkeys/login/verify', 'POST', { flowId, credential });
       const claims = JSON.parse(atob(result.accessToken.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
@@ -92,7 +111,9 @@
       }));
       location.href = '/';
     } catch (error) {
-      message.textContent = error.name === 'NotAllowedError' ? 'Passkey sign-in was cancelled. You can still use your password.' : (error.message || 'Passkey sign-in failed. Use your password.');
+      message.textContent = error.name === 'NotAllowedError'
+        ? 'No passkey was selected, or the request timed out. Try again, or sign in with your password.'
+        : (error.message || 'Passkey sign-in failed. Use your password.');
     } finally { button.disabled = false; }
   }
 
