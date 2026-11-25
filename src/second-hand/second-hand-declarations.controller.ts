@@ -38,7 +38,7 @@ export class SecondHandPhoneDeclarationsController {
               s.payload->>'sellerPhone' AS "sellerPhone", s.payload->>'sellerEmail' AS "sellerEmail",
               s.payload->>'buyerName' AS "buyerName", s.payload->>'buyerNationalId' AS "buyerNationalId",
               s.payload->>'buyerPhone' AS "buyerPhone", s.payload->>'buyerEmail' AS "buyerEmail",
-              s.product_name AS "phoneMakeModel", s.payload->>'saleType' AS "saleType",
+              s.product_name AS "phoneMakeModel", s.payload->>'saleType' AS "saleType',
               s.payload->>'imei1' AS imei1, s.payload->>'imei2' AS imei2, s.payload->>'serialNumber' AS "serialNumber",
               s.payload->>'condition' AS "condition",
               CASE WHEN COALESCE(s.payload->>'purchasePriceKes','') ~ '^[0-9]+
