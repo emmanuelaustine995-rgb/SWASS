@@ -2317,7 +2317,7 @@
   }
   function renderDeclarationHistory(rows){
     const target=$('declaration-history-list');if(!target)return;
-    target.innerHTML=rows.length?rows.map(d=>{const pending=d.status==='pending_review';return '<article class="aurora-history-row"><div class="aurora-history-row-main"><strong>'+escapeHtml(d.declarationRef||'Declaration')+' · '+escapeHtml(d.phoneMakeModel||d.productName||'Product not recorded')+'</strong><small>'+escapeHtml(historyDate(d.createdAt))+' · Seller: '+escapeHtml(d.sellerName||'—')+' · Buyer: '+escapeHtml(d.buyerName||'—')+' · '+money(d.purchasePriceKes)+'</small></div><span class="badge '+(pending?'badge-warning':'badge-success')+'">'+(pending?'PENDING REVIEW':'RECORDED')+'</span></article>';}).join(''):'<div class="aurora-history-empty">No declaration forms have been submitted yet.</div>';
+    target.innerHTML=rows.length?rows.map(d=>{const pending=d.status==='pending_review';return '<article class="aurora-history-row"><div class="aurora-history-row-main"><strong>'+escapeHtml(d.declarationRef||'Declaration')+' · '+escapeHtml(d.phoneMakeModel||d.productName||'Product not recorded')+'</strong><small>'+escapeHtml(historyDate(d.createdAt))+' · Seller: '+escapeHtml(d.sellerName||'—')+' · Buyer: '+escapeHtml(d.buyerName||'—')+' · '+money(d.purchasePriceKes)+'</small></div><span class="badge '+(pending?'badge':'badge-success')+'">'+(pending?'PENDING REVIEW':'RECORDED')+'</span></article>';}).join(''):'<div class="aurora-history-empty">No declaration forms have been submitted yet.</div>';
   }
   async function openReceiptHistory(){
     if(!['owner','freelancer','staff','cashier','manager'].includes(state.role)){showNotice('Receipt history is available to authorised shop accounts.',true);return;}
