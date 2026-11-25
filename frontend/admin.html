@@ -279,7 +279,7 @@ body{background:#eef3fb}
  </div>
 
  <div class="panel">
-  <div class="soc-panel-head"><div><h3>Registered Passkeys &amp; Devices</h3><p>Credential inventory stored in the AURORA database. Private biometric data and public-key material are never displayed here.</p></div><button id="passkeys-refresh" class="secondary" type="button" style="width:auto;margin:0">↻ Refresh</button></div>
+  <div class="soc-panel-head"><div><h3>Registered Passkeys &amp; Devices</h3><p>Credential inventory stored in the AURORA database. Private biometric data and public-key material are never displayed here.</p></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button id="passkeys-register" class="secondary" type="button" style="width:auto;margin:0">Register this admin device</button><button id="passkeys-refresh" class="secondary" type="button" style="width:auto;margin:0">↻ Refresh</button></div></div>
   <div class="cards" style="margin:12px 0"><div class="card"><small>Registered credentials</small><div id="passkeys-total" class="metric">—</div></div><div class="card"><small>Used in last 30 days</small><div id="passkeys-recent" class="metric">—</div></div></div>
   <p id="passkeys-status" class="status" role="status">Loading registered passkeys…</p>
   <div class="table-wrap"><table><thead><tr><th>Account</th><th>Phone</th><th>Role</th><th>Device</th><th>Registered</th><th>Last used</th><th>Action</th></tr></thead><tbody id="passkeys-rows"><tr><td colspan="7">Loading…</td></tr></tbody></table></div>
@@ -346,6 +346,7 @@ body{background:#eef3fb}
 </main>
 </div>
 </section>
+<script src="https://unpkg.com/@simplewebauthn/browser@11.0.0/dist/bundle/index.umd.min.js"></script>
 <script>
 (() => {
   const API='https://swass-api.onrender.com/api/v1';
@@ -884,6 +885,22 @@ body{background:#eef3fb}
       token=data.accessToken;sessionStorage.setItem('aurora-admin-token',token);$('admin-welcome').textContent='Welcome, '+(data.user?.fullName||'Administrator');showApp();
     }catch(err){error.textContent=err.message||'Unable to sign in.';}
     finally{btn.disabled=false;btn.textContent='SECURE ADMIN LOGIN';}
+  });
+
+  $('passkeys-register')?.addEventListener('click',async()=>{
+    const button=$('passkeys-register'),status=$('passkeys-status');
+    button.disabled=true;status.textContent='Preparing secure passkey registration…';
+    try{
+      const supported=window.PublicKeyCredential&&await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+      if(!supported||!window.SimpleWebAuthnBrowser)throw new Error('This browser or device does not provide a supported platform authenticator.');
+      const response=await fetch(API+'/passkeys/register/options',{method:'POST',headers:{Authorization:'Bearer '+token,Accept:'application/json'}});
+      const options=await response.json().catch(()=>({}));if(!response.ok)throw new Error(options.message||'Could not start passkey registration.');
+      const credential=await window.SimpleWebAuthnBrowser.startRegistration({optionsJSON:options});
+      const verified=await fetch(API+'/passkeys/register/verify',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token,Accept:'application/json'},body:JSON.stringify({credential,deviceName:/Android/i.test(navigator.userAgent)?'Admin Android device':/iPhone/i.test(navigator.userAgent)?'Admin iPhone':'Admin device'})});
+      const result=await verified.json().catch(()=>({}));if(!verified.ok)throw new Error(result.message||'Passkey registration failed.');
+      status.textContent='This administrator device is now registered.';await loadPasskeys();
+    }catch(error){status.textContent=error.name==='NotAllowedError'?'Passkey registration cancelled.':error.message;}
+    finally{button.disabled=false;}
   });
   $('admin-logout').addEventListener('click',logout);
   // Reuse a super-admin session handed off by the ordinary app only after the API confirms its privileges.
