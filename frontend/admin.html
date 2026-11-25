@@ -277,6 +277,13 @@ body{background:#eef3fb}
   </form>
   <div id="ops-work-items" class="settings-check-list"><div class="settings-loading">Loading operations register…</div></div>
  </div>
+
+ <div class="panel">
+  <div class="soc-panel-head"><div><h3>Registered Passkeys &amp; Devices</h3><p>Credential inventory stored in the AURORA database. Private biometric data and public-key material are never displayed here.</p></div><button id="passkeys-refresh" class="secondary" type="button" style="width:auto;margin:0">↻ Refresh</button></div>
+  <div class="cards" style="margin:12px 0"><div class="card"><small>Registered credentials</small><div id="passkeys-total" class="metric">—</div></div><div class="card"><small>Used in last 30 days</small><div id="passkeys-recent" class="metric">—</div></div></div>
+  <p id="passkeys-status" class="status" role="status">Loading registered passkeys…</p>
+  <div class="table-wrap"><table><thead><tr><th>Account</th><th>Phone</th><th>Role</th><th>Device</th><th>Registered</th><th>Last used</th><th>Action</th></tr></thead><tbody id="passkeys-rows"><tr><td colspan="7">Loading…</td></tr></tbody></table></div>
+ </div>
 </section>
 <section id="section-access" class="hidden"><div class="heading"><div><h2>Admin Access Control</h2><p>Up to three authorised people, with multiple approved email aliases per person.</p></div></div><div class="cards"><div class="card"><small>Registered shops</small><div id="access-shops" class="metric">—</div></div><div class="card"><small>Active shop owners</small><div id="access-owners" class="metric">—</div></div><div class="card"><small>Active customer accounts</small><div id="access-customers" class="metric">—</div></div><div class="card"><small>Inactive user accounts</small><div id="access-inactive" class="metric">—</div></div></div><div class="chart-grid"><div class="chart-panel"><h3>Account security posture</h3><p>Live account counts from the platform database—not a threat-detection score</p><div class="chart-row"><span>Active owners</span><div class="chart-track"><div id="access-owner-fill" class="chart-fill"></div></div><strong id="access-owner-value" class="chart-value">—</strong></div><div class="chart-row"><span>Customers</span><div class="chart-track"><div id="access-customer-fill" class="chart-fill"></div></div><strong id="access-customer-value" class="chart-value">—</strong></div><div class="chart-row"><span>Inactive users</span><div class="chart-track"><div id="access-inactive-fill" class="chart-fill"></div></div><strong id="access-inactive-value" class="chart-value">—</strong></div><div id="access-chart-note" class="chart-empty">Waiting for verified platform counts…</div></div><div class="panel"><h3>Authorised administrator identities</h3><p>Registration is checked against the server-side AURORA_ADMIN_IDENTITIES configuration. Each person has one approved phone number and one or more approved email addresses. Phone verification and email verification are required before admin sign-in. National ID numbers are stored only as protected hashes. Individual permissions, login MFA, and append-only administrator audit history still require backend implementation.</p></div></div></section>
 <section id="section-accounts" class="hidden">
@@ -552,6 +559,37 @@ body{background:#eef3fb}
   });
   $('ops-work-refresh').addEventListener('click',loadOperationsWorkItems);
 
+
+  async function loadPasskeys(){
+    const status=$('passkeys-status'),rows=$('passkeys-rows');
+    status.textContent='Loading registered passkeys…';
+    try{
+      const data=await api('/platform-admin/passkeys');
+      $('passkeys-total').textContent=Number(data.summary?.total||0).toLocaleString();
+      $('passkeys-recent').textContent=Number(data.summary?.used_last_30_days||0).toLocaleString();
+      rows.replaceChildren();
+      (data.items||[]).forEach(item=>{
+        const tr=document.createElement('tr');
+        const values=[item.account_name,item.account_phone,item.account_role,item.device_name,new Date(item.created_at).toLocaleString(),item.last_used_at?new Date(item.last_used_at).toLocaleString():'Never'];
+        values.forEach(value=>{const td=document.createElement('td');td.textContent=value||'—';tr.append(td);});
+        const action=document.createElement('td'),button=document.createElement('button');
+        button.type='button';button.className='secondary';button.style.cssText='width:auto;margin:0;padding:7px 10px;color:#a12a35';button.textContent='Revoke';
+        button.addEventListener('click',async()=>{
+          if(!confirm('Revoke this passkey? The device will no longer be able to sign in with this credential.'))return;
+          button.disabled=true;
+          try{
+            const response=await fetch(API+'/platform-admin/passkeys/'+encodeURIComponent(item.id),{method:'DELETE',headers:{Authorization:'Bearer '+token,Accept:'application/json'}});
+            const result=await response.json().catch(()=>({}));
+            if(!response.ok)throw new Error(result.message||'Could not revoke passkey.');
+            await loadPasskeys();
+          }catch(error){status.textContent='Revoke failed: '+error.message;button.disabled=false;}
+        });
+        action.append(button);tr.append(action);rows.append(tr);
+      });
+      if(!rows.children.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=7;td.textContent='No passkeys have been registered.';tr.append(td);rows.append(tr);}
+      status.textContent=(data.items||[]).length+' credential record(s) shown. The list is limited to the 200 most recently registered devices.';
+    }catch(error){status.textContent='Could not load passkeys: '+error.message;}
+  }
   async function loadSecurity(){
     void loadLostPhones();
     const status=$('soc-events-status'),rows=$('soc-events'),severity=$('soc-severity').value;
@@ -853,6 +891,7 @@ body{background:#eef3fb}
   $('shop-search-btn').addEventListener('click',loadShops);
   $('subscription-payments-refresh')?.addEventListener('click',loadSubscriptionPaymentQueue);
   $('security-refresh').addEventListener('click',loadSecurity);
+  $('passkeys-refresh')?.addEventListener('click',loadPasskeys);
   $('soc-severity').addEventListener('change',loadSecurity);
   $('shop-search').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();loadShops();}});
   const menu=$('admin-menu'),menuToggle=$('admin-menu-toggle');
@@ -862,7 +901,7 @@ body{background:#eef3fb}
   document.querySelectorAll('.nav button').forEach(btn=>btn.addEventListener('click',()=>{
     document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b===btn));
     document.querySelectorAll('main.content section').forEach(s=>s.classList.add('hidden'));
-    $('section-'+btn.dataset.section).classList.remove('hidden');$('admin-welcome').textContent=btn.textContent;menu.hidden=true;menuToggle.setAttribute('aria-expanded','false');if(btn.dataset.section==='shops')loadShops();if(btn.dataset.section==='finance'){loadFinance();loadSubscriptionPaymentQueue();}if(btn.dataset.section==='accounts')loadPeople();if(btn.dataset.section==='security'){loadSecurity();loadOperationsWorkItems();}if(btn.dataset.section==='reports')loadReports();if(btn.dataset.section==='settings'){loadSettings();loadMaintenance();}
+    $('section-'+btn.dataset.section).classList.remove('hidden');$('admin-welcome').textContent=btn.textContent;menu.hidden=true;menuToggle.setAttribute('aria-expanded','false');if(btn.dataset.section==='shops')loadShops();if(btn.dataset.section==='finance'){loadFinance();loadSubscriptionPaymentQueue();}if(btn.dataset.section==='accounts')loadPeople();if(btn.dataset.section==='security'){loadSecurity();loadOperationsWorkItems();loadPasskeys();}if(btn.dataset.section==='reports')loadReports();if(btn.dataset.section==='settings'){loadSettings();loadMaintenance();}
   }));
 })();
 </script>
