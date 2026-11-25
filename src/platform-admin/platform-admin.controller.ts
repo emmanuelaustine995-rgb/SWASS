@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Param, Post, Query, UseGuards, NotFoundException, Req } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Param, Post, Query, UseGuards, NotFoundException, Req } from '@nestjs/common';
 import { AuthGuard, Roles, RolesGuard } from '../auth/auth';
 import { DbService } from '../db/db.service';
 
@@ -7,6 +7,39 @@ import { DbService } from '../db/db.service';
 @Roles('super_admin')
 export class PlatformAdminController {
   constructor(private db: DbService) {}
+
+  @Get('passkeys')
+  async listPasskeys() {
+    const [summary, records] = await Promise.all([
+      this.db.pool.query(`SELECT COUNT(*)::int AS total,
+        COUNT(*) FILTER (WHERE last_used_at >= now()-interval '30 days')::int AS used_last_30_days
+        FROM passkeys`),
+      this.db.pool.query(`SELECT p.id,p.device_name,p.created_at,p.last_used_at,
+          COALESCE(u.full_name,c.full_name,'Account') AS account_name,
+          COALESCE(u.phone,c.phone,'') AS account_phone,
+          COALESCE(u.role,'customer') AS account_role
+        FROM passkeys p
+        LEFT JOIN users u ON u.id=p.user_id
+        LEFT JOIN customer_accounts c ON c.id=p.customer_id
+        ORDER BY p.created_at DESC LIMIT 200`),
+    ]);
+    return { summary: summary.rows[0], items: records.rows };
+  }
+
+  @Delete('passkeys/:id')
+  async revokePasskey(@Param('id') id: string, @Req() req: any) {
+    if (!id || id.length > 512) throw new BadRequestException('Invalid passkey identifier.');
+    const result = await this.db.pool.query(
+      'DELETE FROM passkeys WHERE id=$1 RETURNING device_name,user_id,customer_id', [id],
+    );
+    if (!result.rowCount) throw new NotFoundException('Passkey not found.');
+    await this.db.recordSecurityEvent({
+      eventType: 'admin_passkey_revoked', severity: 'high', outcome: 'completed',
+      actorUserId: req.user?.sub || null, sourceIp: req.ip, userAgent: req.headers?.['user-agent'],
+      metadata: { deviceName: result.rows[0].device_name, affectedAccountId: result.rows[0].user_id || result.rows[0].customer_id },
+    });
+    return { ok: true, message: 'Passkey revoked. The device can no longer sign in with that credential.' };
+  }
 
 
   @Get('operations/maintenance')

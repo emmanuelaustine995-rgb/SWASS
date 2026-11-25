@@ -4286,3 +4286,39 @@ html body.workspace-active > #workspace-nav.bottom-nav > button.nav-lost-goods.a
     height: 16px !important;
   }
 }
+
+
+/* The Products action cards are the only visible triggers for these panels.
+   Keep their native disclosure content available to JavaScript, but hide the
+   empty summary rows that previously rendered as three "Details" bars. */
+body.workspace-active #shop-home #shop-register-product-card > .shop-product-panel-summary,
+body.workspace-active #shop-home #shop-find-products-card > .shop-product-panel-summary,
+body.workspace-active #shop-home #shop-stock-manager-card > .shop-product-panel-summary {
+  display:none!important;
+  min-height:0!important;
+  height:0!important;
+  padding:0!important;
+  margin:0!important;
+  border:0!important;
+}
+
+
+/* Optional WebAuthn / passkey account controls */
+.passkey-login-btn{width:100%;margin-top:10px;padding:13px 16px;border:1px solid #8b7af0;border-radius:12px;background:linear-gradient(110deg,#f7f5ff,#eef4ff);color:#3e35a8;font:700 14px system-ui,sans-serif;cursor:pointer}
+.passkey-login-btn:disabled{opacity:.6;cursor:wait}
+.passkey-message{min-height:18px;margin:8px 0 0;color:#596579;font-size:12px;line-height:1.5}
+.passkey-settings{margin:18px 0;padding:16px;border:1px solid #dfe7f2;border-radius:15px;background:linear-gradient(140deg,#fff,#f5f8ff);color:#1d2d45}
+.passkey-settings-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.passkey-settings h3{margin:0 0 5px;font-size:16px}
+.passkey-settings p{margin:0;color:#68778d;font-size:12px;line-height:1.55}
+.passkey-state{flex:none;border-radius:20px;padding:5px 9px;background:#eef1f6;color:#536174;font-size:10px;font-weight:800}
+.passkey-state.ready{background:#e4f7ef;color:#087a55}
+.passkey-settings-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
+.passkey-settings-actions .btn{font-size:12px;padding:9px 12px;min-height:38px}
+.passkey-device-list{list-style:none;margin:12px 0 0;padding:0}
+.passkey-device-list li{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid #e8edf5;color:#24344e;font-size:12px}
+.passkey-device-list li strong,.passkey-device-list li small{display:block}
+.passkey-device-list li small{margin-top:3px;color:#7b8799;font-size:10px}
+.passkey-device-list li button{flex:none;border:0;border-radius:18px;padding:7px 11px;background:#fee4e2;color:#a12a35;font-weight:750;font-size:11px;cursor:pointer}
+.passkey-device-list li button:disabled{opacity:.5}
+@media(max-width:520px){.passkey-settings-head{display:block}.passkey-state{display:inline-block;margin-top:9px}.passkey-settings-actions .btn{flex:1}}
