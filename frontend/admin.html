@@ -883,8 +883,15 @@ body{background:#eef3fb}
     button.disabled=true;message.textContent='Waiting for device verification…';
     try{
       if(!window.PublicKeyCredential||!await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()||!window.SimpleWebAuthnBrowser)throw new Error('This device does not have a supported platform authenticator.');
-      const start=await fetch(API+'/passkeys/login/options',{method:'POST',headers:{Accept:'application/json'}});
-      const initial=await start.json().catch(()=>({}));if(!start.ok)throw new Error(initial.message||'Could not start passkey login.');
+      const savedCredentialId=localStorage.getItem('aurora-admin-passkey-credential-id')||'';
+      let start=await fetch(API+'/passkeys/login/options',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify(savedCredentialId?{credentialId:savedCredentialId}:{})});
+      let initial=await start.json().catch(()=>({}));
+      if(start.status===404&&savedCredentialId){
+        localStorage.removeItem('aurora-admin-passkey-credential-id');
+        start=await fetch(API+'/passkeys/login/options',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:'{}'});
+        initial=await start.json().catch(()=>({}));
+      }
+      if(!start.ok)throw new Error(initial.message||'Could not start passkey login.');
       const credential=await window.SimpleWebAuthnBrowser.startAuthentication({optionsJSON:initial.options});
       const verified=await fetch(API+'/passkeys/login/verify',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({flowId:initial.flowId,credential})});
       const result=await verified.json().catch(()=>({}));if(!verified.ok)throw new Error(result.message||'Passkey login failed.');
@@ -892,7 +899,7 @@ body{background:#eef3fb}
       if(claims.role!=='super_admin')throw new Error('This passkey belongs to a non-administrator account. Use the ordinary AURORA login page.');
       token=result.accessToken;sessionStorage.setItem('aurora-admin-token',token);
       $('admin-welcome').textContent='Welcome, '+(result.user?.fullName||'Administrator');showApp();
-    }catch(error){message.textContent=error.name==='NotAllowedError'?'Passkey login cancelled. You can still sign in with your password.':error.message;}
+    }catch(error){message.textContent=error.name==='NotAllowedError'?'No passkey was selected, or the request timed out. You can still sign in with your password.':error.message;}
     finally{button.disabled=false;}
   });
   $('admin-login-form').addEventListener('submit',async e=>{
@@ -916,6 +923,7 @@ body{background:#eef3fb}
       const credential=await window.SimpleWebAuthnBrowser.startRegistration({optionsJSON:options});
       const verified=await fetch(API+'/passkeys/register/verify',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token,Accept:'application/json'},body:JSON.stringify({credential,deviceName:/Android/i.test(navigator.userAgent)?'Admin Android device':/iPhone/i.test(navigator.userAgent)?'Admin iPhone':'Admin device'})});
       const result=await verified.json().catch(()=>({}));if(!verified.ok)throw new Error(result.message||'Passkey registration failed.');
+      localStorage.setItem('aurora-admin-passkey-credential-id',credential.id);
       status.textContent='This administrator device is now registered.';await loadPasskeys();
     }catch(error){status.textContent=error.name==='NotAllowedError'?'Passkey registration cancelled.':error.message;}
     finally{button.disabled=false;}
