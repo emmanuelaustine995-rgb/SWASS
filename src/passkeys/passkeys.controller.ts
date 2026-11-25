@@ -1,5 +1,5 @@
 import {
-  BadRequestException, Body, Controller, Delete, Get, Param, Post, Req, UnauthorizedException, UseGuards,
+  BadRequestException, Body, Controller, Delete, Get, NotFoundException, Param, Post, Req, UnauthorizedException, UseGuards,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import {
@@ -80,7 +80,7 @@ export class PasskeysController {
       excludeCredentials: existing.rows.map((item: any) => ({ id: item.id, transports: item.transports || undefined })),
       authenticatorSelection: {
         authenticatorAttachment: 'platform',
-        residentKey: 'required',
+        residentKey: 'preferred',
         userVerification: 'required',
       },
     });
@@ -134,12 +134,26 @@ export class PasskeysController {
   }
 
   @Post('login/options')
-  async authenticationOptions(@Req() req: any) {
+  async authenticationOptions(@Req() req: any, @Body() body: { credentialId?: string }) {
     this.assertOrigin(req);
+    const credentialId = String(body?.credentialId || '').trim();
+    let allowCredentials: Array<{ id: string; transports?: any[] }> | undefined;
+    if (credentialId) {
+      if (credentialId.length > 1024) throw new BadRequestException('Invalid passkey identifier.');
+      const found = await this.db.pool.query('SELECT id,transports FROM passkeys WHERE id=$1', [credentialId]);
+      if (!found.rowCount) {
+        throw new NotFoundException('This device passkey is no longer registered. Use your password or try another registered device.');
+      }
+      allowCredentials = [{
+        id: found.rows[0].id,
+        transports: found.rows[0].transports || undefined,
+      }];
+    }
     const options = await generateAuthenticationOptions({
       rpID: this.rpId(),
       userVerification: 'required',
-      // An empty allowCredentials list enables discoverable passkey sign-in.
+      // A known local credential is targeted; otherwise allow discoverable passkey sign-in.
+      ...(allowCredentials ? { allowCredentials } : {}),
     });
     await this.db.pool.query('DELETE FROM webauthn_challenges WHERE expires_at <= now()');
     const flowId = randomUUID();
