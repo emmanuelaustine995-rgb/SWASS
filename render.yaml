@@ -29,6 +29,11 @@ services:
         generateValue: true
       - key: CORS_ORIGINS
         value: https://swass-web.onrender.com,https://auroraskyholdings.co.ke,https://www.auroraskyholdings.co.ke
+      # WebAuthn credentials are tied to this website hostname. Change both RP_ID and ORIGIN together if the production frontend hostname changes.
+      - key: RP_ID
+        value: swass-web.onrender.com
+      - key: ORIGIN
+        value: https://swass-web.onrender.com
       - key: AURORA_ADMIN_IDENTITIES
         sync: false
       - key: CASHIER_MAX_DISCOUNT_PCT
