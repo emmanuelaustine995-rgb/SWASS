@@ -34,6 +34,13 @@ export class PasskeysController {
     }
   }
 
+  private isConfiguredAdministrator(personId: string, email: string): boolean {
+    try {
+      const configured = JSON.parse(process.env.AURORA_ADMIN_IDENTITIES || '[]');
+      return Array.isArray(configured) && configured.some((entry) => String(entry?.personId || '').trim() === personId && Array.isArray(entry?.emails) && entry.emails.some((value) => String(value).trim().toLowerCase() === email.toLowerCase()));
+    } catch { return false; }
+  }
+
   private async takeChallenge(key: string): Promise<string> {
     const result = await this.db.pool.query(
       'DELETE FROM webauthn_challenges WHERE key=$1 AND expires_at>now() RETURNING challenge', [key],
@@ -128,6 +135,7 @@ export class PasskeysController {
       userVerification: 'required',
       // An empty allowCredentials list enables discoverable passkey sign-in.
     });
+    await this.db.pool.query('DELETE FROM webauthn_challenges WHERE expires_at <= now()');
     const flowId = randomUUID();
     await this.db.pool.query(
       "INSERT INTO webauthn_challenges(key,challenge,expires_at) VALUES($1,$2,now()+interval '5 minutes')",
@@ -176,7 +184,7 @@ export class PasskeysController {
       payload = { sub: user.id, tenantId: null, storeId: null, role: 'customer', fullName: user.full_name };
     } else {
       const result = await this.db.pool.query(
-        'SELECT id,tenant_id,store_id,role,full_name,phone,is_active,must_change_password FROM users WHERE id=$1', [passkey.user_id],
+        'SELECT id,tenant_id,store_id,role,full_name,phone,email,is_active,must_change_password FROM users WHERE id=$1', [passkey.user_id],
       );
       user = result.rows[0];
       if (!user?.is_active) throw new UnauthorizedException('This account is not active.');
@@ -186,7 +194,9 @@ export class PasskeysController {
           `SELECT r.admin_email,r.person_id FROM aurora_admin_identity_records r
             WHERE r.user_id=$1 AND r.admin_email_verified_at IS NOT NULL LIMIT 1`, [user.id],
         );
-        if (!admin.rowCount) throw new UnauthorizedException('Administrator access is not active.');
+        if (!admin.rowCount || !this.isConfiguredAdministrator(String(admin.rows[0].person_id), String(admin.rows[0].admin_email)) || user.must_change_password) {
+          throw new UnauthorizedException('Administrator access is not active. Sign in with your administrator password.');
+        }
         payload.adminEmail = admin.rows[0].admin_email;
         payload.adminPersonId = admin.rows[0].person_id;
       }
