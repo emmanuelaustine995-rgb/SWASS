@@ -4348,18 +4348,19 @@ body.workspace-active #shop-home #shop-stock-manager-card > .shop-product-panel-
   border-radius: 0 !important;
   background: none !important;
   box-shadow: none !important;
-  color: #0b57d0 !important;
   font-family: inherit;
-  font-weight: 800 !important;
+  font-weight: 900 !important;
   line-height: 1.35;
   text-decoration: none !important;
   cursor: pointer;
 }
 #login-view .login-links .login-forgot-btn {
+  color: #dc2626 !important;
   font-size: 17px !important;
   letter-spacing: 0 !important;
 }
 #login-view .login-links #show-register {
+  color: #2563eb !important;
   font-size: 22px !important;
   letter-spacing: .2px !important;
 }
