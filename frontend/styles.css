@@ -4322,3 +4322,59 @@ body.workspace-active #shop-home #shop-stock-manager-card > .shop-product-panel-
 .passkey-device-list li button{flex:none;border:0;border-radius:18px;padding:7px 11px;background:#fee4e2;color:#a12a35;font-weight:750;font-size:11px;cursor:pointer}
 .passkey-device-list li button:disabled{opacity:.5}
 @media(max-width:520px){.passkey-settings-head{display:block}.passkey-state{display:inline-block;margin-top:9px}.passkey-settings-actions .btn{flex:1}}
+
+
+/* Compact login footer links; preserve the existing password-reset and signup actions. */
+#login-view .login-links {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-top: 18px;
+  padding-bottom: 30px;
+}
+#login-view .login-links > p {
+  margin: 0 !important;
+  padding: 0 !important;
+  text-align: center;
+}
+#login-view .login-links button {
+  display: inline-block;
+  width: auto !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  color: #0b57d0 !important;
+  font-family: inherit;
+  font-weight: 800 !important;
+  line-height: 1.35;
+  text-decoration: none !important;
+  cursor: pointer;
+}
+#login-view .login-links .login-forgot-btn {
+  font-size: 17px !important;
+  letter-spacing: 0 !important;
+}
+#login-view .login-links #show-register {
+  font-size: 22px !important;
+  letter-spacing: .2px !important;
+}
+#login-view .login-links button:active { opacity: .6; }
+
+/* Remove the retired fingerprint login controls and their reserved space. */
+#login-view #passkey-login-btn,
+#login-view #passkey-login-message,
+#login-view #fpLoginBtn,
+#login-view #fpOr,
+#login-view #fpMsg,
+#login-view .fp-btn,
+#login-view .fp-or {
+  display: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  min-height: 0 !important;
+}
