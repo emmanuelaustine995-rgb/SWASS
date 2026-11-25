@@ -1,5 +1,5 @@
 import {
-  BadRequestException, Body, Controller, Delete, Get, Post, Req, UnauthorizedException, UseGuards,
+  BadRequestException, Body, Controller, Delete, Get, Param, Post, Req, UnauthorizedException, UseGuards,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import {
@@ -219,8 +219,14 @@ export class PasskeysController {
 
   @Delete(':id')
   @UseGuards(AuthGuard)
-  async remove(@Req() req: any, @Body() _body: any, id?: string) {
-    // The id is read from the route parameter by Nest's @Param decorator below.
+  async remove(@Req() req: any, @Param('id') id: string) {
+    const user = req.user as AuthUser;
+    const column = user.role === 'customer' ? 'customer_id' : 'user_id';
+    const result = await this.db.pool.query(
+      `DELETE FROM passkeys WHERE id=$1 AND ${column}=$2 RETURNING id`, [id, user.sub],
+    );
+    if (!result.rowCount) throw new BadRequestException('That passkey was not found on your account.');
+    await this.db.recordSecurityEvent({ eventType: 'passkey_removed', outcome: 'success', actorUserId: user.role === 'customer' ? null : user.sub, sourceIp: req.ip, userAgent: req.headers?.['user-agent'] });
     return { ok: true };
   }
 }
