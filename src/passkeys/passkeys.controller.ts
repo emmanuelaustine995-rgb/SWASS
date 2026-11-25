@@ -36,8 +36,14 @@ export class PasskeysController {
 
   private isConfiguredAdministrator(personId: string, email: string): boolean {
     try {
-      const configured = JSON.parse(process.env.AURORA_ADMIN_IDENTITIES || '[]');
-      return Array.isArray(configured) && configured.some((entry) => String(entry?.personId || '').trim() === personId && Array.isArray(entry?.emails) && entry.emails.some((value) => String(value).trim().toLowerCase() === email.toLowerCase()));
+      const configured: unknown = JSON.parse(process.env.AURORA_ADMIN_IDENTITIES || '[]');
+      return Array.isArray(configured) && configured.some((entry: unknown) => {
+        if (!entry || typeof entry !== 'object') return false;
+        const record = entry as { personId?: unknown; emails?: unknown };
+        return String(record.personId || '').trim() === personId &&
+          Array.isArray(record.emails) &&
+          record.emails.some((value: unknown) => String(value).trim().toLowerCase() === email.toLowerCase());
+      });
     } catch { return false; }
   }
 
