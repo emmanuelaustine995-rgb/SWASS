@@ -40,6 +40,19 @@ export class CustomersController {
     );
     if (!account.rowCount) throw new BadRequestException('Active customer account not found.');
     if (!body || typeof body !== 'object' || Array.isArray(body)) throw new BadRequestException('Declaration details are required.');
+    if (typeof body.shopPhone !== 'string' || !body.shopPhone.trim()) {
+      throw new BadRequestException('Enter the shop’s registered business phone number so this declaration reaches the correct shop.');
+    }
+    const shopPhone = normalisePhone(body.shopPhone);
+    const matchingShops = await this.db.pool.query(
+      `SELECT id FROM tenants
+        WHERE right(regexp_replace(COALESCE(phone,''),'[^0-9]','','g'),9)=right($1,9)
+        ORDER BY created_at DESC LIMIT 2`,
+      [shopPhone],
+    );
+    if (!matchingShops.rowCount) throw new BadRequestException('No AURORA shop was found with that registered business phone number. Check the number with the shop.');
+    if (matchingShops.rowCount > 1) throw new BadRequestException('That business phone number is linked to more than one shop. Please ask the shop to contact AURORA support.');
+    const targetTenantId = matchingShops.rows[0].id;
     const encoded = JSON.stringify(body);
     if (encoded.length > 480000) throw new BadRequestException('The attached evidence is too large. Please use smaller photos.');
     const required = ['sellerName','nationalId','sellerPhone','sellerEmail','buyerName','buyerNationalId','buyerPhone','buyerEmail','residentialAddress','productName','condition'];
@@ -65,10 +78,10 @@ export class CustomersController {
     const declarationRef = 'AUR-C-' + Date.now().toString(36).toUpperCase() + '-' + randomBytes(3).toString('hex').toUpperCase();
     const saved = await this.db.pool.query(
       `INSERT INTO customer_sales_declaration_submissions
-        (customer_id, declaration_ref, seller_name, product_name, payload, status)
-       VALUES ($1,$2,$3,$4,$5::jsonb,'pending_review')
+        (customer_id, tenant_id, target_shop_phone, declaration_ref, seller_name, product_name, payload, status)
+       VALUES ($1,$2,$3,$4,$5,$6,$7::jsonb,'pending_review')
        RETURNING id, declaration_ref AS "declarationRef", status, created_at AS "createdAt"`,
-      [customerId, declarationRef, body.sellerName.trim(), body.productName.trim(), encoded],
+      [customerId, targetTenantId, shopPhone, declarationRef, body.sellerName.trim(), body.productName.trim(), encoded],
     );
     const submission = saved.rows[0];
     const declaration = { ...body, declarationRef, createdAt: submission.createdAt };

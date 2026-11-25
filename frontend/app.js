@@ -2317,7 +2317,7 @@
   }
   function renderDeclarationHistory(rows){
     const target=$('declaration-history-list');if(!target)return;
-    target.innerHTML=rows.length?rows.map(d=>'<article class="aurora-history-row"><div class="aurora-history-row-main"><strong>'+escapeHtml(d.declarationRef||'Declaration')+' · '+escapeHtml(d.phoneMakeModel||d.productName||'Product not recorded')+'</strong><small>'+escapeHtml(historyDate(d.createdAt))+' · Seller: '+escapeHtml(d.sellerName||'—')+' · Buyer: '+escapeHtml(d.buyerName||'—')+' · '+money(d.purchasePriceKes)+'</small></div><span class="badge badge-success">RECORDED</span></article>').join(''):'<div class="aurora-history-empty">No declaration forms have been submitted yet.</div>';
+    target.innerHTML=rows.length?rows.map(d=>{const pending=d.status==='pending_review';return '<article class="aurora-history-row"><div class="aurora-history-row-main"><strong>'+escapeHtml(d.declarationRef||'Declaration')+' · '+escapeHtml(d.phoneMakeModel||d.productName||'Product not recorded')+'</strong><small>'+escapeHtml(historyDate(d.createdAt))+' · Seller: '+escapeHtml(d.sellerName||'—')+' · Buyer: '+escapeHtml(d.buyerName||'—')+' · '+money(d.purchasePriceKes)+'</small></div><span class="badge '+(pending?'badge':'badge-success')+'">'+(pending?'PENDING REVIEW':'RECORDED')+'</span></article>';}).join(''):'<div class="aurora-history-empty">No declaration forms have been submitted yet.</div>';
   }
   async function openReceiptHistory(){
     if(!['owner','freelancer','staff','cashier','manager'].includes(state.role)){showNotice('Receipt history is available to authorised shop accounts.',true);return;}
@@ -2340,7 +2340,7 @@
   $('receipt-history-back')?.addEventListener('click',closeHistoryWorkspace);
   $('declaration-history-back')?.addEventListener('click',closeHistoryWorkspace);
   $('receipt-history-search')?.addEventListener('input',e=>{const q=e.target.value.trim().toLowerCase();renderReceiptHistory(receiptHistoryRows.filter(r=>[r.receiptNo,r.customer?.fullName,r.customer?.phone,...(r.items||[]).map(x=>x.name)].join(' ').toLowerCase().includes(q)));});
-  $('declaration-history-search')?.addEventListener('input',e=>{const q=e.target.value.trim().toLowerCase();renderDeclarationHistory(declarationHistoryRows.filter(d=>[d.declarationRef,d.sellerName,d.buyerName,d.phoneMakeModel,d.productName].join(' ').toLowerCase().includes(q)));});
+  $('declaration-history-search')?.addEventListener('input',e=>{const q=e.target.value.trim().toLowerCase();renderDeclarationHistory(declarationHistoryRows.filter(d=>[d.declarationRef,d.sellerName,d.buyerName,d.phoneMakeModel,d.productName,d.status].join(' ').toLowerCase().includes(q)));});
   $('receipt-history-list')?.addEventListener('click',e=>{const button=e.target.closest('[data-open-history-receipt]');if(button)openReceiptPdf(button.dataset.openHistoryReceipt);});
 
   // New declaration navigation: the card opens a dedicated workspace, not an inline expansion.
@@ -2355,6 +2355,8 @@
     if(!['owner','freelancer','customer'].includes(state.role)){showNotice('This form is available to customer, shop-owner and linked freelancer accounts.',true);return;}
     const isCustomer=state.role==='customer';
     $('secondhand-shop-ack-fieldset')?.classList.toggle('hidden',isCustomer);
+    $('sh-shop-phone-wrap')?.classList.toggle('hidden',!isCustomer);
+    $('sh-shop-phone').required=isCustomer;
     $('sh-shop-acknowledged').required=!isCustomer;
     $('secondhand-submit').textContent=isCustomer?'Submit Sales Declaration for Review':'Issue Sales Declaration PDF & Send to Both Parties';
     const copy=$('secondhand-panel-heading-copy')?.querySelector('.muted');
@@ -2443,7 +2445,7 @@
     try{
       const saleType=$('sh-sale-type').value;
       const [idPhotoData,phonePhotoData,sellerPhotoData,receiptPhotoData]=await Promise.all([secondhandImageData('sh-id-photo',true),secondhandImageData('sh-phone-photo',true),secondhandImageData('sh-seller-photo',saleType==='without_receipt'),secondhandImageData('sh-receipt-photo',saleType==='with_receipt')]);
-      const payload={saleType,receiptPhotoData,sellerName:$('sh-seller-name').value.trim(),nationalId:$('sh-national-id').value.trim(),sellerPhone:$('sh-seller-phone').value.trim(),sellerEmail:$('sh-seller-email').value.trim(),buyerName:$('sh-buyer-name').value.trim(),buyerNationalId:$('sh-buyer-id').value.trim(),buyerPhone:$('sh-buyer-phone').value.trim(),buyerEmail:$('sh-buyer-email').value.trim(),alternativePhone:$('sh-alt-phone').value.trim(),residentialAddress:$('sh-address').value.trim(),productName:$('sh-model').value.trim(),imei1:$('sh-imei1').value.trim(),imei2:$('sh-imei2').value.trim(),serialNumber:$('sh-serial').value.trim(),condition:$('sh-condition').value,purchasePriceKes:Number($('sh-price').value),noReceiptReason:saleType==='with_receipt'?'Original purchase receipt photographed and attached.':$('sh-no-receipt').value.trim(),sellerPhotoData,idPhotoData,phonePhotoData,signatureData:$('sh-signature').toDataURL('image/png'),thumbprintData:saleType==='without_receipt'?$('sh-thumbprint').toDataURL('image/png'):null,witnessName:$('sh-witness-name').value.trim(),witnessPhone:$('sh-witness-phone').value.trim(),declarationAccepted:true,shopAcknowledged:!isCustomer&&$('sh-shop-acknowledged').checked};
+      const payload={saleType,receiptPhotoData,shopPhone:isCustomer?$('sh-shop-phone').value.trim():undefined,sellerName:$('sh-seller-name').value.trim(),nationalId:$('sh-national-id').value.trim(),sellerPhone:$('sh-seller-phone').value.trim(),sellerEmail:$('sh-seller-email').value.trim(),buyerName:$('sh-buyer-name').value.trim(),buyerNationalId:$('sh-buyer-id').value.trim(),buyerPhone:$('sh-buyer-phone').value.trim(),buyerEmail:$('sh-buyer-email').value.trim(),alternativePhone:$('sh-alt-phone').value.trim(),residentialAddress:$('sh-address').value.trim(),productName:$('sh-model').value.trim(),imei1:$('sh-imei1').value.trim(),imei2:$('sh-imei2').value.trim(),serialNumber:$('sh-serial').value.trim(),condition:$('sh-condition').value,purchasePriceKes:Number($('sh-price').value),noReceiptReason:saleType==='with_receipt'?'Original purchase receipt photographed and attached.':$('sh-no-receipt').value.trim(),sellerPhotoData,idPhotoData,phonePhotoData,signatureData:$('sh-signature').toDataURL('image/png'),thumbprintData:saleType==='without_receipt'?$('sh-thumbprint').toDataURL('image/png'):null,witnessName:$('sh-witness-name').value.trim(),witnessPhone:$('sh-witness-phone').value.trim(),declarationAccepted:true,shopAcknowledged:!isCustomer&&$('sh-shop-acknowledged').checked};
       if(isCustomer){
         const result=await request('/api/v1/customers/sales-declarations',{method:'POST',body:JSON.stringify(payload)});
         const submission=result.submission||{},delivery=result.delivery||{};
