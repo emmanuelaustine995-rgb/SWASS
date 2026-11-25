@@ -169,7 +169,7 @@ body{background:#eef3fb}
 <input id="admin-email" type="email" autocomplete="username" maxlength="254" required placeholder="name@example.com">
 <label for="admin-password">Password</label>
 <input id="admin-password" type="password" autocomplete="current-password" maxlength="128" required placeholder="Enter your account password">
-<button id="admin-submit" class="primary" type="submit">SECURE ADMIN LOGIN</button>
+<button id="admin-submit" class="primary" type="submit">SECURE ADMIN LOGIN</button><button id="admin-passkey-login" class="secondary" type="button">Login with fingerprint / screen lock</button><p id="admin-passkey-message" class="error" role="status"></p>
 <p id="admin-error" class="error" role="alert"></p>
 <p class="secure-note">Only pre-authorised administrators can register. Your normal shop, freelancer or customer account remains separate.</p>
 <button id="show-admin-register" class="secondary" type="button">REGISTER AUTHORISED ADMIN</button>
@@ -876,6 +876,24 @@ body{background:#eef3fb}
       $('admin-register-form').reset();$('admin-otp-form').reset();
     }catch(err){error.textContent=err.message||'Unable to verify code.';}
     finally{btn.disabled=false;btn.textContent='VERIFY AND REGISTER';}
+  });
+
+  $('admin-passkey-login')?.addEventListener('click',async()=>{
+    const button=$('admin-passkey-login'),message=$('admin-passkey-message');
+    button.disabled=true;message.textContent='Waiting for device verification…';
+    try{
+      if(!window.PublicKeyCredential||!await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()||!window.SimpleWebAuthnBrowser)throw new Error('This device does not have a supported platform authenticator.');
+      const start=await fetch(API+'/passkeys/login/options',{method:'POST',headers:{Accept:'application/json'}});
+      const initial=await start.json().catch(()=>({}));if(!start.ok)throw new Error(initial.message||'Could not start passkey login.');
+      const credential=await window.SimpleWebAuthnBrowser.startAuthentication({optionsJSON:initial.options});
+      const verified=await fetch(API+'/passkeys/login/verify',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({flowId:initial.flowId,credential})});
+      const result=await verified.json().catch(()=>({}));if(!verified.ok)throw new Error(result.message||'Passkey login failed.');
+      const claims=JSON.parse(atob(result.accessToken.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+      if(claims.role!=='super_admin')throw new Error('This passkey belongs to a non-administrator account. Use the ordinary AURORA login page.');
+      token=result.accessToken;sessionStorage.setItem('aurora-admin-token',token);
+      $('admin-welcome').textContent='Welcome, '+(result.user?.fullName||'Administrator');showApp();
+    }catch(error){message.textContent=error.name==='NotAllowedError'?'Passkey login cancelled. You can still sign in with your password.':error.message;}
+    finally{button.disabled=false;}
   });
   $('admin-login-form').addEventListener('submit',async e=>{
     e.preventDefault();const btn=$('admin-submit'),error=$('admin-error');btn.disabled=true;btn.textContent='VERIFYING ACCESS…';error.textContent='';
