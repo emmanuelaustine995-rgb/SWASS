@@ -42,6 +42,17 @@ export class DbService implements OnModuleDestroy, OnModuleInit {
           ON subscription_trials(tenant_id, ends_at DESC);
         CREATE INDEX IF NOT EXISTS subscription_trials_user_expiry_idx
           ON subscription_trials(user_id, ends_at DESC);
+        -- Backfill accounts created during today's Nairobi calendar day before
+        -- this feature deployed. Preserve paid accounts and existing trial rows.
+        INSERT INTO subscription_trials (tenant_id, starts_at, ends_at)
+        SELECT t.id, t.created_at, t.created_at + interval '24 hours'
+          FROM tenants t
+          JOIN users u ON u.tenant_id=t.id AND u.role='owner'
+         WHERE t.created_at >= (date_trunc('day', now() AT TIME ZONE 'Africa/Nairobi') AT TIME ZONE 'Africa/Nairobi')
+           AND t.created_at <= now()
+           AND t.created_at + interval '24 hours' > now()
+           AND NOT EXISTS (SELECT 1 FROM subscription_trials st WHERE st.tenant_id=t.id)
+           AND NOT EXISTS (SELECT 1 FROM payments p WHERE p.tenant_id=t.id AND p.purpose='subscription' AND p.status='success');
       `).then(() => undefined).catch(err => {
         this.subscriptionTrialSchemaPromise = null;
         throw err;
