@@ -258,7 +258,7 @@ export class MpesaController {
     const phone = this.mpesa.normalizePhone(String(body?.phone || ''));
     await this.db.pool.query(`CREATE TABLE IF NOT EXISTS subscription_payment_receipt_claims (
       id BIGSERIAL PRIMARY KEY,
-      payment_id UUID NOT NULL REFERENCES payments(id) ON DELETE CASCADE,
+      payment_id UUID NOT NULL UNIQUE REFERENCES payments(id) ON DELETE CASCADE,
       tenant_id UUID NOT NULL,
       user_id UUID NOT NULL,
       receipt_number TEXT NOT NULL,
