@@ -233,7 +233,7 @@ export class AuthController {
       const send = async (endpoint: string, payload: Record<string, string>) => {
         const response = await fetch(endpoint, {
           method: 'POST',
-          signal: AbortSignal.timeout(12000),
+          signal: AbortSignal.timeout(8000),
           headers: {
             Authorization: 'Bearer ' + token,
             Accept: 'application/json',
@@ -842,7 +842,7 @@ export class AuthController {
   @Post('password-reset/request')
   async requestPasswordReset(@Body() body: { phone?: string; accountType?: string }) {
     const phone = this.normalizePhone(String(body?.phone ?? ''));
-    const generic = { message: 'If an account matches that phone number, a password reset code has been sent.' };
+    const noAccountMessage = 'No account found. Please create an account first.';
     const found = await this.db.pool.query(
       `SELECT id FROM users
          WHERE regexp_replace(phone, '[^0-9]', '', 'g') IN ($1,$2)
@@ -858,7 +858,7 @@ export class AuthController {
       [phone, '0' + phone.slice(3), body?.accountType === 'freelancer' ? 'freelancer' : null],
     );
     console.info(`[AURORA] Password-reset lookup: matched=${Boolean(found.rowCount)}, accountType=${body?.accountType === 'freelancer' ? 'freelancer' : 'general'}`);
-    if (!found.rowCount) return generic;
+    if (!found.rowCount) throw new BadRequestException(noAccountMessage);
     const userId = found.rows[0].id;
     const recent = await this.db.pool.query(
       `SELECT count(*)::int AS n FROM password_reset_requests
@@ -885,7 +885,7 @@ export class AuthController {
       console.error('[AURORA] Freelancer password-reset SMS delivery failed:', reason);
       throw new ServiceUnavailableException('The SMS gateway could not send your reset code. Please check the phone number and try again, or contact support.');
     }
-    return generic;
+    return { message: 'Your password reset code has been sent. It expires in 5 minutes.' };
   }
 
   @Post('password-reset/confirm')
