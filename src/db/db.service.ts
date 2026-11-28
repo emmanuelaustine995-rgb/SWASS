@@ -16,10 +16,38 @@ export class DbService implements OnModuleDestroy, OnModuleInit {
   });
 
   private freelancerSubscriptionSchemaPromise: Promise<void> | null = null;
+  private subscriptionTrialSchemaPromise: Promise<void> | null = null;
 
   async onModuleInit(): Promise<void> {
     await this.ensureFreelancerSubscriptionSchema();
+    await this.ensureSubscriptionTrialSchema();
     await this.ensurePaymentPurposeSchema();
+  }
+
+  // One-time introductory access for new tenants and standalone freelancer accounts.
+  async ensureSubscriptionTrialSchema(): Promise<void> {
+    if (!this.subscriptionTrialSchemaPromise) {
+      this.subscriptionTrialSchemaPromise = this.pool.query(`
+        CREATE TABLE IF NOT EXISTS subscription_trials (
+          id BIGSERIAL PRIMARY KEY,
+          tenant_id UUID UNIQUE REFERENCES tenants(id) ON DELETE CASCADE,
+          user_id UUID UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+          starts_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+          ends_at TIMESTAMPTZ NOT NULL,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+          CHECK ((tenant_id IS NOT NULL)::int + (user_id IS NOT NULL)::int = 1),
+          CHECK (ends_at > starts_at)
+        );
+        CREATE INDEX IF NOT EXISTS subscription_trials_tenant_expiry_idx
+          ON subscription_trials(tenant_id, ends_at DESC);
+        CREATE INDEX IF NOT EXISTS subscription_trials_user_expiry_idx
+          ON subscription_trials(user_id, ends_at DESC);
+      `).then(() => undefined).catch(err => {
+        this.subscriptionTrialSchemaPromise = null;
+        throw err;
+      });
+    }
+    await this.subscriptionTrialSchemaPromise;
   }
 
   // Keep the live database constraint aligned with the payment purposes
