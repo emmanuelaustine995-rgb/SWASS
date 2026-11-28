@@ -261,7 +261,7 @@ export class MpesaController {
       payment_id UUID NOT NULL UNIQUE REFERENCES payments(id) ON DELETE CASCADE,
       tenant_id UUID NOT NULL,
       user_id UUID NOT NULL,
-      receipt_number TEXT NOT NULL,
+      receipt_number TEXT NOT NULL UNIQUE,
       payer_phone TEXT NOT NULL,
       status TEXT NOT NULL DEFAULT 'pending_review' CHECK (status IN ('pending_review','verified','rejected')),
       created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
