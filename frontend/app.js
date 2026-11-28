@@ -1072,6 +1072,7 @@
   const syncTumaFields = () => {
     const isSubscription = tumaPurpose?.value === 'subscription';
     $('owner-topup-amount-wrap')?.classList.toggle('hidden', isSubscription);
+    $('owner-mpesa-claim-wrap')?.classList.toggle('hidden', !isSubscription);
     $('owner-plan-wrap')?.classList.toggle('hidden', !isSubscription);
     $('owner-payment-amount-wrap')?.classList.toggle('hidden', !isSubscription);
     const plan = $('owner-subscription-plan')?.value || 'monthly';
@@ -1126,6 +1127,21 @@
     } finally {
       button.disabled = false;
     }
+  });
+
+  $('owner-mpesa-claim-form')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const form=event.currentTarget,button=form.querySelector('button[type="submit"]'),message=$('owner-mpesa-claim-message');
+    const receiptNumber=$('owner-mpesa-claim-code')?.value.trim().toUpperCase();
+    const phone=$('owner-mpesa-claim-phone')?.value.trim();
+    if(!receiptNumber||!phone){message.textContent='Enter the M-Pesa transaction code and payer phone number.';return;}
+    button.disabled=true;message.textContent='Submitting your code securely…';
+    try{
+      const result=await request('/api/v1/mpesa/subscription-receipt-claim',{method:'POST',body:JSON.stringify({receiptNumber,phone})});
+      message.textContent=result.message||'Your code was submitted for verification. Do not pay again while it is being checked.';
+      showNotice('M-Pesa code submitted for verification. Subscription access will update after confirmation.');
+    }catch(error){message.textContent=error.message||'Could not submit the M-Pesa code. Please try again or contact AURORA support.';}
+    finally{button.disabled=false;}
   });
 
   // Scan an item's QR/barcode with the Android camera, with manual entry as a fallback.
