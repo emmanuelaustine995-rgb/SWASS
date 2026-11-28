@@ -256,6 +256,7 @@ export class MpesaController {
     const receipt = String(body?.receiptNumber || '').trim().toUpperCase();
     if (!/^[A-Z0-9]{6,24}$/.test(receipt)) throw new BadRequestException('Enter the exact M-Pesa transaction code from the confirmation SMS.');
     const phone = this.mpesa.normalizePhone(String(body?.phone || ''));
+    await this.db.ensureFreelancerSubscriptionSchema();
     await this.db.pool.query(`CREATE TABLE IF NOT EXISTS subscription_payment_receipt_claims (
       id BIGSERIAL PRIMARY KEY,
       payment_id UUID NOT NULL UNIQUE REFERENCES payments(id) ON DELETE CASCADE,
