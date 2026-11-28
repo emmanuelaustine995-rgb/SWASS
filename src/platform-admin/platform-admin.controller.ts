@@ -540,15 +540,27 @@ export class PlatformAdminController {
   @Get('subscription-payments')
   async subscriptionPaymentQueue(@Query('limit') limit = '100') {
     await this.db.ensureFreelancerSubscriptionSchema();
+    await this.db.pool.query(`CREATE TABLE IF NOT EXISTS subscription_payment_receipt_claims (
+      id BIGSERIAL PRIMARY KEY,
+      payment_id UUID NOT NULL UNIQUE REFERENCES payments(id) ON DELETE CASCADE,
+      tenant_id UUID NOT NULL,
+      user_id UUID NOT NULL,
+      receipt_number TEXT NOT NULL UNIQUE,
+      payer_phone TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'pending_review' CHECK (status IN ('pending_review','verified','rejected')),
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    )`);
     const take = Math.min(200, Math.max(1, Number.parseInt(String(limit), 10) || 100));
     const result = await this.db.pool.query(
       `SELECT p.id,p.tenant_id AS "tenantId",p.subscriber_user_id AS "subscriberUserId",
               p.amount_kes AS "amountKes",p.phone,p.status,p.checkout_request_id AS "checkoutRequestId",
               p.mpesa_receipt_no AS "receiptNumber",p.created_at AS "createdAt",
+              claim.receipt_number AS "claimedReceiptNumber",claim.status AS "claimStatus",claim.created_at AS "claimCreatedAt",
               t.name AS "businessName",u.full_name AS "subscriberName",u.email AS "subscriberEmail"
          FROM payments p
          LEFT JOIN tenants t ON t.id=p.tenant_id
          LEFT JOIN users u ON u.id=p.subscriber_user_id
+         LEFT JOIN subscription_payment_receipt_claims claim ON claim.payment_id=p.id
         WHERE p.purpose='subscription' AND p.status IN ('pending','failed')
         ORDER BY p.created_at DESC LIMIT $1`,
       [take],
@@ -613,6 +625,7 @@ export class PlatformAdminController {
          ON CONFLICT DO NOTHING`,
         [p.tenant_id,id,p.amount_kes,receipt],
       );
+      await c.query(`UPDATE subscription_payment_receipt_claims SET status='verified' WHERE payment_id=$1`, [id]);
       const plan = Number(p.amount_kes) === 900 ? 'yearly' : 'monthly';
       const interval = plan === 'yearly' ? '1 year' : '1 month';
       if (p.subscriber_user_id) {

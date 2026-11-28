@@ -141,18 +141,25 @@ export class MpesaController {
     }
     const tenantId = req.user?.tenantId;
     if (!tenantId) throw new ForbiddenException();
-    const [subscription, wallet] = await Promise.all([
+    const [subscription, trial, wallet] = await Promise.all([
       this.db.pool.query(`SELECT plan,status,starts_at,ends_at FROM subscriptions
         WHERE tenant_id=$1 ORDER BY ends_at DESC LIMIT 1`, [tenantId]),
+      this.db.pool.query(`SELECT starts_at,ends_at FROM subscription_trials
+        WHERE tenant_id=$1 AND ends_at>now() ORDER BY ends_at DESC LIMIT 1`, [tenantId]),
       this.db.pool.query(`SELECT balance_kes FROM wallets WHERE tenant_id=$1 LIMIT 1`, [tenantId]),
     ]);
     const balanceKes = Number(wallet.rows[0]?.balance_kes ?? 0);
     const receiptFeeKes = 4;
+    const paidSubscription = subscription.rows[0] ?? null;
+    const activeTrial = trial.rows[0] ?? null;
     return {
-      subscription: subscription.rows[0] ? {
-        plan: subscription.rows[0].plan, status: subscription.rows[0].status,
-        startsAt: subscription.rows[0].starts_at, endsAt: subscription.rows[0].ends_at,
-        active: subscription.rows[0].status === 'active' && new Date(subscription.rows[0].ends_at).getTime() > Date.now()
+      subscription: paidSubscription ? {
+        plan: paidSubscription.plan, status: paidSubscription.status,
+        startsAt: paidSubscription.starts_at, endsAt: paidSubscription.ends_at,
+        active: paidSubscription.status === 'active' && new Date(paidSubscription.ends_at).getTime() > Date.now()
+      } : activeTrial ? {
+        plan: 'trial', status: 'active', startsAt: activeTrial.starts_at, endsAt: activeTrial.ends_at,
+        active: true, trial: true,
       } : null,
       balanceKes, receiptFeeKes,
       receiptsRemaining: Math.floor(balanceKes / receiptFeeKes),
@@ -238,12 +245,74 @@ export class MpesaController {
     return { id: p.id, purpose: p.purpose, amountKes: Number(p.amount_kes), phone: p.phone, status: p.status, receiptNumber: p.mpesa_receipt_no, createdAt: p.created_at };
   }
 
+  // Customer fallback: record an M-Pesa receipt code against their latest unresolved subscription payment.
+  // This never activates a plan. A super-admin must verify the transaction with Tuma/M-Pesa first.
+  @Post('subscription-receipt-claim')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('owner', 'manager', 'freelancer')
+  async submitSubscriptionReceiptClaim(@Req() req: any, @Body() body: any) {
+    const tenantId = req.user?.tenantId;
+    if (!tenantId) throw new ForbiddenException();
+    const receipt = String(body?.receiptNumber || '').trim().toUpperCase();
+    if (!/^[A-Z0-9]{6,24}$/.test(receipt)) throw new BadRequestException('Enter the exact M-Pesa transaction code from the confirmation SMS.');
+    const phone = this.mpesa.normalizePhone(String(body?.phone || ''));
+    await this.db.ensureFreelancerSubscriptionSchema();
+    await this.db.pool.query(`CREATE TABLE IF NOT EXISTS subscription_payment_receipt_claims (
+      id BIGSERIAL PRIMARY KEY,
+      payment_id UUID NOT NULL UNIQUE REFERENCES payments(id) ON DELETE CASCADE,
+      tenant_id UUID NOT NULL,
+      user_id UUID NOT NULL,
+      receipt_number TEXT NOT NULL UNIQUE,
+      payer_phone TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'pending_review' CHECK (status IN ('pending_review','verified','rejected')),
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      UNIQUE (receipt_number)
+    )`);
+    const freelancer = req.user?.role === 'freelancer';
+    const found = await this.db.pool.query(
+      `SELECT id,amount_kes,phone,status FROM payments
+        WHERE tenant_id=$1 AND purpose='subscription'
+          AND status IN ('pending','failed')
+          AND subscriber_user_id IS NOT DISTINCT FROM $2
+          AND phone=$3
+        ORDER BY created_at DESC LIMIT 1`,
+      [tenantId, freelancer ? req.user.sub : null, phone],
+    );
+    if (!found.rowCount) throw new BadRequestException('No matching unpaid subscription request was found for this account and phone number. Start a subscription request first, or contact AURORA support if you already paid.');
+    try {
+      await this.db.pool.query(
+        `INSERT INTO subscription_payment_receipt_claims(payment_id,tenant_id,user_id,receipt_number,payer_phone)
+         VALUES($1,$2,$3,$4,$5)
+         ON CONFLICT(payment_id) DO UPDATE SET receipt_number=EXCLUDED.receipt_number,payer_phone=EXCLUDED.payer_phone,status='pending_review',created_at=now()`,
+        [found.rows[0].id,tenantId,req.user.sub,receipt,phone],
+      );
+    } catch (error: any) {
+      if (error?.code === '23505') throw new BadRequestException('That M-Pesa transaction code has already been submitted. Contact AURORA support if you believe this is an error.');
+      throw error;
+    }
+    return { submitted:true, status:'pending_review', paymentId:found.rows[0].id,
+      amountKes:Number(found.rows[0].amount_kes),
+      message:'Your M-Pesa code has been submitted for verification. Your subscription will activate after AURORA confirms the transaction. Do not pay again while it is being checked.' };
+  }
+
   @Post('callback/:token')
   async callback(@Param('token') token: string, @Body() body: any) {
-    if (!this.mpesa.validCallbackToken(token)) return { ResultCode: 0, ResultDesc: 'Accepted' };
+    if (!this.mpesa.validCallbackToken(token)) {
+      console.warn('[AURORA][PAYMENT] Callback rejected: invalid callback token');
+      return { ResultCode: 0, ResultDesc: 'Accepted' };
+    }
     const checkoutId = body?.checkout_request_id;
     const status = String(body?.status ?? '').toLowerCase();
-    if (typeof checkoutId !== 'string' || !checkoutId) return { ResultCode: 0, ResultDesc: 'Accepted' };
+    console.info('[AURORA][PAYMENT] Callback received', {
+      checkoutId: typeof checkoutId === 'string' ? checkoutId.slice(0, 48) : 'missing',
+      status: status || 'missing', resultCode: body?.result_code ?? 'missing',
+      amount: body?.amount ?? 'missing',
+      hasReceipt: typeof body?.mpesa_receipt_number === 'string' && !!body.mpesa_receipt_number.trim(),
+    });
+    if (typeof checkoutId !== 'string' || !checkoutId) {
+      console.warn('[AURORA][PAYMENT] Callback ignored: checkout_request_id missing');
+      return { ResultCode: 0, ResultDesc: 'Accepted' };
+    }
     try {
       await this.db.tx(async (c) => {
         const special = await c.query(`SELECT * FROM second_hand_special_receipt_recoveries WHERE checkout_request_id=$1 FOR UPDATE`, [checkoutId]);
@@ -279,8 +348,12 @@ export class MpesaController {
           return;
         }
         const found = await c.query(`SELECT * FROM payments WHERE checkout_request_id=$1 FOR UPDATE`, [checkoutId]);
-        if (!found.rowCount) return;
+        if (!found.rowCount) {
+          console.warn('[AURORA][PAYMENT] Callback checkout ID not found in payments table', { checkoutId: checkoutId.slice(0, 48) });
+          return;
+        }
         const p = found.rows[0];
+        console.info('[AURORA][PAYMENT] Matched payment', { paymentId: String(p.id), purpose: p.purpose, currentStatus: p.status, amountKes: Number(p.amount_kes) });
         if (p.status !== 'pending') return;
         if (status !== 'completed' || Number(body?.result_code) !== 0) {
           if (status === 'failed') await c.query(`UPDATE payments SET status='failed' WHERE id=$1 AND status='pending'`, [p.id]);
@@ -296,7 +369,13 @@ export class MpesaController {
           return /^254[17]\d{8}$/.test(digits) ? digits : '';
         };
         const callbackPhone = canonicalPhone(callbackPhoneRaw);
-        if (!receipt || !Number.isSafeInteger(amount) || amount !== Number(p.amount_kes)) return;
+        if (!receipt || !Number.isSafeInteger(amount) || amount !== Number(p.amount_kes)) {
+          console.warn('[AURORA][PAYMENT] Successful callback failed receipt/amount validation', {
+            paymentId: String(p.id), hasReceipt: !!receipt,
+            callbackAmount: Number.isFinite(amount) ? amount : 'invalid', expectedAmount: Number(p.amount_kes),
+          });
+          return;
+        }
         // Tuma may send 07..., 01..., 2547... or +2547... for the same payer.
         if (callbackPhoneRaw && (!callbackPhone || callbackPhone !== canonicalPhone(String(p.phone)))) return;
 
@@ -363,8 +442,10 @@ export class MpesaController {
           await c.query(`INSERT INTO wallet_transactions (tenant_id, change_kes, reason, payment_id) VALUES ($1,$2,'topup',$3)`, [p.tenant_id, p.amount_kes, p.id]);
         }
       });
-    } catch {
-      // Keep failed internal processing visible as pending for safe reconciliation.
+    } catch (error) {
+      console.error('[AURORA][PAYMENT] Callback database processing failed; transaction rolled back', {
+        message: error instanceof Error ? error.message : 'Unknown database error',
+      });
     }
     return { ResultCode: 0, ResultDesc: 'Accepted' };
   }
