@@ -216,59 +216,100 @@ export class AuthController {
   }
 
   private async sendSignupSms(to: string, message: string): Promise<void> {
-    const token = process.env.TALKSASA_API_TOKEN || process.env.TALKSASA_API_KEY;
+    // TalkSasa is the primary OTP gateway. Keep credentials server-side in Render.
+    const token = String(process.env.TALKSASA_API_TOKEN || process.env.TALKSASA_API_KEY || '').trim();
     if (token) {
       const startedAt = Date.now();
-      const configuredUrl = (process.env.TALKSASA_API_URL || 'https://bulksms.talksasa.com/api/v3/sms/send').trim();
-      const endpoint = /\/sms\/send\/?$/i.test(configuredUrl)
-        ? configuredUrl
-        : `${configuredUrl.replace(/\/+$/, '')}/sms/send`;
-      try {
+      const senderId = String(process.env.TALKSASA_SENDER_ID || 'TALK-SASA').trim();
+      const configuredUrl = String(process.env.TALKSASA_API_URL || '').trim();
+      const legacyEndpoint = configuredUrl
+        ? (/\/sms\/send\/?$/i.test(configuredUrl)
+            ? configuredUrl
+            : configuredUrl.replace(/\/+$/, '') + '/sms/send')
+        : 'https://bulksms.talksasa.com/api/v3/sms/send';
+
+      const send = async (endpoint: string, payload: Record<string, string>) => {
         const response = await fetch(endpoint, {
           method: 'POST',
-          signal: AbortSignal.timeout(8000),
-          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            recipient: `+${to}`,
-            sender_id: process.env.TALKSASA_SENDER_ID || 'TALK-SASA',
-            type: 'plain',
-            message,
-          }),
+          signal: AbortSignal.timeout(12000),
+          headers: {
+            Authorization: 'Bearer ' + token,
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
         });
         const raw = await response.text();
         let result: any = {};
         try { result = raw ? JSON.parse(raw) : {}; } catch { result = {}; }
-        const status = String(result?.status ?? result?.data?.status ?? '').trim().toLowerCase();
+        const statusValue = result?.status ?? result?.data?.status ?? result?.data?.message_status;
+        const status = String(statusValue ?? '').trim().toLowerCase();
         const accepted = response.ok && (
           status === 'success' || status === 'accepted' || status === 'queued' ||
-          result?.success === true || result?.status === true
+          status === 'true' || result?.success === true || result?.status === true ||
+          result?.data?.success === true || result?.data?.status === true
         );
-        console.info(`[AURORA][SMS] TalkSasa HTTP ${response.status}, status=${status || 'missing'}, accepted=${accepted}, durationMs=${Date.now() - startedAt}`);
-        if (accepted) return;
-        const reason = String(result?.message ?? result?.error ?? result?.data?.message ?? raw ?? response.statusText ?? '')
-          .replace(/[\\r\\n]+/g, ' ').slice(0, 180);
-        throw new Error(`TalkSasa HTTP ${response.status}${reason ? `: ${reason}` : ''}`);
+        const messageId = result?.message_id ?? result?.messageId ?? result?.data?.message_id ??
+          result?.data?.messageId ?? result?.uid ?? result?.data?.uid ?? null;
+        const detail = String(
+          result?.message ?? result?.error ?? result?.data?.message ?? raw ?? response.statusText ?? '',
+        ).replace(/[\r\n]+/g, ' ').slice(0, 180);
+        return { response, accepted, status, messageId, detail };
+      };
+
+      try {
+        // Existing TalkSasa v3 accounts use recipient and the /api/v3 route.
+        let outcome = await send(legacyEndpoint, {
+          recipient: '+' + to,
+          sender_id: senderId,
+          type: 'plain',
+          message,
+        });
+
+        // TalkSasa's newer public integration guide documents /api/sms/send
+        // with to in international digits-only format. Fall back only when
+        // the old route is absent, never after an ambiguous/accepted send.
+        if (!outcome.accepted && !configuredUrl &&
+            (outcome.response.status === 404 || outcome.response.status === 405)) {
+          outcome = await send('https://bulksms.talksasa.com/api/sms/send', {
+            to,
+            sender_id: senderId,
+            message,
+          });
+        }
+
+        console.info(
+          '[AURORA][SMS] TalkSasa HTTP ' + outcome.response.status +
+          ', status=' + (outcome.status || 'missing') +
+          ', accepted=' + outcome.accepted +
+          ', messageId=' + (outcome.messageId ? 'present' : 'missing') +
+          ', durationMs=' + (Date.now() - startedAt),
+        );
+        if (outcome.accepted) return;
+        throw new Error('TalkSasa HTTP ' + outcome.response.status +
+          (outcome.detail ? ': ' + outcome.detail : ''));
       } catch (error) {
-        console.error(`[AURORA][SMS] TalkSasa delivery failed after ${Date.now() - startedAt}ms: ${error instanceof Error ? error.message : 'request failed'}`);
-        // Do not silently route OTPs through a different provider when TalkSasa is configured.
+        const reason = error instanceof Error ? error.message : 'request failed';
+        console.error('[AURORA][SMS] TalkSasa OTP request failed after ' +
+          (Date.now() - startedAt) + 'ms: ' + reason);
         throw new Error('TalkSasa could not accept the OTP request. Please try again shortly.');
       }
     }
 
-    // Use legacy providers only when TalkSasa has not been configured.
+    // Preserve legacy gateways only for deployments where TalkSasa is not configured.
     const failures: string[] = [];
     const atUsername = process.env.AT_USERNAME;
     const atApiKey = process.env.AT_API_KEY;
     if (atUsername && atApiKey) {
       try {
-        const form = new URLSearchParams({ username: atUsername, to: `+${to}`, message });
+        const form = new URLSearchParams({ username: atUsername, to: '+' + to, message });
         if (process.env.AT_SENDER_ID) form.set('from', process.env.AT_SENDER_ID);
         const endpoint = atUsername === 'sandbox'
           ? 'https://api.sandbox.africastalking.com/version1/messaging'
           : 'https://api.africastalking.com/version1/messaging';
         const response = await fetch(endpoint, {
           method: 'POST',
-          signal: AbortSignal.timeout(8000),
+          signal: AbortSignal.timeout(12000),
           headers: { apiKey: atApiKey, Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
           body: form,
         });
@@ -279,9 +320,9 @@ export class AuthController {
         if (response.ok && Array.isArray(recipients) && recipients.length &&
             recipients.every((r: any) => Number(r.statusCode) === 101)) return;
         const detail = String(result?.SMSMessageData?.Message ?? result?.message ?? raw ?? '').slice(0, 140);
-        failures.push(`Africa's Talking HTTP ${response.status}${detail ? `: ${detail}` : ''}`);
+        failures.push("Africa's Talking HTTP " + response.status + (detail ? ': ' + detail : ''));
       } catch (error) {
-        failures.push(`Africa's Talking: ${error instanceof Error ? error.message : 'request failed'}`);
+        failures.push("Africa's Talking: " + (error instanceof Error ? error.message : 'request failed'));
       }
     }
     const sid = process.env.TWILIO_ACCOUNT_SID;
@@ -289,20 +330,20 @@ export class AuthController {
     const from = process.env.TWILIO_FROM || process.env.TWILIO_FROM_NUMBER;
     if (sid && auth && from) {
       try {
-        const form = new URLSearchParams({ To: `+${to}`, From: from, Body: message });
-        const response = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`, {
+        const form = new URLSearchParams({ To: '+' + to, From: from, Body: message });
+        const response = await fetch('https://api.twilio.com/2010-04-01/Accounts/' + sid + '/Messages.json', {
           method: 'POST',
-          signal: AbortSignal.timeout(8000),
+          signal: AbortSignal.timeout(12000),
           headers: {
-            Authorization: `Basic ${Buffer.from(`${sid}:${auth}`).toString('base64')}`,
+            Authorization: 'Basic ' + Buffer.from(sid + ':' + auth).toString('base64'),
             'Content-Type': 'application/x-www-form-urlencoded',
           },
           body: form,
         });
         if (response.ok) return;
-        failures.push(`Twilio HTTP ${response.status}`);
+        failures.push('Twilio HTTP ' + response.status);
       } catch (error) {
-        failures.push(`Twilio: ${error instanceof Error ? error.message : 'request failed'}`);
+        failures.push('Twilio: ' + (error instanceof Error ? error.message : 'request failed'));
       }
     }
     if (!atUsername && !sid) {
