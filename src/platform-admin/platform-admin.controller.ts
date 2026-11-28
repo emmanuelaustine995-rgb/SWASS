@@ -540,6 +540,16 @@ export class PlatformAdminController {
   @Get('subscription-payments')
   async subscriptionPaymentQueue(@Query('limit') limit = '100') {
     await this.db.ensureFreelancerSubscriptionSchema();
+    await this.db.pool.query(`CREATE TABLE IF NOT EXISTS subscription_payment_receipt_claims (
+      id BIGSERIAL PRIMARY KEY,
+      payment_id UUID NOT NULL UNIQUE REFERENCES payments(id) ON DELETE CASCADE,
+      tenant_id UUID NOT NULL,
+      user_id UUID NOT NULL,
+      receipt_number TEXT NOT NULL UNIQUE,
+      payer_phone TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'pending_review' CHECK (status IN ('pending_review','verified','rejected')),
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    )`);
     const take = Math.min(200, Math.max(1, Number.parseInt(String(limit), 10) || 100));
     const result = await this.db.pool.query(
       `SELECT p.id,p.tenant_id AS "tenantId",p.subscriber_user_id AS "subscriberUserId",
