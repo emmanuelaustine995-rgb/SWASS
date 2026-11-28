@@ -26,7 +26,7 @@ export class SecondHandPhoneDeclarationsController {
     const user = req.user;
     this.requireStore(user);
     const { rows } = await this.db.pool.query(
-      `SELECT id, seller_name AS "sellerName", national_id AS "nationalId",
+      `SELECT id::text AS id, seller_name AS "sellerName", national_id AS "nationalId",
               seller_phone AS "sellerPhone", seller_email AS "sellerEmail",
               buyer_name AS "buyerName", buyer_national_id AS "buyerNationalId",
               buyer_phone AS "buyerPhone", buyer_email AS "buyerEmail",
@@ -38,7 +38,7 @@ export class SecondHandPhoneDeclarationsController {
          FROM second_hand_phone_declarations
         WHERE tenant_id=$1 AND store_id=$2
         UNION ALL
-       SELECT s.id, s.seller_name AS "sellerName", s.payload->>'nationalId' AS "nationalId",
+       SELECT s.id::text AS id, s.seller_name AS "sellerName", s.payload->>'nationalId' AS "nationalId",
               s.payload->>'sellerPhone' AS "sellerPhone", s.payload->>'sellerEmail' AS "sellerEmail",
               s.payload->>'buyerName' AS "buyerName", s.payload->>'buyerNationalId' AS "buyerNationalId",
               s.payload->>'buyerPhone' AS "buyerPhone", s.payload->>'buyerEmail' AS "buyerEmail",
