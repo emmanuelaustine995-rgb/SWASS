@@ -222,13 +222,15 @@ export class AuthController {
       const startedAt = Date.now();
       const senderId = String(process.env.TALKSASA_SENDER_ID || 'TALK-SASA').trim();
       const configuredUrl = String(process.env.TALKSASA_API_URL || '').trim();
-      // Current TalkSasa guide uses /api/sms/send with "to"; older v3
-      // integrations use /api/v3/sms/send with "recipient".
-      const modernEndpoint = configuredUrl
+      // A configured /api/v3 URL is the legacy contract and requires "recipient".
+      // The current /api/sms/send contract requires "to".
+      const configuredEndpoint = configuredUrl
         ? (/\/sms\/send\/?$/i.test(configuredUrl)
             ? configuredUrl
             : configuredUrl.replace(/\/+$/, '') + '/sms/send')
-        : 'https://bulksms.talksasa.com/api/sms/send';
+        : '';
+      const configuredIsV3 = /\/api\/v3(?:\/|$)/i.test(configuredEndpoint);
+      const modernEndpoint = configuredEndpoint || 'https://bulksms.talksasa.com/api/sms/send';
 
       const send = async (endpoint: string, payload: Record<string, string>) => {
         const response = await fetch(endpoint, {
@@ -260,28 +262,30 @@ export class AuthController {
       };
 
       try {
-        let outcome = await send(modernEndpoint, {
-          to,
+        const legacyPayload = {
+          recipient: '+' + to,
           sender_id: senderId,
+          type: 'plain',
           message,
-        });
+        };
+        const currentPayload = { to, sender_id: senderId, message };
+        let outcome = await send(
+          modernEndpoint,
+          configuredIsV3 ? legacyPayload : currentPayload,
+        );
+        let usedEndpoint = configuredIsV3 ? 'v3' : 'current';
 
-        // Compatibility fallback for accounts still provisioned on the v3 API.
-        // Only retry when the modern route is explicitly missing; never duplicate
-        // an SMS after an ambiguous response or a request accepted by the provider.
-        if (!outcome.accepted && !configuredUrl &&
+        // If the current endpoint is explicitly absent, try the documented
+        // legacy endpoint once. Do not retry on auth, balance, or ambiguous errors.
+        if (!outcome.accepted && !configuredIsV3 && !configuredUrl &&
             (outcome.response.status === 404 || outcome.response.status === 405)) {
-          outcome = await send('https://bulksms.talksasa.com/api/v3/sms/send', {
-            recipient: '+' + to,
-            sender_id: senderId,
-            type: 'plain',
-            message,
-          });
+          outcome = await send('https://bulksms.talksasa.com/api/v3/sms/send', legacyPayload);
+          usedEndpoint = 'v3-fallback';
         }
 
         console.info(
           '[AURORA][SMS] TalkSasa HTTP ' + outcome.response.status +
-          ', endpoint=' + (modernEndpoint.includes('/api/v3/') ? 'v3' : 'current') +
+          ', endpoint=' + usedEndpoint +
           ', status=' + (outcome.status || 'missing') +
           ', accepted=' + outcome.accepted +
           ', messageId=' + (outcome.messageId ? 'present' : 'missing') +
