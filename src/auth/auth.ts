@@ -104,13 +104,15 @@ export class AuthGuard implements CanActivate {
     const paymentRoute = path === '/api/v1/mpesa/stk-push' || path === '/api/v1/mpesa/account-summary' || path === '/api/v1/auth/change-password' ||
       /^\/api\/v1\/mpesa\/payments\/[0-9a-f-]+$/i.test(path);
     if (user.role === 'freelancer' && user.tenantId) {
-      // A freelancer linked to a shop works inside that shop's tenant.
-      // Their access follows the shop owner's subscription; do not block the
-      // linked freelancer behind a separate personal freelancer subscription.
+      // A linked freelancer follows the shop plan, including the shop's one-time
+      // 24-hour introductory trial for newly registered owners.
       if (!paymentRoute) {
         const active = await this.db.pool.query(
           `SELECT 1 FROM subscriptions
             WHERE tenant_id=$1 AND status='active' AND ends_at>now()
+           UNION ALL
+           SELECT 1 FROM subscription_trials
+            WHERE tenant_id=$1 AND ends_at>now()
             LIMIT 1`,
           [user.tenantId],
         );
@@ -129,6 +131,9 @@ export class AuthGuard implements CanActivate {
         const active = await this.db.pool.query(
           `SELECT 1 FROM freelancer_subscriptions
             WHERE user_id=$1 AND status='active' AND ends_at>now()
+           UNION ALL
+           SELECT 1 FROM subscription_trials
+            WHERE user_id=$1 AND ends_at>now()
             LIMIT 1`,
           [user.sub],
         );
@@ -143,6 +148,9 @@ export class AuthGuard implements CanActivate {
       const active = await this.db.pool.query(
         `SELECT 1 FROM subscriptions
           WHERE tenant_id=$1 AND status='active' AND ends_at>now()
+         UNION ALL
+         SELECT 1 FROM subscription_trials
+          WHERE tenant_id=$1 AND ends_at>now()
           LIMIT 1`,
         [user.tenantId],
       );
@@ -568,6 +576,13 @@ export class AuthController {
               [inserted.rows[0].id,row.national_id_hash,row.id_photo_data,row.passport_photo_data],
             );
             await c.query('INSERT INTO wallets (tenant_id) VALUES ($1)', [tenantId]);
+            // Start a single 24-hour trial only for genuinely new shop tenants.
+            await c.query(
+              `INSERT INTO subscription_trials (tenant_id, starts_at, ends_at)
+               VALUES ($1, now(), now() + interval '24 hours')
+               ON CONFLICT (tenant_id) DO NOTHING`,
+              [tenantId],
+            );
             if (row.referral_code) {
               const referrer = await c.query('SELECT id FROM tenants WHERE referral_code=$1 FOR UPDATE', [row.referral_code]);
               if (referrer.rowCount && referrer.rows[0].id !== tenantId) {
@@ -579,7 +594,7 @@ export class AuthController {
             }
           }
         }
-        // New accounts remain locked until the owner completes a paid subscription.
+        // New shop owners receive a one-time 24-hour trial; paid billing starts after it expires.
         await c.query('UPDATE signup_otp_requests SET verified_at=now(),consumed_at=now() WHERE id=$1', [row.id]);
         return inserted.rows[0];
       });
