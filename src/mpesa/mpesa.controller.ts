@@ -245,6 +245,55 @@ export class MpesaController {
     return { id: p.id, purpose: p.purpose, amountKes: Number(p.amount_kes), phone: p.phone, status: p.status, receiptNumber: p.mpesa_receipt_no, createdAt: p.created_at };
   }
 
+  // Customer fallback: record an M-Pesa receipt code against their latest unresolved subscription payment.
+  // This never activates a plan. A super-admin must verify the transaction with Tuma/M-Pesa first.
+  @Post('subscription-receipt-claim')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('owner', 'manager', 'freelancer')
+  async submitSubscriptionReceiptClaim(@Req() req: any, @Body() body: any) {
+    const tenantId = req.user?.tenantId;
+    if (!tenantId) throw new ForbiddenException();
+    const receipt = String(body?.receiptNumber || '').trim().toUpperCase();
+    if (!/^[A-Z0-9]{6,24}$/.test(receipt)) throw new BadRequestException('Enter the exact M-Pesa transaction code from the confirmation SMS.');
+    const phone = this.mpesa.normalizePhone(String(body?.phone || ''));
+    await this.db.pool.query(`CREATE TABLE IF NOT EXISTS subscription_payment_receipt_claims (
+      id BIGSERIAL PRIMARY KEY,
+      payment_id UUID NOT NULL REFERENCES payments(id) ON DELETE CASCADE,
+      tenant_id UUID NOT NULL,
+      user_id UUID NOT NULL,
+      receipt_number TEXT NOT NULL,
+      payer_phone TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'pending_review' CHECK (status IN ('pending_review','verified','rejected')),
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      UNIQUE (receipt_number)
+    )`);
+    const freelancer = req.user?.role === 'freelancer';
+    const found = await this.db.pool.query(
+      `SELECT id,amount_kes,phone,status FROM payments
+        WHERE tenant_id=$1 AND purpose='subscription'
+          AND status IN ('pending','failed')
+          AND subscriber_user_id IS NOT DISTINCT FROM $2
+          AND phone=$3
+        ORDER BY created_at DESC LIMIT 1`,
+      [tenantId, freelancer ? req.user.sub : null, phone],
+    );
+    if (!found.rowCount) throw new BadRequestException('No matching unpaid subscription request was found for this account and phone number. Start a subscription request first, or contact AURORA support if you already paid.');
+    try {
+      await this.db.pool.query(
+        `INSERT INTO subscription_payment_receipt_claims(payment_id,tenant_id,user_id,receipt_number,payer_phone)
+         VALUES($1,$2,$3,$4,$5)
+         ON CONFLICT(payment_id) DO UPDATE SET receipt_number=EXCLUDED.receipt_number,payer_phone=EXCLUDED.payer_phone,status='pending_review',created_at=now()`,
+        [found.rows[0].id,tenantId,req.user.sub,receipt,phone],
+      );
+    } catch (error: any) {
+      if (error?.code === '23505') throw new BadRequestException('That M-Pesa transaction code has already been submitted. Contact AURORA support if you believe this is an error.');
+      throw error;
+    }
+    return { submitted:true, status:'pending_review', paymentId:found.rows[0].id,
+      amountKes:Number(found.rows[0].amount_kes),
+      message:'Your M-Pesa code has been submitted for verification. Your subscription will activate after AURORA confirms the transaction. Do not pay again while it is being checked.' };
+  }
+
   @Post('callback/:token')
   async callback(@Param('token') token: string, @Body() body: any) {
     if (!this.mpesa.validCallbackToken(token)) {
