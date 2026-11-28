@@ -222,19 +222,21 @@ export class AuthController {
       const startedAt = Date.now();
       const senderId = String(process.env.TALKSASA_SENDER_ID || 'TALK-SASA').trim();
       const configuredUrl = String(process.env.TALKSASA_API_URL || '').trim();
-      // Always use TalkSasa's current API contract. Older Render settings may
-      // still contain /api/v3; translate that path instead of sending the
-      // incompatible legacy "recipient" payload.
-      let modernEndpoint = 'https://bulksms.talksasa.com/api/sms/send';
+      // TalkSasa's deployed SMS gateway uses the v3 send route and legacy
+      // request fields. Normalize older Render URL values to the documented
+      // endpoint rather than calling the unavailable /api/sms/send route.
+      let smsEndpoint = 'https://bulksms.talksasa.com/api/v3/sms/send';
       if (configuredUrl) {
         const parsed = new URL(configuredUrl);
-        if (/\/api\/v3(?:\/|$)/i.test(parsed.pathname)) {
-          parsed.pathname = '/api/sms/send';
+        if (/\/api\/sms\/send\/?$/i.test(parsed.pathname)) {
+          parsed.pathname = '/api/v3/sms/send';
           parsed.search = '';
+        } else if (/\/api\/v3\/?$/i.test(parsed.pathname)) {
+          parsed.pathname = parsed.pathname.replace(/\/+$/, '') + '/sms/send';
         } else if (!/\/sms\/send\/?$/i.test(parsed.pathname)) {
           parsed.pathname = parsed.pathname.replace(/\/+$/, '') + '/sms/send';
         }
-        modernEndpoint = parsed.toString();
+        smsEndpoint = parsed.toString();
       }
 
       const send = async (endpoint: string, payload: Record<string, string>) => {
@@ -267,9 +269,9 @@ export class AuthController {
       };
 
       try {
-        const currentPayload = { to, sender_id: senderId, message };
-        const outcome = await send(modernEndpoint, currentPayload);
-        const usedEndpoint = 'current';
+        const legacyPayload = { recipient: to, sender_id: senderId, type: 'plain', message };
+        const outcome = await send(smsEndpoint, legacyPayload);
+        const usedEndpoint = 'v3';
 
         console.info(
           '[AURORA][SMS] TalkSasa HTTP ' + outcome.response.status +
