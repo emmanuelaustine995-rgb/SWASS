@@ -247,10 +247,22 @@ export class MpesaController {
 
   @Post('callback/:token')
   async callback(@Param('token') token: string, @Body() body: any) {
-    if (!this.mpesa.validCallbackToken(token)) return { ResultCode: 0, ResultDesc: 'Accepted' };
+    if (!this.mpesa.validCallbackToken(token)) {
+      console.warn('[AURORA][PAYMENT] Callback rejected: invalid callback token');
+      return { ResultCode: 0, ResultDesc: 'Accepted' };
+    }
     const checkoutId = body?.checkout_request_id;
     const status = String(body?.status ?? '').toLowerCase();
-    if (typeof checkoutId !== 'string' || !checkoutId) return { ResultCode: 0, ResultDesc: 'Accepted' };
+    console.info('[AURORA][PAYMENT] Callback received', {
+      checkoutId: typeof checkoutId === 'string' ? checkoutId.slice(0, 48) : 'missing',
+      status: status || 'missing', resultCode: body?.result_code ?? 'missing',
+      amount: body?.amount ?? 'missing',
+      hasReceipt: typeof body?.mpesa_receipt_number === 'string' && !!body.mpesa_receipt_number.trim(),
+    });
+    if (typeof checkoutId !== 'string' || !checkoutId) {
+      console.warn('[AURORA][PAYMENT] Callback ignored: checkout_request_id missing');
+      return { ResultCode: 0, ResultDesc: 'Accepted' };
+    }
     try {
       await this.db.tx(async (c) => {
         const special = await c.query(`SELECT * FROM second_hand_special_receipt_recoveries WHERE checkout_request_id=$1 FOR UPDATE`, [checkoutId]);
@@ -286,8 +298,12 @@ export class MpesaController {
           return;
         }
         const found = await c.query(`SELECT * FROM payments WHERE checkout_request_id=$1 FOR UPDATE`, [checkoutId]);
-        if (!found.rowCount) return;
+        if (!found.rowCount) {
+          console.warn('[AURORA][PAYMENT] Callback checkout ID not found in payments table', { checkoutId: checkoutId.slice(0, 48) });
+          return;
+        }
         const p = found.rows[0];
+        console.info('[AURORA][PAYMENT] Matched payment', { paymentId: String(p.id), purpose: p.purpose, currentStatus: p.status, amountKes: Number(p.amount_kes) });
         if (p.status !== 'pending') return;
         if (status !== 'completed' || Number(body?.result_code) !== 0) {
           if (status === 'failed') await c.query(`UPDATE payments SET status='failed' WHERE id=$1 AND status='pending'`, [p.id]);
@@ -303,7 +319,13 @@ export class MpesaController {
           return /^254[17]\d{8}$/.test(digits) ? digits : '';
         };
         const callbackPhone = canonicalPhone(callbackPhoneRaw);
-        if (!receipt || !Number.isSafeInteger(amount) || amount !== Number(p.amount_kes)) return;
+        if (!receipt || !Number.isSafeInteger(amount) || amount !== Number(p.amount_kes)) {
+          console.warn('[AURORA][PAYMENT] Successful callback failed receipt/amount validation', {
+            paymentId: String(p.id), hasReceipt: !!receipt,
+            callbackAmount: Number.isFinite(amount) ? amount : 'invalid', expectedAmount: Number(p.amount_kes),
+          });
+          return;
+        }
         // Tuma may send 07..., 01..., 2547... or +2547... for the same payer.
         if (callbackPhoneRaw && (!callbackPhone || callbackPhone !== canonicalPhone(String(p.phone)))) return;
 
@@ -370,8 +392,10 @@ export class MpesaController {
           await c.query(`INSERT INTO wallet_transactions (tenant_id, change_kes, reason, payment_id) VALUES ($1,$2,'topup',$3)`, [p.tenant_id, p.amount_kes, p.id]);
         }
       });
-    } catch {
-      // Keep failed internal processing visible as pending for safe reconciliation.
+    } catch (error) {
+      console.error('[AURORA][PAYMENT] Callback database processing failed; transaction rolled back', {
+        message: error instanceof Error ? error.message : 'Unknown database error',
+      });
     }
     return { ResultCode: 0, ResultDesc: 'Accepted' };
   }
