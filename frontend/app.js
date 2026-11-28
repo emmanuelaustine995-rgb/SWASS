@@ -1916,7 +1916,7 @@
     btn.disabled=true;btn.textContent='Sending code…';
     $('password-reset-message').textContent='Requesting a secure reset code…';
     try{
-      const result=await request('/api/v1/auth/password-reset/request',{method:'POST',signal:AbortSignal.timeout(150000),body:JSON.stringify({phone:$('reset-phone').value.trim(),accountType:$('login-account-type').value})});
+      const result=await request('/api/v1/auth/password-reset/request',{method:'POST',signal:AbortSignal.timeout(30000),body:JSON.stringify({phone:$('reset-phone').value.trim(),accountType:$('login-account-type').value})});
       $('password-reset-confirm-fields').classList.remove('hidden');
       $('password-reset-message').textContent=result.message||'If an account matches that phone number, a password reset code has been sent.';
     }catch(err){$('password-reset-message').textContent=err.message||'Could not request a reset code.';}

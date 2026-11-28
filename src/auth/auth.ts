@@ -222,16 +222,18 @@ export class AuthController {
       const startedAt = Date.now();
       const senderId = String(process.env.TALKSASA_SENDER_ID || 'TALK-SASA').trim();
       const configuredUrl = String(process.env.TALKSASA_API_URL || '').trim();
-      const legacyEndpoint = configuredUrl
+      // Current TalkSasa guide uses /api/sms/send with "to"; older v3
+      // integrations use /api/v3/sms/send with "recipient".
+      const modernEndpoint = configuredUrl
         ? (/\/sms\/send\/?$/i.test(configuredUrl)
             ? configuredUrl
             : configuredUrl.replace(/\/+$/, '') + '/sms/send')
-        : 'https://bulksms.talksasa.com/api/v3/sms/send';
+        : 'https://bulksms.talksasa.com/api/sms/send';
 
       const send = async (endpoint: string, payload: Record<string, string>) => {
         const response = await fetch(endpoint, {
           method: 'POST',
-          signal: AbortSignal.timeout(12000),
+          signal: AbortSignal.timeout(8000),
           headers: {
             Authorization: 'Bearer ' + token,
             Accept: 'application/json',
@@ -258,28 +260,28 @@ export class AuthController {
       };
 
       try {
-        // Existing TalkSasa v3 accounts use recipient and the /api/v3 route.
-        let outcome = await send(legacyEndpoint, {
-          recipient: '+' + to,
+        let outcome = await send(modernEndpoint, {
+          to,
           sender_id: senderId,
-          type: 'plain',
           message,
         });
 
-        // TalkSasa's newer public integration guide documents /api/sms/send
-        // with to in international digits-only format. Fall back only when
-        // the old route is absent, never after an ambiguous/accepted send.
+        // Compatibility fallback for accounts still provisioned on the v3 API.
+        // Only retry when the modern route is explicitly missing; never duplicate
+        // an SMS after an ambiguous response or a request accepted by the provider.
         if (!outcome.accepted && !configuredUrl &&
             (outcome.response.status === 404 || outcome.response.status === 405)) {
-          outcome = await send('https://bulksms.talksasa.com/api/sms/send', {
-            to,
+          outcome = await send('https://bulksms.talksasa.com/api/v3/sms/send', {
+            recipient: '+' + to,
             sender_id: senderId,
+            type: 'plain',
             message,
           });
         }
 
         console.info(
           '[AURORA][SMS] TalkSasa HTTP ' + outcome.response.status +
+          ', endpoint=' + (modernEndpoint.includes('/api/v3/') ? 'v3' : 'current') +
           ', status=' + (outcome.status || 'missing') +
           ', accepted=' + outcome.accepted +
           ', messageId=' + (outcome.messageId ? 'present' : 'missing') +
@@ -352,7 +354,6 @@ export class AuthController {
     }
     throw new Error(failures.join(' | ') || 'All configured SMS providers failed');
   }
-
   @Post('register')
   async register(@Body() body: { accountType?: string; businessName?: string; storeName?: string; storeLocation?: string; houseName?: string; floor?: string; houseNumber?: string; websiteUrl?: string; kraPin?: string; legalName?: string; businessEmail?: string; fullName?: string; phone?: string; email?: string; password?: string; nationalId?: string; idPhotoData?: string; passportPhotoData?: string; referralCode?: string }, @Req() req: any) {
     const registrationStartedAt = Date.now();
@@ -841,7 +842,7 @@ export class AuthController {
   @Post('password-reset/request')
   async requestPasswordReset(@Body() body: { phone?: string; accountType?: string }) {
     const phone = this.normalizePhone(String(body?.phone ?? ''));
-    const generic = { message: 'If an account matches that phone number, a password reset code has been sent.' };
+    const noAccountMessage = 'No account found. Please create an account first.';
     const found = await this.db.pool.query(
       `SELECT id FROM users
          WHERE regexp_replace(phone, '[^0-9]', '', 'g') IN ($1,$2)
@@ -857,7 +858,7 @@ export class AuthController {
       [phone, '0' + phone.slice(3), body?.accountType === 'freelancer' ? 'freelancer' : null],
     );
     console.info(`[AURORA] Password-reset lookup: matched=${Boolean(found.rowCount)}, accountType=${body?.accountType === 'freelancer' ? 'freelancer' : 'general'}`);
-    if (!found.rowCount) return generic;
+    if (!found.rowCount) throw new BadRequestException(noAccountMessage);
     const userId = found.rows[0].id;
     const recent = await this.db.pool.query(
       `SELECT count(*)::int AS n FROM password_reset_requests
@@ -884,7 +885,7 @@ export class AuthController {
       console.error('[AURORA] Freelancer password-reset SMS delivery failed:', reason);
       throw new ServiceUnavailableException('The SMS gateway could not send your reset code. Please check the phone number and try again, or contact support.');
     }
-    return generic;
+    return { message: 'Your password reset code has been sent. It expires in 5 minutes.' };
   }
 
   @Post('password-reset/confirm')
