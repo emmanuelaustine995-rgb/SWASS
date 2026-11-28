@@ -611,7 +611,7 @@ export class AuthController {
       }
       return {
         accessToken: await this.jwt.signAsync(payload, { expiresIn: '30d' }),
-        trialDays: 0, phoneVerified: true,
+        trialDays: 1, phoneVerified: true,
         emailVerificationSent: false, emailVerificationRequired: !!row.email,
         mustChangePassword: row.role === 'cashier',
       };
