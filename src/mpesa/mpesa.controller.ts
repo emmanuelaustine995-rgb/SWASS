@@ -141,18 +141,25 @@ export class MpesaController {
     }
     const tenantId = req.user?.tenantId;
     if (!tenantId) throw new ForbiddenException();
-    const [subscription, wallet] = await Promise.all([
+    const [subscription, trial, wallet] = await Promise.all([
       this.db.pool.query(`SELECT plan,status,starts_at,ends_at FROM subscriptions
         WHERE tenant_id=$1 ORDER BY ends_at DESC LIMIT 1`, [tenantId]),
+      this.db.pool.query(`SELECT starts_at,ends_at FROM subscription_trials
+        WHERE tenant_id=$1 AND ends_at>now() ORDER BY ends_at DESC LIMIT 1`, [tenantId]),
       this.db.pool.query(`SELECT balance_kes FROM wallets WHERE tenant_id=$1 LIMIT 1`, [tenantId]),
     ]);
     const balanceKes = Number(wallet.rows[0]?.balance_kes ?? 0);
     const receiptFeeKes = 4;
+    const paidSubscription = subscription.rows[0] ?? null;
+    const activeTrial = trial.rows[0] ?? null;
     return {
-      subscription: subscription.rows[0] ? {
-        plan: subscription.rows[0].plan, status: subscription.rows[0].status,
-        startsAt: subscription.rows[0].starts_at, endsAt: subscription.rows[0].ends_at,
-        active: subscription.rows[0].status === 'active' && new Date(subscription.rows[0].ends_at).getTime() > Date.now()
+      subscription: paidSubscription ? {
+        plan: paidSubscription.plan, status: paidSubscription.status,
+        startsAt: paidSubscription.starts_at, endsAt: paidSubscription.ends_at,
+        active: paidSubscription.status === 'active' && new Date(paidSubscription.ends_at).getTime() > Date.now()
+      } : activeTrial ? {
+        plan: 'trial', status: 'active', startsAt: activeTrial.starts_at, endsAt: activeTrial.ends_at,
+        active: true, trial: true,
       } : null,
       balanceKes, receiptFeeKes,
       receiptsRemaining: Math.floor(balanceKes / receiptFeeKes),
